@@ -9,4 +9,4 @@ We believe capital should find its highest and best use **without intermediaries
 3. **Empower participants** (people, DAOs, and AI agents) with custom terms, programmable safety rails, and transparent risk.
 4. **Advance self‑governance** using AI‑assisted monitoring and parameter tuning under human‑defined guardrails.
 
-**North Stars (KPIs)**: Time‑to‑match (p50/p95), matched % of posted intents, utilization, default rate, refi rate, user NPS.
+**North Stars (KPIs)**: Time‑to‑match, matched % of posted intents, utilization, default rate, refi rate, user NPS.
