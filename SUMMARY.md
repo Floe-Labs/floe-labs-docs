@@ -7,6 +7,7 @@
 * [Getting Started](getting-started/README.md)
   * [Quick Start](docs/getting-started/quick-start.md)
   * [Core Concepts](docs/getting-started/core-concepts.md)
+  * [Testnet](getting-started/testnet.md)
 * [User Guides](user-guides/README.md)
   * [Lend](docs/user/lend.md)
   * [Borrow](docs/user/borrow.md)
