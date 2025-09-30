@@ -17,7 +17,7 @@ Steps:
 
 1. Go to the contract page. [https://sepolia.basescan.org/address/0x46E693155cAaAeae3760D04E97a6911b94739F4C](https://sepolia.basescan.org/address/0x46E693155cAaAeae3760D04E97a6911b94739F4C).  Click on Contract.
 2. Click on Write Contract.&#x20;
-3. Click on connect your wallet.&#x20;
+3. Click on connect to Web3 then connect your wallet.&#x20;
 4. Under the Write Contract tab, find faucet(). Click "Write" and confirm the transaction.
 
 \
