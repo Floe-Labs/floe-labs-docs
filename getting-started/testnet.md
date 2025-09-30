@@ -15,10 +15,10 @@ Call the faucet() function (no parameters). This mints a set amount of collatera
 
 Steps:
 
-1. Go to the contract page [https://sepolia.basescan.org/address/0x46E693155cAaAeae3760D04E97a6911b94739F4C](https://sepolia.basescan.org/address/0x46E693155cAaAeae3760D04E97a6911b94739F4C).&#x20;
-2. Connect your wallet.&#x20;
-3. Under the Write Contract tab, find faucet().&#x20;
-4. Click "Write" and confirm the transaction.
+1. Go to the contract page. [https://sepolia.basescan.org/address/0x46E693155cAaAeae3760D04E97a6911b94739F4C](https://sepolia.basescan.org/address/0x46E693155cAaAeae3760D04E97a6911b94739F4C).  Click on Contract.
+2. Click on Write Contract.&#x20;
+3. Click on connect your wallet.&#x20;
+4. Under the Write Contract tab, find faucet(). Click "Write" and confirm the transaction.
 
 \
 \
@@ -31,11 +31,16 @@ Contract Address: 0x01E6B4a1264FB32d42193cAa19De507B792291B7\
 
 Steps:
 
-1. Go to the contract page [https://sepolia.basescan.org/address/0x01E6B4a1264FB32d42193cAa19De507B792291B7](https://sepolia.basescan.org/address/0x01E6B4a1264FB32d42193cAa19De507B792291B7).&#x20;
-2. Connect your wallet e.g. Metamask.&#x20;
-3. Under the Write Contract tab, find mint. &#x20;
-4. Enter your wallet address and the amount (e.g., 1000000000000000000 for 1 WETH).&#x20;
-5. Click "Write" and confirm the transaction.
+1. Go to the contract page [https://sepolia.basescan.org/address/0x01E6B4a1264FB32d42193cAa19De507B792291B7](https://sepolia.basescan.org/address/0x01E6B4a1264FB32d42193cAa19De507B792291B7). Click on Contract.&#x20;
+2. Click on Write Contract.
+3. Click on Connect to Web3 / your wallet e.g. Metamask.&#x20;
+4. Under the Write Contract tab, find mint function. &#x20;
+5. Under Mint function, Enter your wallet address in the account(address) field and the amount (e.g., 1000000000000000000 for 1 WETH) in the amount(unit256) field
+6. Click "Write" and confirm the transaction.
+
+
+
+In Metamask wallet, Import tokens based on Contract addresses above for Base Sepolia.
 
 Notes:
 
