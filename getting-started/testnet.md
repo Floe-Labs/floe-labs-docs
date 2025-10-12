@@ -5,7 +5,9 @@ icon: wave
 
 # Testnet
 
-First, get test tokens on Base Sepolia. To interact with the Floe protocol on Base Sepolia, you need test tokens for both the loan token (WETH) and the collateral token (ERC20 Faucet). You can mint these tokens from their verified contracts as follows:
+First, must get testnet Eth on Base Sepolia. For free no transaction fees testnet eth go to: https://portal.cdp.coinbase.com/products/faucet?token=ETH\&projectId=5332340c-797b-468c-a21d-22feb281557f\&network=base-sepolia\&address=0x781Ec4D25F053A65FdFcAE0Ddf01361c8A2D827E&#x20;
+
+Next, get test tokens on Base Sepolia. To interact with the Floe protocol on Base Sepolia, you need test tokens for both the loan token (WETH) and the collateral token (ERC20 Faucet). You can mint these tokens from their verified contracts as follows:
 
 1. **Collateral Token (ERC20 Faucet)**&#x20;
 
