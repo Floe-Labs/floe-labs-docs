@@ -38,7 +38,7 @@ Two intents match when:
 3. Submit match transactions on-chain
 4. Earn commission for successful matches
 
-Anyone can run a matcher. See the [Matcher Operator Guide](../developers/matcher-operators.md).
+Floe's matching is permissionless — anyone can run a matcher.
 
 ## Isolated Loans
 
@@ -91,16 +91,6 @@ The protocol automatically pauses if:
 - L2 sequencer is down
 - Price returns zero
 
-## Hooks
-
-**Hooks** are optional modules that customize loan behavior:
-- Collateral management
-- Custom liquidation logic
-- Access control
-- Rate modifications
-
-Currently, hooks are allowlisted and audited. Future versions will enable permissionless hook deployment.
-
 ## Lendr AI
 
 **Lendr** is an AI assistant that helps you:
@@ -132,5 +122,4 @@ Markets are created by governance and have their own:
 | Isolated Loan | Per-match escrow with own terms |
 | LTV | Loan value ÷ collateral value |
 | Oracle | Price feed (Chainlink + Pyth) |
-| Hook | Optional loan customization |
 | Lendr | AI assistant for the protocol |

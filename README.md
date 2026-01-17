@@ -1,55 +1,43 @@
-# Introduction
+# Floe
 
-Floe is an **intent-based P2P lending protocol** on **Base Mainnet**. Users create intents specifying their lending or borrowing terms, solvers match compatible pairs, and loans are settled on-chain as isolated contracts.
+**Intent-based P2P lending on Base**
 
-## Live on Base Mainnet
+Floe lets you borrow USDC against ETH or earn yield by lending — with custom terms, no pools, and AI assistance.
+
+## Get Started
 
 **App**: [app.floelabs.xyz](https://app.floelabs.xyz)
 
-**Contract**: [`0x17946cD3e180f82e632805e5549EC913330Bb175`](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175)
+1. Connect your wallet
+2. Choose to Lend or Borrow
+3. Set your terms
+4. Get matched
 
-## Why Floe?
+## Guides
 
-* **Efficiency**: No idle pool capital → tighter spreads, better rates
-* **Flexibility**: Custom rates, terms, durations — you set the terms
-* **Safety**: Per-loan isolation, overcollateralized, oracle-protected
-* **AI-Powered**: Lendr AI assistant for natural language interactions
+- [Quick Start](docs/getting-started/quick-start.md) — 5 minutes to your first loan
+- [How to Borrow](docs/user/borrow.md) — Get USDC against ETH collateral
+- [How to Lend](docs/user/lend.md) — Earn yield on stablecoins
+- [Lendr AI](docs/user/lendr-ai.md) — Chat assistant for help
 
-## How It Works
+## Key Info
 
-```
-1. Create Intent → Sign your lending or borrowing terms
-2. Get Matched  → Solvers find compatible counterparties
-3. Loan Settles → Collateral locked, funds transferred
-4. Manage       → Repay, add collateral, or let Lendr help
-```
+| | |
+|---|---|
+| **Network** | Base Mainnet |
+| **Contract** | [`0x17946cD3...Bb175`](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175) |
+| **Loan Token** | USDC |
+| **Collateral** | WETH |
 
-## Quick Links
+## Learn More
 
-**New Users**
-- [Quick Start](docs/getting-started/quick-start.md) — Get started in 5 minutes
-- [Borrow USDC](docs/user/borrow.md) — Borrow against your ETH
-- [Lend USDC](docs/user/lend.md) — Earn interest on your stablecoins
-- [Using Lendr AI](docs/user/lendr-ai.md) — Chat with our AI assistant
+- [Core Concepts](docs/getting-started/core-concepts.md)
+- [Risk & Liquidations](docs/user/risk-liquidations.md)
+- [How Matching Works](docs/protocol/orderbook-matching.md)
+- [FAQ](faq/general.md)
 
-**Developers**
-- [Client SDK](docs/developers/sdk.md) — TypeScript/JavaScript SDK
-- [Networks & Contracts](developers/networks.md) — Contract addresses
-- [Matcher Operator Guide](docs/developers/matcher-operators.md) — Run a solver bot
+## Help
 
-**Protocol**
-- [Architecture](docs/protocol/architecture.md) — How Floe works
-- [Risk & Liquidation](docs/user/risk-liquidations.md) — Understanding risks
-
-## Current Market
-
-| Asset | Role | Address |
-|-------|------|---------|
-| USDC | Loan Token | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
-| WETH | Collateral | `0x4200000000000000000000000000000000000006` |
-
-## Get Help
-
-- **In-App**: Chat with Lendr AI (bottom-right corner)
-- **Discord**: [Join our community](https://discord.gg/floe)
+- **In-App**: Use Lendr AI chat
+- **Discord**: [discord.gg/floe](https://discord.gg/floe)
 - **Twitter**: [@FloeLabs](https://twitter.com/FloeLabs)
