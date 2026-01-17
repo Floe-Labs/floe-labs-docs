@@ -1,4 +1,4 @@
-# Frequently Asked Questions
+# FAQ
 
 Common questions about using Floe.
 
@@ -10,13 +10,13 @@ Floe is a peer-to-peer, intent-based lending protocol on Base. Users create inte
 
 ### How is Floe different from Aave or Compound?
 
-| Feature | Floe | Aave/Compound |
-|---------|------|---------------|
-| Architecture | P2P intent matching | Liquidity pools |
-| Rates | Negotiated | Algorithmic |
-| Counterparty | Single (known) | Pool (anonymous) |
-| Risk | Isolated per loan | Shared across pool |
-| Terms | Custom | Standardized |
+| Feature      | Floe                | Aave/Compound      |
+| ------------ | ------------------- | ------------------ |
+| Architecture | P2P intent matching | Liquidity pools    |
+| Rates        | Negotiated          | Algorithmic        |
+| Counterparty | Single (known)      | Pool (anonymous)   |
+| Risk         | Isolated per loan   | Shared across pool |
+| Terms        | Custom              | Standardized       |
 
 ### What blockchain is Floe on?
 
@@ -25,12 +25,13 @@ Floe is deployed on **Base Mainnet** (Chain ID: 8453), an Ethereum Layer 2.
 ### What tokens are supported?
 
 Currently:
-- **Loan token**: USDC
-- **Collateral token**: WETH (Wrapped ETH)
+
+* **Loan token**: USDC
+* **Collateral token**: WETH (Wrapped ETH)
 
 More markets may be added in the future.
 
----
+***
 
 ## Borrowing
 
@@ -44,8 +45,9 @@ More markets may be added in the future.
 ### What collateral do I need?
 
 You need WETH (Wrapped ETH). Your collateral must be worth more than your loan amount:
-- **Minimum**: Enough to meet your specified LTV
-- **Recommended**: Extra buffer for price volatility
+
+* **Minimum**: Enough to meet your specified LTV
+* **Recommended**: Extra buffer for price volatility
 
 ### What is LTV?
 
@@ -65,7 +67,7 @@ Yes. There's no prepayment penalty. You only pay interest for the time you actua
 
 Yes. Go to your loan in the Loans page and click "Add Collateral" to improve your LTV.
 
----
+***
 
 ## Lending
 
@@ -79,9 +81,10 @@ Yes. Go to your loan in the Loans page and click "Add Collateral" to improve you
 ### What rates can I expect?
 
 Rates are market-driven. Typical ranges:
-- **Conservative**: 4-6% APR
-- **Moderate**: 6-8% APR
-- **Higher risk**: 8%+ APR
+
+* **Conservative**: 4-6% APR
+* **Moderate**: 6-8% APR
+* **Higher risk**: 8%+ APR
 
 ### Can my lend intent be partially filled?
 
@@ -90,13 +93,14 @@ Yes, if you enable `allowPartialFill`. Your intent can match multiple borrowers 
 ### What if the borrower doesn't repay?
 
 If the borrower's LTV exceeds the liquidation threshold or the loan becomes overdue:
-- Liquidators pay off the debt
-- You receive full repayment (from liquidator)
-- Borrower loses collateral
+
+* Liquidators pay off the debt
+* You receive full repayment (from liquidator)
+* Borrower loses collateral
 
 In rare underwater cases, you may experience bad debt.
 
----
+***
 
 ## Intents
 
@@ -107,9 +111,10 @@ An intent is an on-chain declaration of your desired terms. It's not a loan—it
 ### How long do intents last?
 
 You set the `expiry` when creating an intent. Common choices:
-- 7 days (typical)
-- 14 days (patient)
-- 24 hours (urgent)
+
+* 7 days (typical)
+* 14 days (patient)
+* 24 hours (urgent)
 
 ### Can I cancel my intent?
 
@@ -118,14 +123,15 @@ Yes, as long as it hasn't been fully matched. Cancellation returns your deposite
 ### Why hasn't my intent been matched?
 
 Possible reasons:
-- Your rate expectations don't overlap with available counterparties
-- Matcher commission is too low (solvers don't find it profitable)
-- Not enough market activity
-- Duration or LTV incompatibility
+
+* Your rate expectations don't overlap with available counterparties
+* Matcher commission is too low (solvers don't find it profitable)
+* Not enough market activity
+* Duration or LTV incompatibility
 
 Try adjusting your terms to be more competitive.
 
----
+***
 
 ## Loans
 
@@ -149,21 +155,23 @@ No. Loans are non-transferable.
 
 Liquidators receive a **5% bonus** on collateral value as incentive to liquidate unhealthy loans.
 
----
+***
 
 ## Liquidation
 
 ### When can my loan be liquidated?
 
 Your loan can be liquidated when:
+
 1. **LTV exceeds threshold**: Your current LTV goes above the liquidation LTV (lender's maxLTV)
 2. **Loan is overdue**: Duration has passed and you haven't repaid
 
 ### What is the 8% LTV gap?
 
 Floe requires at least 8% gap between:
-- **Origination LTV** (your borrowing level)
-- **Liquidation LTV** (when liquidation is allowed)
+
+* **Origination LTV** (your borrowing level)
+* **Liquidation LTV** (when liquidation is allowed)
 
 This ensures borrowers have buffer from day one.
 
@@ -176,11 +184,12 @@ This ensures borrowers have buffer from day one.
 ### Can I prevent liquidation?
 
 Yes:
-- Add collateral before reaching threshold
-- Repay the loan early
-- Monitor prices during volatile markets
 
----
+* Add collateral before reaching threshold
+* Repay the loan early
+* Monitor prices during volatile markets
+
+***
 
 ## Technical
 
@@ -195,22 +204,24 @@ The circuit breaker pauses protocol operations when oracle data is unreliable (s
 ### Why did my transaction fail?
 
 Common reasons:
-- Intent was already matched (race condition)
-- Insufficient token allowance
-- Circuit breaker active
-- Gas price too low
-- Contract paused
+
+* Intent was already matched (race condition)
+* Insufficient token allowance
+* Circuit breaker active
+* Gas price too low
+* Contract paused
 
 Check the [Error Codes](02-error-codes.md) reference.
 
 ### How do I get ETH for gas?
 
 Bridge ETH to Base using:
-- [Base Bridge](https://bridge.base.org)
-- [Superbridge](https://superbridge.app)
-- Centralized exchange withdrawal to Base
 
----
+* [Base Bridge](https://bridge.base.org)
+* [Superbridge](https://superbridge.app)
+* Centralized exchange withdrawal to Base
+
+***
 
 ## Security
 
@@ -220,20 +231,19 @@ Audit information is available in the [Security Model](../protocol/05-security-m
 
 ### How are my funds protected?
 
-- All loans are overcollateralized
-- Dual-oracle system with fallback
-- Circuit breaker prevents bad liquidations
-- No pool risk (P2P isolation)
-- UUPS upgradeable for security patches
+* All loans are overcollateralized
+* Dual-oracle system with fallback
+* Circuit breaker prevents bad liquidations
+* No pool risk (P2P isolation)
+* UUPS upgradeable for security patches
 
 ### Can I lose money?
 
-**Borrowers**: You can lose your collateral if liquidated
-**Lenders**: You can experience bad debt if collateral becomes worthless very quickly
+**Borrowers**: You can lose your collateral if liquidated **Lenders**: You can experience bad debt if collateral becomes worthless very quickly
 
 See [Risk & Liquidation](../user-guides/04-risk-and-liquidation.md).
 
----
+***
 
 ## Lendr AI
 
@@ -243,30 +253,32 @@ Lendr is an AI assistant that helps you interact with Floe using natural languag
 
 ### What can Lendr do?
 
-- Create borrow/lend intents
-- Check loan health
-- Add collateral
-- Repay loans
-- Explain protocol concepts
-- Answer questions
+* Create borrow/lend intents
+* Check loan health
+* Add collateral
+* Repay loans
+* Explain protocol concepts
+* Answer questions
 
 ### Is Lendr safe?
 
 Yes:
-- Lendr cannot access your private keys
-- Every transaction requires your wallet signature
-- Lendr only reads public blockchain data
 
----
+* Lendr cannot access your private keys
+* Every transaction requires your wallet signature
+* Lendr only reads public blockchain data
+
+***
 
 ## Fees
 
 ### What fees does Floe charge?
 
 Floe currently charges **no protocol fees**. You only pay:
-- Interest (to lenders)
-- Matcher commission (to solvers)
-- Gas (to the network)
+
+* Interest (to lenders)
+* Matcher commission (to solvers)
+* Gas (to the network)
 
 ### Why am I paying a matcher fee?
 
@@ -276,16 +288,15 @@ The matcher commission incentivizes solvers to match your intent. Without it, yo
 
 Yes, if you manually match with a counterparty through the UI. But automated solver matching is faster and more reliable.
 
----
+***
 
 ## Getting Help
 
 ### Where can I get support?
 
-- **In-app**: Ask Lendr AI
-- **Discord**: [Join our community](https://discord.gg/floe)
-- **X/Twitter**: [@FloeLabs](https://twitter.com/FloeLabs)
-- **Email**: support@floelabs.xyz
+* **In-app**: Ask Lendr AI
+* **X/Twitter**: [@FloeLabs](https://twitter.com/FloeLabs)
+* **Email**: hello@floelabs.xyz
 
 ### How do I report a bug?
 
@@ -297,17 +308,17 @@ Yes, if you manually match with a counterparty through the UI. But automated sol
 
 Share your ideas in Discord or tag us on X. We love hearing from users.
 
----
+***
 
 ## Glossary
 
-| Term | Definition |
-|------|------------|
-| **APR** | Annual Percentage Rate - yearly interest |
-| **bps** | Basis points - 100 bps = 1% |
-| **Intent** | On-chain offer to lend or borrow |
-| **LTV** | Loan-to-Value ratio |
-| **Matcher/Solver** | Bot that matches intents |
-| **Oracle** | Price data source (Chainlink/Pyth) |
-| **Principal** | Original loan amount |
-| **WETH** | Wrapped ETH (ERC-20 version of ETH) |
+| Term               | Definition                               |
+| ------------------ | ---------------------------------------- |
+| **APR**            | Annual Percentage Rate - yearly interest |
+| **bps**            | Basis points - 100 bps = 1%              |
+| **Intent**         | On-chain offer to lend or borrow         |
+| **LTV**            | Loan-to-Value ratio                      |
+| **Matcher/Solver** | Bot that matches intents                 |
+| **Oracle**         | Price data source (Chainlink/Pyth)       |
+| **Principal**      | Original loan amount                     |
+| **WETH**           | Wrapped ETH (ERC-20 version of ETH)      |

@@ -12,8 +12,10 @@ Understanding risk is essential for using Floe safely. This guide explains how l
 
 A loan becomes liquidatable when **either** condition is met:
 
-1. **LTV Breach**: Current LTV exceeds the liquidation threshold
+1. **LTV Breach**: Current Loan LTV exceeds the liquidation LTV threshold
 2. **Overdue**: Loan duration has expired and borrower hasn't repaid
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.34.56.png" alt=""><figcaption></figcaption></figure>
 
 ### The Liquidation Formula
 
@@ -85,7 +87,7 @@ The liquidator calls `liquidateLoan()`:
 
 #### 1. Buffer Your LTV
 
-Don't borrow at maximum LTV. Leave room for price drops.
+Don't borrow at maximum LTV. Leave room for collateral price drops.
 
 | Risk Level   | Recommended LTV | Buffer        |
 | ------------ | --------------- | ------------- |
@@ -95,15 +97,17 @@ Don't borrow at maximum LTV. Leave room for price drops.
 
 #### 2. Add Collateral Proactively
 
-If ETH price drops:
+If collateral price drops:
 
 1. Go to your loan in the **Loans** page
 2. Click **"Add Collateral"**
-3. Deposit more ETH to lower your LTV
+3. Deposit more collateral to lower your LTV
 
-#### 3. Set Price Alerts
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.36.03.png" alt=""><figcaption></figcaption></figure>
 
-Use external tools to monitor ETH price and get notified when approaching your liquidation price.
+#### 3. Set External Price Alerts (coming soon on Floe)
+
+Use external tools to monitor collateral price and get notified when approaching your liquidation price.
 
 #### 4. Repay Early
 
@@ -129,7 +133,7 @@ Don't put all your capital in one loan. Spread across multiple borrowers.
 
 Floe enforces a minimum 8% gap between:
 
-* **Origination LTV**: The LTV when the loan is created
+* **Origination Loan LTV**: The LTV when the loan is created
 * **Liquidation LTV**: The threshold where liquidation is allowed
 
 This ensures borrowers have buffer room from day one.
@@ -177,9 +181,8 @@ When the circuit breaker is active:
 
 ### For Liquidators
 
-* Receive 5% bonus on collateral
-* Must have capital to pay off debt
-* Compete with other liquidators (first to execute wins)
+* Receive 5% bonus on collateral liquidated
+* Compete with other liquidators (first to execute wins bonus)
 
 ### For Borrowers
 
@@ -219,13 +222,7 @@ This is why overcollateralization and appropriate LTV limits are crucial.
 * See liquidation price
 * One-click add collateral
 
-### Loan Health Indicators
 
-| Status     | Meaning                       |
-| ---------- | ----------------------------- |
-| 🟢 Healthy | LTV well below liquidation    |
-| 🟡 At Risk | LTV approaching liquidation   |
-| 🔴 Danger  | LTV very close to liquidation |
 
 ## Best Practices Summary
 

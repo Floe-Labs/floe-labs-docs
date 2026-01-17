@@ -1,60 +1,72 @@
-# Using Lendr AI
+# Using LendrBotot AI
 
-Lendr is Floe's AI assistant that lets you interact with the protocol using natural language.
+Lendrbot is Floe's AI assistant that lets you interact with the protocol using natural language in-app on on X @Lendrbot [https://x.com/LendrBot](https://x.com/LendrBot).
 
-## What is Lendr?
+## What is LendrBot?
 
-Lendr is an AI agent that understands DeFi lending and can:
-- Create borrow and lend intents
-- Query your loans and positions
-- Explain market conditions
-- Help you understand the protocol
-- Execute actions on your behalf
+LendrBot is an AI agent that understands DeFi lending and can:
 
-## Where to Access Lendr
+* Create borrow and lend intents
+* Query your loans and positions
+* Explain market conditions
+* Help you understand the protocol
+* Execute actions on your behalf
 
-### In-App Chat
+## Where to Access LendrBot
+
+### In-App Chat or on X.com&#x20;
 
 1. Open [app.floelabs.xyz](https://app.floelabs.xyz)
-2. Click the **chat icon** in the bottom-right corner
+2. Click the **chat icon** in the corner
 3. Start typing your request
+4. On X.com, either DM or @LendrBot with requests.
 
 ## Example Commands
 
 ### Borrowing
 
 **Simple borrow request:**
+
 ```
 "I want to borrow 5000 USDC"
 ```
+
 Lendr will ask follow-up questions about collateral, rate, and duration.
 
 **Detailed borrow request:**
+
 ```
 "Borrow $10,000 USDC against 3 ETH at max 7% interest for 30 days"
 ```
+
 Lendr will create the intent with your exact specifications.
 
 **Check borrowing options:**
+
 ```
 "What's the best rate I can get to borrow 5000 USDC right now?"
 ```
+
 Lendr will scan available lend offers and show you options.
 
 ### Lending
 
 **Simple lend request:**
+
 ```
 "I want to lend 10,000 USDC"
 ```
+
 Lendr will guide you through setting your terms.
 
 **Detailed lend request:**
+
 ```
 "Create a lend offer for 20,000 USDC at minimum 5% APR, max 75% LTV, for up to 60 days"
 ```
 
 **Check lending opportunities:**
+
 ```
 "Show me borrowers looking for USDC loans"
 ```
@@ -62,6 +74,7 @@ Lendr will guide you through setting your terms.
 ### Managing Positions
 
 **Check your loans:**
+
 ```
 "Show me my active loans"
 "What's my current LTV?"
@@ -69,6 +82,7 @@ Lendr will guide you through setting your terms.
 ```
 
 **Take action:**
+
 ```
 "Repay my loan"
 "Add 0.5 ETH collateral to my loan"
@@ -78,6 +92,7 @@ Lendr will guide you through setting your terms.
 ### Market Information
 
 **Get market data:**
+
 ```
 "What's the current ETH price?"
 "What are typical lending rates right now?"
@@ -85,27 +100,28 @@ Lendr will guide you through setting your terms.
 ```
 
 **Understand the protocol:**
+
 ```
 "How does liquidation work?"
 "What's the minimum collateral ratio?"
 "Explain the fee structure"
 ```
 
-## Tips for Using Lendr
+## Tips for Using LendrBot
 
 ### Be Specific When Possible
 
 The more details you provide, the faster Lendr can help.
 
-❌ "I want a loan"
-✅ "I want to borrow 5000 USDC using 2 ETH as collateral for 30 days"
+❌ "I want a loan" ✅ "I want to borrow 5000 USDC using 2 ETH as collateral for 30 days"
 
 ### Ask for Clarification
 
 If you're unsure about something, just ask:
-- "What does LTV mean?"
-- "Is 70% LTV safe?"
-- "What happens if ETH price drops?"
+
+* "What does LTV mean?"
+* "Is 70% LTV safe?"
+* "What happens if ETH price drops?"
 
 ### Confirm Before Executing
 
@@ -124,16 +140,17 @@ Shall I proceed?"
 ### Use Natural Language
 
 You don't need to use specific commands. Just describe what you want in plain English:
-- "Help me earn interest on my USDC"
-- "I need to borrow some stablecoins"
-- "Check if my loan is healthy"
+
+* "Help me earn interest on my USDC"
+* "I need to borrow some stablecoins"
+* "Check if my loan is healthy"
 
 ## What Lendr Can't Do
 
-- **Access your private keys**: Lendr can only request signatures through your wallet
-- **Execute without approval**: Every transaction requires your wallet signature
-- **Give financial advice**: Lendr provides information, not investment recommendations
-- **Guarantee rates**: Market conditions change; rates shown are current but may change
+* **Access your private keys**: Lendr can only request signatures through your wallet
+* **Execute without approval**: Every transaction requires your wallet signature
+* **Give financial advice**: Lendr provides information, not investment recommendations
+* **Guarantee rates**: Market conditions change; rates shown are current but may change
 
 ## Conversation Examples
 
@@ -202,30 +219,33 @@ if you're concerned about further drops."
 
 ## Privacy & Security
 
-- **No data storage**: Lendr doesn't store your conversation history
-- **Wallet signatures**: All actions require your explicit approval
-- **Read-only queries**: Checking balances and positions doesn't require signatures
-- **On-chain transparency**: All transactions are visible on the blockchain
+* **No data storage**: Lendr doesn't store your conversation history
+* **Wallet signatures**: All actions require your explicit approval
+* **Read-only queries**: Checking balances and positions doesn't require signatures
+* **On-chain transparency**: All transactions are visible on the blockchain
 
 ## Troubleshooting
 
 ### Lendr isn't responding
-- Refresh the page
-- Check your internet connection
-- Try clearing browser cache
+
+* Refresh the page
+* Check your internet connection
+* Try clearing browser cache
 
 ### Lendr doesn't understand my request
-- Try rephrasing with more specific details
-- Break complex requests into smaller steps
-- Use simpler language
+
+* Try rephrasing with more specific details
+* Break complex requests into smaller steps
+* Use simpler language
 
 ### Transaction failed after Lendr created it
-- Check you have enough ETH for gas
-- Verify you're on Base Mainnet
-- Ensure token approvals are in place
+
+* Check you have enough ETH for gas
+* Verify you're on Base Mainnet
+* Ensure token approvals are in place
 
 ## Feedback
 
 Help us improve Lendr:
-- Use the thumbs up/down buttons on responses
-- Report issues in our [Discord](https://discord.gg/floe)
+
+* Use the thumbs up/down buttons on responses

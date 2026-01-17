@@ -12,12 +12,12 @@
 * [How to Lend](docs/user/lend.md)
 * [How to Borrow](docs/user/borrow.md)
 * [Risk & Liquidations](docs/user/risk-liquidations.md)
-* [Using Lendr AI](docs/user/lendr-ai.md)
+* [Using LendrBotot AI](docs/user/lendr-ai.md)
 
 ## Protocol
 
 * [Architecture](docs/protocol/architecture.md)
-* [Intent Matching](docs/protocol/orderbook-matching.md)
+* [Intent Auto Matching](docs/protocol/orderbook-matching.md)
 * [Oracles & Circuit Breaker](docs/protocol/oracles-conditions.md)
 * [Security](docs/protocol/security.md)
 
@@ -31,5 +31,4 @@
 * [Contract Addresses](developers/networks.md)
 * [FAQ](faq/general.md)
 * [Glossary](docs/glossary.md)
-* [Roadmap](docs/roadmap.md)
 * [Changelog](docs/changelog.md)
