@@ -6,7 +6,9 @@ icon: hand-wave
 
 **Intent-based P2P lending on Base**
 
-Floe lets you borrow USDC against ETH or earn yield by lending — with custom terms, no pools, and AI assistance.
+Floe lets you borrow USDC or USDT against collateral eg cbBTC or WETH or earn yield by lending — with custom terms, no pools, and AI assistance.
+
+{% embed url="https://www.loom.com/share/54748b0841f94948bfc959ac0ff58080" %}
 
 ## Get Started
 
@@ -20,9 +22,9 @@ Floe lets you borrow USDC against ETH or earn yield by lending — with custom t
 ## Guides
 
 * [Quick Start](docs/getting-started/quick-start.md) — 5 minutes to your first loan
-* [How to Borrow](docs/user/borrow.md) — Get USDC against ETH collateral
+* [How to Borrow](docs/user/borrow.md) — Get USDC or USDT against collateral
 * [How to Lend](docs/user/lend.md) — Earn yield on stablecoins
-* [Lendr AI](docs/user/lendr-ai.md) — Chat assistant for help
+* [LendrBot](docs/user/lendr-ai.md) — Chat assistant for help
 
 ## Key Info
 
@@ -30,8 +32,8 @@ Floe lets you borrow USDC against ETH or earn yield by lending — with custom t
 | -------------- | ----------------------------------------------------------------------------------------------- |
 | **Network**    | Base Mainnet                                                                                    |
 | **Contract**   | [`0x17946cD3...Bb175`](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175) |
-| **Loan Token** | USDC                                                                                            |
-| **Collateral** | WETH                                                                                            |
+| **Loan Token** | USDC, USDT                                                                                      |
+| **Collateral** | WETH, cbBTC                                                                                     |
 
 ## Learn More
 
@@ -42,6 +44,5 @@ Floe lets you borrow USDC against ETH or earn yield by lending — with custom t
 
 ## Help
 
-* **In-App**: Use Lendr AI chat
-* **Discord**: [discord.gg/floe](https://discord.gg/floe)
+* **In-App or X**: Use LendrBot chat or @LendrBot on X
 * **Twitter**: [@FloeLabs](https://twitter.com/FloeLabs)
