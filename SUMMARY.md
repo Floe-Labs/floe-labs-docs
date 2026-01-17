@@ -21,6 +21,11 @@
 * [Oracles & Circuit Breaker](docs/protocol/oracles-conditions.md)
 * [Security](docs/protocol/security.md)
 
+## Developers
+
+* [Run a Solver Bot](docs/developers/run-solver-bot.md)
+* [Run a Liquidation Bot](docs/developers/run-liquidation-bot.md)
+
 ## Reference
 
 * [Contract Addresses](developers/networks.md)
