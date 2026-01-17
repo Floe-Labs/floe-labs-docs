@@ -1,4 +1,8 @@
-# Risk & Liquidation
+---
+icon: asterisk
+---
+
+# Risk & Liquidations
 
 Understanding risk is essential for using Floe safely. This guide explains how liquidation works and how to protect your positions.
 
@@ -50,69 +54,83 @@ At ETH = $2,400:
 ## Liquidation Process
 
 ### Step 1: Detection
-- Liquidation bots continuously monitor loan health
-- When a loan becomes liquidatable, bots compete to liquidate it
+
+* Liquidation bots continuously monitor loan health
+* When a loan becomes liquidatable, bots compete to liquidate it
 
 ### Step 2: Execution
+
 The liquidator calls `liquidateLoan()`:
-- Pays off the borrower's debt (principal + accrued interest)
-- Receives the collateral + liquidation bonus
+
+* Pays off the borrower's debt (principal + accrued interest)
+* Receives the collateral + liquidation bonus
 
 ### Step 3: Settlement
 
 **Solvent Liquidation** (collateral > debt):
-- Lender receives full repayment
-- Liquidator receives collateral + 5% bonus
-- Borrower loses collateral but debt is cleared
+
+* Lender receives full repayment
+* Liquidator receives collateral + 5% bonus
+* Borrower loses collateral but debt is cleared
 
 **Underwater Liquidation** (collateral < debt):
-- Lender receives all collateral
-- Bad debt is realized
-- Borrower loses everything
+
+* Lender receives all collateral
+* Bad debt is realized
+* Borrower loses everything
 
 ## Protection Mechanisms
 
 ### For Borrowers
 
 #### 1. Buffer Your LTV
+
 Don't borrow at maximum LTV. Leave room for price drops.
 
-| Risk Level | Recommended LTV | Buffer |
-|------------|-----------------|--------|
-| Conservative | 40-50% | 30-40% buffer |
-| Moderate | 50-60% | 20-30% buffer |
-| Aggressive | 60-70% | 10-20% buffer |
+| Risk Level   | Recommended LTV | Buffer        |
+| ------------ | --------------- | ------------- |
+| Conservative | 40-50%          | 30-40% buffer |
+| Moderate     | 50-60%          | 20-30% buffer |
+| Aggressive   | 60-70%          | 10-20% buffer |
 
 #### 2. Add Collateral Proactively
+
 If ETH price drops:
+
 1. Go to your loan in the **Loans** page
 2. Click **"Add Collateral"**
 3. Deposit more ETH to lower your LTV
 
 #### 3. Set Price Alerts
+
 Use external tools to monitor ETH price and get notified when approaching your liquidation price.
 
 #### 4. Repay Early
+
 If you're worried about market conditions, repay your loan early. There's no prepayment penalty.
 
 ### For Lenders
 
 #### 1. Set Appropriate Max LTV
-- Lower Max LTV = more collateral buffer = safer
-- Too low = fewer borrowers will match
-- Recommended: 75-80%
+
+* Lower Max LTV = more collateral buffer = safer
+* Too low = fewer borrowers will match
+* Recommended: 75-80%
 
 #### 2. Prefer Shorter Durations
+
 Shorter loans = less time for prices to move against you.
 
 #### 3. Diversify
+
 Don't put all your capital in one loan. Spread across multiple borrowers.
 
 ## LTV Gap Requirement
 
 Floe enforces a minimum 8% gap between:
-- **Origination LTV**: The LTV when the loan is created
-- **Liquidation LTV**: The threshold where liquidation is allowed
+
+* **Origination LTV**: The LTV when the loan is created
+* **Liquidation LTV**: The threshold where liquidation is allowed
 
 This ensures borrowers have buffer room from day one.
 
@@ -128,44 +146,51 @@ Example:
 Floe uses a robust dual-oracle system:
 
 ### Primary: Chainlink
-- Industry-standard price feeds
-- High reliability and uptime
+
+* Industry-standard price feeds
+* High reliability and uptime
 
 ### Fallback: Pyth Network
-- Activates if Chainlink fails
-- Provides redundancy
+
+* Activates if Chainlink fails
+* Provides redundancy
 
 ### Circuit Breaker
+
 Protects against oracle manipulation:
 
-| Trigger | Action |
-|---------|--------|
-| Price deviation > 15% | Operations paused |
+| Trigger                | Action            |
+| ---------------------- | ----------------- |
+| Price deviation > 15%  | Operations paused |
 | Stale price (> 1 hour) | Operations paused |
-| L2 sequencer down | Operations paused |
-| Invalid price (0) | Operations paused |
+| L2 sequencer down      | Operations paused |
+| Invalid price (0)      | Operations paused |
 
 When the circuit breaker is active:
-- New matches blocked
-- Repayments blocked
-- Liquidations blocked
-- Collateral operations blocked
+
+* New matches blocked
+* Repayments blocked
+* Liquidations blocked
+* Collateral operations blocked
 
 ## Liquidation Economics
 
 ### For Liquidators
-- Receive 5% bonus on collateral
-- Must have capital to pay off debt
-- Compete with other liquidators (first to execute wins)
+
+* Receive 5% bonus on collateral
+* Must have capital to pay off debt
+* Compete with other liquidators (first to execute wins)
 
 ### For Borrowers
-- Lose all collateral
-- Debt is cleared
-- No further obligation
+
+* Lose all collateral
+* Debt is cleared
+* No further obligation
 
 ### For Lenders
-- Receive full repayment (if solvent)
-- Receive collateral (if underwater)
+
+* Receive full repayment (if solvent)
+* Receive collateral (if underwater)
 
 ## Bad Debt Scenarios
 
@@ -189,20 +214,23 @@ This is why overcollateralization and appropriate LTV limits are crucial.
 ## Monitoring Tools
 
 ### In-App Dashboard
-- View current LTV in real-time
-- See liquidation price
-- One-click add collateral
+
+* View current LTV in real-time
+* See liquidation price
+* One-click add collateral
 
 ### Loan Health Indicators
-| Status | Meaning |
-|--------|---------|
-| 🟢 Healthy | LTV well below liquidation |
-| 🟡 At Risk | LTV approaching liquidation |
-| 🔴 Danger | LTV very close to liquidation |
+
+| Status     | Meaning                       |
+| ---------- | ----------------------------- |
+| 🟢 Healthy | LTV well below liquidation    |
+| 🟡 At Risk | LTV approaching liquidation   |
+| 🔴 Danger  | LTV very close to liquidation |
 
 ## Best Practices Summary
 
 ### Borrowers
+
 1. ✅ Maintain 20%+ buffer below liquidation LTV
 2. ✅ Monitor prices during volatile markets
 3. ✅ Add collateral proactively, not reactively
@@ -210,6 +238,7 @@ This is why overcollateralization and appropriate LTV limits are crucial.
 5. ❌ Don't max out your borrowing capacity
 
 ### Lenders
+
 1. ✅ Set Max LTV based on your risk tolerance
 2. ✅ Diversify across multiple loans
 3. ✅ Prefer shorter durations in volatile markets
@@ -218,14 +247,10 @@ This is why overcollateralization and appropriate LTV limits are crucial.
 
 ## FAQ
 
-**Q: Can I be partially liquidated?**
-A: No, liquidation is all-or-nothing. The entire loan is liquidated.
+**Q: Can I be partially liquidated?** A: No, liquidation is all-or-nothing. The entire loan is liquidated.
 
-**Q: What if no liquidator executes my liquidation?**
-A: Liquidation bots are incentivized by the 5% bonus. In practice, liquidatable loans are processed quickly.
+**Q: What if no liquidator executes my liquidation?** A: Liquidation bots are incentivized by the 5% bonus. In practice, liquidatable loans are processed quickly.
 
-**Q: Can I stop a liquidation once it starts?**
-A: No. Once the transaction is submitted, it cannot be stopped. Add collateral *before* reaching liquidation.
+**Q: Can I stop a liquidation once it starts?** A: No. Once the transaction is submitted, it cannot be stopped. Add collateral _before_ reaching liquidation.
 
-**Q: What happens to excess collateral after liquidation?**
-A: The liquidator receives all collateral. There's no return of excess to the borrower.
+**Q: What happens to excess collateral after liquidation?** A: The liquidator receives all collateral. There's no return of excess to the borrower.

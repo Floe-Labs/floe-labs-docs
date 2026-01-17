@@ -1,3 +1,7 @@
+---
+icon: clock-rotate-left
+---
+
 # Intent Matching
 
 How Floe matches lender and borrower intents to create loans.
@@ -200,15 +204,15 @@ Borrow: 1,500 USDC
 
 When a match occurs, loan parameters are derived from both intents:
 
-| Loan Parameter | Source |
-|----------------|--------|
-| Principal | Fill amount |
-| Collateral | Borrower's collateral (pro-rata if partial) |
-| Interest Rate | Borrower's maxInterestRateBps |
-| Origination LTV | Borrower's minLtvBps |
-| Liquidation LTV | Lender's maxLtvBps |
-| Duration | Borrower's duration |
-| Start Time | Block timestamp |
+| Loan Parameter  | Source                                      |
+| --------------- | ------------------------------------------- |
+| Principal       | Fill amount                                 |
+| Collateral      | Borrower's collateral (pro-rata if partial) |
+| Interest Rate   | Borrower's maxInterestRateBps               |
+| Origination LTV | Borrower's minLtvBps                        |
+| Liquidation LTV | Lender's maxLtvBps                          |
+| Duration        | Borrower's duration                         |
+| Start Time      | Block timestamp                             |
 
 ## Matching Process
 
@@ -282,6 +286,7 @@ After Match:
 ### Matching Strategies
 
 **Greedy Strategy**:
+
 ```typescript
 // Match highest-commission intents first
 const sorted = intents.sort((a, b) =>
@@ -297,6 +302,7 @@ for (const borrow of sorted) {
 ```
 
 **Optimal Strategy**:
+
 ```typescript
 // Find globally optimal matching set
 const matches = findOptimalMatching(lendIntents, borrowIntents);
@@ -308,9 +314,9 @@ for (const match of matches) {
 
 ### Competition
 
-- Multiple solvers compete to match intents
-- First to submit valid transaction wins
-- Gas price can determine winner in tight races
+* Multiple solvers compete to match intents
+* First to submit valid transaction wins
+* Gas price can determine winner in tight races
 
 ## Manual Matching
 
@@ -350,13 +356,13 @@ await sdk.lending.cancelLendIntent(intentHash);
 
 ### Effects
 
-- **Borrow cancellation**: Collateral returned to borrower
-- **Lend cancellation**: USDC allowance remains (no transfer occurred)
+* **Borrow cancellation**: Collateral returned to borrower
+* **Lend cancellation**: USDC allowance remains (no transfer occurred)
 
 ### Cannot Cancel
 
-- After intent is fully filled
-- During active loan (must repay instead)
+* After intent is fully filled
+* During active loan (must repay instead)
 
 ## Events
 
@@ -452,6 +458,6 @@ Time T12: Tx included (reverts - intent expired)
 
 ## Next Steps
 
-- [Oracle System](03-oracle-system.md)
-- [Fee Structure](04-fee-structure.md)
-- [Run a Solver Bot](../developers/04-run-solver-bot.md)
+* [Oracle System](03-oracle-system.md)
+* [Fee Structure](04-fee-structure.md)
+* [Run a Solver Bot](../developers/04-run-solver-bot.md)

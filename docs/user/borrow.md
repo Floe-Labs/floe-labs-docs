@@ -1,10 +1,15 @@
-# Borrow USDC
+---
+icon: hand-holding-circle-dollar
+---
+
+# How to Borrow
 
 Borrow USDC using ETH as collateral on Floe.
 
 ## Overview
 
 Borrowing on Floe works through **intents**:
+
 1. You create a borrow intent with your desired terms
 2. Solvers match you with compatible lenders
 3. You receive USDC, your ETH is held as collateral
@@ -13,13 +18,15 @@ Borrowing on Floe works through **intents**:
 ## Before You Start
 
 **You'll need:**
-- ETH on Base (for collateral + gas)
-- Wallet connected to Base Mainnet
+
+* ETH on Base (for collateral + gas)
+* Wallet connected to Base Mainnet
 
 **Understand:**
-- Your ETH is locked until you repay
-- If ETH price drops significantly, you may be liquidated
-- Interest accrues daily until repayment
+
+* Your ETH is locked until you repay
+* If ETH price drops significantly, you may be liquidated
+* Interest accrues daily until repayment
 
 ## Step-by-Step Guide
 
@@ -30,23 +37,24 @@ Navigate to [app.floelabs.xyz](https://app.floelabs.xyz) and click **Borrow**.
 ### 2. Review Available Offers
 
 The marketplace shows lender offers with:
-- **Amount Available**: USDC you can borrow
-- **Interest Rate**: APR you'll pay
-- **Max LTV**: Liquidation threshold
-- **Duration**: Maximum loan length
+
+* **Amount Available**: USDC you can borrow
+* **Interest Rate**: APR you'll pay
+* **Max LTV**: Liquidation threshold
+* **Duration**: Maximum loan length
 
 ### 3. Create Your Borrow Intent
 
 Click **"Create Borrow Intent"** and enter:
 
-| Field | Description | Example |
-|-------|-------------|---------|
-| Borrow Amount | USDC you need | 5,000 USDC |
-| Collateral | ETH to deposit | 2.0 ETH |
-| Max Interest Rate | Highest APR you'll accept | 8% |
-| Duration | Loan length | 30 days |
-| Matcher Commission | Fee for solvers | 0.3% |
-| Expiry | How long intent stays active | 7 days |
+| Field              | Description                  | Example    |
+| ------------------ | ---------------------------- | ---------- |
+| Borrow Amount      | USDC you need                | 5,000 USDC |
+| Collateral         | ETH to deposit               | 2.0 ETH    |
+| Max Interest Rate  | Highest APR you'll accept    | 8%         |
+| Duration           | Loan length                  | 30 days    |
+| Matcher Commission | Fee for solvers              | 0.3%       |
+| Expiry             | How long intent stays active | 7 days     |
 
 ### 4. Understand Your Terms
 
@@ -78,10 +86,11 @@ Check status in **My Intents**.
 ### 7. Loan Active
 
 Once matched:
-- You receive USDC (minus matcher fee)
-- Your ETH is locked as collateral
-- Interest starts accruing
-- View your loan in **Loans** page
+
+* You receive USDC (minus matcher fee)
+* Your ETH is locked as collateral
+* Interest starts accruing
+* View your loan in **Loans** page
 
 ## Understanding LTV
 
@@ -96,18 +105,19 @@ Example:
 
 ### LTV Zones
 
-| LTV | Status | Action |
-|-----|--------|--------|
-| < 60% | 🟢 Safe | Comfortable buffer |
-| 60-70% | 🟡 Moderate | Monitor regularly |
-| 70-80% | 🟠 Risky | Consider adding collateral |
-| > 80% | 🔴 Danger | Liquidation imminent |
+| LTV    | Status      | Action                     |
+| ------ | ----------- | -------------------------- |
+| < 60%  | 🟢 Safe     | Comfortable buffer         |
+| 60-70% | 🟡 Moderate | Monitor regularly          |
+| 70-80% | 🟠 Risky    | Consider adding collateral |
+| > 80%  | 🔴 Danger   | Liquidation imminent       |
 
 ### The 8% Gap Rule
 
 Floe requires at least 8% gap between your borrow LTV and liquidation LTV:
-- If lender's max LTV is 80%, your borrow LTV must be ≤ 72%
-- This ensures you have buffer from day one
+
+* If lender's max LTV is 80%, your borrow LTV must be ≤ 72%
+* This ensures you have buffer from day one
 
 ## Repaying Your Loan
 
@@ -144,6 +154,7 @@ You can repay anytime—no prepayment penalty. You only pay interest for time us
 ### Add Collateral
 
 If ETH price drops, protect yourself:
+
 1. Go to loan in **Loans** page
 2. Click **"Add Collateral"**
 3. Enter ETH amount
@@ -152,6 +163,7 @@ If ETH price drops, protect yourself:
 ### Withdraw Excess Collateral
 
 If ETH price rises, you can withdraw some:
+
 1. Click **"Withdraw Collateral"**
 2. Enter amount (max shown)
 3. Must stay below 77% LTV (3% buffer from 80%)
@@ -161,35 +173,37 @@ If ETH price rises, you can withdraw some:
 ### What Triggers Liquidation?
 
 Your loan can be liquidated when:
+
 1. **LTV exceeds threshold**: Your LTV goes above the liquidation LTV
 2. **Loan is overdue**: Duration has passed without repayment
 
 ### What Happens?
 
-- A liquidator pays your debt
-- They receive your collateral + 5% bonus
-- You lose your collateral but owe nothing more
+* A liquidator pays your debt
+* They receive your collateral + 5% bonus
+* You lose your collateral but owe nothing more
 
 ### Prevention
 
-- Maintain 20%+ buffer below liquidation LTV
-- Add collateral when markets are volatile
-- Set price alerts for ETH
-- Repay before due date
+* Maintain 20%+ buffer below liquidation LTV
+* Add collateral when markets are volatile
+* Set price alerts for ETH
+* Repay before due date
 
 ## Cost Breakdown
 
-| Fee | Amount | Paid To |
-|-----|--------|---------|
-| Interest | Negotiated APR | Lender |
-| Matcher Commission | 0.1-0.5% of loan | Solver |
-| Gas | ~$0.10-0.30 | Network |
+| Fee                | Amount           | Paid To |
+| ------------------ | ---------------- | ------- |
+| Interest           | Negotiated APR   | Lender  |
+| Matcher Commission | 0.1-0.5% of loan | Solver  |
+| Gas                | \~$0.10-0.30     | Network |
 
 **Example total cost for $5,000 loan at 6% for 30 days:**
-- Interest: $24.66
-- Matcher fee (0.3%): $15
-- Gas: ~$0.20
-- **Total: ~$40**
+
+* Interest: $24.66
+* Matcher fee (0.3%): $15
+* Gas: \~$0.20
+* **Total: \~$40**
 
 ## Tips for Borrowers
 
@@ -202,21 +216,24 @@ Your loan can be liquidated when:
 ## Troubleshooting
 
 ### Intent not matching?
-- Your max rate may be too low
-- Increase matcher commission
-- Check market activity
+
+* Your max rate may be too low
+* Increase matcher commission
+* Check market activity
 
 ### Transaction failed?
-- Check ETH balance for gas
-- Ensure WETH is approved
-- Verify you're on Base Mainnet
+
+* Check ETH balance for gas
+* Ensure WETH is approved
+* Verify you're on Base Mainnet
 
 ### Can't add collateral?
-- Check WETH approval
-- Verify you have enough ETH
+
+* Check WETH approval
+* Verify you have enough ETH
 
 ## Next Steps
 
-- [Understanding Risk & Liquidation](risk-liquidations.md)
-- [Managing Your Loans](manage-loans.md)
-- [Using Lendr AI](lendr-ai.md)
+* [Understanding Risk & Liquidation](risk-liquidations.md)
+* [Managing Your Loans](manage-loans.md)
+* [Using Lendr AI](lendr-ai.md)

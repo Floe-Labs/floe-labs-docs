@@ -1,4 +1,8 @@
-# Protocol Architecture
+---
+icon: sitemap
+---
+
+# Architecture
 
 A deep dive into Floe's technical architecture and design decisions.
 
@@ -70,21 +74,24 @@ Floe is an **intent-based peer-to-peer lending protocol** built on Base. Rather 
 ### Why Intent-Based?
 
 Traditional DeFi lending uses **liquidity pools** (Aave, Compound):
-- Lenders deposit into a pool
-- Borrowers borrow from the pool
-- Rates are algorithmic (utilization-based)
+
+* Lenders deposit into a pool
+* Borrowers borrow from the pool
+* Rates are algorithmic (utilization-based)
 
 Floe uses **direct matching**:
-- Lenders specify exact terms they want
-- Borrowers specify exact terms they want
-- Solvers match compatible intents
-- No liquidity fragmentation
+
+* Lenders specify exact terms they want
+* Borrowers specify exact terms they want
+* Solvers match compatible intents
+* No liquidity fragmentation
 
 **Benefits**:
-- Capital efficiency: No idle liquidity
-- Custom terms: Any rate, duration, LTV
-- Price discovery: Market-driven rates
-- Transparency: Know your counterparty
+
+* Capital efficiency: No idle liquidity
+* Custom terms: Any rate, duration, LTV
+* Price discovery: Market-driven rates
+* Transparency: Know your counterparty
 
 ### Why P2P?
 
@@ -102,9 +109,10 @@ Floe P2P:
 ```
 
 **Benefits**:
-- No bad debt socialization
-- Discrete risk per position
-- Full transparency on counterparty
+
+* No bad debt socialization
+* Discrete risk per position
+* Full transparency on counterparty
 
 ## Smart Contract Architecture
 
@@ -142,9 +150,10 @@ function matchLoanIntents(...) external {
 ```
 
 **Benefits**:
-- Contract size management (stay under 24KB limit)
-- Logic can be upgraded independently
-- Gas optimization for frequently called functions
+
+* Contract size management (stay under 24KB limit)
+* Logic can be upgraded independently
+* Gas optimization for frequently called functions
 
 ### Storage Layout
 
@@ -237,13 +246,13 @@ struct Loan {
 
 ### Intent States
 
-| State | Meaning |
-|-------|---------|
-| `open` | Available for matching |
-| `partial` | Lend intent partially filled |
-| `filled` | Fully matched |
-| `cancelled` | User cancelled |
-| `expired` | Past expiry timestamp |
+| State       | Meaning                      |
+| ----------- | ---------------------------- |
+| `open`      | Available for matching       |
+| `partial`   | Lend intent partially filled |
+| `filled`    | Fully matched                |
+| `cancelled` | User cancelled               |
+| `expired`   | Past expiry timestamp        |
 
 ## Loan Lifecycle
 
@@ -272,12 +281,12 @@ struct Loan {
 
 ### Loan Operations
 
-| Operation | Description |
-|-----------|-------------|
-| `repayLoan` | Borrower repays principal + interest |
-| `addCollateral` | Borrower deposits more ETH |
-| `withdrawCollateral` | Borrower withdraws excess ETH |
-| `liquidateLoan` | Anyone liquidates unhealthy loan |
+| Operation            | Description                          |
+| -------------------- | ------------------------------------ |
+| `repayLoan`          | Borrower repays principal + interest |
+| `addCollateral`      | Borrower deposits more ETH           |
+| `withdrawCollateral` | Borrower withdraws excess ETH        |
+| `liquidateLoan`      | Anyone liquidates unhealthy loan     |
 
 ## Indexer Architecture
 
@@ -378,15 +387,16 @@ contract LendingIntentMatcherUpgradeable is
 ```
 
 **Why UUPS?**
-- Smaller proxy contract (cheaper deployment)
-- Upgrade logic in implementation
-- Owner-controlled upgrades
+
+* Smaller proxy contract (cheaper deployment)
+* Upgrade logic in implementation
+* Owner-controlled upgrades
 
 ### Upgrade Safety
 
-- Storage layout preserved across upgrades
-- New variables added at end of storage
-- Existing functionality maintained
+* Storage layout preserved across upgrades
+* New variables added at end of storage
+* Existing functionality maintained
 
 ## Gas Optimization
 
@@ -417,7 +427,7 @@ function batchMatchIntents(
 
 ## Next Steps
 
-- [Intent Matching](02-intent-matching.md)
-- [Oracle System](03-oracle-system.md)
-- [Fee Structure](04-fee-structure.md)
-- [Security Model](05-security-model.md)
+* [Intent Matching](02-intent-matching.md)
+* [Oracle System](03-oracle-system.md)
+* [Fee Structure](04-fee-structure.md)
+* [Security Model](05-security-model.md)

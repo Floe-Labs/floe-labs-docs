@@ -1,26 +1,40 @@
-# Lend USDC
+---
+icon: wave
+---
 
-Earn interest by lending USDC to borrowers on Floe.
+# How to Lend
+
+Earn interest by lending USDT or USDC to borrowers on Floe.
 
 ## Overview
 
 Lending on Floe works through **intents**:
-1. You create a lend intent with your terms
-2. Solvers match you with compatible borrowers
-3. Borrower deposits collateral, you provide USDC
-4. Earn interest until repayment
+
+1. Match existing intents in Earn Offers screen
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.43.01.png" alt=""><figcaption></figcaption></figure>
+
+
+
+2. Or you create a lend intent with your terms\
+   ![](<../../.gitbook/assets/Screenshot 2026-01-17 at 09.43.32.png>)
+3. If you create an intent, Solvers match you with compatible borrowers
+4. Borrower deposits collateral, you provide USDC or USDT
+5. Earn interest until repayment
 
 ## Before You Start
 
 **You'll need:**
-- USDC on Base
-- ETH for gas fees
-- Wallet connected to Base Mainnet
+
+* USDC or USDT on Base
+* ETH for gas fees
+* Wallet connected to Base Mainnet
 
 **Understand:**
-- Your USDC is locked in the loan until repayment
-- Borrowers provide ETH collateral (overcollateralized)
-- In extreme cases, you may receive collateral instead of USDC
+
+* Your USDC or USDT is locked in the loan until repayment
+* Borrowers provide WETH or cbBTC or another collateral (overcollateralized)
+* In extreme cases, you may receive collateral instead of USDC or USDT
 
 ## Step-by-Step Guide
 
@@ -28,28 +42,35 @@ Lending on Floe works through **intents**:
 
 Navigate to [app.floelabs.xyz](https://app.floelabs.xyz) and click **Earn**.
 
+
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.45.15.png" alt=""><figcaption></figcaption></figure>
+
 ### 2. Review Borrow Requests
 
 The marketplace shows borrower intents with:
-- **Amount Requested**: USDC they want to borrow
-- **Collateral**: ETH they're offering
-- **Max Rate**: Highest rate they'll pay
-- **Duration**: How long they need it
-- **Matcher Commission**: What solvers earn
+
+* **Amount Requested**: USDC they want to borrow
+* **Collateral**: ETH they're offering
+* **Max Rate**: Highest rate they'll pay
+* **Duration**: How long they need it
+* **Matcher Commission**: What solvers earn
 
 ### 3. Create Your Lend Intent
 
 Click **"Create Lend Intent"** and enter:
 
-| Field | Description | Example |
-|-------|-------------|---------|
-| Amount | Total USDC to lend | 10,000 USDC |
-| Min Fill Amount | Minimum per match | 1,000 USDC |
-| Min Interest Rate | Lowest APR you'll accept | 5% |
-| Max LTV | Liquidation threshold | 80% |
-| Duration | Maximum loan length | 60 days |
-| Allow Partial Fill | Match multiple borrowers? | Yes |
-| Expiry | How long intent stays active | 14 days |
+| Field              | Description                  | Example     |
+| ------------------ | ---------------------------- | ----------- |
+| Amount             | Total USDC to lend           | 10,000 USDC |
+| Min Fill Amount    | Minimum per match            | 1,000 USDC  |
+| Min Interest Rate  | Lowest APR you'll accept     | 5%          |
+| Max LTV            | Liquidation threshold        | 80%         |
+| Duration           | Maximum loan length          | 60 days     |
+| Allow Partial Fill | Match multiple borrowers?    | Yes         |
+| Expiry             | How long intent stays active | 14 days     |
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.45.48.png" alt=""><figcaption></figcaption></figure>
 
 ### 4. Understand Your Terms
 
@@ -79,10 +100,11 @@ With partial fill enabled, your intent can match multiple borrowers until fully 
 ### 7. Loan Active
 
 Once matched:
-- Your USDC goes to the borrower
-- Borrower's ETH is held as collateral
-- Interest accrues in your favor
-- View your loans in **Loans** page
+
+* Your USDC goes to the borrower
+* Borrower's ETH is held as collateral
+* Interest accrues in your favor
+* View your loans in **Loans** page
 
 ## Understanding Returns
 
@@ -101,34 +123,36 @@ Example:
 
 ### Expected Returns Table
 
-| Amount | APR | 30 Days | 60 Days | 90 Days |
-|--------|-----|---------|---------|---------|
-| $5,000 | 5% | $20.55 | $41.10 | $61.64 |
-| $5,000 | 7% | $28.77 | $57.53 | $86.30 |
-| $10,000 | 5% | $41.10 | $82.19 | $123.29 |
-| $10,000 | 7% | $57.53 | $115.07 | $172.60 |
+| Amount  | APR | 30 Days | 60 Days | 90 Days |
+| ------- | --- | ------- | ------- | ------- |
+| $5,000  | 5%  | $20.55  | $41.10  | $61.64  |
+| $5,000  | 7%  | $28.77  | $57.53  | $86.30  |
+| $10,000 | 5%  | $41.10  | $82.19  | $123.29 |
+| $10,000 | 7%  | $57.53  | $115.07 | $172.60 |
 
 ## Understanding Collateral
 
 ### Max LTV Setting
 
 Your **Max LTV** becomes the **liquidation threshold** for matched loans:
-- Higher Max LTV = more matching opportunities, higher risk
-- Lower Max LTV = fewer matches, more protection
 
-| Max LTV | Risk Level | Notes |
-|---------|------------|-------|
-| 70% | Conservative | Larger collateral buffer |
-| 75% | Moderate | Good balance |
-| 80% | Standard | Common setting |
-| 85% | Aggressive | Higher risk |
+* Higher Max LTV = more matching opportunities, higher risk
+* Lower Max LTV = fewer matches, more protection
+
+| Max LTV | Risk Level   | Notes                    |
+| ------- | ------------ | ------------------------ |
+| 70%     | Conservative | Larger collateral buffer |
+| 75%     | Moderate     | Good balance             |
+| 80%     | Standard     | Common setting           |
+| 85%     | Aggressive   | Higher risk              |
 
 ### The 8% Gap Rule
 
 Borrowers must maintain at least 8% gap:
-- Your Max LTV: 80%
-- Borrower's starting LTV: ≤72%
-- Buffer from day one: 8%+
+
+* Your Max LTV: 80%
+* Borrower's starting LTV: ≤72%
+* Buffer from day one: 8%+
 
 ## Repayment Scenarios
 
@@ -141,6 +165,7 @@ Borrowers must maintain at least 8% gap:
 ### Liquidation (Solvent)
 
 If borrower's LTV exceeds threshold or loan is overdue:
+
 1. Liquidator pays the debt
 2. You receive full principal + interest in USDC
 3. Liquidator takes borrower's collateral
@@ -148,6 +173,7 @@ If borrower's LTV exceeds threshold or loan is overdue:
 ### Liquidation (Underwater)
 
 In extreme market crashes where collateral < debt:
+
 1. Liquidator pays discounted amount
 2. You receive what's available (may be less than owed)
 3. This is the "bad debt" scenario
@@ -157,23 +183,25 @@ In extreme market crashes where collateral < debt:
 ### View Active Loans
 
 Go to **Loans** to see:
-- Loans where you're the lender
-- Borrower's current LTV
-- Accrued interest
-- Due dates
+
+* Loans where you're the lender
+* Borrower's current LTV
+* Accrued interest
+* Due dates
 
 ### Monitor Loan Health
 
-| Borrower LTV | Status | Your Risk |
-|--------------|--------|-----------|
-| < 60% | 🟢 Healthy | Very low |
-| 60-70% | 🟡 Moderate | Low |
-| 70-80% | 🟠 At Risk | Medium |
-| > 80% | 🔴 Liquidatable | Liquidation handles it |
+| Borrower LTV | Status          | Your Risk              |
+| ------------ | --------------- | ---------------------- |
+| < 60%        | 🟢 Healthy      | Very low               |
+| 60-70%       | 🟡 Moderate     | Low                    |
+| 70-80%       | 🟠 At Risk      | Medium                 |
+| > 80%        | 🔴 Liquidatable | Liquidation handles it |
 
 ### Cancel Pending Intent
 
 If your intent hasn't been matched:
+
 1. Go to **My Intents**
 2. Click **"Cancel"**
 3. Your USDC allowance is released
@@ -183,21 +211,24 @@ If your intent hasn't been matched:
 ### Diversification
 
 Don't put all funds in one loan:
-- Use **Partial Fill** to spread across multiple borrowers
-- Set reasonable **Min Fill Amount** (e.g., $1,000)
+
+* Use **Partial Fill** to spread across multiple borrowers
+* Set reasonable **Min Fill Amount** (e.g., $1,000)
 
 ### Duration Limits
 
 Shorter durations = less time for markets to move:
-- **Conservative**: 14-30 days
-- **Moderate**: 30-60 days
-- **Long-term**: 60-90 days
+
+* **Conservative**: 14-30 days
+* **Moderate**: 30-60 days
+* **Long-term**: 60-90 days
 
 ### LTV Settings
 
 Balance opportunity vs. safety:
-- Lower Max LTV = more collateral protection
-- Higher Max LTV = more matching opportunities
+
+* Lower Max LTV = more collateral protection
+* Higher Max LTV = more matching opportunities
 
 ## Earnings Example
 
@@ -230,20 +261,23 @@ Annualized: ~6.1% APY
 ## Troubleshooting
 
 ### Intent not matching?
-- Your min rate may be too high
-- Check current market rates
-- Consider lowering min rate slightly
+
+* Your min rate may be too high
+* Check current market rates
+* Consider lowering min rate slightly
 
 ### Transaction failed?
-- Check ETH balance for gas
-- Ensure USDC is approved
-- Verify you're on Base Mainnet
+
+* Check ETH balance for gas
+* Ensure USDC is approved
+* Verify you're on Base Mainnet
 
 ### Can't cancel intent?
-- Intent may be partially filled
-- Check if any matches occurred
+
+* Intent may be partially filled
+* Check if any matches occurred
 
 ## Next Steps
 
-- [Understanding Risk & Liquidation](risk-liquidations.md)
-- [Using Lendr AI](lendr-ai.md)
+* [Understanding Risk & Liquidation](risk-liquidations.md)
+* [Using Lendr AI](lendr-ai.md)
