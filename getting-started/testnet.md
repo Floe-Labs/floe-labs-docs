@@ -5,49 +5,113 @@ icon: wave
 
 # Testnet
 
-First, must get testnet Eth on Base Sepolia. For free no transaction fees testnet eth go to: https://portal.cdp.coinbase.com/products/faucet?token=ETH\&projectId=5332340c-797b-468c-a21d-22feb281557f\&network=base-sepolia\&address=0x781Ec4D25F053A65FdFcAE0Ddf01361c8A2D827E&#x20;
+Test Floe on Base Sepolia before using real funds on mainnet.
 
-Next, get test tokens on Base Sepolia. To interact with the Floe protocol on Base Sepolia, you need test tokens for both the loan token (WETH) and the collateral token (ERC20 Faucet). You can mint these tokens from their verified contracts as follows:
+## Important Note
 
-1. **Collateral Token (ERC20 Faucet)**&#x20;
+**Floe is now live on Base Mainnet.** While testnet remains available for testing, we recommend using mainnet for real transactions. See [Quick Start](../docs/getting-started/quick-start.md) for mainnet instructions.
 
-Contract Address: 0x46E693155cAaAeae3760D04E97a6911b94739F4C
+## Testnet Contracts
 
-Call the faucet() function (no parameters). This mints a set amount of collateral tokens to your wallet (caller) every 24 hours.
+| Contract | Address |
+|----------|---------|
+| LendingIntentMatcher | `0xF351eDF229ded7E2e2b23E44c70e9964CbA91B2E` |
+| Collateral Token (Test) | `0x46E693155cAaAeae3760D04E97a6911b94739F4C` |
+| Loan Token (Mock WETH) | `0x01E6B4a1264FB32d42193cAa19De507B792291B7` |
 
-Steps:
+## Step 1: Get Testnet ETH
 
-1. Go to the contract page. [https://sepolia.basescan.org/address/0x46E693155cAaAeae3760D04E97a6911b94739F4C](https://sepolia.basescan.org/address/0x46E693155cAaAeae3760D04E97a6911b94739F4C).  Click on Contract.
-2. Click on Write Contract.&#x20;
-3. Click on connect to Web3 then connect your wallet.&#x20;
-4. Under the Write Contract tab, find faucet(). Click "Write" and confirm the transaction.
+Get free Base Sepolia ETH for gas:
 
-\
-\
-**2.Loan Token (Mock WETH)** \
-\
-Contract Address: 0x01E6B4a1264FB32d42193cAa19De507B792291B7\
-\
--Call the mint(address account, uint256 amount) function. \
--Enter your wallet address and the amount of WETH to mint (in wei, 18 decimals).
+**Coinbase Faucet**: [portal.cdp.coinbase.com/products/faucet](https://portal.cdp.coinbase.com/products/faucet)
 
-Steps:
+1. Select "Base Sepolia" network
+2. Enter your wallet address
+3. Request ETH
 
-1. Go to the contract page [https://sepolia.basescan.org/address/0x01E6B4a1264FB32d42193cAa19De507B792291B7](https://sepolia.basescan.org/address/0x01E6B4a1264FB32d42193cAa19De507B792291B7). Click on Contract.&#x20;
-2. Click on Write Contract.
-3. Click on Connect to Web3 / your wallet e.g. Metamask.&#x20;
-4. Under the Write Contract tab, find mint function. &#x20;
-5. Under Mint function, Enter your wallet address in the account(address) field and the amount (e.g., 1000000000000000000 for 1 WETH) in the amount(unit256) field
-6. Click "Write" and confirm the transaction.
+## Step 2: Get Test Tokens
 
+### Collateral Token (ERC20 Faucet)
 
+**Address**: `0x46E693155cAaAeae3760D04E97a6911b94739F4C`
 
-In Metamask wallet, Import tokens based on Contract addresses above for Base Sepolia.
+1. Go to [BaseScan](https://sepolia.basescan.org/address/0x46E693155cAaAeae3760D04E97a6911b94739F4C#writeContract)
+2. Click "Contract" → "Write Contract"
+3. Connect your wallet
+4. Find `faucet()` and click "Write"
+5. Confirm the transaction
 
-Notes:
+*Note: Faucet can be used once every 24 hours per address.*
 
--The faucet can be used once every 24 hours per address.&#x20;
+### Loan Token (Mock WETH)
 
--The mint function allows you to specify any amount and recipient address. Now you have test tokens for both loan and collateral to use with the Floe SDK and contracts on Base Sepolia testnet at app.floelabs.xyz
+**Address**: `0x01E6B4a1264FB32d42193cAa19De507B792291B7`
 
-Send us any bugs and constructive feedback to hello@floelabs or on Telegram channel https://t.me/c/floelabscommunity/1
+1. Go to [BaseScan](https://sepolia.basescan.org/address/0x01E6B4a1264FB32d42193cAa19De507B792291B7#writeContract)
+2. Click "Contract" → "Write Contract"
+3. Connect your wallet
+4. Find `mint(address account, uint256 amount)`
+5. Enter:
+   - `account`: Your wallet address
+   - `amount`: Amount in wei (e.g., `1000000000000000000` for 1 token)
+6. Click "Write" and confirm
+
+## Step 3: Add Tokens to Wallet
+
+Import the test tokens to your wallet:
+
+1. Open MetaMask
+2. Click "Import tokens"
+3. Enter the contract addresses above
+4. Tokens will appear in your wallet
+
+## Step 4: Use the App
+
+1. Go to [app.floelabs.xyz](https://app.floelabs.xyz)
+2. Connect your wallet
+3. Switch to Base Sepolia network
+4. Create lend or borrow intents
+5. Test the full flow
+
+## Network Configuration
+
+Add Base Sepolia to your wallet:
+
+| Setting | Value |
+|---------|-------|
+| Network Name | Base Sepolia |
+| RPC URL | `https://sepolia.base.org` |
+| Chain ID | 84532 |
+| Currency Symbol | ETH |
+| Block Explorer | `https://sepolia.basescan.org` |
+
+## Known Testnet Limitations
+
+1. **Stale Prices**: Pyth prices may become stale after ~3 hours
+2. **Circuit Breaker**: May be triggered by stale prices
+3. **No Real Value**: Test tokens have no monetary value
+
+## SDK Configuration
+
+```typescript
+const testnetConfig = {
+  rpcUrl: 'https://sepolia.base.org',
+  lendingIntentMatcher: '0xF351eDF229ded7E2e2b23E44c70e9964CbA91B2E',
+  loanToken: '0x01E6B4a1264FB32d42193cAa19De507B792291B7',
+  collateralToken: '0x46E693155cAaAeae3760D04E97a6911b94739F4C',
+  chainId: 84532,
+};
+```
+
+## Feedback
+
+Send bugs and feedback to:
+- Email: hello@floelabs.xyz
+- Discord: [discord.gg/floe](https://discord.gg/floe)
+- Telegram: [t.me/floelabscommunity](https://t.me/floelabscommunity)
+
+## Ready for Mainnet?
+
+Once you're comfortable with the protocol, switch to mainnet:
+- [Quick Start Guide](../docs/getting-started/quick-start.md)
+- [Network Configuration](../developers/networks.md)

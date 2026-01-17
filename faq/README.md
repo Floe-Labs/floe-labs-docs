@@ -1,11 +1,44 @@
 # FAQ
 
-**How is Floe different from Aave/Compound?** Direct P2P matches, custom terms, per‑loan isolation, off‑chain intents, AI assistance.
+Frequently asked questions about Floe. For detailed answers, see [General FAQ](general.md).
 
-**How is it different from Morpho?** Intent‑first with open matcher ecosystem and AI‑native features; deep per‑loan customization via Hooks.
+## Quick Answers
 
-**Where do fees go?** Protocol treasury; early phases may subsidize.
+### How is Floe different from Aave/Compound?
+Floe uses direct P2P matches instead of liquidity pools. This means:
+- No shared bad debt risk
+- Custom terms for each loan
+- Better capital efficiency
+- AI-assisted lending via Lendr
 
-**Can I run a matcher?** Yes—open spec + SDK; earn fees; follow safety rules.
+### How is it different from Morpho?
+Floe is intent-first with an open matcher ecosystem. Key differences:
+- Solvers compete to match intents
+- Deep customization via Hooks
+- AI-native features built in
+- Per-loan isolation vs optimized pool routing
 
-**Supported assets?** Blue‑chips first (USDC, ETH, wBTC, stETH…), expanded via governance.
+### Where do fees go?
+Protocol fees go to the treasury. In early phases, fees may be subsidized to encourage adoption.
+
+### Can I run a matcher/solver?
+Yes! Floe has an open matcher ecosystem:
+- Use the SDK and spec to build your solver
+- Earn matcher commission on successful matches
+- See the [Matcher Operator Guide](../docs/developers/matcher-operators.md)
+
+### What assets are supported?
+Currently on Base Mainnet:
+- **Loan Token**: USDC
+- **Collateral Token**: WETH
+
+Additional markets will be added via governance.
+
+## More Questions
+
+See [General FAQ](general.md) for comprehensive answers about:
+- How intents work
+- Liquidation mechanics
+- Oracle and price feeds
+- Fees and commissions
+- Security model
