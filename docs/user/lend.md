@@ -86,7 +86,7 @@ Your Intent:
 
 ### 5. Approve and Submit
 
-1. Click **"Approve USDC"** (first time only)
+1. Click **"Approve"**
 2. Confirm in your wallet
 3. Click **"Create Intent"**
 4. Sign the transaction
@@ -101,10 +101,14 @@ With partial fill enabled, your intent can match multiple borrowers until fully 
 
 Once matched:
 
-* Your USDC goes to the borrower
-* Borrower's ETH is held as collateral
+* Your USDC or USDT goes to the borrower
+* Borrower's collateral (cbBTC, WETH) is held as collateral
 * Interest accrues in your favor
 * View your loans in **Loans** page
+
+
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.04.46.png" alt=""><figcaption></figcaption></figure>
 
 ## Understanding Returns
 
@@ -146,33 +150,39 @@ Your **Max LTV** becomes the **liquidation threshold** for matched loans:
 | 80%     | Standard     | Common setting           |
 | 85%     | Aggressive   | Higher risk              |
 
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.07.25.png" alt=""><figcaption></figcaption></figure>
+
 ### The 8% Gap Rule
 
-Borrowers must maintain at least 8% gap:
+Borrowers must maintain at least 8% gap between the Loan LTV and the Liquidation LTV:
 
-* Your Max LTV: 80%
+* Your Max LTV or Liquidation LTV: 80%
 * Borrower's starting LTV: ≤72%
-* Buffer from day one: 8%+
+* Minimum buffer from day one: 8%+
 
 ## Repayment Scenarios
 
 ### Normal Repayment (Most Common)
 
 1. Borrower repays before due date
-2. You receive principal + interest in USDC
-3. Borrower gets their ETH back
+2. You receive principal + interest in USDC or USDT
+3. Borrower gets their collateral e.g. cbBTC or WETH back
 
 ### Liquidation (Solvent)
 
-If borrower's LTV exceeds threshold or loan is overdue:
+If borrower's LTV exceeds liquidation LTV threshold or loan is overdue:
 
 1. Liquidator pays the debt
 2. You receive full principal + interest in USDC
 3. Liquidator takes borrower's collateral
 
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.09.56.png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.10.07.png" alt="" width="362"><figcaption></figcaption></figure>
+
 ### Liquidation (Underwater)
 
-In extreme market crashes where collateral < debt:
+In extreme market crashes where collateral value < debt value:
 
 1. Liquidator pays discounted amount
 2. You receive what's available (may be less than owed)
@@ -189,14 +199,7 @@ Go to **Loans** to see:
 * Accrued interest
 * Due dates
 
-### Monitor Loan Health
 
-| Borrower LTV | Status          | Your Risk              |
-| ------------ | --------------- | ---------------------- |
-| < 60%        | 🟢 Healthy      | Very low               |
-| 60-70%       | 🟡 Moderate     | Low                    |
-| 70-80%       | 🟠 At Risk      | Medium                 |
-| > 80%        | 🔴 Liquidatable | Liquidation handles it |
 
 ### Cancel Pending Intent
 
@@ -204,7 +207,9 @@ If your intent hasn't been matched:
 
 1. Go to **My Intents**
 2. Click **"Cancel"**
-3. Your USDC allowance is released
+3. Your USDC or USDT allowance is released
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.18.19.png" alt=""><figcaption></figcaption></figure>
 
 ## Risk Management
 
@@ -213,7 +218,9 @@ If your intent hasn't been matched:
 Don't put all funds in one loan:
 
 * Use **Partial Fill** to spread across multiple borrowers
-* Set reasonable **Min Fill Amount** (e.g., $1,000)
+* Set  **Min Fill Amount** (e.g., $1,000)
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.19.08.png" alt=""><figcaption></figcaption></figure>
 
 ### Duration Limits
 

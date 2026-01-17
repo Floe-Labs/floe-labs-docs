@@ -2,6 +2,10 @@
 
 Get started with Floe in 5 minutes.
 
+Floe Demo: [https://www.loom.com/share/54748b0841f94948bfc959ac0ff58080](https://www.loom.com/share/54748b0841f94948bfc959ac0ff58080)
+
+{% embed url="https://www.loom.com/share/54748b0841f94948bfc959ac0ff58080" %}
+
 ## What You'll Need
 
 * A wallet (MetaMask, Rainbow, Coinbase Wallet, etc.)
