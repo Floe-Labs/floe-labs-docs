@@ -48,6 +48,7 @@
       * [IConditionValidator](protocol/smart-contracts/interfaces/iconditionvalidator.md)
 * [Developers](developers/README.md)
   * [Matcher Operator Guide](docs/developers/matcher-operators.md)
+  * [Liquidation Bot Guide](docs/developers/liquidation-bot.md)
   * [Hooks Developer Guide](docs/developers/hooks-dev.md)
   * [Client SDK](docs/developers/sdk.md)
   * [REST/Graph API](docs/developers/api.md)

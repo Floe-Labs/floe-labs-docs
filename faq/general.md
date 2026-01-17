@@ -1,2 +1,313 @@
-# General
+# Frequently Asked Questions
 
+Common questions about using Floe.
+
+## General
+
+### What is Floe?
+
+Floe is a peer-to-peer, intent-based lending protocol on Base. Users create intents specifying their lending or borrowing terms, and solvers match compatible pairs to create loans.
+
+### How is Floe different from Aave or Compound?
+
+| Feature | Floe | Aave/Compound |
+|---------|------|---------------|
+| Architecture | P2P intent matching | Liquidity pools |
+| Rates | Negotiated | Algorithmic |
+| Counterparty | Single (known) | Pool (anonymous) |
+| Risk | Isolated per loan | Shared across pool |
+| Terms | Custom | Standardized |
+
+### What blockchain is Floe on?
+
+Floe is deployed on **Base Mainnet** (Chain ID: 8453), an Ethereum Layer 2.
+
+### What tokens are supported?
+
+Currently:
+- **Loan token**: USDC
+- **Collateral token**: WETH (Wrapped ETH)
+
+More markets may be added in the future.
+
+---
+
+## Borrowing
+
+### How do I borrow USDC?
+
+1. Connect wallet with ETH on Base
+2. Create a borrow intent with your terms
+3. Wait for a lender match
+4. Receive USDC (minus matcher fee)
+
+### What collateral do I need?
+
+You need WETH (Wrapped ETH). Your collateral must be worth more than your loan amount:
+- **Minimum**: Enough to meet your specified LTV
+- **Recommended**: Extra buffer for price volatility
+
+### What is LTV?
+
+**Loan-to-Value** ratio = Loan Amount / Collateral Value
+
+Example: $5,000 loan with $10,000 collateral = 50% LTV
+
+### What happens if I don't repay on time?
+
+Your loan becomes **overdue** and can be liquidated. A liquidator will pay off your debt and take your collateral.
+
+### Can I repay early?
+
+Yes. There's no prepayment penalty. You only pay interest for the time you actually borrowed.
+
+### Can I add more collateral?
+
+Yes. Go to your loan in the Loans page and click "Add Collateral" to improve your LTV.
+
+---
+
+## Lending
+
+### How do I earn interest?
+
+1. Create a lend intent with your terms
+2. Wait for a borrower match
+3. Earn interest over the loan duration
+4. Receive principal + interest at repayment
+
+### What rates can I expect?
+
+Rates are market-driven. Typical ranges:
+- **Conservative**: 4-6% APR
+- **Moderate**: 6-8% APR
+- **Higher risk**: 8%+ APR
+
+### Can my lend intent be partially filled?
+
+Yes, if you enable `allowPartialFill`. Your intent can match multiple borrowers until fully filled.
+
+### What if the borrower doesn't repay?
+
+If the borrower's LTV exceeds the liquidation threshold or the loan becomes overdue:
+- Liquidators pay off the debt
+- You receive full repayment (from liquidator)
+- Borrower loses collateral
+
+In rare underwater cases, you may experience bad debt.
+
+---
+
+## Intents
+
+### What is an intent?
+
+An intent is an on-chain declaration of your desired terms. It's not a loan—it's an offer that can be matched.
+
+### How long do intents last?
+
+You set the `expiry` when creating an intent. Common choices:
+- 7 days (typical)
+- 14 days (patient)
+- 24 hours (urgent)
+
+### Can I cancel my intent?
+
+Yes, as long as it hasn't been fully matched. Cancellation returns your deposited collateral (borrowers) or releases your USDC allowance (lenders).
+
+### Why hasn't my intent been matched?
+
+Possible reasons:
+- Your rate expectations don't overlap with available counterparties
+- Matcher commission is too low (solvers don't find it profitable)
+- Not enough market activity
+- Duration or LTV incompatibility
+
+Try adjusting your terms to be more competitive.
+
+---
+
+## Loans
+
+### How is interest calculated?
+
+```
+Interest = Principal × (APR / 365) × Days
+```
+
+Example: $5,000 at 6% APR for 30 days = $24.66
+
+### Can I extend my loan?
+
+Not directly. You would need to repay and create a new borrow intent.
+
+### Can I transfer my loan to someone else?
+
+No. Loans are non-transferable.
+
+### What is the liquidation bonus?
+
+Liquidators receive a **5% bonus** on collateral value as incentive to liquidate unhealthy loans.
+
+---
+
+## Liquidation
+
+### When can my loan be liquidated?
+
+Your loan can be liquidated when:
+1. **LTV exceeds threshold**: Your current LTV goes above the liquidation LTV (lender's maxLTV)
+2. **Loan is overdue**: Duration has passed and you haven't repaid
+
+### What is the 8% LTV gap?
+
+Floe requires at least 8% gap between:
+- **Origination LTV** (your borrowing level)
+- **Liquidation LTV** (when liquidation is allowed)
+
+This ensures borrowers have buffer from day one.
+
+### What happens when I'm liquidated?
+
+1. A liquidator pays your debt (principal + interest)
+2. The liquidator receives your collateral
+3. You lose all collateral but owe nothing more
+
+### Can I prevent liquidation?
+
+Yes:
+- Add collateral before reaching threshold
+- Repay the loan early
+- Monitor prices during volatile markets
+
+---
+
+## Technical
+
+### What is a solver?
+
+A solver (or matcher) is an automated bot that finds and matches compatible intents. Solvers earn the matcher commission.
+
+### What is the circuit breaker?
+
+The circuit breaker pauses protocol operations when oracle data is unreliable (stale, invalid, or deviating too much). It protects users from liquidations based on bad prices.
+
+### Why did my transaction fail?
+
+Common reasons:
+- Intent was already matched (race condition)
+- Insufficient token allowance
+- Circuit breaker active
+- Gas price too low
+- Contract paused
+
+Check the [Error Codes](02-error-codes.md) reference.
+
+### How do I get ETH for gas?
+
+Bridge ETH to Base using:
+- [Base Bridge](https://bridge.base.org)
+- [Superbridge](https://superbridge.app)
+- Centralized exchange withdrawal to Base
+
+---
+
+## Security
+
+### Is Floe audited?
+
+Audit information is available in the [Security Model](../protocol/05-security-model.md) documentation.
+
+### How are my funds protected?
+
+- All loans are overcollateralized
+- Dual-oracle system with fallback
+- Circuit breaker prevents bad liquidations
+- No pool risk (P2P isolation)
+- UUPS upgradeable for security patches
+
+### Can I lose money?
+
+**Borrowers**: You can lose your collateral if liquidated
+**Lenders**: You can experience bad debt if collateral becomes worthless very quickly
+
+See [Risk & Liquidation](../user-guides/04-risk-and-liquidation.md).
+
+---
+
+## Lendr AI
+
+### What is Lendr?
+
+Lendr is an AI assistant that helps you interact with Floe using natural language. Instead of filling forms, just tell Lendr what you want.
+
+### What can Lendr do?
+
+- Create borrow/lend intents
+- Check loan health
+- Add collateral
+- Repay loans
+- Explain protocol concepts
+- Answer questions
+
+### Is Lendr safe?
+
+Yes:
+- Lendr cannot access your private keys
+- Every transaction requires your wallet signature
+- Lendr only reads public blockchain data
+
+---
+
+## Fees
+
+### What fees does Floe charge?
+
+Floe currently charges **no protocol fees**. You only pay:
+- Interest (to lenders)
+- Matcher commission (to solvers)
+- Gas (to the network)
+
+### Why am I paying a matcher fee?
+
+The matcher commission incentivizes solvers to match your intent. Without it, your intent might not get matched.
+
+### Can I avoid the matcher fee?
+
+Yes, if you manually match with a counterparty through the UI. But automated solver matching is faster and more reliable.
+
+---
+
+## Getting Help
+
+### Where can I get support?
+
+- **In-app**: Ask Lendr AI
+- **Discord**: [Join our community](https://discord.gg/floe)
+- **X/Twitter**: [@FloeLabs](https://twitter.com/FloeLabs)
+- **Email**: support@floelabs.xyz
+
+### How do I report a bug?
+
+1. Check if it's a known issue in Discord
+2. Report via Discord or email
+3. Include transaction hash if applicable
+
+### How do I request a feature?
+
+Share your ideas in Discord or tag us on X. We love hearing from users.
+
+---
+
+## Glossary
+
+| Term | Definition |
+|------|------------|
+| **APR** | Annual Percentage Rate - yearly interest |
+| **bps** | Basis points - 100 bps = 1% |
+| **Intent** | On-chain offer to lend or borrow |
+| **LTV** | Loan-to-Value ratio |
+| **Matcher/Solver** | Bot that matches intents |
+| **Oracle** | Price data source (Chainlink/Pyth) |
+| **Principal** | Original loan amount |
+| **WETH** | Wrapped ETH (ERC-20 version of ETH) |
