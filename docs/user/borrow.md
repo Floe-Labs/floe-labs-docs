@@ -4,16 +4,17 @@ icon: hand-holding-circle-dollar
 
 # How to Borrow
 
-Borrow USDC using ETH as collateral on Floe.
+Borrow USDT or USDC using collateral eg cbBTC or WETH as collateral on Floe.
 
 ## Overview
 
 Borrowing on Floe works through **intents**:
 
-1. You create a borrow intent with your desired terms
+1. You can either manually MATCH an existing intent in the Borrow Page or CREATE a borrow intent with your desired terms\
+   ![](<../../.gitbook/assets/Screenshot 2026-01-17 at 15.24.43.png>)
 2. Solvers match you with compatible lenders
-3. You receive USDC, your ETH is held as collateral
-4. Repay principal + interest to get your ETH back
+3. You receive USDC or USDT, your collateral eg cbBTC or WETH is held as collateral
+4. Repay principal + interest to get your collateral back
 
 ## Before You Start
 
@@ -24,8 +25,8 @@ Borrowing on Floe works through **intents**:
 
 **Understand:**
 
-* Your ETH is locked until you repay
-* If ETH price drops significantly, you may be liquidated
+* Your collateral eg cbBTC or WETH is locked until you repay
+* If collateral price drops significantly, you may be liquidated
 * Interest accrues daily until repayment
 
 ## Step-by-Step Guide
@@ -43,18 +44,22 @@ The marketplace shows lender offers with:
 * **Max LTV**: Liquidation threshold
 * **Duration**: Maximum loan length
 
-### 3. Create Your Borrow Intent
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.26.13.png" alt=""><figcaption></figcaption></figure>
+
+### 3. Create Your Borrow Intent for Auto Matching
 
 Click **"Create Borrow Intent"** and enter:
 
-| Field              | Description                  | Example    |
-| ------------------ | ---------------------------- | ---------- |
-| Borrow Amount      | USDC you need                | 5,000 USDC |
-| Collateral         | ETH to deposit               | 2.0 ETH    |
-| Max Interest Rate  | Highest APR you'll accept    | 8%         |
-| Duration           | Loan length                  | 30 days    |
-| Matcher Commission | Fee for solvers              | 0.3%       |
-| Expiry             | How long intent stays active | 7 days     |
+| Field                         | Description                                               | Example    |
+| ----------------------------- | --------------------------------------------------------- | ---------- |
+| Borrow Amount                 | USDC you need                                             | 5,000 USDC |
+| Collateral                    | ETH to deposit                                            | 2.0 ETH    |
+| Max Interest Rate             | Highest APR you'll accept                                 | 8%         |
+| Duration                      | Loan length                                               | 30 days    |
+| Matcher Commission (optional) | Fee to incentivize solvers to match you with best intents | 0.3%       |
+| Expiry                        | How long intent stays active                              | 7 days     |
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.26.52.png" alt="" width="375"><figcaption></figcaption></figure>
 
 ### 4. Understand Your Terms
 
@@ -76,6 +81,12 @@ Your Intent:
 2. Confirm in your wallet
 3. Click **"Create Intent"**
 4. Sign the transaction
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.29.23.png" alt="" width="288"><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.30.49.png" alt=""><figcaption></figcaption></figure>
+
+###
 
 ### 6. Wait for Match
 
@@ -103,15 +114,6 @@ Example:
 - LTV: $5,000 ÷ $7,000 = 71%
 ```
 
-### LTV Zones
-
-| LTV    | Status      | Action                     |
-| ------ | ----------- | -------------------------- |
-| < 60%  | 🟢 Safe     | Comfortable buffer         |
-| 60-70% | 🟡 Moderate | Monitor regularly          |
-| 70-80% | 🟠 Risky    | Consider adding collateral |
-| > 80%  | 🔴 Danger   | Liquidation imminent       |
-
 ### The 8% Gap Rule
 
 Floe requires at least 8% gap between your borrow LTV and liquidation LTV:
@@ -136,14 +138,18 @@ Example:
 - Total: $5,024.66
 ```
 
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.31.50.png" alt=""><figcaption></figcaption></figure>
+
 ### Steps to Repay
 
 1. Go to **Loans** page
 2. Find your active loan
 3. Click **"Repay"**
-4. Approve USDC if needed
+4. Approve USDC or USDT if needed
 5. Confirm transaction
 6. Your collateral is returned
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.31.31.png" alt=""><figcaption></figcaption></figure>
 
 ### Early Repayment
 
@@ -153,7 +159,7 @@ You can repay anytime—no prepayment penalty. You only pay interest for time us
 
 ### Add Collateral
 
-If ETH price drops, protect yourself:
+If collateral price drops, protect yourself:
 
 1. Go to loan in **Loans** page
 2. Click **"Add Collateral"**
@@ -167,6 +173,8 @@ If ETH price rises, you can withdraw some:
 1. Click **"Withdraw Collateral"**
 2. Enter amount (max shown)
 3. Must stay below 77% LTV (3% buffer from 80%)
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.32.05.png" alt=""><figcaption></figcaption></figure>
 
 ## Liquidation
 
@@ -192,11 +200,11 @@ Your loan can be liquidated when:
 
 ## Cost Breakdown
 
-| Fee                | Amount           | Paid To |
-| ------------------ | ---------------- | ------- |
-| Interest           | Negotiated APR   | Lender  |
-| Matcher Commission | 0.1-0.5% of loan | Solver  |
-| Gas                | \~$0.10-0.30     | Network |
+| Fee                         | Amount                                       | Paid To |
+| --------------------------- | -------------------------------------------- | ------- |
+| Interest                    | Negotiated APR                               | Lender  |
+| Matcher Commission optional | 0.1-5% of loan depending on borrower setting | Solver  |
+| Gas                         | \~$0.10-0.30                                 | Network |
 
 **Example total cost for $5,000 loan at 6% for 30 days:**
 
@@ -207,8 +215,8 @@ Your loan can be liquidated when:
 
 ## Tips for Borrowers
 
-1. **Start conservative**: Borrow less than max, keep LTV low
-2. **Watch the market**: Monitor ETH price, especially in volatile times
+1. **Start conservative**: Borrow less than max, keep loan LTV low
+2. **Watch the market**: Monitor collateral price, especially in volatile times
 3. **Set reminders**: Don't forget your due date
 4. **Use Lendr**: Ask the AI for help managing your loan
 5. **Keep USDC ready**: Have repayment funds available

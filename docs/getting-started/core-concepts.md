@@ -21,14 +21,14 @@ A lender's offer to provide capital:
 A borrower's request for a loan:
 
 * **Amount**: How much USDC to borrow
-* **Collateral**: WETH to put up as security
+* **Collateral**: eg WETH to put up as security
 * **Max Interest Rate**: Maximum APR you'll pay
 * **Min LTV**: Your target loan-to-value ratio
 * **Duration**: How long you want the loan
 
 ### Intent Matching
 
-Two intents match when:
+2 options. A. Manually match existing intents. B. Auto matching in which two intents match when:
 
 1. Same market (USDC/WETH)
 2. Rate compatible (borrower max ≥ lender min)
@@ -45,7 +45,7 @@ Two intents match when:
 3. Submit match transactions on-chain
 4. Earn commission for successful matches
 
-Floe's matching is permissionless — anyone can run a matcher.
+Floe's matching is permissionless. Anyone can run a matcher. See developers page.
 
 ## Isolated Loans
 
@@ -57,7 +57,7 @@ Each loan is **isolated** with its own:
 * Liquidation threshold
 * Duration
 
-Unlike pool-based protocols, **bad debt doesn't spread** between loans.
+Unlike pool-based protocols, **bad debt doesn't spread** between loans, markets or across the protocol.
 
 ## Loan-to-Value (LTV)
 
@@ -69,12 +69,12 @@ LTV = (Loan Value / Collateral Value) × 100%
 
 ### LTV Zones
 
-| Zone        | Range                    | Status            |
-| ----------- | ------------------------ | ----------------- |
-| Safe        | Below origination LTV    | Healthy           |
-| Buffer      | Within 8% of liquidation | Caution           |
-| Danger      | Within 3% of liquidation | High risk         |
-| Liquidation | At or above max LTV      | Can be liquidated |
+| Zone        | Range                                 | Status            |
+| ----------- | ------------------------------------- | ----------------- |
+| Safe        | Loan LTV Below Liquidation LTV        | Healthy           |
+| Buffer      | Loan LTV Within 8% of liquidation LTV | Caution           |
+| Danger      | Loan LTV Within 3% of liquidation     | High risk         |
+| Liquidation | Loan LTV At or above max LTV          | Can be liquidated |
 
 ### Key Parameters
 
