@@ -1,6 +1,6 @@
-# Using LendrBotot AI
+# Using LendrBot AI
 
-Lendrbot is Floe's AI assistant that lets you interact with the protocol using natural language in-app on on X @Lendrbot [https://x.com/LendrBot](https://x.com/LendrBot).
+LendrBot is Floe's AI assistant that lets you interact with the protocol using natural language — in-app, on X [@LendrBot](https://x.com/LendrBot), or on Telegram.
 
 ## What is LendrBot?
 
@@ -14,12 +14,19 @@ LendrBot is an AI agent that understands DeFi lending and can:
 
 ## Where to Access LendrBot
 
-### In-App Chat or on X.com&#x20;
+### In-App Chat
 
 1. Open [app.floelabs.xyz](https://app.floelabs.xyz)
 2. Click the **chat icon** in the corner
 3. Start typing your request
-4. On X.com, either DM or @LendrBot with requests.
+
+### X (Twitter)
+
+DM or mention [@LendrBot](https://x.com/LendrBot) with your requests. LendrBot posts intent summaries and post-match alerts automatically.
+
+### Telegram
+
+LendrBot is available on Telegram. Search for **LendrBot** or visit [t.me/LendrBot](https://t.me/LendrBot) to start chatting. The Telegram bot has the same capabilities as the in-app and X integrations — create intents, check positions, get help, and receive notifications.
 
 ## Example Commands
 

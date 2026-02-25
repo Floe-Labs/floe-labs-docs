@@ -46,62 +46,94 @@ The marketplace shows lender offers with:
 
 <figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.26.13.png" alt=""><figcaption></figcaption></figure>
 
-### 3. Create Your Borrow Intent for Auto Matching
+### 3. Choose a Preset (Recommended)
+
+Floe offers **preset templates** to help you get started with well-calibrated parameters:
+
+| Preset           | Collateral Ratio | Max Rate | Duration | Risk Level |
+| ---------------- | ---------------- | -------- | -------- | ---------- |
+| **Conservative** | Higher           | Lower    | Shorter  | Lower risk, more collateral |
+| **Balanced**     | Moderate         | Moderate | Moderate | Good trade-off |
+| **Aggressive**   | Lower            | Higher   | Longer   | Less collateral, higher cost |
+| **Custom**       | You set          | You set  | You set  | Full control |
+
+Select a preset to auto-populate all fields, then adjust individual parameters if needed. The form starts in **Custom** mode by default.
+
+### 4. Set Your Borrow Intent Parameters
 
 Click **"Create Borrow Intent"** and enter:
 
 | Field                         | Description                                               | Example    |
 | ----------------------------- | --------------------------------------------------------- | ---------- |
-| Borrow Amount                 | USDC you need                                             | 5,000 USDC |
-| Collateral                    | ETH to deposit                                            | 2.0 ETH    |
+| Borrow Amount                 | USDC or USDT you need                                     | 5,000 USDC |
+| Collateral                    | WETH or cbBTC to deposit                                  | 2.0 WETH   |
 | Max Interest Rate             | Highest APR you'll accept                                 | 8%         |
-| Duration                      | Loan length                                               | 30 days    |
+| Duration                      | Loan length (1W, 1M, 3M, 6M, or 1Y)                     | 1M         |
 | Matcher Commission (optional) | Fee to incentivize solvers to match you with best intents | 0.3%       |
 | Expiry                        | How long intent stays active                              | 7 days     |
 
 <figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.26.52.png" alt="" width="375"><figcaption></figcaption></figure>
 
-### 4. Understand Your Terms
+#### Market-Aware Token Selection
+
+Token dropdowns are filtered by available markets. For example, selecting **USDC** as your borrow asset automatically filters the collateral dropdown to show only tokens with active USDC markets (WETH, cbBTC). This prevents incompatible token combinations.
+
+#### Duration Buckets
+
+Select from predefined duration options: **1 Week, 1 Month, 3 Months, 6 Months, or 1 Year** (7, 30, 90, 180, 365 days). These standard durations improve matching compatibility since lenders also pick from the same set.
+
+### 5. Review Risk Preview
+
+Before submitting, the **Risk Preview** panel shows a real-time assessment:
+
+* **LTV Risk Level** — Safe, Moderate, High, or Critical badge based on your collateral ratio
+* **Collateral Ratio Indicator** — Visual gauge showing how your LTV compares to the liquidation threshold
+* **Liquidation Price Drop** — How much collateral price must fall before liquidation (e.g., "35% drop to liquidation")
+* **Estimated Total Repayment** — Principal + estimated interest at your max rate and duration
+* **Warnings** — Alerts for aggressive settings (e.g., thin liquidation buffer, high LTV)
+
+This updates live as you adjust any parameter, so you can experiment with different collateral amounts and rates to find your comfort zone.
+
+### 6. Understand Your Terms
 
 Before submitting, review:
 
 ```
 Your Intent:
 ├── Borrowing: 5,000 USDC
-├── Collateral: 2.0 ETH (~$7,000 at $3,500/ETH)
+├── Collateral: 2.0 WETH (~$7,000 at $3,500/ETH)
 ├── Your LTV: 71%
 ├── Max Rate: 8% APR
-├── Duration: 30 days
+├── Duration: 1 Month
 └── Matcher Fee: 0.3% ($15)
 ```
 
-### 5. Approve and Submit
+### 7. Approve and Submit
 
 1. Click **"Approve WETH"** (first time only)
 2. Confirm in your wallet
 3. Click **"Create Intent"**
-4. Sign the transaction
+4. **Review the Confirmation Modal** — a summary of all parameters, risk level, estimated repayment, liquidation buffer, and any warnings appears before the transaction fires
+5. Click **"Confirm"** to sign the transaction
 
 <figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.29.23.png" alt="" width="288"><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.30.49.png" alt=""><figcaption></figcaption></figure>
 
-###
-
-### 6. Wait for Match
+### 8. Wait for Match
 
 Your intent is now live. Solvers will match you when they find a compatible lender. This typically happens within minutes.
 
 Check status in **My Intents**.
 
-### 7. Loan Active
+### 9. Loan Active
 
 Once matched:
 
-* You receive USDC (minus matcher fee)
-* Your ETH is locked as collateral
+* You receive USDC or USDT (minus matcher fee)
+* Your collateral (WETH or cbBTC) is locked
 * Interest starts accruing
-* View your loan in **Loans** page
+* View your loan in **Loans** page — each loan card shows an **LTV donut gauge**, **hero stats** (current LTV, liquidation threshold, time remaining), and a **health-state border** (green/yellow/orange/red)
 
 ## Understanding LTV
 
@@ -153,7 +185,9 @@ Example:
 
 ### Early Repayment
 
-You can repay anytime—no prepayment penalty. You only pay interest for time used.
+You can repay anytime — no prepayment penalty under the default **Flexible** term. You only pay interest for time used.
+
+> **Note:** Lenders may set term protection options in the future (penalty-based or no-prepayment terms). Currently, all loans use Flexible repayment terms. Check your loan details for the applicable early repayment terms.
 
 ## Managing Your Position
 
@@ -215,11 +249,13 @@ Your loan can be liquidated when:
 
 ## Tips for Borrowers
 
-1. **Start conservative**: Borrow less than max, keep loan LTV low
-2. **Watch the market**: Monitor collateral price, especially in volatile times
-3. **Set reminders**: Don't forget your due date
-4. **Use Lendr**: Ask the AI for help managing your loan
-5. **Keep USDC ready**: Have repayment funds available
+1. **Start with a preset**: Use Conservative or Balanced to get safe defaults
+2. **Check the risk preview**: Watch the liquidation price drop % — aim for 25%+ buffer
+3. **Start conservative**: Borrow less than max, keep loan LTV low
+4. **Watch the market**: Monitor collateral price using the LTV donut gauge on your loan card
+5. **Set reminders**: Don't forget your due date
+6. **Use Lendr**: Ask the AI for help managing your loan
+7. **Keep USDC ready**: Have repayment funds available
 
 ## Troubleshooting
 

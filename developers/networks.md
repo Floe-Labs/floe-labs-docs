@@ -21,13 +21,25 @@ All Floe smart contracts deployed on supported networks.
 | Contract             | Address                                      |
 | -------------------- | -------------------------------------------- |
 | LendingIntentMatcher | `0x17946cD3e180f82e632805e5549EC913330Bb175` |
+| PriceOracle          | `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` |
 
 ### Token Addresses
 
-| Token             | Address                                      | Decimals |
-| ----------------- | -------------------------------------------- | -------- |
-| USDC (Loan Token) | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6        |
-| WETH (Collateral) | `0x4200000000000000000000000000000000000006` | 18       |
+| Token  | Role       | Address                                      | Decimals |
+| ------ | ---------- | -------------------------------------------- | -------- |
+| USDC   | Loan Token | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6        |
+| USDT   | Loan Token | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6        |
+| WETH   | Collateral | `0x4200000000000000000000000000000000000006` | 18       |
+| cbBTC  | Collateral | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8        |
+
+### Active Markets
+
+| Market     | Loan Token | Collateral Token |
+| ---------- | ---------- | ---------------- |
+| USDC/WETH  | USDC       | WETH             |
+| USDC/cbBTC | USDC       | cbBTC            |
+| USDT/WETH  | USDT       | WETH             |
+| USDT/cbBTC | USDT       | cbBTC            |
 
 ### Configuration
 
@@ -37,8 +49,13 @@ const BASE_MAINNET_CONFIG = {
   name: "Base",
   rpcUrl: "https://mainnet.base.org",
   lendingIntentMatcher: "0x17946cD3e180f82e632805e5549EC913330Bb175",
-  loanToken: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-  collateralToken: "0x4200000000000000000000000000000000000006",
+  priceOracle: "0xEA058a06b54dce078567f9aa4dBBE82a100210Cc",
+  tokens: {
+    USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    USDT: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
+    WETH: "0x4200000000000000000000000000000000000006",
+    cbBTC: "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+  },
 };
 ```
 
@@ -59,6 +76,7 @@ const BASE_MAINNET_CONFIG = {
 | Contract             | Address                                      |
 | -------------------- | -------------------------------------------- |
 | LendingIntentMatcher | `0xF351eDF229ded7E2e2b23E44c70e9964CbA91B2E` |
+| PriceOracle          | `0x71020b939b1f0988b2d93c2d930fea5b370203a5` |
 
 > ⚠️ Testnet contracts may differ from mainnet. Use for development only.
 
@@ -116,6 +134,7 @@ For production applications:
 All contracts are verified on Basescan:
 
 * [LendingIntentMatcher](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175#code)
+* [PriceOracle](https://basescan.org/address/0xEA058a06b54dce078567f9aa4dBBE82a100210Cc#code)
 
 ***
 

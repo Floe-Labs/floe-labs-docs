@@ -113,10 +113,14 @@ Example: "Borrow 5000 USDC for 30 days at max 6% APR"
 
 ## Markets
 
-A **market** defines a trading pair:
+A **market** defines a loan/collateral token pair. Floe currently has **4 active markets**:
 
-* **Loan Token**: What's being lent (USDC)
-* **Collateral Token**: What's used as security (WETH)
+| Market | Loan Token | Collateral Token |
+| ------ | ---------- | ---------------- |
+| USDC/WETH | USDC | WETH |
+| USDC/cbBTC | USDC | cbBTC |
+| USDT/WETH | USDT | WETH |
+| USDT/cbBTC | USDT | cbBTC |
 
 Markets are created by governance and have their own:
 

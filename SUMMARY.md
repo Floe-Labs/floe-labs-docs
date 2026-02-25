@@ -12,7 +12,7 @@
 * [How to Lend](docs/user/lend.md)
 * [How to Borrow](docs/user/borrow.md)
 * [Risk & Liquidations](docs/user/risk-liquidations.md)
-* [Using LendrBotot AI](docs/user/lendr-ai.md)
+* [Using LendrBot AI](docs/user/lendr-ai.md)
 
 ## Protocol
 

@@ -56,23 +56,63 @@ The marketplace shows borrower intents with:
 * **Duration**: How long they need it
 * **Matcher Commission**: What solvers earn
 
-### 3. Create Your Lend Intent
+### 3. Choose a Preset (Recommended)
+
+Floe offers **preset templates** to help you get started with well-calibrated parameters:
+
+| Preset           | Min Rate | Max LTV | Duration | Risk Level |
+| ---------------- | -------- | ------- | -------- | ---------- |
+| **Conservative** | Higher   | Lower   | Shorter  | Lower risk, fewer matches |
+| **Balanced**     | Moderate | Moderate| Moderate | Good trade-off |
+| **Aggressive**   | Lower    | Higher  | Longer   | More matches, higher risk |
+| **Custom**       | You set  | You set | You set  | Full control |
+
+Select a preset to auto-populate all fields, then adjust individual parameters if needed. The form starts in **Custom** mode by default.
+
+### 4. Set Your Lend Intent Parameters
 
 Click **"Create Lend Intent"** and enter:
 
 | Field              | Description                  | Example     |
 | ------------------ | ---------------------------- | ----------- |
-| Amount             | Total USDC to lend           | 10,000 USDC |
+| Amount             | Total USDC or USDT to lend   | 10,000 USDC |
 | Min Fill Amount    | Minimum per match            | 1,000 USDC  |
 | Min Interest Rate  | Lowest APR you'll accept     | 5%          |
 | Max LTV            | Liquidation threshold        | 80%         |
-| Duration           | Maximum loan length          | 60 days     |
+| Duration           | Maximum loan length (1W, 1M, 3M, 6M, or 1Y) | 3M |
 | Allow Partial Fill | Match multiple borrowers?    | Yes         |
 | Expiry             | How long intent stays active | 14 days     |
 
 <figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.45.48.png" alt=""><figcaption></figcaption></figure>
 
-### 4. Understand Your Terms
+#### Duration Buckets
+
+Instead of typing an arbitrary number of days, select from predefined duration options: **1 Week, 1 Month, 3 Months, 6 Months, or 1 Year** (7, 30, 90, 180, 365 days). These standard durations improve matching compatibility since borrowers also pick from the same set.
+
+### 5. Configure Term Protection
+
+Under **Early Repayment Terms**, choose how borrowers can repay early:
+
+| Option             | Description                                               |
+| ------------------ | --------------------------------------------------------- |
+| **Flexible**       | Borrower can repay anytime with no penalty (default)      |
+| **Penalty**        | Borrower pays a fee for early repayment *(coming in v2)*  |
+| **No Prepayment**  | Borrower must wait until maturity *(coming in v2)*        |
+
+Currently, **Flexible** is the active option. Penalty and No Prepayment options will be enforced on-chain in a future release.
+
+### 6. Review Risk Preview
+
+Before submitting, the **Risk Preview** panel shows a real-time assessment of your intent:
+
+* **Risk Level Badge** — Safe, Moderate, High, or Critical based on the gap between max LTV and liquidation threshold
+* **Estimated Yield** — Projected earnings based on your rate and duration
+* **LTV Buffer** — How much room exists between the borrower's starting LTV and your liquidation threshold
+* **Warnings** — Contextual alerts if your settings are aggressive (e.g., thin margin between max LTV and liquidation)
+
+This updates live as you adjust any parameter.
+
+### 7. Understand Your Terms
 
 ```
 Your Intent:
@@ -80,24 +120,26 @@ Your Intent:
 ├── Min per match: 1,000 USDC
 ├── Min Rate: 5% APR
 ├── Max LTV: 80% (liquidation threshold)
-├── Max Duration: 60 days
-└── Partial Fill: Enabled
+├── Max Duration: 3 Months
+├── Partial Fill: Enabled
+└── Early Repayment: Flexible
 ```
 
-### 5. Approve and Submit
+### 8. Approve and Submit
 
 1. Click **"Approve"**
 2. Confirm in your wallet
 3. Click **"Create Intent"**
-4. Sign the transaction
+4. **Review the Confirmation Modal** — a summary of all parameters, risk level, estimated yield, and any warnings appears before the transaction fires
+5. Click **"Confirm"** to sign the transaction
 
-### 6. Wait for Match
+### 9. Wait for Match
 
 Your intent is now live. Solvers will match you when they find compatible borrowers.
 
 With partial fill enabled, your intent can match multiple borrowers until fully utilized.
 
-### 7. Loan Active
+### 10. Loan Active
 
 Once matched:
 
@@ -192,12 +234,13 @@ In extreme market crashes where collateral value < debt value:
 
 ### View Active Loans
 
-Go to **Loans** to see:
+Go to **Loans** to see your active positions. Each loan card shows:
 
-* Loans where you're the lender
-* Borrower's current LTV
-* Accrued interest
-* Due dates
+* **LTV Donut Gauge** — Visual ring showing current LTV vs. liquidation threshold
+* **Hero Stats** — Current LTV %, liquidation LTV %, and time remaining at a glance
+* **Health Border** — Color-coded accent (green = safe, yellow = caution, orange = warning, red = critical)
+* **Accrued Interest** — Real-time interest earned
+* **Expandable Details** — Click to see match info, network, parties, and transaction links
 
 
 
@@ -259,11 +302,13 @@ Annualized: ~6.1% APY
 
 ## Tips for Lenders
 
-1. **Enable partial fills**: More matching opportunities
-2. **Set competitive rates**: Check market for current rates
-3. **Diversify**: Spread across multiple loans
-4. **Monitor positions**: Check borrower health regularly
-5. **Understand liquidation**: Know how you're protected
+1. **Start with a preset**: Use Balanced or Conservative to get well-calibrated parameters
+2. **Check the risk preview**: Review estimated yield and warnings before submitting
+3. **Enable partial fills**: More matching opportunities across multiple borrowers
+4. **Set competitive rates**: Check market for current rates
+5. **Diversify**: Spread across multiple loans
+6. **Monitor positions**: Use the LTV donut gauge on loan cards to track borrower health
+7. **Understand liquidation**: Know how you're protected
 
 ## Troubleshooting
 

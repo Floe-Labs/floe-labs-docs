@@ -24,27 +24,27 @@ Floe is deployed on **Base Mainnet** (Chain ID: 8453), an Ethereum Layer 2.
 
 ### What tokens are supported?
 
-Currently:
+Floe supports 4 tokens across 4 active markets:
 
-* **Loan token**: USDC
-* **Collateral token**: WETH (Wrapped ETH)
+* **Loan tokens**: USDC, USDT
+* **Collateral tokens**: WETH (Wrapped ETH), cbBTC (Coinbase Wrapped BTC)
 
-More markets may be added in the future.
+**Active markets**: USDC/WETH, USDC/cbBTC, USDT/WETH, USDT/cbBTC
 
 ***
 
 ## Borrowing
 
-### How do I borrow USDC?
+### How do I borrow USDC or USDT?
 
 1. Connect wallet with ETH on Base
 2. Create a borrow intent with your terms
 3. Wait for a lender match
-4. Receive USDC (minus matcher fee)
+4. Receive USDC or USDT (minus matcher fee)
 
 ### What collateral do I need?
 
-You need WETH (Wrapped ETH). Your collateral must be worth more than your loan amount:
+You need WETH (Wrapped ETH) or cbBTC (Coinbase Wrapped BTC), depending on which market you choose. Your collateral must be worth more than your loan amount:
 
 * **Minimum**: Enough to meet your specified LTV
 * **Recommended**: Extra buffer for price volatility
@@ -61,7 +61,7 @@ Your loan becomes **overdue** and can be liquidated. A liquidator will pay off y
 
 ### Can I repay early?
 
-Yes. There's no prepayment penalty. You only pay interest for the time you actually borrowed.
+Yes. Under the default **Flexible** term protection, there's no prepayment penalty — you only pay interest for the time you actually borrowed. Penalty-based and No Prepayment term options are coming in v2.
 
 ### Can I add more collateral?
 
@@ -310,6 +310,26 @@ Share your ideas in Discord or tag us on X. We love hearing from users.
 
 ***
 
+## More Questions
+
+### Can my loan be partially liquidated?
+
+Yes, for **solvent loans** (where collateral value exceeds debt). Liquidators can partially liquidate — repaying a portion of the debt and receiving proportional collateral. This reduces your position size rather than closing it entirely. **Underwater loans** (where collateral value is less than debt) must be fully liquidated.
+
+### Is LendrBot available on Telegram?
+
+Yes. LendrBot is now available on Telegram for chatting about your positions, creating intents, and getting help. Search for **LendrBot** on Telegram or visit [t.me/LendrBot](https://t.me/LendrBot).
+
+### What markets are available?
+
+Floe has 4 active markets: **USDC/WETH**, **USDC/cbBTC**, **USDT/WETH**, and **USDT/cbBTC**.
+
+### Is Floe tracked on DefiLlama?
+
+Yes. Floe's TVL is tracked on DefiLlama.
+
+***
+
 ## Glossary
 
 | Term               | Definition                               |
@@ -322,3 +342,4 @@ Share your ideas in Discord or tag us on X. We love hearing from users.
 | **Oracle**         | Price data source (Chainlink/Pyth)       |
 | **Principal**      | Original loan amount                     |
 | **WETH**           | Wrapped ETH (ERC-20 version of ETH)      |
+| **cbBTC**          | Coinbase Wrapped BTC (ERC-20 version of BTC) |

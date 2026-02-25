@@ -322,7 +322,7 @@ Contact: security@floelabs.xyz
 
 ## Known Limitations
 
-1. **No partial liquidation**: Entire loan liquidated at once
+1. **Partial liquidation supported**: Solvent loans can be partially liquidated — liquidators may repay a portion of the debt and receive proportional collateral. Underwater loans (collateral < debt) must be fully liquidated
 2. **No position migration**: Cannot transfer loans between users
 3. **Single collateral type**: One collateral token per loan
 4. **Fixed interest rate**: Rate doesn't change during loan

@@ -81,6 +81,12 @@ The liquidator calls `liquidateLoan()`:
 * Bad debt is realized
 * Borrower loses everything
 
+### Partial Liquidation
+
+For **solvent loans** (where collateral value exceeds debt), liquidators can choose to partially liquidate. This means they repay only a portion of the outstanding debt and receive proportional collateral plus the 5% liquidation bonus on that portion. The borrower's remaining loan continues with reduced principal and collateral.
+
+For **underwater loans** (where collateral value is less than debt), the loan must be fully liquidated — partial liquidation is not allowed.
+
 ## Protection Mechanisms
 
 ### For Borrowers
@@ -244,7 +250,7 @@ This is why overcollateralization and appropriate LTV limits are crucial.
 
 ## FAQ
 
-**Q: Can I be partially liquidated?** A: No, liquidation is all-or-nothing. The entire loan is liquidated.
+**Q: Can I be partially liquidated?** A: Yes. For solvent loans (where collateral value exceeds debt), liquidators can partially liquidate — repaying a portion of the debt and receiving proportional collateral. This reduces your position size rather than closing it entirely. Underwater loans (where collateral value is less than debt) must be fully liquidated.
 
 **Q: What if no liquidator executes my liquidation?** A: Liquidation bots are incentivized by the 5% bonus. In practice, liquidatable loans are processed quickly.
 
