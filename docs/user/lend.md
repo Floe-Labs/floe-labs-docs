@@ -11,13 +11,7 @@ Earn interest by lending USDT or USDC to borrowers on Floe.
 Lending on Floe works through **intents**:
 
 1. Match existing intents in Earn Offers screen
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.43.01.png" alt=""><figcaption></figcaption></figure>
-
-
-
-2. Or you create a lend intent with your terms\
-   ![](<../../.gitbook/assets/Screenshot 2026-01-17 at 09.43.32.png>)
+2. or create a loan book
 3. If you create an intent, Solvers match you with compatible borrowers
 4. Borrower deposits collateral, you provide USDC or USDT
 5. Earn interest until repayment
@@ -38,13 +32,9 @@ Lending on Floe works through **intents**:
 
 ## Step-by-Step Guide
 
-### 1. Go to Earn Page
+### 1. Go to Lender Workspace
 
 Navigate to [app.floelabs.xyz](https://app.floelabs.xyz) and click **Earn**.
-
-
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.45.15.png" alt=""><figcaption></figcaption></figure>
 
 ### 2. Review Borrow Requests
 
@@ -60,12 +50,12 @@ The marketplace shows borrower intents with:
 
 Floe offers **preset templates** to help you get started with well-calibrated parameters:
 
-| Preset           | Min Rate | Max LTV | Duration | Risk Level |
-| ---------------- | -------- | ------- | -------- | ---------- |
-| **Conservative** | Higher   | Lower   | Shorter  | Lower risk, fewer matches |
-| **Balanced**     | Moderate | Moderate| Moderate | Good trade-off |
-| **Aggressive**   | Lower    | Higher  | Longer   | More matches, higher risk |
-| **Custom**       | You set  | You set | You set  | Full control |
+| Preset           | Min Rate | Max LTV  | Duration | Risk Level                |
+| ---------------- | -------- | -------- | -------- | ------------------------- |
+| **Conservative** | Higher   | Lower    | Shorter  | Lower risk, fewer matches |
+| **Balanced**     | Moderate | Moderate | Moderate | Good trade-off            |
+| **Aggressive**   | Lower    | Higher   | Longer   | More matches, higher risk |
+| **Custom**       | You set  | You set  | You set  | Full control              |
 
 Select a preset to auto-populate all fields, then adjust individual parameters if needed. The form starts in **Custom** mode by default.
 
@@ -73,17 +63,15 @@ Select a preset to auto-populate all fields, then adjust individual parameters i
 
 Click **"Create Lend Intent"** and enter:
 
-| Field              | Description                  | Example     |
-| ------------------ | ---------------------------- | ----------- |
-| Amount             | Total USDC or USDT to lend   | 10,000 USDC |
-| Min Fill Amount    | Minimum per match            | 1,000 USDC  |
-| Min Interest Rate  | Lowest APR you'll accept     | 5%          |
-| Max LTV            | Liquidation threshold        | 80%         |
-| Duration           | Maximum loan length (1W, 1M, 3M, 6M, or 1Y) | 3M |
-| Allow Partial Fill | Match multiple borrowers?    | Yes         |
-| Expiry             | How long intent stays active | 14 days     |
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.45.48.png" alt=""><figcaption></figcaption></figure>
+| Field              | Description                                 | Example     |
+| ------------------ | ------------------------------------------- | ----------- |
+| Amount             | Total USDC or USDT to lend                  | 10,000 USDC |
+| Min Fill Amount    | Minimum per match                           | 1,000 USDC  |
+| Min Interest Rate  | Lowest APR you'll accept                    | 5%          |
+| Max LTV            | Liquidation threshold                       | 80%         |
+| Duration           | Maximum loan length (1W, 1M, 3M, 6M, or 1Y) | 3M          |
+| Allow Partial Fill | Match multiple borrowers?                   | Yes         |
+| Expiry             | How long intent stays active                | 14 days     |
 
 #### Duration Buckets
 
@@ -93,11 +81,11 @@ Instead of typing an arbitrary number of days, select from predefined duration o
 
 Under **Early Repayment Terms**, choose how borrowers can repay early:
 
-| Option             | Description                                               |
-| ------------------ | --------------------------------------------------------- |
-| **Flexible**       | Borrower can repay anytime with no penalty (default)      |
-| **Penalty**        | Borrower pays a fee for early repayment *(coming in v2)*  |
-| **No Prepayment**  | Borrower must wait until maturity *(coming in v2)*        |
+| Option            | Description                                              |
+| ----------------- | -------------------------------------------------------- |
+| **Flexible**      | Borrower can repay anytime with no penalty (default)     |
+| **Penalty**       | Borrower pays a fee for early repayment _(coming in v2)_ |
+| **No Prepayment** | Borrower must wait until maturity _(coming in v2)_       |
 
 Currently, **Flexible** is the active option. Penalty and No Prepayment options will be enforced on-chain in a future release.
 
@@ -147,10 +135,6 @@ Once matched:
 * Borrower's collateral (cbBTC, WETH) is held as collateral
 * Interest accrues in your favor
 * View your loans in **Loans** page
-
-
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.04.46.png" alt=""><figcaption></figcaption></figure>
 
 ## Understanding Returns
 
@@ -218,10 +202,6 @@ If borrower's LTV exceeds liquidation LTV threshold or loan is overdue:
 2. You receive full principal + interest in USDC
 3. Liquidator takes borrower's collateral
 
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.09.56.png" alt=""><figcaption></figcaption></figure>
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.10.07.png" alt="" width="362"><figcaption></figcaption></figure>
-
 ### Liquidation (Underwater)
 
 In extreme market crashes where collateral value < debt value:
@@ -242,8 +222,6 @@ Go to **Loans** to see your active positions. Each loan card shows:
 * **Accrued Interest** — Real-time interest earned
 * **Expandable Details** — Click to see match info, network, parties, and transaction links
 
-
-
 ### Cancel Pending Intent
 
 If your intent hasn't been matched:
@@ -252,18 +230,14 @@ If your intent hasn't been matched:
 2. Click **"Cancel"**
 3. Your USDC or USDT allowance is released
 
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.18.19.png" alt=""><figcaption></figcaption></figure>
-
 ## Risk Management
 
-### Diversification
+### Borrower Diversification&#x20;
 
 Don't put all funds in one loan:
 
 * Use **Partial Fill** to spread across multiple borrowers
-* Set  **Min Fill Amount** (e.g., $1,000)
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.19.08.png" alt=""><figcaption></figcaption></figure>
+* Set **Min Fill Amount** (e.g., $1,000)
 
 ### Duration Limits
 

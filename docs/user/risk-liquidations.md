@@ -15,8 +15,6 @@ A loan becomes liquidatable when **either** condition is met:
 1. **LTV Breach**: Current Loan LTV exceeds the liquidation LTV threshold
 2. **Overdue**: Loan duration has expired and borrower hasn't repaid
 
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.34.56.png" alt=""><figcaption></figcaption></figure>
-
 ### The Liquidation Formula
 
 ```
@@ -227,8 +225,6 @@ This is why overcollateralization and appropriate LTV limits are crucial.
 * View current LTV in real-time
 * See liquidation price
 * One-click add collateral
-
-
 
 ## Best Practices Summary
 

@@ -27,9 +27,6 @@ Floe Demo: [https://www.loom.com/share/54748b0841f94948bfc959ac0ff58080](https:/
 Go to the **Borrow** page to either:
 
 * Browse available Borrow offers and Manually Match OR
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.27.14.png" alt=""><figcaption></figcaption></figure>
-
 * Create a borrow intent with your terms to get matched automatically
 * Get matched and receive USDC or USDT
 
@@ -40,11 +37,6 @@ Go to the **Borrow** page to either:
 Go to the **Earn** page to:
 
 * Browse Earn offers and manually match; OR
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.28.20.png" alt=""><figcaption></figcaption></figure>
-
-
-
 * Create a lend offer with your terms to get automatically matched
 * Get matched and earn interest
 
@@ -63,11 +55,13 @@ Go to the **Earn** page to:
 3. Set **Matcher Commission** (0.1-2% typical)
 4. Approve WETH and submit
 
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.32.52.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Screenshot 2026-02-25 at 8.58.46 AM.png" alt=""><figcaption></figcaption></figure>
+
+###
 
 ### For Lenders
 
-1. Click **"Create Lend Intent"**
+1. Click **"Create Loan Book"**
 2. Enter:
    * **Amount**: How much USDC or USDT to lend and earn on
    * **Min Rate**: Lowest APR you'll accept
@@ -75,7 +69,7 @@ Go to the **Earn** page to:
    * **Duration**: Maximum loan length
 3. Approve USDC and submit
 
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.33.09.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/Screenshot 2026-02-25 at 8.59.29 AM.png" alt=""><figcaption></figcaption></figure>
 
 ## Step 4: Get Matched
 
@@ -99,6 +93,8 @@ Go to **Loans** to:
 * Add collateral if needed
 * Repay when ready
 
+<figure><img src="../../.gitbook/assets/Screenshot 2026-02-25 at 8.59.46 AM.png" alt=""><figcaption></figcaption></figure>
+
 ### Key Actions
 
 
@@ -108,8 +104,6 @@ Go to **Loans** to:
 | Repay          | Borrower | Click "Repay" on loan card       |
 | Add Collateral | Borrower | Click "Add Collateral"           |
 | Cancel Intent  | Anyone   | Click "Cancel" on pending intent |
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 09.31.12.png" alt=""><figcaption></figcaption></figure>
 
 ## Quick Tips
 

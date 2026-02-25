@@ -2,7 +2,7 @@
 icon: clock-rotate-left
 ---
 
-# Intent Matching
+# Intent Auto Matching
 
 How Floe matches lender and borrower intents to create loans.
 
@@ -216,7 +216,7 @@ When a match occurs, loan parameters are derived from both intents:
 
 ## Matching Process
 
-### On-Chain Matching
+### Onchain Matching
 
 ```solidity
 function matchLoanIntents(
@@ -283,34 +283,7 @@ After Match:
 4. **Execute**: Call `matchLoanIntents` on-chain
 5. **Earn**: Receive matcher commission
 
-### Matching Strategies
-
-**Greedy Strategy**:
-
-```typescript
-// Match highest-commission intents first
-const sorted = intents.sort((a, b) =>
-  b.matcherCommissionBps - a.matcherCommissionBps
-);
-
-for (const borrow of sorted) {
-  const match = findCompatibleLend(borrow);
-  if (match && isProfitable(match)) {
-    await executeMatch(match);
-  }
-}
-```
-
-**Optimal Strategy**:
-
-```typescript
-// Find globally optimal matching set
-const matches = findOptimalMatching(lendIntents, borrowIntents);
-
-for (const match of matches) {
-  await executeMatch(match);
-}
-```
+###
 
 ### Competition
 
@@ -328,17 +301,6 @@ Users can also match intents directly without solvers:
 2. Click "Match" on compatible intent
 3. Sign transaction
 4. Receive loan (as borrower) or earn interest (as lender)
-
-### Via SDK
-
-```typescript
-// Direct match
-const tx = await sdk.lending.matchLoanIntents(
-  lendIntentHash,
-  borrowIntentHash,
-  fillAmount
-);
-```
 
 ## Intent Cancellation
 
@@ -364,45 +326,9 @@ await sdk.lending.cancelLendIntent(intentHash);
 * After intent is fully filled
 * During active loan (must repay instead)
 
-## Events
 
-### Intent Creation
 
-```solidity
-event LogLenderOfferPosted(
-    bytes32 indexed offerHash,
-    address indexed lender,
-    LendIntent intent
-);
 
-event LogBorrowerOfferPosted(
-    bytes32 indexed offerHash,
-    address indexed borrower,
-    BorrowIntent intent
-);
-```
-
-### Match Events
-
-```solidity
-event LogIntentsMatched(
-    uint256 indexed loanId,
-    bytes32 lendIntentHash,
-    bytes32 borrowIntentHash
-);
-
-event LendIntentFullyFilled(bytes32 indexed offerHash);
-event BorrowIntentFilled(bytes32 indexed offerHash);
-```
-
-### Cancellation
-
-```solidity
-event LogOfferCancelled(
-    bytes32 indexed offerHash,
-    address indexed offerer
-);
-```
 
 ## Edge Cases
 

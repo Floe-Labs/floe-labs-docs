@@ -12,19 +12,7 @@ Notable changes and updates to the Floe protocol.
 
 **Theme**: Security hardening, new notification channels, and ecosystem integrations.
 
-**Smart Contract Fixes**:
-
-* **Pyth fallback for ETH/USD** — Pyth now used as fallback when Chainlink ETH/USD feed is stale
-* **Chainlink validation** — Added validation checks to ETH/USD feed
-* **MAX\_LTV\_BPS enforcement** — Off-chain intents now validated against MAX\_LTV\_BPS
-* **Exact match enforcement** — When both parties disallow partial fill, exact amount matching is enforced
-* **Partial fill griefing prevention** — Off-chain partial fill griefing attack vector closed
-* **Replay attack prevention** — On-chain to off-chain intent replay attack prevented
-* **MulDiv precision** — Repayment calculations now use MulDiv for improved precision
-* **maxTotalRepayment validation** — Underwater liquidations validated against maxTotalRepayment
-* **Liquidation Callback Executor** — New contract for executing post-liquidation callbacks
-* **EVM size limit fix** — `canMatchLoanIntents` moved to LendingViews to stay within contract size limits
-* **Mainnet contract upgrade** — All fixes deployed to Base Mainnet
+**Smart Contract Fixes**
 
 **New Channels**:
 

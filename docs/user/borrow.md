@@ -10,8 +10,7 @@ Borrow USDT or USDC using collateral eg cbBTC or WETH as collateral on Floe.
 
 Borrowing on Floe works through **intents**:
 
-1. You can either manually MATCH an existing intent in the Borrow Page or CREATE a borrow intent with your desired terms\
-   ![](<../../.gitbook/assets/Screenshot 2026-01-17 at 15.24.43.png>)
+1. You can either manually MATCH an existing intent in the Borrow Page or CREATE a borrow intent with your desired terms
 2. Solvers match you with compatible lenders
 3. You receive USDC or USDT, your collateral eg cbBTC or WETH is held as collateral
 4. Repay principal + interest to get your collateral back
@@ -44,18 +43,16 @@ The marketplace shows lender offers with:
 * **Max LTV**: Liquidation threshold
 * **Duration**: Maximum loan length
 
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.26.13.png" alt=""><figcaption></figcaption></figure>
-
 ### 3. Choose a Preset (Recommended)
 
 Floe offers **preset templates** to help you get started with well-calibrated parameters:
 
-| Preset           | Collateral Ratio | Max Rate | Duration | Risk Level |
-| ---------------- | ---------------- | -------- | -------- | ---------- |
-| **Conservative** | Higher           | Lower    | Shorter  | Lower risk, more collateral |
-| **Balanced**     | Moderate         | Moderate | Moderate | Good trade-off |
+| Preset           | Collateral Ratio | Max Rate | Duration | Risk Level                   |
+| ---------------- | ---------------- | -------- | -------- | ---------------------------- |
+| **Conservative** | Higher           | Lower    | Shorter  | Lower risk, more collateral  |
+| **Balanced**     | Moderate         | Moderate | Moderate | Good trade-off               |
 | **Aggressive**   | Lower            | Higher   | Longer   | Less collateral, higher cost |
-| **Custom**       | You set          | You set  | You set  | Full control |
+| **Custom**       | You set          | You set  | You set  | Full control                 |
 
 Select a preset to auto-populate all fields, then adjust individual parameters if needed. The form starts in **Custom** mode by default.
 
@@ -68,11 +65,9 @@ Click **"Create Borrow Intent"** and enter:
 | Borrow Amount                 | USDC or USDT you need                                     | 5,000 USDC |
 | Collateral                    | WETH or cbBTC to deposit                                  | 2.0 WETH   |
 | Max Interest Rate             | Highest APR you'll accept                                 | 8%         |
-| Duration                      | Loan length (1W, 1M, 3M, 6M, or 1Y)                     | 1M         |
+| Duration                      | Loan length (1W, 1M, 3M, 6M, or 1Y)                       | 1M         |
 | Matcher Commission (optional) | Fee to incentivize solvers to match you with best intents | 0.3%       |
 | Expiry                        | How long intent stays active                              | 7 days     |
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.26.52.png" alt="" width="375"><figcaption></figcaption></figure>
 
 #### Market-Aware Token Selection
 
@@ -207,8 +202,6 @@ If ETH price rises, you can withdraw some:
 1. Click **"Withdraw Collateral"**
 2. Enter amount (max shown)
 3. Must stay below 77% LTV (3% buffer from 80%)
-
-<figure><img src="../../.gitbook/assets/Screenshot 2026-01-17 at 15.32.05.png" alt=""><figcaption></figcaption></figure>
 
 ## Liquidation
 

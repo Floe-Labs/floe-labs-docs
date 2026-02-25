@@ -17,36 +17,7 @@ Accurate price data is critical for:
 
 Floe uses a **dual-oracle system** with automatic failover and circuit breaker protection.
 
-## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        ORACLE SYSTEM                                 │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                      │
-│   ┌──────────────┐     ┌──────────────┐     ┌──────────────┐       │
-│   │   Chainlink  │────▶│    Pyth      │────▶│   Circuit    │       │
-│   │   (Primary)  │     │  (Fallback)  │     │   Breaker    │       │
-│   └──────────────┘     └──────────────┘     └──────────────┘       │
-│          │                    │                    │                │
-│          │                    │                    │                │
-│          ▼                    ▼                    ▼                │
-│   ┌─────────────────────────────────────────────────────────────┐  │
-│   │                    Price Validation                          │  │
-│   │   • Positive price                                          │  │
-│   │   • Not stale (< 1 hour)                                    │  │
-│   │   • Within deviation bounds (15%)                           │  │
-│   │   • Sequencer online                                        │  │
-│   └─────────────────────────────────────────────────────────────┘  │
-│                              │                                      │
-│                              ▼                                      │
-│   ┌─────────────────────────────────────────────────────────────┐  │
-│   │                    Validated Price                           │  │
-│   │                    (8 decimal precision)                     │  │
-│   └─────────────────────────────────────────────────────────────┘  │
-│                                                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
 
 ## Price Sources
 
@@ -185,99 +156,11 @@ Circuit breaker allows:
 * ✅ Intent cancellation
 * ✅ View functions
 
-### Detection Logic
+###
 
-```solidity
-function isCircuitBreakerActive() public view returns (bool) {
-    // Check price validity
-    int256 price = getPrice(collateralToken);
-    if (price <= 0) return true;
 
-    // Check staleness
-    uint256 lastUpdate = getLastUpdateTime(collateralToken);
-    if (block.timestamp - lastUpdate > stalenessTimeout) return true;
 
-    // Check deviation
-    int256 lastValidPrice = getLastValidPrice(collateralToken);
-    uint256 deviation = calculateDeviation(price, lastValidPrice);
-    if (deviation > maxDeviationBps) return true;
-
-    // Check L2 sequencer
-    if (isSequencerDown()) return true;
-
-    return false;
-}
-```
-
-## L2 Sequencer Protection
-
-On Layer 2 networks (Base), the sequencer can go offline. During this time:
-
-* Users cannot submit transactions
-* Prices may become stale
-* Positions cannot be managed
-
-### Sequencer Feed
-
-```solidity
-AggregatorV3Interface sequencerFeed;
-
-function isSequencerUp() internal view returns (bool) {
-    (, int256 answer, , uint256 startedAt, ) =
-        sequencerFeed.latestRoundData();
-
-    // Check if sequencer is up
-    bool isUp = answer == 0;
-
-    // Check grace period after recovery
-    bool passedGracePeriod =
-        block.timestamp - startedAt > sequencerGracePeriod;
-
-    return isUp && passedGracePeriod;
-}
-```
-
-### Grace Period
-
-After sequencer recovers:
-
-1. **1 hour grace period** before operations resume
-2. Prevents immediate liquidations from stale prices
-3. Allows users to manage positions
-
-## Price Validation
-
-### Per-Operation Validation
-
-Each operation validates price freshness:
-
-```solidity
-function _validatePrice() internal view {
-    int256 price = getPrice(collateralToken);
-
-    require(price > 0, "PriceOracle: invalid price");
-    require(!isStale(price), "PriceOracle: stale price");
-    require(!exceedsDeviation(price), "PriceOracle: price deviation");
-    require(isSequencerUp(), "PriceOracle: sequencer down");
-}
-```
-
-### Deviation Check
-
-```solidity
-uint256 constant MAX_DEVIATION_BPS = 1500; // 15%
-
-function exceedsDeviation(int256 currentPrice)
-    internal view returns (bool)
-{
-    int256 lastValid = lastValidPrice[token];
-
-    // Calculate percentage deviation
-    uint256 deviation = abs(currentPrice - lastValid) * 10000 / lastValid;
-
-    return deviation > MAX_DEVIATION_BPS;
-}
-```
+###
 
 ## Configuration
 
@@ -329,36 +212,7 @@ When circuit breaker is active:
 
 **Recommendation**: Monitor circuit breaker status and prepare transactions.
 
-## Monitoring
-
-### Circuit Breaker Status
-
-```graphql
-query CircuitBreakerStatus {
-  CircuitBreakerState {
-    isActive
-    reason
-    activatedAt
-    lastPriceUpdate
-  }
-}
-```
-
-### Price History
-
-```graphql
-query PriceHistory($token: String!) {
-  PriceUpdate(
-    where: { token: { _eq: $token } }
-    order_by: { timestamp: desc }
-    limit: 100
-  ) {
-    price
-    source
-    timestamp
-  }
-}
-```
+##
 
 ## Error Codes
 
