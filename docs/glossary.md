@@ -86,3 +86,24 @@ The L2 (Base) transaction ordering service. Floe's circuit breaker checks sequen
 
 ## Domain Separator
 An EIP-712 value that binds signatures to a specific contract on a specific chain, preventing cross-chain and cross-contract replay attacks.
+
+## AgentKit
+Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `@floe/agentkit-actions` package provides 23 protocol actions as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP.
+
+## Credit Score
+An on-chain creditworthiness score computed by [Cred Protocol](https://cred.xyz) based on DeFi lending/borrowing history. Displayed as a radar chart on the Floe dashboard and as tier badges in the loan book. Informational only — does not gate access.
+
+## Grace Period
+A configurable window of time after a loan's expiry date during which the borrower can still repay without being liquidated. Once the grace period ends, the loan becomes eligible for liquidation.
+
+## Minimum Interest
+A floor on the total interest earned by a lender on any loan. Ensures that short-duration or small-principal loans are still economically worthwhile.
+
+## Safe (Gnosis Safe)
+A multi-signature smart contract wallet. Floe supports Safe natively — Safe wallets are detected automatically, forced to on-chain transaction mode, and shown Safe-aware messaging for co-signer confirmation.
+
+## Flash Arbitrage
+A strategy that uses a flash loan to exploit price differences between Floe and external DEXs (like Aerodrome) within a single atomic transaction. Executed via a deployed FlashArbReceiver contract.
+
+## Duration Range
+An intent parameter specifying minimum and maximum acceptable loan durations instead of a single fixed value. Increases matching flexibility by allowing the matcher to select any duration within the overlapping range of a lend/borrow pair.

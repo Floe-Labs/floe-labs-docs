@@ -22,6 +22,14 @@ All Floe smart contracts deployed on supported networks.
 | -------------------- | -------------------------------------------- |
 | LendingIntentMatcher | `0x17946cD3e180f82e632805e5549EC913330Bb175` |
 | PriceOracle          | `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` |
+| LendingViews         | `0x9101027166bE205105a9E0c68d6F14f21f6c5003` |
+
+### Aerodrome (Flash Arb)
+
+| Contract        | Address                                      |
+| --------------- | -------------------------------------------- |
+| SwapRouter      | `0xBE6D8f0d05cC4be24d5167a3eF062215bE6D18a5` |
+| QuoterV2        | `0x254cF9E1E6e233aa1AC962CB9B05b2cFeAAe15b0` |
 
 ### Token Addresses
 
@@ -126,6 +134,7 @@ For production applications:
 | `stalenessTimeout`    | 3,600 sec   | Oracle staleness threshold                    |
 | `maxDeviationBps`     | 1,500 (15%) | Max price deviation before circuit breaker    |
 | `liquidationBonus`    | 500 (5%)    | Bonus for liquidators                         |
+| `gracePeriod`         | 86,400 sec  | Grace period after loan expiry (24 hours)     |
 
 ***
 
@@ -135,6 +144,7 @@ All contracts are verified on Basescan:
 
 * [LendingIntentMatcher](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175#code)
 * [PriceOracle](https://basescan.org/address/0xEA058a06b54dce078567f9aa4dBBE82a100210Cc#code)
+* [LendingViews](https://basescan.org/address/0x9101027166bE205105a9E0c68d6F14f21f6c5003#code)
 
 ***
 

@@ -100,6 +100,42 @@ The protocol automatically pauses if:
 * L2 sequencer is down
 * Price returns zero
 
+## Grace Period
+
+When a loan reaches its expiry, a **grace period** gives the borrower additional time to repay before the loan becomes eligible for liquidation. The grace period is a protocol-level parameter set by governance.
+
+During the grace period:
+
+* The loan is overdue but **not yet liquidatable**
+* Interest continues to accrue
+* The borrower can still repay in full
+
+Once the grace period expires, the loan becomes eligible for liquidation.
+
+## Minimum Interest
+
+Every loan enforces a **minimum interest** amount — a floor on the total interest a lender receives, regardless of how short the loan duration or how small the principal. This prevents dust loans or extremely short-term loans from being economically meaningless for lenders.
+
+## Duration Ranges
+
+Intents now support **min and max duration** instead of a single fixed value. A lender can offer "30 to 90 days" and a borrower can request "14 to 60 days" — the matcher selects a compatible duration within the overlap.
+
+This improves matching rates by expanding the set of compatible intent pairs.
+
+## Credit Scores
+
+Floe integrates with [Cred Protocol](https://cred.xyz) to display **on-chain credit scores**. Scores reflect your track record of repaying loans, maintaining healthy collateral, and avoiding liquidations across DeFi.
+
+Credit scores are **informational only** — they don't gate access to any features. They appear as a radar chart on your dashboard and as tier badges (Excellent / Good / Fair / New) in the loan book. See [Credit Scores](../user/credit-scores.md) for details.
+
+## Safe / Multisig Support
+
+Floe works natively inside **Safe{Wallet}** (formerly Gnosis Safe). When connected via a Safe, the app:
+
+* Forces on-chain transaction mode (no off-chain signatures)
+* Shows Safe-aware messaging ("Transaction Proposed" instead of "Success")
+* Guides co-signers to confirm in the Safe app
+
 ## Lendr AI
 
 **Lendr** is an AI assistant that helps you:
@@ -131,11 +167,15 @@ Markets are created by governance and have their own:
 
 ## Summary
 
-| Concept       | Description                               |
-| ------------- | ----------------------------------------- |
-| Intent        | Signed message expressing desired outcome |
-| Matcher       | Bot that matches compatible intents       |
-| Isolated Loan | Per-match escrow with own terms           |
-| LTV           | Loan value ÷ collateral value             |
-| Oracle        | Price feed (Chainlink + Pyth)             |
-| Lendr         | AI assistant for the protocol             |
+| Concept        | Description                                       |
+| -------------- | ------------------------------------------------- |
+| Intent         | Signed message expressing desired outcome         |
+| Matcher        | Bot that matches compatible intents               |
+| Isolated Loan  | Per-match escrow with own terms                   |
+| LTV            | Loan value ÷ collateral value                     |
+| Oracle         | Price feed (Chainlink + Pyth)                     |
+| Grace Period   | Buffer time after expiry before liquidation        |
+| Min Interest   | Floor interest amount per loan                     |
+| Duration Range | Min/max duration for flexible matching             |
+| Credit Score   | On-chain creditworthiness via Cred Protocol        |
+| Lendr          | AI assistant for the protocol                      |

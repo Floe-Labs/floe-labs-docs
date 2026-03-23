@@ -8,6 +8,50 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.3.0 - AgentKit, Flash Loans & Safe Support (March 2026)
+
+**Theme**: AI agent integration, flash loan infrastructure, multisig support, and smart contract parameter updates.
+
+**AgentKit Integration**:
+
+* **@floe/agentkit-actions** — 23 AI agent actions for Floe via [Coinbase AgentKit](https://docs.cdp.coinbase.com/agent-kit/). Supports Vercel AI SDK, LangChain, OpenAI Agents SDK, and MCP server for Claude Desktop/Cursor.
+* **floe-agent CLI** — Interactive terminal agent for testing all 23 actions without framework code
+* **Flash Loan Actions** — `flash_loan`, `flash_arb`, `estimate_flash_arb_profit`, `get_flash_loan_fee`, `get_flash_arb_balance`
+* **Deploy Actions** — `deploy_flash_arb_receiver`, `check_flash_arb_readiness`, `verify_flash_arb_receiver`
+
+**Flash Loans**:
+
+* **Flash Loan Support** — Uncollateralized loans borrowed and repaid within a single transaction via `flashLoan()` on LendingIntentMatcher
+* **FlashArbReceiver** — Deployable contract for executing flash arbitrage through Aerodrome DEX on Base
+* **Pre-Flight Checks** — Automated verification of fee readability, WETH liquidity, circuit breaker status, and SwapRouter availability before deployment
+
+**Credit Scores**:
+
+* **Cred Protocol Integration** — On-chain credit scores displayed on the dashboard as a radar chart and as tier badges (Excellent/Good/Fair/New) in the loan book
+* **Shareable Score Cards** — Generate and share credit score card images on X/Twitter and other platforms
+
+**Safe / Multisig Support**:
+
+* **Safe App Manifest** — Floe loads natively inside the Safe{Wallet} App Store
+* **safeWallet Connector** — Automatic detection via RainbowKit; Safe wallets bypass WalletConnect
+* **On-Chain Mode** — Safe wallets are forced to on-chain transaction mode (no EIP-712 signing)
+* **Safe-Aware Messaging** — Submission modals show "Transaction Proposed" with instructions for co-signer confirmation
+
+**Smart Contract Updates**:
+
+* **Grace Period** — Configurable grace period after loan expiry before liquidation is allowed
+* **Minimum Interest** — Floor interest amount ensuring lenders receive a minimum return on short-duration or small loans
+* **Duration Ranges** — Intents now specify min/max duration instead of a single value, improving matching flexibility
+* **Oracle Hardening** — Additional staleness and deviation checks on Chainlink + Pyth feeds
+
+**UX Improvements**:
+
+* **Design System Overhaul** — FLOE-001 through FLOE-012 design tokens, consistent spacing, typography, and color system
+* **Loan Book Wizard** — Step-by-step guided flow for creating and matching intents
+* **X-Bot Notifications** — LendrBot posts intent summaries and post-match alerts on X/Twitter
+
+***
+
 ### v1.2.0 - Smart Contract Hardening (February 2026)
 
 **Theme**: Security hardening, new notification channels, and ecosystem integrations.
@@ -208,10 +252,11 @@ const config = {
 ### Planned Features
 
 * Term Protection v2 — penalty-based and no-prepayment enforcement on-chain
-* AI Portfolio Agent — Claude-powered portfolio management advisor replacing current chatbot
+* AI Portfolio Agent — autonomous portfolio management via AgentKit
 * Mobile-optimized experience
 * Advanced matching algorithms and solver strategies
 * Protocol governance and fee distribution
+* Multi-chain expansion beyond Base
 
 ***
 
