@@ -1,0 +1,128 @@
+---
+icon: python
+---
+
+# Python SDK
+
+The `floe-agentkit-actions` package provides a Coinbase AgentKit ActionProvider with 23 Floe protocol actions for Python environments.
+
+## Installation
+
+```bash
+# Core package
+pip install floe-agentkit-actions
+
+# With CLI support
+pip install floe-agentkit-actions[cli]
+
+# With LangChain integration
+pip install floe-agentkit-actions[langchain]
+```
+
+## Quick Start
+
+### As an AgentKit Provider
+
+```python
+from coinbase_agentkit import AgentKit, AgentKitConfig
+from floe_agentkit_actions import floe_action_provider
+
+agentkit = AgentKit(AgentKitConfig(
+    wallet_provider=wallet_provider,
+    action_providers=[floe_action_provider()],
+))
+```
+
+### Standalone Usage
+
+Call actions directly without an AI framework:
+
+```python
+from floe_agentkit_actions import floe_action_provider
+
+floe = floe_action_provider()
+result = floe.get_price(wallet_provider, {
+    "collateral_token": "0x4200000000000000000000000000000000000006",  # WETH
+    "loan_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",      # USDC
+})
+print(result)
+```
+
+## Framework Integrations
+
+### LangChain
+
+```python
+from floe_agentkit_actions.integrations.langchain import get_floe_langchain_tools
+
+tools = get_floe_langchain_tools(wallet_provider)
+# Pass tools to a LangChain agent
+```
+
+### OpenAI Function Calling
+
+```python
+from floe_agentkit_actions.integrations.openai_agents import get_floe_openai_tools
+
+tools = get_floe_openai_tools(wallet_provider)
+# Pass tools to an OpenAI Agents SDK agent
+```
+
+## CLI: `floe-agent`
+
+Interactive AI-powered DeFi agent with support for OpenAI, Claude, and Ollama.
+
+```bash
+# Install with CLI extras
+pip install floe-agentkit-actions[cli]
+
+# Run
+floe-agent
+```
+
+The CLI prompts for wallet provider, AI provider, and RPC URL. Configuration is saved for reuse.
+
+### Example Session
+
+```
+You: What markets are available?
+  -> Lists all Floe lending markets with rates, LTV bounds
+
+You: Post a lend intent for 100 USDC at 5% APR
+  -> Auto-approves USDC, posts the lending offer on-chain
+
+You: Check the health of loan #42
+  -> Shows current LTV, liquidation threshold, buffer percentage
+```
+
+## Wallet Providers
+
+| Provider | Use Case |
+|----------|----------|
+| `EvmWalletProvider` | **Development / scripting** — raw private key |
+| `CdpWalletProvider` | **Production agents** — MPC-managed via CDP API |
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `PRIVATE_KEY` | Wallet private key (0x...) |
+| `CDP_API_KEY_NAME` | Coinbase CDP API key name |
+| `CDP_API_KEY_PRIVATE_KEY` | Coinbase CDP API secret |
+| `OPENAI_API_KEY` | OpenAI API key (for CLI) |
+| `ANTHROPIC_API_KEY` | Anthropic API key (for CLI) |
+| `BASE_RPC_URL` | Custom Base RPC URL (recommended) |
+
+## Development
+
+```bash
+# Install in editable mode with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+```
+
+## Source Code
+
+GitHub: [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py)

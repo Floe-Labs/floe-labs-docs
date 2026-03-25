@@ -28,6 +28,8 @@
 * [Run a Solver Bot](docs/developers/run-solver-bot.md)
 * [Run a Liquidation Bot](docs/developers/run-liquidation-bot.md)
 * [AgentKit Integration](docs/developers/agentkit.md)
+  * [TypeScript SDK](docs/developers/agentkit-typescript.md)
+  * [Python SDK](docs/developers/agentkit-python.md)
 
 ## Reference
 

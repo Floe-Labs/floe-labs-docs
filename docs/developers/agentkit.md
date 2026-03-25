@@ -8,29 +8,26 @@ Build AI agents that can lend, borrow, match intents, execute flash loans, and m
 
 ## What is AgentKit?
 
-AgentKit is Coinbase's open-source framework that gives AI agents on-chain capabilities. `@floe/agentkit-actions` is a custom ActionProvider that exposes 23 Floe protocol actions, making Floe a first-class verb alongside "transfer" and "swap" in any AgentKit agent.
+AgentKit is Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe provides custom ActionProviders that expose **23 protocol actions**, making Floe a first-class verb alongside "transfer" and "swap" in any AgentKit agent.
 
-Works with any AI framework: Vercel AI SDK, LangChain, OpenAI Agents SDK, or as an MCP server for Claude Desktop and Cursor.
+## Choose Your SDK
 
-## Installation
+| | TypeScript | Python |
+|---|-----------|--------|
+| **Package** | `@floe/agentkit-actions` | `floe-agentkit-actions` |
+| **Install** | `npm install @floe/agentkit-actions` | `pip install floe-agentkit-actions` |
+| **Runtime** | Node.js 18+ | Python 3.10+ |
+| **AI Frameworks** | Vercel AI SDK, LangChain, MCP Server, OpenAI Agents SDK | LangChain, OpenAI Function Calling |
+| **CLI** | `floe-agent` (via npx) | `floe-agent` (via pip) |
+| **GitHub** | [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions) | [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py) |
 
-```bash
-npm install @floe/agentkit-actions @coinbase/agentkit viem zod
-```
+Both SDKs provide the same 23 actions with identical behavior. Choose based on your stack.
 
-## Quick Start
+> **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
 
-```typescript
-import { AgentKit } from "@coinbase/agentkit";
-import { floeActionProvider } from "@floe/agentkit-actions";
+## Actions Reference (23 total)
 
-const agentkit = await AgentKit.from({
-  walletProvider: myWalletProvider,
-  actionProviders: [floeActionProvider()], // defaults to Base Mainnet
-});
-```
-
-## Actions (23 total)
+All actions are available in both TypeScript and Python SDKs.
 
 ### Read Actions (8)
 
@@ -40,7 +37,7 @@ const agentkit = await AgentKit.from({
 | `get_loan` | Get detailed loan information (participants, health, time remaining) |
 | `get_my_loans` | Get all loans for the connected wallet |
 | `check_loan_health` | Check loan health — current LTV vs liquidation threshold |
-| `get_price` | Get oracle price for a collateral/loan token pair |
+| `get_price` | Get oracle price for a collateral/loan token pair (Chainlink + Pyth) |
 | `get_accrued_interest` | Get interest accrued on a loan |
 | `get_liquidation_quote` | Get profit/loss breakdown for liquidating an unhealthy loan |
 | `get_intent_book` | Look up an on-chain lend or borrow intent by hash |
@@ -54,18 +51,22 @@ const agentkit = await AgentKit.from({
 | `match_intents` | Match a lend + borrow intent to create a loan |
 | `repay_loan` | Repay a loan fully or partially (with slippage protection) |
 | `add_collateral` | Add collateral to improve loan health |
-| `withdraw_collateral` | Withdraw excess collateral |
+| `withdraw_collateral` | Withdraw excess collateral (enforces safety buffer) |
 | `liquidate_loan` | Liquidate an unhealthy loan |
+
+All write actions auto-approve tokens to the LendingIntentMatcher with a 1% buffer before submitting. Repay and liquidate actions include configurable slippage protection (default 5%).
 
 ### Flash Loan Actions (5)
 
 | Action | Description |
 |--------|-------------|
 | `get_flash_loan_fee` | Get the protocol's flash loan fee (in bps) |
-| `estimate_flash_arb_profit` | Simulate a multi-leg arb route via Aerodrome |
-| `flash_loan` | Execute a raw flash loan (receiver must be a contract) |
+| `estimate_flash_arb_profit` | Simulate a multi-leg arb route via Aerodrome QuoterV2 |
+| `flash_loan` | Execute a raw flash loan (receiver must implement `IFlashloanReceiver`) |
 | `flash_arb` | Execute a flash arb via a deployed FlashArbReceiver |
 | `get_flash_arb_balance` | Check accumulated profit in a FlashArbReceiver |
+
+> **`flash_loan` vs `flash_arb`:** `flash_loan` sends tokens to `msg.sender` and calls `receiveFlashLoan()` — your connected wallet must be a smart contract. EOA wallets will revert. Use `flash_arb` instead, which routes through a pre-deployed FlashArbReceiver contract that handles repayment automatically.
 
 ### Deploy / Verify Actions (3)
 
@@ -75,82 +76,34 @@ const agentkit = await AgentKit.from({
 | `check_flash_arb_readiness` | Check environment readiness (fee, liquidity, oracle, router) |
 | `verify_flash_arb_receiver` | Verify a receiver's owner and immutable config |
 
-## Framework Integrations
-
-### Vercel AI SDK
-
-```typescript
-import { getVercelAITools } from "@coinbase/agentkit-vercel-ai-sdk";
-import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
-
-const tools = await getVercelAITools(agentkit);
-
-const { text } = await generateText({
-  model: openai("gpt-4o"),
-  tools,
-  maxSteps: 10,
-  prompt: "Check the health of loan #42",
-});
-```
-
-### LangChain
-
-```typescript
-import { getLangChainTools } from "@coinbase/agentkit-langchain";
-
-const tools = await getLangChainTools(agentkit);
-```
-
-### MCP Server (Claude Desktop / Cursor)
-
-Expose all 23 Floe actions as MCP tools:
-
-```bash
-npm install @coinbase/agentkit-model-context-protocol @modelcontextprotocol/sdk
-```
-
-```typescript
-import { getMcpTools } from "@coinbase/agentkit-model-context-protocol";
-
-const mcpTools = await getMcpTools(agentkit);
-```
-
-This lets any MCP-compatible client (Claude Desktop, Cursor, etc.) use Floe actions as tools.
-
-## CLI: `floe-agent`
-
-Interactive agent for testing all 23 actions without writing framework code:
-
-```bash
-cd agentkit-actions
-npm run build
-npx tsx src/cli/bin.ts
-```
-
-The CLI prompts for wallet provider (Private Key or CDP), AI provider (OpenAI, Anthropic, or Ollama), and RPC URL. Configuration is saved to `.floe-agent.json` for reuse.
-
-### Example Session
+## Flash Arb Flow
 
 ```
-You: Check flash arb readiness
-  -> Shows fee, WETH liquidity, circuit breaker, SwapRouter status
-
-You: Deploy a FlashArbReceiver for me
-  -> Pre-flight checks, deploys contract, stores address in session
-
-You: Execute a flash arb: borrow 0.01 WETH, swap WETH -> USDC tick spacing 100, then USDC -> WETH tick spacing 100, min profit 0
-  -> Submits the flash arb transaction
+1. deploy_flash_arb_receiver  →  Deploys FlashArbReceiver (stores address in session)
+2. check_flash_arb_readiness  →  Validates fee, liquidity, circuit breaker, router
+3. estimate_flash_arb_profit  →  Simulates arb route via Aerodrome QuoterV2
+4. flash_arb                  →  Borrows tokens → swaps via Aerodrome → repays + keeps profit
+5. get_flash_arb_balance      →  Check accumulated profit in receiver
 ```
 
-## Wallet Providers
+## Contract Addresses (Base Mainnet)
 
-| Provider | Use Case | Setup |
-|----------|----------|-------|
-| `CdpV2WalletProvider` | **Production** (recommended) | CDP API credentials |
-| `CdpSmartWalletProvider` | **Gasless on Base** | CDP Smart Wallet API |
-| `ViemWalletProvider` | **Development** | `PRIVATE_KEY` env var |
+| Contract | Address |
+|----------|---------|
+| LendingIntentMatcher | `0x17946cD3e180f82e632805e5549EC913330Bb175` |
+| LendingViews | `0x9101027166bE205105a9E0c68d6F14f21f6c5003` |
+| PriceOracle | `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` |
+| Aerodrome SwapRouter | `0xBE6D8f0d05cC4be24d5167a3eF062215bE6D18a5` |
+| Aerodrome QuoterV2 | `0x254cF9E1E6e233aa1AC962CB9B05b2cFeAAe15b0` |
+| WETH | `0x4200000000000000000000000000000000000006` |
 
-## Source Code
+## How Floe Differs from Aave/Compound
 
-GitHub: [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions)
+| Feature | Aave/Compound | Floe |
+|---------|--------------|------|
+| Model | Pool-based, variable rate | Intent-based, fixed rate |
+| Rate | Algorithmic, changes per block | Fixed at match time |
+| Term | Open-ended | Fixed duration |
+| Matching | Automatic (pool) | Solver bots match offers |
+| Liquidation | Pool absorbs bad debt | Per-loan, with incentive |
+| Flash loans | From pool reserves | From protocol with receiver contract |
