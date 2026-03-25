@@ -24,6 +24,8 @@ AgentKit is Coinbase's open-source framework that gives AI agents on-chain capab
 Both SDKs provide the same 23 actions with identical behavior. Choose based on your stack.
 
 > **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
+>
+> **Need working capital for your agent?** See [Agent Working Capital](agent-working-capital.md) for credit facility actions that let agents request, match, and manage fixed-rate loans.
 
 ## Actions Reference (23 total)
 
