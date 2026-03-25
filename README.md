@@ -4,9 +4,9 @@ icon: hand-wave
 
 # Introduction
 
-**Intent-based P2P lending on Base**
+Structured credit and financing **on Base**
 
-Floe lets you borrow USDC or USDT against collateral eg cbBTC or WETH or earn yield by lending — with custom terms, no pools, and AI assistance.
+Floe lets you borrow USDC or USDT against collateral eg cbBTC or WETH or earn yield by lending — with custom terms, no pools.
 
 {% embed url="https://www.loom.com/share/54748b0841f94948bfc959ac0ff58080" %}
 
