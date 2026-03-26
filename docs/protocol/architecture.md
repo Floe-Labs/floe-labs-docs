@@ -139,6 +139,32 @@ function matchLoanIntents(...) external {
 
 
 
+## Loan Terms
+
+### Minimum Loan Duration
+
+The protocol enforces `minDuration > 0` — the absolute minimum loan term is **1 second**. There is no hard floor beyond non-zero. Users and agents set their own min/max duration range on each intent.
+
+The protocol admin sets a configurable maximum duration (default **365 days**, hard ceiling 100 years).
+
+### Grace Period
+
+Lenders set a `gracePeriod` on their intent — the number of seconds after loan duration expires before overdue liquidation can trigger.
+
+* Protocol enforces bounds: **minimum 1 day**, **maximum 30 days** (configurable by admin)
+* If the lender sets 0, the protocol default minimum (1 day) applies
+* A loan becomes overdue (and liquidatable) only after `duration + gracePeriod` has fully elapsed
+
+### Minimum Interest (Early Repayment)
+
+Lenders can set `minInterestBps` — a minimum interest charge expressed as a percentage of full-term interest:
+
+* **0** = no minimum; borrower can repay anytime and only pays accrued interest
+* **10,000 (100%)** = borrower owes full-term interest even if repaying on day 1
+* **Example:** 5,000 bps (50%) on a 30-day loan at 12% APR means the borrower always pays at least 50% of the 30-day interest, regardless of when they repay
+
+This is only enforced on **early repayment** (before maturity). It does **not** apply to liquidations.
+
 ## Security Model
 
 ### Access Control
