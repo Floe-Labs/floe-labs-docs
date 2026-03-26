@@ -1,0 +1,4726 @@
+# Floe Protocol — Complete Documentation
+
+> Floe is an intent-based peer-to-peer DeFi lending protocol on Base. This document contains the complete documentation for the protocol, app, and developer tools.
+
+---
+
+
+# Introduction
+
+Structured credit and financing **on Base**
+
+Floe lets you borrow USDC or USDT against collateral eg cbBTC or WETH or earn yield by lending — with custom terms, no pools.
+
+
+
+## Get Started
+
+**App**: [app.floelabs.xyz](https://app.floelabs.xyz)
+
+1. Connect your wallet
+2. Choose to Lend or Borrow
+3. Set your terms
+4. Get matched
+
+## Guides
+
+* [Quick Start](docs/getting-started/quick-start.md) — 5 minutes to your first loan
+* [How to Borrow](docs/user/borrow.md) — Get USDC or USDT against collateral
+* [How to Lend](docs/user/lend.md) — Earn yield on stablecoins
+* [LendrBot](docs/user/lendr-ai.md) — Chat assistant for help
+
+## Key Info
+
+|                |                                                                                                 |
+| -------------- | ----------------------------------------------------------------------------------------------- |
+| **Network**    | Base Mainnet                                                                                    |
+| **Contract**   | [`0x17946cD3...Bb175`](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175) |
+| **Loan Token** | USDC, USDT                                                                                      |
+| **Collateral** | WETH, cbBTC                                                                                     |
+
+## Learn More
+
+* [Core Concepts](docs/getting-started/core-concepts.md)
+* [Risk & Liquidations](docs/user/risk-liquidations.md)
+* [How Matching Works](docs/protocol/orderbook-matching.md)
+* [FAQ](faq/general.md)
+
+## Help
+
+* **In-App or X**: Use LendrBot chat or @LendrBot on X
+* **Twitter**: [@FloeLabs](https://twitter.com/FloeLabs)
+
+---
+
+# Quick Start
+
+Get started with Floe in 5 minutes.
+
+Floe Demo: [https://www.loom.com/share/54748b0841f94948bfc959ac0ff58080](https://www.loom.com/share/54748b0841f94948bfc959ac0ff58080)
+
+
+
+## What You'll Need
+
+* A wallet (MetaMask, Rainbow, Coinbase Wallet, etc.)
+* ETH and WETH or cbBTC on Base (for gas + collateral if borrowing)
+* USDC or USDT on Base (if earning / lending)
+
+## Step 1: Connect Your Wallet
+
+1. Go to [app.floelabs.xyz](https://app.floelabs.xyz)
+2. Click **"Connect Wallet"**
+3. Select your wallet provider
+4. Approve the connection
+5. Switch to **Base Mainnet** if prompted
+
+## Step 2: Choose Your Role
+
+### Want to Borrow?
+
+Go to the **Borrow** page to either:
+
+* Browse available Borrow offers and Manually Match OR
+* Create a borrow intent with your terms to get matched automatically
+* Get matched and receive USDC or USDT
+
+**You'll need**: WETH or cbBTC (e.g.) as collateral
+
+### Want to Lend?
+
+Go to the **Earn** page to:
+
+* Browse Earn offers and manually match; OR
+* Create a lend offer with your terms to get automatically matched
+* Get matched and earn interest
+
+**You'll need**: USDC or USDT to earn / lend
+
+## Step 3: Create an Intent
+
+### For Borrowers
+
+1. Go to My Intents; Click **"Create Borrow Intent"**
+2. Enter:
+   * **Amount**: How much USDC or USDT you need
+   * **Collateral**: How much WETH to deposit
+   * **Max Rate**: Highest APR you'll accept
+   * **Duration**: How long you need the loan
+3. Set **Matcher Commission** (0.1-2% typical)
+4. Approve WETH and submit
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-02-25 at 8.58.46 AM.png" alt=""><figcaption></figcaption></figure>
+
+###
+
+### For Lenders
+
+1. Click **"Create Loan Book"**
+2. Enter:
+   * **Amount**: How much USDC or USDT to lend and earn on
+   * **Min Rate**: Lowest APR you'll accept
+   * **Max LTV**: Maximum loan-to-value ratio
+   * **Duration**: Maximum loan length
+3. Approve USDC and submit
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-02-25 at 8.59.29 AM.png" alt=""><figcaption></figcaption></figure>
+
+## Step 4: Get Matched
+
+Once your intent is live:
+
+1. **Solver bots** scan for compatible matches
+2. When found, they execute the match on-chain
+3. **Borrowers**: Receive USDC automatically
+4. **Lenders**: Start earning interest immediately
+
+Check the **My Intents** page to monitor status.
+
+## Step 5: Manage Your Position
+
+### Active Loans
+
+Go to **Loans** to:
+
+* View your active positions
+* Monitor loan health (LTV)
+* Add collateral if needed
+* Repay when ready
+
+<figure><img src="../../.gitbook/assets/Screenshot 2026-02-25 at 8.59.46 AM.png" alt=""><figcaption></figcaption></figure>
+
+### Key Actions
+
+
+
+| Action         | Who      | How                              |
+| -------------- | -------- | -------------------------------- |
+| Repay          | Borrower | Click "Repay" on loan card       |
+| Add Collateral | Borrower | Click "Add Collateral"           |
+| Cancel Intent  | Anyone   | Click "Cancel" on pending intent |
+
+## Quick Tips
+
+### For Faster Matching
+
+* **Borrowers**: Manually match existing offer from Borrow page; or create intent with competitive rates and matcher commission
+* **Lenders**: Manually match existing earn offers or create lend intent and set reasonable min rates and allow partial fills
+
+### For Safety
+
+* Start with small amounts
+* Maintain 10%+ buffer below liquidation LTV
+* Monitor positions during volatile markets
+
+## Need Help?
+
+* **Lendr AI**: Click the chat icon for instant help
+* **Docs**: You're here!
+
+## Next Steps
+
+* [Borrow Guide](../user/borrow.md)
+* [Lend Guide](../user/lend.md)
+* [Understanding Risk](../user/risk-liquidations.md)
+* [Using Lendr AI](../user/lendr-ai.md)
+
+---
+
+# Core Concepts
+
+Understanding the key concepts that power the Floe protocol.
+
+## Intents
+
+An **intent** is a signed message expressing what you want to achieve, not how to achieve it.
+
+### Lend Intent
+
+A lender's offer to provide capital:
+
+* **Amount**: How much USDT or USDC to lend / earn on.
+* **Min Interest Rate**: Minimum APR you'll accept
+* **Max LTV**: Maximum loan-to-value ratio (liquidation threshold)
+* **Duration**: Maximum loan duration
+* **Expiry**: When the offer expires if not matched
+
+### Borrow Intent
+
+A borrower's request for a loan:
+
+* **Amount**: How much USDC to borrow
+* **Collateral**: eg WETH to put up as security
+* **Max Interest Rate**: Maximum APR you'll pay
+* **Min LTV**: Your target loan-to-value ratio
+* **Duration**: How long you want the loan
+
+### Intent Matching
+
+2 options. A. Manually match existing intents. B. Auto matching in which two intents match when:
+
+1. Same market (USDC/WETH)
+2. Rate compatible (borrower max ≥ lender min)
+3. LTV gap ≥ 8% (borrower's LTV + 8% ≤ lender's max LTV)
+4. Duration compatible (borrower ≤ lender)
+5. Both intents not expired
+
+## Matchers (Solvers)
+
+**Matchers** are off-chain bots that:
+
+1. Monitor for open intents
+2. Find compatible pairs
+3. Submit match transactions on-chain
+4. Earn commission for successful matches
+
+Floe's matching is permissionless. Anyone can run a matcher. See developers page.
+
+## Isolated Loans
+
+Each loan is **isolated** with its own:
+
+* Principal amount
+* Collateral escrow
+* Interest rate
+* Liquidation threshold
+* Duration
+
+Unlike pool-based protocols, **bad debt doesn't spread** between loans, markets or across the protocol.
+
+## Loan-to-Value (LTV)
+
+LTV measures how much you've borrowed relative to your collateral value:
+
+```
+LTV = (Loan Value / Collateral Value) × 100%
+```
+
+### LTV Zones
+
+| Zone        | Range                                 | Status            |
+| ----------- | ------------------------------------- | ----------------- |
+| Safe        | Loan LTV Below Liquidation LTV        | Healthy           |
+| Buffer      | Loan LTV Within 8% of liquidation LTV | Caution           |
+| Danger      | Loan LTV Within 3% of liquidation     | High risk         |
+| Liquidation | Loan LTV At or above max LTV          | Can be liquidated |
+
+### Key Parameters
+
+| Parameter         | Value | Description                                          |
+| ----------------- | ----- | ---------------------------------------------------- |
+| Min LTV Gap       | 8%    | Required gap between origination and liquidation LTV |
+| Withdrawal Buffer | 3%    | Cannot withdraw collateral within 3% of liquidation  |
+| Liquidation Bonus | 5%    | Incentive for liquidators                            |
+
+## Oracles
+
+Floe uses a **dual-oracle system**:
+
+1. **Chainlink** (Primary): Industry-standard decentralized price feeds
+2. **Pyth** (Fallback): High-frequency price updates
+
+### Circuit Breaker
+
+The protocol automatically pauses if:
+
+* Price is stale (>1 hour old)
+* Price deviates >15%
+* L2 sequencer is down
+* Price returns zero
+
+## Grace Period
+
+When a loan reaches its expiry, a **grace period** gives the borrower additional time to repay before the loan becomes eligible for liquidation. The grace period is a protocol-level parameter set by governance.
+
+During the grace period:
+
+* The loan is overdue but **not yet liquidatable**
+* Interest continues to accrue
+* The borrower can still repay in full
+
+Once the grace period expires, the loan becomes eligible for liquidation.
+
+## Minimum Interest
+
+Every loan enforces a **minimum interest** amount — a floor on the total interest a lender receives, regardless of how short the loan duration or how small the principal. This prevents dust loans or extremely short-term loans from being economically meaningless for lenders.
+
+## Duration Ranges
+
+Intents now support **min and max duration** instead of a single fixed value. A lender can offer "30 to 90 days" and a borrower can request "14 to 60 days" — the matcher selects a compatible duration within the overlap.
+
+This improves matching rates by expanding the set of compatible intent pairs.
+
+## Credit Scores
+
+Floe integrates with [Cred Protocol](https://cred.xyz) to display **on-chain credit scores**. Scores reflect your track record of repaying loans, maintaining healthy collateral, and avoiding liquidations across DeFi.
+
+Credit scores are **informational only** — they don't gate access to any features. They appear as a radar chart on your dashboard and as tier badges (Excellent / Good / Fair / New) in the loan book. See [Credit Scores](../user/credit-scores.md) for details.
+
+## Safe / Multisig Support
+
+Floe works natively inside **Safe{Wallet}** (formerly Gnosis Safe). When connected via a Safe, the app:
+
+* Forces on-chain transaction mode (no off-chain signatures)
+* Shows Safe-aware messaging ("Transaction Proposed" instead of "Success")
+* Guides co-signers to confirm in the Safe app
+
+## Lendr AI
+
+**Lendr** is an AI assistant that helps you:
+
+* Create intents in natural language
+* Monitor loan health
+* Get market information
+* Understand protocol features
+
+Example: "Borrow 5000 USDC for 30 days at max 6% APR"
+
+## Markets
+
+A **market** defines a loan/collateral token pair. Floe currently has **4 active markets**:
+
+| Market | Loan Token | Collateral Token |
+| ------ | ---------- | ---------------- |
+| USDC/WETH | USDC | WETH |
+| USDC/cbBTC | USDC | cbBTC |
+| USDT/WETH | USDT | WETH |
+| USDT/cbBTC | USDT | cbBTC |
+
+Markets are created by governance and have their own:
+
+* Default interest rate
+* Default LTV
+* Protocol fee
+* Liquidation incentive
+
+## Summary
+
+| Concept        | Description                                       |
+| -------------- | ------------------------------------------------- |
+| Intent         | Signed message expressing desired outcome         |
+| Matcher        | Bot that matches compatible intents               |
+| Isolated Loan  | Per-match escrow with own terms                   |
+| LTV            | Loan value ÷ collateral value                     |
+| Oracle         | Price feed (Chainlink + Pyth)                     |
+| Grace Period   | Buffer time after expiry before liquidation        |
+| Min Interest   | Floor interest amount per loan                     |
+| Duration Range | Min/max duration for flexible matching             |
+| Credit Score   | On-chain creditworthiness via Cred Protocol        |
+| Lendr          | AI assistant for the protocol                      |
+
+---
+
+
+# How to Lend
+
+Earn interest by lending USDT or USDC to borrowers on Floe.
+
+## Overview
+
+Lending on Floe works through **intents**:
+
+1. Match existing intents in Earn Offers screen
+2. or create a loan book
+3. If you create an intent, Solvers match you with compatible borrowers
+4. Borrower deposits collateral, you provide USDC or USDT
+5. Earn interest until repayment
+
+## Before You Start
+
+**You'll need:**
+
+* USDC or USDT on Base
+* ETH for gas fees
+* Wallet connected to Base Mainnet
+
+**Understand:**
+
+* Your USDC or USDT is locked in the loan until repayment
+* Borrowers provide WETH or cbBTC or another collateral (overcollateralized)
+* In extreme cases, you may receive collateral instead of USDC or USDT
+
+## Step-by-Step Guide
+
+### 1. Go to Lender Workspace
+
+Navigate to [app.floelabs.xyz](https://app.floelabs.xyz) and click **Earn**.
+
+### 2. Review Borrow Requests
+
+The marketplace shows borrower intents with:
+
+* **Amount Requested**: USDC they want to borrow
+* **Collateral**: ETH they're offering
+* **Max Rate**: Highest rate they'll pay
+* **Duration**: How long they need it
+* **Matcher Commission**: What solvers earn
+
+### 3. Choose a Preset (Recommended)
+
+Floe offers **preset templates** to help you get started with well-calibrated parameters:
+
+| Preset           | Min Rate | Max LTV  | Duration | Risk Level                |
+| ---------------- | -------- | -------- | -------- | ------------------------- |
+| **Conservative** | Higher   | Lower    | Shorter  | Lower risk, fewer matches |
+| **Balanced**     | Moderate | Moderate | Moderate | Good trade-off            |
+| **Aggressive**   | Lower    | Higher   | Longer   | More matches, higher risk |
+| **Custom**       | You set  | You set  | You set  | Full control              |
+
+Select a preset to auto-populate all fields, then adjust individual parameters if needed. The form starts in **Custom** mode by default.
+
+### 4. Set Your Lend Intent Parameters
+
+Click **"Create Lend Intent"** and enter:
+
+| Field              | Description                                 | Example     |
+| ------------------ | ------------------------------------------- | ----------- |
+| Amount             | Total USDC or USDT to lend                  | 10,000 USDC |
+| Min Fill Amount    | Minimum per match                           | 1,000 USDC  |
+| Min Interest Rate  | Lowest APR you'll accept                    | 5%          |
+| Max LTV            | Liquidation threshold                       | 80%         |
+| Duration           | Maximum loan length (1W, 1M, 3M, 6M, or 1Y) | 3M          |
+| Allow Partial Fill | Match multiple borrowers?                   | Yes         |
+| Expiry             | How long intent stays active                | 14 days     |
+
+#### Duration Buckets
+
+Instead of typing an arbitrary number of days, select from predefined duration options: **1 Week, 1 Month, 3 Months, 6 Months, or 1 Year** (7, 30, 90, 180, 365 days). These standard durations improve matching compatibility since borrowers also pick from the same set.
+
+### 5. Configure Term Protection
+
+Under **Early Repayment Terms**, choose how borrowers can repay early:
+
+| Option            | Description                                              |
+| ----------------- | -------------------------------------------------------- |
+| **Flexible**      | Borrower can repay anytime with no penalty (default)     |
+| **Penalty**       | Borrower pays a fee for early repayment _(coming in v2)_ |
+| **No Prepayment** | Borrower must wait until maturity _(coming in v2)_       |
+
+Currently, **Flexible** is the active option. Penalty and No Prepayment options will be enforced on-chain in a future release.
+
+### 6. Review Risk Preview
+
+Before submitting, the **Risk Preview** panel shows a real-time assessment of your intent:
+
+* **Risk Level Badge** — Safe, Moderate, High, or Critical based on the gap between max LTV and liquidation threshold
+* **Estimated Yield** — Projected earnings based on your rate and duration
+* **LTV Buffer** — How much room exists between the borrower's starting LTV and your liquidation threshold
+* **Warnings** — Contextual alerts if your settings are aggressive (e.g., thin margin between max LTV and liquidation)
+
+This updates live as you adjust any parameter.
+
+### 7. Understand Your Terms
+
+```
+Your Intent:
+├── Lending: 10,000 USDC
+├── Min per match: 1,000 USDC
+├── Min Rate: 5% APR
+├── Max LTV: 80% (liquidation threshold)
+├── Max Duration: 3 Months
+├── Partial Fill: Enabled
+└── Early Repayment: Flexible
+```
+
+### 8. Approve and Submit
+
+1. Click **"Approve"**
+2. Confirm in your wallet
+3. Click **"Create Intent"**
+4. **Review the Confirmation Modal** — a summary of all parameters, risk level, estimated yield, and any warnings appears before the transaction fires
+5. Click **"Confirm"** to sign the transaction
+
+### 9. Wait for Match
+
+Your intent is now live. Solvers will match you when they find compatible borrowers.
+
+With partial fill enabled, your intent can match multiple borrowers until fully utilized.
+
+### 10. Loan Active
+
+Once matched:
+
+* Your USDC or USDT goes to the borrower
+* Borrower's collateral (cbBTC, WETH) is held as collateral
+* Interest accrues in your favor
+* View your loans in **Loans** page
+
+## Understanding Returns
+
+### Interest Calculation
+
+```
+Interest = Principal × (APR ÷ 365) × Days
+
+Example:
+- Principal: $5,000
+- APR: 6%
+- Duration: 30 days
+- Interest: $5,000 × 0.06 × (30/365) = $24.66
+- Total Return: $5,024.66
+```
+
+### Expected Returns Table
+
+| Amount  | APR | 30 Days | 60 Days | 90 Days |
+| ------- | --- | ------- | ------- | ------- |
+| $5,000  | 5%  | $20.55  | $41.10  | $61.64  |
+| $5,000  | 7%  | $28.77  | $57.53  | $86.30  |
+| $10,000 | 5%  | $41.10  | $82.19  | $123.29 |
+| $10,000 | 7%  | $57.53  | $115.07 | $172.60 |
+
+## Understanding Collateral
+
+### Max LTV Setting
+
+Your **Max LTV** becomes the **liquidation threshold** for matched loans:
+
+* Higher Max LTV = more matching opportunities, higher risk
+* Lower Max LTV = fewer matches, more protection
+
+| Max LTV | Risk Level   | Notes                    |
+| ------- | ------------ | ------------------------ |
+| 70%     | Conservative | Larger collateral buffer |
+| 75%     | Moderate     | Good balance             |
+| 80%     | Standard     | Common setting           |
+| 85%     | Aggressive   | Higher risk              |
+
+
+
+### The 8% Gap Rule
+
+Borrowers must maintain at least 8% gap between the Loan LTV and the Liquidation LTV:
+
+* Your Max LTV or Liquidation LTV: 80%
+* Borrower's starting LTV: ≤72%
+* Minimum buffer from day one: 8%+
+
+## Repayment Scenarios
+
+### Normal Repayment (Most Common)
+
+1. Borrower repays before due date
+2. You receive principal + interest in USDC or USDT
+3. Borrower gets their collateral e.g. cbBTC or WETH back
+
+### Liquidation (Solvent)
+
+If borrower's LTV exceeds liquidation LTV threshold or loan is overdue:
+
+1. Liquidator pays the debt
+2. You receive full principal + interest in USDC
+3. Liquidator takes borrower's collateral
+
+### Liquidation (Underwater)
+
+In extreme market crashes where collateral value < debt value:
+
+1. Liquidator pays discounted amount
+2. You receive what's available (may be less than owed)
+3. This is the "bad debt" scenario
+
+## Managing Your Positions
+
+### View Active Loans
+
+Go to **Loans** to see your active positions. Each loan card shows:
+
+* **LTV Donut Gauge** — Visual ring showing current LTV vs. liquidation threshold
+* **Hero Stats** — Current LTV %, liquidation LTV %, and time remaining at a glance
+* **Health Border** — Color-coded accent (green = safe, yellow = caution, orange = warning, red = critical)
+* **Accrued Interest** — Real-time interest earned
+* **Expandable Details** — Click to see match info, network, parties, and transaction links
+
+### Cancel Pending Intent
+
+If your intent hasn't been matched:
+
+1. Go to **My Intents**
+2. Click **"Cancel"**
+3. Your USDC or USDT allowance is released
+
+## Risk Management
+
+### Borrower Diversification&#x20;
+
+Don't put all funds in one loan:
+
+* Use **Partial Fill** to spread across multiple borrowers
+* Set **Min Fill Amount** (e.g., $1,000)
+
+### Duration Limits
+
+Shorter durations = less time for markets to move:
+
+* **Conservative**: 14-30 days
+* **Moderate**: 30-60 days
+* **Long-term**: 60-90 days
+
+### LTV Settings
+
+Balance opportunity vs. safety:
+
+* Lower Max LTV = more collateral protection
+* Higher Max LTV = more matching opportunities
+
+## Earnings Example
+
+```
+Scenario: Active lender over 1 month
+
+Capital: $20,000 USDC
+Strategy: 75% Max LTV, 5.5% min rate, partial fills
+
+Week 1: Matched 3 borrowers ($15,000 total)
+Week 2: Remaining $5,000 matched
+Average rate achieved: 6.2%
+
+Month-end:
+- Interest earned: $20,000 × 6.2% × (30/365) = $101.92
+- Gas costs: ~$1.00
+- Net earnings: ~$100.92
+
+Annualized: ~6.1% APY
+```
+
+## Tips for Lenders
+
+1. **Start with a preset**: Use Balanced or Conservative to get well-calibrated parameters
+2. **Check the risk preview**: Review estimated yield and warnings before submitting
+3. **Enable partial fills**: More matching opportunities across multiple borrowers
+4. **Set competitive rates**: Check market for current rates
+5. **Diversify**: Spread across multiple loans
+6. **Monitor positions**: Use the LTV donut gauge on loan cards to track borrower health
+7. **Understand liquidation**: Know how you're protected
+
+## Troubleshooting
+
+### Intent not matching?
+
+* Your min rate may be too high
+* Check current market rates
+* Consider lowering min rate slightly
+
+### Transaction failed?
+
+* Check ETH balance for gas
+* Ensure USDC is approved
+* Verify you're on Base Mainnet
+
+### Can't cancel intent?
+
+* Intent may be partially filled
+* Check if any matches occurred
+
+## Next Steps
+
+* [Understanding Risk & Liquidation](risk-liquidations.md)
+* [Using Lendr AI](lendr-ai.md)
+
+---
+
+
+# How to Borrow
+
+Borrow USDT or USDC using collateral eg cbBTC or WETH as collateral on Floe.
+
+## Overview
+
+Borrowing on Floe works through **intents**:
+
+1. You can either manually MATCH an existing intent in the Borrow Page or CREATE a borrow intent with your desired terms
+2. Solvers match you with compatible lenders
+3. You receive USDC or USDT, your collateral eg cbBTC or WETH is held as collateral
+4. Repay principal + interest to get your collateral back
+
+## Before You Start
+
+**You'll need:**
+
+* ETH on Base (for collateral + gas)
+* Wallet connected to Base Mainnet
+
+**Understand:**
+
+* Your collateral eg cbBTC or WETH is locked until you repay
+* If collateral price drops significantly, you may be liquidated
+* Interest accrues daily until repayment
+
+## Step-by-Step Guide
+
+### 1. Go to Borrow Page
+
+Navigate to [app.floelabs.xyz](https://app.floelabs.xyz) and click **Borrow**.
+
+### 2. Review Available Offers
+
+The marketplace shows lender offers with:
+
+* **Amount Available**: USDC you can borrow
+* **Interest Rate**: APR you'll pay
+* **Max LTV**: Liquidation threshold
+* **Duration**: Maximum loan length
+
+### 3. Choose a Preset (Recommended)
+
+Floe offers **preset templates** to help you get started with well-calibrated parameters:
+
+| Preset           | Collateral Ratio | Max Rate | Duration | Risk Level                   |
+| ---------------- | ---------------- | -------- | -------- | ---------------------------- |
+| **Conservative** | Higher           | Lower    | Shorter  | Lower risk, more collateral  |
+| **Balanced**     | Moderate         | Moderate | Moderate | Good trade-off               |
+| **Aggressive**   | Lower            | Higher   | Longer   | Less collateral, higher cost |
+| **Custom**       | You set          | You set  | You set  | Full control                 |
+
+Select a preset to auto-populate all fields, then adjust individual parameters if needed. The form starts in **Custom** mode by default.
+
+### 4. Set Your Borrow Intent Parameters
+
+Click **"Create Borrow Intent"** and enter:
+
+| Field                         | Description                                               | Example    |
+| ----------------------------- | --------------------------------------------------------- | ---------- |
+| Borrow Amount                 | USDC or USDT you need                                     | 5,000 USDC |
+| Collateral                    | WETH or cbBTC to deposit                                  | 2.0 WETH   |
+| Max Interest Rate             | Highest APR you'll accept                                 | 8%         |
+| Duration                      | Loan length (1W, 1M, 3M, 6M, or 1Y)                       | 1M         |
+| Matcher Commission (optional) | Fee to incentivize solvers to match you with best intents | 0.3%       |
+| Expiry                        | How long intent stays active                              | 7 days     |
+
+#### Market-Aware Token Selection
+
+Token dropdowns are filtered by available markets. For example, selecting **USDC** as your borrow asset automatically filters the collateral dropdown to show only tokens with active USDC markets (WETH, cbBTC). This prevents incompatible token combinations.
+
+#### Duration Buckets
+
+Select from predefined duration options: **1 Week, 1 Month, 3 Months, 6 Months, or 1 Year** (7, 30, 90, 180, 365 days). These standard durations improve matching compatibility since lenders also pick from the same set.
+
+### 5. Review Risk Preview
+
+Before submitting, the **Risk Preview** panel shows a real-time assessment:
+
+* **LTV Risk Level** — Safe, Moderate, High, or Critical badge based on your collateral ratio
+* **Collateral Ratio Indicator** — Visual gauge showing how your LTV compares to the liquidation threshold
+* **Liquidation Price Drop** — How much collateral price must fall before liquidation (e.g., "35% drop to liquidation")
+* **Estimated Total Repayment** — Principal + estimated interest at your max rate and duration
+* **Warnings** — Alerts for aggressive settings (e.g., thin liquidation buffer, high LTV)
+
+This updates live as you adjust any parameter, so you can experiment with different collateral amounts and rates to find your comfort zone.
+
+### 6. Understand Your Terms
+
+Before submitting, review:
+
+```
+Your Intent:
+├── Borrowing: 5,000 USDC
+├── Collateral: 2.0 WETH (~$7,000 at $3,500/ETH)
+├── Your LTV: 71%
+├── Max Rate: 8% APR
+├── Duration: 1 Month
+└── Matcher Fee: 0.3% ($15)
+```
+
+### 7. Approve and Submit
+
+1. Click **"Approve WETH"** (first time only)
+2. Confirm in your wallet
+3. Click **"Create Intent"**
+4. **Review the Confirmation Modal** — a summary of all parameters, risk level, estimated repayment, liquidation buffer, and any warnings appears before the transaction fires
+5. Click **"Confirm"** to sign the transaction
+
+
+
+
+
+### 8. Wait for Match
+
+Your intent is now live. Solvers will match you when they find a compatible lender. This typically happens within minutes.
+
+Check status in **My Intents**.
+
+### 9. Loan Active
+
+Once matched:
+
+* You receive USDC or USDT (minus matcher fee)
+* Your collateral (WETH or cbBTC) is locked
+* Interest starts accruing
+* View your loan in **Loans** page — each loan card shows an **LTV donut gauge**, **hero stats** (current LTV, liquidation threshold, time remaining), and a **health-state border** (green/yellow/orange/red)
+
+## Understanding LTV
+
+**Loan-to-Value (LTV)** = Loan Amount ÷ Collateral Value
+
+```
+Example:
+- Loan: $5,000 USDC
+- Collateral: 2 ETH × $3,500 = $7,000
+- LTV: $5,000 ÷ $7,000 = 71%
+```
+
+### The 8% Gap Rule
+
+Floe requires at least 8% gap between your borrow LTV and liquidation LTV:
+
+* If lender's max LTV is 80%, your borrow LTV must be ≤ 72%
+* This ensures you have buffer from day one
+
+## Repaying Your Loan
+
+### Calculate Repayment
+
+```
+Total = Principal + Interest
+
+Interest = Principal × (APR ÷ 365) × Days
+
+Example:
+- Principal: $5,000
+- APR: 6%
+- Duration: 30 days
+- Interest: $5,000 × 0.06 × (30/365) = $24.66
+- Total: $5,024.66
+```
+
+
+
+### Steps to Repay
+
+1. Go to **Loans** page
+2. Find your active loan
+3. Click **"Repay"**
+4. Approve USDC or USDT if needed
+5. Confirm transaction
+6. Your collateral is returned
+
+
+
+### Early Repayment
+
+You can repay anytime — no prepayment penalty under the default **Flexible** term. You only pay interest for time used.
+
+> **Note:** Lenders may set term protection options in the future (penalty-based or no-prepayment terms). Currently, all loans use Flexible repayment terms. Check your loan details for the applicable early repayment terms.
+
+## Managing Your Position
+
+### Add Collateral
+
+If collateral price drops, protect yourself:
+
+1. Go to loan in **Loans** page
+2. Click **"Add Collateral"**
+3. Enter ETH amount
+4. Confirm transaction
+
+### Withdraw Excess Collateral
+
+If ETH price rises, you can withdraw some:
+
+1. Click **"Withdraw Collateral"**
+2. Enter amount (max shown)
+3. Must stay below 77% LTV (3% buffer from 80%)
+
+## Liquidation
+
+### What Triggers Liquidation?
+
+Your loan can be liquidated when:
+
+1. **LTV exceeds threshold**: Your LTV goes above the liquidation LTV
+2. **Loan is overdue**: Duration has passed without repayment
+
+### What Happens?
+
+* A liquidator pays your debt
+* They receive your collateral + 5% bonus
+* You lose your collateral but owe nothing more
+
+### Prevention
+
+* Maintain 20%+ buffer below liquidation LTV
+* Add collateral when markets are volatile
+* Set price alerts for ETH
+* Repay before due date
+
+## Cost Breakdown
+
+| Fee                         | Amount                                       | Paid To |
+| --------------------------- | -------------------------------------------- | ------- |
+| Interest                    | Negotiated APR                               | Lender  |
+| Matcher Commission optional | 0.1-5% of loan depending on borrower setting | Solver  |
+| Gas                         | \~$0.10-0.30                                 | Network |
+
+**Example total cost for $5,000 loan at 6% for 30 days:**
+
+* Interest: $24.66
+* Matcher fee (0.3%): $15
+* Gas: \~$0.20
+* **Total: \~$40**
+
+## Tips for Borrowers
+
+1. **Start with a preset**: Use Conservative or Balanced to get safe defaults
+2. **Check the risk preview**: Watch the liquidation price drop % — aim for 25%+ buffer
+3. **Start conservative**: Borrow less than max, keep loan LTV low
+4. **Watch the market**: Monitor collateral price using the LTV donut gauge on your loan card
+5. **Set reminders**: Don't forget your due date
+6. **Use Lendr**: Ask the AI for help managing your loan
+7. **Keep USDC ready**: Have repayment funds available
+
+## Troubleshooting
+
+### Intent not matching?
+
+* Your max rate may be too low
+* Increase matcher commission
+* Check market activity
+
+### Transaction failed?
+
+* Check ETH balance for gas
+* Ensure WETH is approved
+* Verify you're on Base Mainnet
+
+### Can't add collateral?
+
+* Check WETH approval
+* Verify you have enough ETH
+
+## Next Steps
+
+* [Understanding Risk & Liquidation](risk-liquidations.md)
+* [Managing Your Loans](manage-loans.md)
+* [Using Lendr AI](lendr-ai.md)
+
+---
+
+
+# Risk & Liquidations
+
+Understanding risk is essential for using Floe safely. This guide explains how liquidation works and how to protect your positions.
+
+## How Liquidation Works
+
+### What Triggers Liquidation?
+
+A loan becomes liquidatable when **either** condition is met:
+
+1. **LTV Breach**: Current Loan LTV exceeds the liquidation LTV threshold
+2. **Overdue**: Loan duration has expired and borrower hasn't repaid
+
+### The Liquidation Formula
+
+```
+Current LTV = (Principal × 10,000) ÷ Collateral Value (in USDC)
+
+Liquidatable if:
+  Current LTV > Liquidation LTV (from lender's maxLtvBps)
+  OR
+  Current Time > Loan Start Time + Duration
+```
+
+### Example
+
+```
+Loan Details:
+- Principal: 5,000 USDC
+- Collateral: 2.5 ETH
+- Liquidation LTV: 80%
+
+At ETH = $4,000:
+- Collateral Value = $10,000
+- Current LTV = 5,000 / 10,000 = 50% ✅ Safe
+
+At ETH = $3,200:
+- Collateral Value = $8,000
+- Current LTV = 5,000 / 8,000 = 62.5% ✅ Safe
+
+At ETH = $2,600:
+- Collateral Value = $6,500
+- Current LTV = 5,000 / 6,500 = 77% ⚠️ Getting risky
+
+At ETH = $2,400:
+- Collateral Value = $6,000
+- Current LTV = 5,000 / 6,000 = 83% 🔴 LIQUIDATABLE
+```
+
+## Liquidation Process
+
+### Step 1: Detection
+
+* Liquidation bots continuously monitor loan health
+* When a loan becomes liquidatable, bots compete to liquidate it
+
+### Step 2: Execution
+
+The liquidator calls `liquidateLoan()`:
+
+* Pays off the borrower's debt (principal + accrued interest)
+* Receives the collateral + liquidation bonus
+
+### Step 3: Settlement
+
+**Solvent Liquidation** (collateral > debt):
+
+* Lender receives full repayment
+* Liquidator receives collateral + 5% bonus
+* Borrower loses collateral but debt is cleared
+
+**Underwater Liquidation** (collateral < debt):
+
+* Lender receives all collateral
+* Bad debt is realized
+* Borrower loses everything
+
+### Partial Liquidation
+
+For **solvent loans** (where collateral value exceeds debt), liquidators can choose to partially liquidate. This means they repay only a portion of the outstanding debt and receive proportional collateral plus the 5% liquidation bonus on that portion. The borrower's remaining loan continues with reduced principal and collateral.
+
+For **underwater loans** (where collateral value is less than debt), the loan must be fully liquidated — partial liquidation is not allowed.
+
+## Protection Mechanisms
+
+### For Borrowers
+
+#### 1. Buffer Your LTV
+
+Don't borrow at maximum LTV. Leave room for collateral price drops.
+
+| Risk Level   | Recommended LTV | Buffer        |
+| ------------ | --------------- | ------------- |
+| Conservative | 40-50%          | 30-40% buffer |
+| Moderate     | 50-60%          | 20-30% buffer |
+| Aggressive   | 60-70%          | 10-20% buffer |
+
+#### 2. Add Collateral Proactively
+
+If collateral price drops:
+
+1. Go to your loan in the **Loans** page
+2. Click **"Add Collateral"**
+3. Deposit more collateral to lower your LTV
+
+
+
+#### 3. Set External Price Alerts (coming soon on Floe)
+
+Use external tools to monitor collateral price and get notified when approaching your liquidation price.
+
+#### 4. Repay Early
+
+If you're worried about market conditions, repay your loan early. There's no prepayment penalty.
+
+### For Lenders
+
+#### 1. Set Appropriate Max LTV
+
+* Lower Max LTV = more collateral buffer = safer
+* Too low = fewer borrowers will match
+* Recommended: 75-80%
+
+#### 2. Prefer Shorter Durations
+
+Shorter loans = less time for prices to move against you.
+
+#### 3. Diversify
+
+Don't put all your capital in one loan. Spread across multiple borrowers.
+
+## LTV Gap Requirement
+
+Floe enforces a minimum 8% gap between:
+
+* **Origination Loan LTV**: The LTV when the loan is created
+* **Liquidation LTV**: The threshold where liquidation is allowed
+
+This ensures borrowers have buffer room from day one.
+
+```
+Example:
+- Lender sets Max LTV (Liquidation): 80%
+- Borrower's origination LTV must be ≤ 72%
+- Minimum 8% buffer at loan creation
+```
+
+## Oracle System
+
+Floe uses a robust dual-oracle system:
+
+### Primary: Chainlink
+
+* Industry-standard price feeds
+* High reliability and uptime
+
+### Fallback: Pyth Network
+
+* Activates if Chainlink fails
+* Provides redundancy
+
+### Circuit Breaker
+
+Protects against oracle manipulation:
+
+| Trigger                | Action            |
+| ---------------------- | ----------------- |
+| Price deviation > 15%  | Operations paused |
+| Stale price (> 1 hour) | Operations paused |
+| L2 sequencer down      | Operations paused |
+| Invalid price (0)      | Operations paused |
+
+When the circuit breaker is active:
+
+* New matches blocked
+* Repayments blocked
+* Liquidations blocked
+* Collateral operations blocked
+
+## Liquidation Economics
+
+### For Liquidators
+
+* Receive 5% bonus on collateral liquidated
+* Compete with other liquidators (first to execute wins bonus)
+
+### For Borrowers
+
+* Lose all collateral
+* Debt is cleared
+* No further obligation
+
+### For Lenders
+
+* Receive full repayment (if solvent)
+* Receive collateral (if underwater)
+
+## Bad Debt Scenarios
+
+In extreme cases where collateral value falls below debt:
+
+```
+Example:
+- Principal: 5,000 USDC
+- Interest owed: 100 USDC
+- Total debt: 5,100 USDC
+- Collateral: 2 ETH at $2,000 = $4,000
+
+Liquidation outcome:
+- Lender receives: 2 ETH ($4,000 value)
+- Bad debt: 5,100 - 4,000 = $1,100
+- Loss absorbed by lender
+```
+
+This is why overcollateralization and appropriate LTV limits are crucial.
+
+## Monitoring Tools
+
+### In-App Dashboard
+
+* View current LTV in real-time
+* See liquidation price
+* One-click add collateral
+
+## Best Practices Summary
+
+### Borrowers
+
+1. ✅ Maintain 20%+ buffer below liquidation LTV
+2. ✅ Monitor prices during volatile markets
+3. ✅ Add collateral proactively, not reactively
+4. ✅ Repay before maturity to avoid overdue liquidation
+5. ❌ Don't max out your borrowing capacity
+
+### Lenders
+
+1. ✅ Set Max LTV based on your risk tolerance
+2. ✅ Diversify across multiple loans
+3. ✅ Prefer shorter durations in volatile markets
+4. ✅ Understand that overcollateralization protects but doesn't eliminate risk
+5. ❌ Don't lend more than you can afford to lose
+
+## FAQ
+
+**Q: Can I be partially liquidated?** A: Yes. For solvent loans (where collateral value exceeds debt), liquidators can partially liquidate — repaying a portion of the debt and receiving proportional collateral. This reduces your position size rather than closing it entirely. Underwater loans (where collateral value is less than debt) must be fully liquidated.
+
+**Q: What if no liquidator executes my liquidation?** A: Liquidation bots are incentivized by the 5% bonus. In practice, liquidatable loans are processed quickly.
+
+**Q: Can I stop a liquidation once it starts?** A: No. Once the transaction is submitted, it cannot be stopped. Add collateral _before_ reaching liquidation.
+
+**Q: What happens to excess collateral after liquidation?** A: The liquidator receives all collateral. There's no return of excess to the borrower.
+
+---
+
+
+# Credit Scores
+
+Floe integrates with [Cred Protocol](https://cred.xyz) to display on-chain credit scores, giving lenders and borrowers transparency into counterparty creditworthiness.
+
+## What Are Credit Scores?
+
+Credit scores are computed by Cred Protocol based on your on-chain lending and borrowing history across DeFi protocols. They reflect your track record of repaying loans, maintaining healthy collateral ratios, and avoiding liquidations.
+
+Scores are **read-only** — Floe displays them but does not compute them. Your score is the same across all protocols that integrate Cred.
+
+## Where Scores Appear
+
+### Dashboard Radar Chart
+
+Your credit profile is visualized as a radar chart on the dashboard, showing multiple dimensions of your on-chain activity:
+
+* Repayment history
+* Collateral management
+* Protocol diversity
+* Activity volume
+* Account age
+
+### Loan Book Badges
+
+When browsing the loan book, each intent displays a credit tier badge for the counterparty. This helps lenders assess borrower reliability and helps borrowers identify established lenders.
+
+### Credit Tiers
+
+| Tier | Description |
+|------|-------------|
+| Excellent | Strong on-chain track record, minimal liquidations |
+| Good | Solid history with occasional risk events |
+| Fair | Limited history or some negative events |
+| New | Insufficient on-chain history to score |
+
+## Sharing Your Score
+
+You can share your credit score as a card image on social media. The share feature generates a tier-aware template with your score visualization, optimized for X/Twitter and other platforms.
+
+1. Go to the Dashboard
+2. Click the share button on your credit score card
+3. Copy the link or download the image
+
+## How Scores Affect Usage
+
+Credit scores are **informational only** — they do not gate access to any Floe features. Any wallet can lend, borrow, and interact with the protocol regardless of score.
+
+However, scores are visible to counterparties in the loan book, which may influence matching decisions when users manually select intents to match with.
+
+---
+
+# Using LendrBot AI
+
+LendrBot is Floe's AI assistant that lets you interact with the protocol using natural language — in-app, on X [@LendrBot](https://x.com/LendrBot), or on Telegram.
+
+## What is LendrBot?
+
+LendrBot is an AI agent that understands DeFi lending and can:
+
+* Create borrow and lend intents
+* Query your loans and positions
+* Explain market conditions
+* Help you understand the protocol
+* Execute actions on your behalf
+
+## Where to Access LendrBot
+
+### In-App Chat
+
+1. Open [app.floelabs.xyz](https://app.floelabs.xyz)
+2. Click the **chat icon** in the corner
+3. Start typing your request
+
+### X (Twitter)
+
+DM or mention [@LendrBot](https://x.com/LendrBot) with your requests. LendrBot posts intent summaries and post-match alerts automatically.
+
+### Telegram
+
+LendrBot is available on Telegram. Search for **LendrBot** or visit [t.me/LendrBot](https://t.me/LendrBot) to start chatting. The Telegram bot has the same capabilities as the in-app and X integrations — create intents, check positions, get help, and receive notifications.
+
+## Example Commands
+
+### Borrowing
+
+**Simple borrow request:**
+
+```
+"I want to borrow 5000 USDC"
+```
+
+Lendr will ask follow-up questions about collateral, rate, and duration.
+
+**Detailed borrow request:**
+
+```
+"Borrow $10,000 USDC against 3 ETH at max 7% interest for 30 days"
+```
+
+Lendr will create the intent with your exact specifications.
+
+**Check borrowing options:**
+
+```
+"What's the best rate I can get to borrow 5000 USDC right now?"
+```
+
+Lendr will scan available lend offers and show you options.
+
+### Lending
+
+**Simple lend request:**
+
+```
+"I want to lend 10,000 USDC"
+```
+
+Lendr will guide you through setting your terms.
+
+**Detailed lend request:**
+
+```
+"Create a lend offer for 20,000 USDC at minimum 5% APR, max 75% LTV, for up to 60 days"
+```
+
+**Check lending opportunities:**
+
+```
+"Show me borrowers looking for USDC loans"
+```
+
+### Managing Positions
+
+**Check your loans:**
+
+```
+"Show me my active loans"
+"What's my current LTV?"
+"Am I at risk of liquidation?"
+```
+
+**Take action:**
+
+```
+"Repay my loan"
+"Add 0.5 ETH collateral to my loan"
+"Cancel my pending lend intent"
+```
+
+### Market Information
+
+**Get market data:**
+
+```
+"What's the current ETH price?"
+"What are typical lending rates right now?"
+"How much liquidity is available for borrowing?"
+```
+
+**Understand the protocol:**
+
+```
+"How does liquidation work?"
+"What's the minimum collateral ratio?"
+"Explain the fee structure"
+```
+
+## Tips for Using LendrBot
+
+### Be Specific When Possible
+
+The more details you provide, the faster Lendr can help.
+
+❌ "I want a loan" ✅ "I want to borrow 5000 USDC using 2 ETH as collateral for 30 days"
+
+### Ask for Clarification
+
+If you're unsure about something, just ask:
+
+* "What does LTV mean?"
+* "Is 70% LTV safe?"
+* "What happens if ETH price drops?"
+
+### Confirm Before Executing
+
+Lendr will always show you a summary before executing any transaction:
+
+```
+Lendr: "I'll create a borrow intent for:
+- Amount: 5,000 USDC
+- Collateral: 2 ETH
+- Max Rate: 7% APR
+- Duration: 30 days
+
+Shall I proceed?"
+```
+
+### Use Natural Language
+
+You don't need to use specific commands. Just describe what you want in plain English:
+
+* "Help me earn interest on my USDC"
+* "I need to borrow some stablecoins"
+* "Check if my loan is healthy"
+
+## What Lendr Can't Do
+
+* **Access your private keys**: Lendr can only request signatures through your wallet
+* **Execute without approval**: Every transaction requires your wallet signature
+* **Give financial advice**: Lendr provides information, not investment recommendations
+* **Guarantee rates**: Market conditions change; rates shown are current but may change
+
+## Conversation Examples
+
+### Example 1: First-Time Borrower
+
+```
+You: "I'm new here. I have some ETH and want to borrow USDC."
+
+Lendr: "Welcome! I can help you borrow USDC using your ETH as collateral.
+A few questions:
+1. How much USDC do you need?
+2. How long do you need it for?
+
+Currently, lending rates range from 5-8% APR."
+
+You: "I need about $5,000 for 2 weeks"
+
+Lendr: "Got it. With current ETH price at $3,500, you'd need approximately
+2.2 ETH as collateral to maintain a safe 65% LTV.
+
+I found 3 lenders offering rates between 5.5-6.5% for your amount and duration.
+
+Would you like me to:
+A) Show you the available offers to match manually
+B) Create a borrow intent at 6.5% max rate and let solvers find you a match"
+
+You: "Let's do option B"
+
+Lendr: "Creating borrow intent:
+- Borrow: 5,000 USDC
+- Collateral: 2.2 ETH
+- Max Rate: 6.5% APR
+- Duration: 14 days
+- Estimated interest: ~$12.47
+
+Please confirm in your wallet to proceed."
+```
+
+### Example 2: Checking Loan Health
+
+```
+You: "Is my loan safe?"
+
+Lendr: "Let me check your active loans...
+
+You have 1 active loan:
+- Borrowed: 5,000 USDC
+- Collateral: 2.5 ETH ($8,750 at current price)
+- Current LTV: 57.1%
+- Liquidation LTV: 80%
+- Liquidation Price: $2,500/ETH
+
+✅ Your position is healthy with a 23% buffer before liquidation.
+
+ETH would need to drop 28.5% from current price to trigger liquidation."
+
+You: "What if ETH drops to $3,000?"
+
+Lendr: "At $3,000/ETH:
+- Collateral value: $7,500
+- LTV: 66.7%
+
+Still safe, but buffer reduces to 13.3%. Consider adding collateral
+if you're concerned about further drops."
+```
+
+## Privacy & Security
+
+* **No data storage**: Lendr doesn't store your conversation history
+* **Wallet signatures**: All actions require your explicit approval
+* **Read-only queries**: Checking balances and positions doesn't require signatures
+* **On-chain transparency**: All transactions are visible on the blockchain
+
+## Troubleshooting
+
+### Lendr isn't responding
+
+* Refresh the page
+* Check your internet connection
+* Try clearing browser cache
+
+### Lendr doesn't understand my request
+
+* Try rephrasing with more specific details
+* Break complex requests into smaller steps
+* Use simpler language
+
+### Transaction failed after Lendr created it
+
+* Check you have enough ETH for gas
+* Verify you're on Base Mainnet
+* Ensure token approvals are in place
+
+## Feedback
+
+Help us improve Lendr:
+
+* Use the thumbs up/down buttons on responses
+
+---
+
+
+# Architecture
+
+A deep dive into Floe's technical architecture and design decisions.
+
+## Overview
+
+Floe is an **intent-based peer-to-peer lending protocol** built on Base. Rather than using liquidity pools, Floe matches individual lender and borrower intents directly.
+
+## Design Philosophy
+
+### Why Intent-Based?
+
+Traditional DeFi lending uses **liquidity pools** (Aave, Compound):
+
+* Lenders deposit into a pool
+* Borrowers borrow from the pool
+* Rates are algorithmic (utilization-based)
+
+Floe uses **direct matching**:
+
+* Lenders specify exact terms they want
+* Borrowers specify exact terms they want
+* Solvers match compatible intents
+* No liquidity fragmentation
+
+**Benefits**:
+
+* Capital efficiency: No idle liquidity
+* Custom terms: Any rate, duration, LTV
+* Price discovery: Market-driven rates
+* Transparency: Know your counterparty
+
+### Why P2P?
+
+In Floe, each loan is between exactly one lender and one borrower:
+
+```
+Traditional Pool:
+[Lender1] ─┐
+[Lender2] ─┼─► [Pool] ─► [Borrower1]
+[Lender3] ─┘            [Borrower2]
+
+Floe P2P:
+[Lender1] ───────────► [Borrower1]
+[Lender2] ───────────► [Borrower2]
+```
+
+**Benefits**:
+
+* No bad debt socialization
+* Discrete risk per position
+* Full transparency on counterparty
+
+## Smart Contract Architecture
+
+
+
+### Why Delegatecall Pattern?
+
+The main contract delegates complex logic to a separate contract:
+
+```solidity
+// In LendingIntentMatcher
+function matchLoanIntents(...) external {
+    _delegateToLogics(abi.encodeCall(
+        LendingLogicsInternal.matchLoanIntents,
+        (...)
+    ));
+}
+```
+
+**Benefits**:
+
+* Contract size management (stay under 24KB limit)
+* Logic can be upgraded independently
+* Gas optimization for frequently called functions
+
+
+
+## Intent Lifecycle
+
+```
+┌───────────────┐
+│    Created    │ User submits intent on-chain
+└───────┬───────┘
+        │
+        ▼
+┌───────────────┐
+│     Open      │ Intent active, awaiting match
+└───────┬───────┘
+        │
+   ┌────┴────┐
+   │         │
+   ▼         ▼
+┌──────┐  ┌──────┐
+│Filled│  │Cancel│ User cancels OR expires
+└──────┘  └──────┘
+```
+
+###
+
+## Loan Lifecycle
+
+```
+┌───────────────┐
+│    Created    │ Intents matched
+└───────┬───────┘
+        │
+        ▼
+┌───────────────┐
+│    Active     │ Loan running, interest accruing
+└───────┬───────┘
+        │
+   ┌────┴────┬───────────┐
+   │         │           │
+   ▼         ▼           ▼
+┌──────┐  ┌──────┐  ┌──────────┐
+│Repaid│  │Overdue│ │Liquidated│
+└──────┘  └───┬───┘ └──────────┘
+              │
+              ▼
+         ┌──────────┐
+         │Liquidated│
+         └──────────┘
+```
+
+### Loan Operations
+
+| Operation            | Description                          |
+| -------------------- | ------------------------------------ |
+| `repayLoan`          | Borrower repays principal + interest |
+| `addCollateral`      | Borrower deposits more ETH           |
+| `withdrawCollateral` | Borrower withdraws excess ETH        |
+| `liquidateLoan`      | Anyone liquidates unhealthy loan     |
+
+
+
+## Loan Terms
+
+### Minimum Loan Duration
+
+The protocol enforces `minDuration > 0` — the absolute minimum loan term is **1 second**. There is no hard floor beyond non-zero. Users and agents set their own min/max duration range on each intent.
+
+The protocol admin sets a configurable maximum duration (default **365 days**, hard ceiling 100 years).
+
+### Grace Period
+
+Lenders set a `gracePeriod` on their intent — the number of seconds after loan duration expires before overdue liquidation can trigger.
+
+* Protocol enforces bounds: **minimum 1 day**, **maximum 30 days** (configurable by admin)
+* If the lender sets 0, the protocol default minimum (1 day) applies
+* A loan becomes overdue (and liquidatable) only after `duration + gracePeriod` has fully elapsed
+
+### Minimum Interest (Early Repayment)
+
+Lenders can set `minInterestBps` — a minimum interest charge expressed as a percentage of full-term interest:
+
+* **0** = no minimum; borrower can repay anytime and only pays accrued interest
+* **10,000 (100%)** = borrower owes full-term interest even if repaying on day 1
+* **Example:** 5,000 bps (50%) on a 30-day loan at 12% APR means the borrower always pays at least 50% of the 30-day interest, regardless of when they repay
+
+This is only enforced on **early repayment** (before maturity). It does **not** apply to liquidations.
+
+## Security Model
+
+### Access Control
+
+```solidity
+// Only borrower can repay their loan
+modifier onlyBorrower(uint256 loanId) {
+    require(loans[loanId].borrower == msg.sender);
+    _;
+}
+
+// Anyone can liquidate unhealthy loans
+function liquidateLoan(uint256 loanId) external {
+    require(isLiquidatable(loanId));
+    ...
+}
+```
+
+
+
+
+
+## Upgradeability
+
+### UUPS Pattern
+
+```solidity
+contract LendingIntentMatcherUpgradeable is
+    UUPSUpgradeable,
+    OwnableUpgradeable
+{
+    function _authorizeUpgrade(address newImpl)
+        internal
+        override
+        onlyOwner
+    {}
+}
+```
+
+**Why UUPS?**
+
+* Smaller proxy contract (cheaper deployment)
+* Upgrade logic in implementation
+* Owner-controlled upgrades
+
+### Upgrade Safety
+
+* Storage layout preserved across upgrades
+* New variables added at end of storage
+* Existing functionality maintained
+
+##
+
+## Next Steps
+
+* [Intent Matching](02-intent-matching.md)
+* [Oracle System](03-oracle-system.md)
+* [Fee Structure](04-fee-structure.md)
+* [Security Model](05-security-model.md)
+
+---
+
+
+# Intent Auto Matching
+
+How Floe matches lender and borrower intents to create loans.
+
+## Overview
+
+Intent matching is the core mechanism of Floe. Users create intents specifying their desired terms, and solvers (or users) match compatible pairs.
+
+```
+┌───────────────────────────────────────────────────────────────────────┐
+│                        MATCHING FLOW                                   │
+├───────────────────────────────────────────────────────────────────────┤
+│                                                                        │
+│   ┌────────────┐                              ┌────────────┐          │
+│   │   Lender   │                              │  Borrower  │          │
+│   │   Intent   │                              │   Intent   │          │
+│   │            │                              │            │          │
+│   │ • Amount   │     ┌────────────────┐       │ • Amount   │          │
+│   │ • Min Rate │     │    MATCHER     │       │ • Max Rate │          │
+│   │ • Max LTV  │────►│   (Solver)     │◄──────│ • Min LTV  │          │
+│   │ • Duration │     │                │       │ • Duration │          │
+│   │ • Expiry   │     │ Validates:     │       │ • Expiry   │          │
+│   └────────────┘     │ • Compatibility│       └────────────┘          │
+│                      │ • LTV gap      │                                │
+│                      │ • Amounts      │                                │
+│                      └───────┬────────┘                                │
+│                              │                                         │
+│                              ▼                                         │
+│                      ┌────────────────┐                                │
+│                      │     LOAN       │                                │
+│                      │   Created      │                                │
+│                      └────────────────┘                                │
+│                                                                        │
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+## Compatibility Rules
+
+For two intents to match, ALL conditions must be true:
+
+### 1. Same Market
+
+Both intents must be for the same loan/collateral token pair:
+
+```solidity
+require(lendIntent.marketId == borrowIntent.marketId);
+
+// Market ID = keccak256(loanToken, collateralToken)
+```
+
+### 2. Time Valid
+
+Both intents must be within their validity period:
+
+```solidity
+require(block.timestamp <= lendIntent.expiry);
+require(block.timestamp <= borrowIntent.expiry);
+```
+
+### 3. Duration Compatible
+
+Borrower's duration must not exceed lender's maximum:
+
+```solidity
+require(borrowIntent.duration <= lendIntent.duration);
+```
+
+### 4. Rate Compatible
+
+Borrower's max rate must meet lender's minimum:
+
+```solidity
+require(borrowIntent.maxInterestRateBps >= lendIntent.minInterestRateBps);
+```
+
+The loan uses the borrower's max rate (most favorable to lender).
+
+### 5. LTV Gap
+
+Protocol requires 8% gap between origination LTV and liquidation LTV:
+
+```solidity
+// minLtvGapBps = 800 (8%)
+require(borrowIntent.minLtvBps + minLtvGapBps <= lendIntent.maxLtvBps);
+```
+
+This ensures borrowers have buffer from liquidation at loan creation.
+
+### 6. Amount Available
+
+Lender must have sufficient remaining amount:
+
+```solidity
+uint256 remaining = lendIntent.amount - lendIntent.filledAmount;
+require(remaining >= fillAmount);
+require(fillAmount >= lendIntent.minFillAmount);
+```
+
+## Matching Examples
+
+### Compatible Match
+
+```
+Lend Intent:
+├─ Amount: 10,000 USDC
+├─ Min Rate: 5% APR
+├─ Max LTV: 80%
+├─ Duration: 60 days
+└─ Min Fill: 1,000 USDC
+
+Borrow Intent:
+├─ Amount: 3,000 USDC
+├─ Collateral: 1.5 ETH
+├─ Max Rate: 7% APR
+├─ Min LTV: 60%
+└─ Duration: 30 days
+
+Checks:
+✅ Same market (USDC/WETH)
+✅ Duration: 30 ≤ 60
+✅ Rate: 7% ≥ 5%
+✅ LTV gap: 60% + 8% = 68% ≤ 80%
+✅ Amount: 3,000 ≥ 1,000 min fill
+
+Result: COMPATIBLE
+Loan created at 7% APR, 60% origin LTV, 80% liquidation LTV
+```
+
+### Incompatible: Rate Mismatch
+
+```
+Lend Intent:
+├─ Min Rate: 8% APR
+└─ ...
+
+Borrow Intent:
+├─ Max Rate: 6% APR
+└─ ...
+
+Check: 6% < 8%
+❌ Rate incompatible
+```
+
+### Incompatible: LTV Gap
+
+```
+Lend Intent:
+├─ Max LTV: 75%
+└─ ...
+
+Borrow Intent:
+├─ Min LTV: 70%
+└─ ...
+
+Check: 70% + 8% = 78% > 75%
+❌ Insufficient LTV gap
+```
+
+## Fill Amounts
+
+### Full Fill
+
+Entire borrow amount matched from a single lend intent:
+
+```
+Lend: 10,000 USDC available
+Borrow: 3,000 USDC requested
+Fill: 3,000 USDC
+
+After:
+├─ Lend remaining: 7,000 USDC
+└─ Borrow: Fully filled (loan created)
+```
+
+### Partial Fill (Lend Intent)
+
+Lend intents with `allowPartialFill = true` can be matched multiple times:
+
+```
+Lend: 10,000 USDC (partial fill allowed)
+
+Match 1: Borrow 2,000 → Remaining: 8,000
+Match 2: Borrow 3,000 → Remaining: 5,000
+Match 3: Borrow 5,000 → Remaining: 0 (fully filled)
+```
+
+### Minimum Fill Enforcement
+
+```
+Lend: 10,000 USDC, minFill = 1,000
+
+Borrow: 500 USDC
+❌ Below minimum fill
+
+Borrow: 1,500 USDC
+✅ Meets minimum
+```
+
+## Loan Parameters Derivation
+
+When a match occurs, loan parameters are derived from both intents:
+
+| Loan Parameter  | Source                                      |
+| --------------- | ------------------------------------------- |
+| Principal       | Fill amount                                 |
+| Collateral      | Borrower's collateral (pro-rata if partial) |
+| Interest Rate   | Borrower's maxInterestRateBps               |
+| Origination LTV | Borrower's minLtvBps                        |
+| Liquidation LTV | Lender's maxLtvBps                          |
+| Duration        | Borrower's duration                         |
+| Start Time      | Block timestamp                             |
+
+## Matching Process
+
+### Onchain Matching
+
+```solidity
+function matchLoanIntents(
+    bytes32 lendIntentHash,
+    bytes32 borrowIntentHash,
+    uint256 fillAmount
+) external {
+    // 1. Load intents
+    LendIntent storage lend = lendIntents[lendIntentHash];
+    BorrowIntent storage borrow = borrowIntents[borrowIntentHash];
+
+    // 2. Validate compatibility
+    _validateMatch(lend, borrow, fillAmount);
+
+    // 3. Calculate loan parameters
+    Loan memory loan = _createLoan(lend, borrow, fillAmount);
+
+    // 4. Transfer tokens
+    _transferTokens(lend, borrow, fillAmount);
+
+    // 5. Pay matcher commission
+    _payCommission(borrow);
+
+    // 6. Update intent states
+    _updateIntents(lend, borrow, fillAmount);
+
+    // 7. Emit events
+    emit LogIntentsMatched(loan.loanId, lendIntentHash, borrowIntentHash);
+}
+```
+
+### Token Flows
+
+```
+Before Match:
+├─ Lender: USDC in wallet, approved to contract
+└─ Borrower: WETH in contract (deposited with intent)
+
+During Match:
+┌───────────────────────────────────────────────────┐
+│  Lender's USDC                                    │
+│       │                                           │
+│       ├──► (principal - commission) ──► Borrower  │
+│       │                                           │
+│       └──► (commission) ──► Matcher (solver)      │
+│                                                   │
+│  Borrower's WETH stays in contract as collateral  │
+└───────────────────────────────────────────────────┘
+
+After Match:
+├─ Borrower: Has USDC (minus commission)
+├─ Matcher: Has commission in USDC
+├─ Contract: Holds borrower's WETH collateral
+└─ Lender: Owed principal + interest (claim on repayment)
+```
+
+## Solver Mechanics
+
+### How Solvers Work
+
+1. **Monitor**: Query indexer for open intents
+2. **Find matches**: Algorithm finds compatible pairs
+3. **Prioritize**: Rank by profitability (commission)
+4. **Execute**: Call `matchLoanIntents` on-chain
+5. **Earn**: Receive matcher commission
+
+###
+
+### Competition
+
+* Multiple solvers compete to match intents
+* First to submit valid transaction wins
+* Gas price can determine winner in tight races
+
+## Manual Matching
+
+Users can also match intents directly without solvers:
+
+### Via Web App
+
+1. Browse open intents on marketplace
+2. Click "Match" on compatible intent
+3. Sign transaction
+4. Receive loan (as borrower) or earn interest (as lender)
+
+## Intent Cancellation
+
+### Before Match
+
+Users can cancel their pending intents:
+
+```typescript
+// Cancel borrow intent
+await sdk.lending.cancelBorrowIntent(intentHash);
+
+// Cancel lend intent
+await sdk.lending.cancelLendIntent(intentHash);
+```
+
+### Effects
+
+* **Borrow cancellation**: Collateral returned to borrower
+* **Lend cancellation**: USDC allowance remains (no transfer occurred)
+
+### Cannot Cancel
+
+* After intent is fully filled
+* During active loan (must repay instead)
+
+
+
+
+
+## Edge Cases
+
+### Race Conditions
+
+Multiple matchers may try to match the same intent:
+
+```
+Time T0: Intent A posted
+Time T1: Solver X finds match
+Time T2: Solver Y finds match
+Time T3: Solver X submits tx
+Time T4: Solver Y submits tx (reverts - already matched)
+```
+
+### Partial Fill Race
+
+```
+Lend intent: 5,000 USDC remaining
+
+Solver X: Match 3,000 (succeeds)
+Solver Y: Match 4,000 (reverts - only 2,000 remaining)
+```
+
+### Expiry During Match
+
+```
+Time T0: Intent expires at T+10
+Time T1: Solver finds match
+Time T5: Solver submits tx
+Time T12: Tx included (reverts - intent expired)
+```
+
+## Best Practices
+
+### For Borrowers
+
+1. Set competitive `maxInterestRateBps` for faster matching
+2. Include reasonable `matcherCommissionBps` (0.1-0.5%)
+3. Allow sufficient expiry time (7+ days)
+
+### For Lenders
+
+1. Set `allowPartialFill = true` for more matching opportunities
+2. Use reasonable `minFillAmount` (don't set too high)
+3. Competitive `minInterestRateBps` attracts more borrowers
+
+### For Solvers
+
+1. Monitor gas prices to ensure profitability
+2. Consider MEV protection for large matches
+3. Use efficient intent indexing
+
+## Next Steps
+
+* [Oracle System](03-oracle-system.md)
+* [Fee Structure](04-fee-structure.md)
+* [Run a Solver Bot](../developers/04-run-solver-bot.md)
+
+---
+
+
+# Oracles & Circuit Breaker
+
+How Floe obtains reliable price data for collateral valuation and liquidation decisions.
+
+## Overview
+
+Accurate price data is critical for:
+
+* Calculating loan-to-value (LTV) ratios
+* Determining liquidation eligibility
+* Protecting lenders from bad debt
+* Ensuring fair collateral operations
+
+Floe uses a **dual-oracle system** with automatic failover and circuit breaker protection.
+
+
+
+## Price Sources
+
+### Chainlink (Primary)
+
+[Chainlink Data Feeds](https://docs.chain.link/) provide:
+
+* Industry-standard price oracles
+* High reliability and uptime
+* Decentralized node network
+* Regular price updates
+
+```solidity
+// Chainlink price feed
+AggregatorV3Interface chainlinkFeed;
+
+function getChainlinkPrice() internal view returns (int256 price) {
+    (, price, , uint256 updatedAt, ) = chainlinkFeed.latestRoundData();
+    require(price > 0, "Invalid price");
+    require(block.timestamp - updatedAt < stalenessTimeout, "Stale price");
+}
+```
+
+### Pyth Network (Fallback)
+
+[Pyth Network](https://pyth.network/) provides:
+
+* High-frequency price updates
+* Cross-chain price feeds
+* Low-latency data
+* Backup when Chainlink is unavailable
+
+```solidity
+// Pyth price feed
+IPyth pythOracle;
+bytes32 pythPriceId;
+
+function getPythPrice() internal view returns (int256 price) {
+    PythStructs.Price memory pythPrice = pythOracle.getPrice(pythPriceId);
+    require(pythPrice.price > 0, "Invalid price");
+    return int256(pythPrice.price);
+}
+```
+
+## Oracle Failover
+
+```
+┌─────────────────────────────────────────┐
+│           getPrice(token)               │
+└─────────────────┬───────────────────────┘
+                  │
+                  ▼
+         ┌────────────────┐
+         │ Try Chainlink  │
+         └────────┬───────┘
+                  │
+         ┌────────▼────────┐
+         │  Price Valid?   │
+         └────────┬────────┘
+                  │
+          Yes ────┼──── No
+          │       │       │
+          │       │       ▼
+          │       │  ┌──────────┐
+          │       │  │ Try Pyth │
+          │       │  └────┬─────┘
+          │       │       │
+          │       │  ┌────▼────────┐
+          │       │  │ Price Valid?│
+          │       │  └────┬────────┘
+          │       │       │
+          │       │  Yes ─┼── No
+          │       │  │    │    │
+          ▼       ▼  ▼    │    ▼
+     ┌─────────────────┐  │ ┌────────────────┐
+     │  Return Price   │  │ │ Circuit Breaker│
+     └─────────────────┘  │ │    ACTIVE      │
+                          │ └────────────────┘
+                          │
+                          ▼
+                   Return Pyth Price
+```
+
+## Price Precision
+
+All prices use 8 decimal precision (10^8 = 100,000,000):
+
+```
+ETH/USD: $3,500.00 → 350000000000 (3500 × 10^8)
+USDC/USD: $1.00 → 100000000 (1 × 10^8)
+```
+
+### Conversion Example
+
+```solidity
+uint256 constant ORACLE_SCALE = 1e8;
+
+// Calculate collateral value in USD
+function getCollateralValue(uint256 collateral, int256 price)
+    internal pure returns (uint256)
+{
+    // collateral is in 18 decimals (ETH)
+    // price is in 8 decimals
+    // Result in 6 decimals (USDC)
+    return (collateral * uint256(price)) / (ORACLE_SCALE * 1e12);
+}
+```
+
+## Circuit Breaker
+
+The circuit breaker protects the protocol from oracle manipulation and failures.
+
+### Trigger Conditions
+
+| Condition       | Threshold | Description                       |
+| --------------- | --------- | --------------------------------- |
+| Invalid Price   | price ≤ 0 | Oracle returning zero or negative |
+| Stale Price     | > 1 hour  | Price hasn't updated              |
+| Price Deviation | > 15%     | Sudden price movement             |
+| Sequencer Down  | N/A       | L2 sequencer offline              |
+| Grace Period    | 1 hour    | Post-sequencer recovery           |
+
+### When Active
+
+Circuit breaker blocks:
+
+* ❌ New intent matching
+* ❌ Loan repayments
+* ❌ Liquidations
+* ❌ Collateral additions
+* ❌ Collateral withdrawals
+
+Circuit breaker allows:
+
+* ✅ Intent creation (stored but not matchable)
+* ✅ Intent cancellation
+* ✅ View functions
+
+###
+
+
+
+###
+
+## Configuration
+
+### Protocol Constants
+
+| Parameter              | Value       | Description            |
+| ---------------------- | ----------- | ---------------------- |
+| `ORACLE_SCALE`         | 10^8        | Price precision        |
+| `stalenessTimeout`     | 3,600 sec   | Max price age (1 hour) |
+| `maxDeviationBps`      | 1,500 (15%) | Max allowed deviation  |
+| `sequencerGracePeriod` | 3,600 sec   | Post-recovery wait     |
+
+### Token-Specific Feeds
+
+| Token    | Chainlink Feed | Pyth Price ID |
+| -------- | -------------- | ------------- |
+| ETH/USD  | Base Mainnet   | `0xff61...`   |
+| USDC/USD | Base Mainnet   | `0xeaa0...`   |
+
+## User Impact
+
+### For Borrowers
+
+When circuit breaker is active:
+
+* Cannot create new loans
+* Cannot repay existing loans
+* Cannot add collateral
+* **Risk**: Position may become liquidatable after breaker lifts
+
+**Recommendation**: Maintain healthy LTV buffer (20%+) to survive oracle downtime.
+
+### For Lenders
+
+When circuit breaker is active:
+
+* Cannot receive repayments
+* Cannot liquidate positions
+* **Risk**: Extended exposure during market volatility
+
+**Recommendation**: Account for oracle risk in LTV settings.
+
+### For Liquidators
+
+When circuit breaker is active:
+
+* Cannot execute liquidations
+* **Risk**: Miss liquidation opportunities
+
+**Recommendation**: Monitor circuit breaker status and prepare transactions.
+
+##
+
+## Error Codes
+
+| Error                  | Meaning               |
+| ---------------------- | --------------------- |
+| `CircuitBreakerActive` | Operations blocked    |
+| `StalePriceError`      | Price too old         |
+| `InvalidPriceError`    | Price <= 0            |
+| `PriceDeviationError`  | Exceeds 15% threshold |
+| `SequencerDownError`   | L2 sequencer offline  |
+
+## Security Considerations
+
+### Oracle Manipulation
+
+Protections against manipulation:
+
+1. **Decentralized sources**: Chainlink's node network
+2. **Deviation limits**: 15% max movement
+3. **Multiple sources**: Chainlink + Pyth fallback
+4. **Time-weighted**: Staleness checks
+
+### Flash Loan Attacks
+
+Oracle prices cannot be manipulated within a single transaction:
+
+* Chainlink uses off-chain aggregation
+* Pyth requires signed price updates
+* No on-chain DEX dependency
+
+## Testnet Considerations
+
+On testnet (Base Sepolia):
+
+* Pyth prices become stale after \~3 hours
+* Manual price updates may be required:
+
+```bash
+# Update Pyth prices on testnet
+PRIVATE_KEY="..." pnpm tsx scripts/update-pyth-prices-v2.ts
+```
+
+## Next Steps
+
+* [Fee Structure](04-fee-structure.md)
+* [Security Model](05-security-model.md)
+* [Error Codes Reference](../reference/02-error-codes.md)
+
+---
+
+
+# Flash Loans
+
+Floe supports flash loans — uncollateralized loans that must be borrowed and repaid within a single transaction. If the loan is not repaid by the end of the transaction, the entire transaction reverts.
+
+## How It Works
+
+1. A smart contract calls `flashLoan(token, amount, callbackData)` on the LendingIntentMatcher
+2. The protocol transfers `amount` of `token` to `msg.sender`
+3. The protocol calls `receiveFlashLoan(token, amount, callbackData)` on `msg.sender`
+4. The receiver executes its logic (arbitrage, liquidation, collateral swap, etc.)
+5. The receiver must repay `amount + fee` back to the protocol before the callback returns
+6. If repayment fails, the entire transaction reverts
+
+**Important:** The receiver (`msg.sender`) must be a smart contract implementing `IFlashloanReceiver`. EOA wallets cannot receive flash loans directly.
+
+## Fee
+
+Flash loans charge a fee in basis points, set by protocol governance. The fee is paid on top of the borrowed amount.
+
+## Flash Arbitrage
+
+Floe provides a **FlashArbReceiver** contract specifically for executing flash arbitrage through [Aerodrome](https://aerodrome.finance/) DEX on Base.
+
+### How Flash Arb Works
+
+```
+1. EOA calls FlashArbReceiver.executeArb(token, amount, params)
+2. FlashArbReceiver calls flashLoan() on LendingIntentMatcher
+3. Protocol sends tokens to FlashArbReceiver
+4. FlashArbReceiver executes multi-leg swaps on Aerodrome
+5. FlashArbReceiver repays loan + fee to protocol
+6. Profit remains in the FlashArbReceiver contract
+7. Owner withdraws profit via rescueTokens()
+```
+
+### Deploying a FlashArbReceiver
+
+Each user deploys their own FlashArbReceiver contract. The contract has immutable references to the LendingIntentMatcher and Aerodrome SwapRouter, and is owned by the deployer.
+
+This can be done via the [AgentKit CLI](../developers/agentkit.md) or programmatically through the `deploy_flash_arb_receiver` action.
+
+### Pre-Flight Checks
+
+Before deploying, the system verifies:
+
+* Flash loan fee is readable from the protocol
+* WETH liquidity exists in the protocol
+* Circuit breaker is not active
+* Aerodrome SwapRouter is deployed and functional
+
+## Use Cases
+
+| Use Case | Description |
+|----------|-------------|
+| **Arbitrage** | Exploit price differences between Floe and Aerodrome pools |
+| **Liquidation** | Borrow funds to liquidate unhealthy loans without upfront capital |
+| **Collateral swaps** | Swap collateral type within a single transaction |
+| **Debt refinancing** | Repay one loan and open another atomically |
+
+## Contract Addresses
+
+| Contract | Address |
+|----------|---------|
+| LendingIntentMatcher | `0x17946cD3e180f82e632805e5549EC913330Bb175` |
+| Aerodrome SwapRouter | `0xBE6D8f0d05cC4be24d5167a3eF062215bE6D18a5` |
+| Aerodrome QuoterV2 | `0x254cF9E1E6e233aa1AC962CB9B05b2cFeAAe15b0` |
+
+---
+
+# Security
+
+Floe's approach to security, risk mitigation, and protecting user funds
+
+
+
+## Upgrades & Governance
+
+## Audit Status
+
+### Completed Audits
+
+| Auditor  | Date          | Scope          | Findings   |
+| -------- | ------------- | -------------- | ---------- |
+| Omniscia | November 2025 | Core contracts | 0 critical |
+
+### Bug Bounty
+
+Contact: Immunefi
+
+##
+
+## Next Steps
+
+* [Error Codes Reference](../reference/02-error-codes.md)
+* [FAQ](../reference/03-faq.md)
+* [Risk & Liquidation](../user-guides/04-risk-and-liquidation.md)
+
+---
+
+# Run a Solver Bot
+
+Solver bots (also called Matchers) are the backbone of Floe's intent matching system. They scan for compatible intents and execute matches, earning fees in the process.
+
+## What is a Solver?
+
+Solvers are automated bots that:
+1. Monitor open lend and borrow intents
+2. Find compatible pairs based on matching criteria
+3. Execute the `matchLoanIntents` transaction
+4. Earn the matcher commission set by borrowers
+
+## Revenue Model
+
+Solvers earn the **matcher commission** set by borrowers:
+- Typical range: 0.1% - 0.5% of loan amount
+- Paid from the loan proceeds at settlement
+- Example: 0.3% on a $10,000 loan = $30
+
+## Prerequisites
+
+- Node.js 18+
+- Base Mainnet RPC (Alchemy or Infura recommended)
+- Funded wallet with ETH for gas
+- Capital for gas fees only (no loan capital needed)
+
+## Quick Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Floe-Labs/floe-monorepo.git
+cd floe-monorepo
+pnpm install
+pnpm build
+```
+
+### 2. Configure Environment
+
+```bash
+cd apps/solver
+cp .env.example .env
+```
+
+Edit `.env`:
+```bash
+# Required
+PRIVATE_KEY=your_private_key_here
+RPC_URL=https://base-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+
+# Optional
+LOG_LEVEL=info
+MATCHING_INTERVAL_MS=5000
+MIN_PROFIT_THRESHOLD_BPS=10
+```
+
+### 3. Run the Solver
+
+```bash
+pnpm start
+```
+
+## Configuration Options
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PRIVATE_KEY` | Wallet private key for signing transactions | Required |
+| `RPC_URL` | Base Mainnet RPC endpoint | Required |
+| `LOG_LEVEL` | Logging verbosity (debug, info, warn, error) | `info` |
+| `MATCHING_INTERVAL_MS` | How often to scan for matches (ms) | `5000` |
+| `MIN_PROFIT_THRESHOLD_BPS` | Minimum profit to execute match (basis points) | `10` |
+| `GAS_PRICE_MULTIPLIER` | Gas price buffer for faster inclusion | `1.2` |
+| `MAX_GAS_PRICE_GWEI` | Maximum gas price to use | `100` |
+
+## Matching Logic
+
+### Compatibility Requirements
+
+For two intents to be matchable:
+
+1. **Same Market**: Both intents must be for the same loan/collateral pair
+2. **Rate Compatible**: `borrower.maxInterestRate >= lender.minInterestRate`
+3. **LTV Compatible**: `borrower.minLtv + 800bps <= lender.maxLtv`
+4. **Duration Compatible**: `borrower.duration <= lender.duration`
+5. **Amount Available**: `lender.remainingAmount >= borrower.amount`
+6. **Not Expired**: Both intents must be within their validity period
+
+### LTV Gap Requirement
+
+The protocol enforces an 8% minimum gap between:
+- **Origination LTV** (borrower's `minLtvBps`)
+- **Liquidation LTV** (lender's `maxLtvBps`)
+
+```
+Valid Match: borrower.minLtvBps (60%) + 800 <= lender.maxLtvBps (75%) ✅
+Invalid:     borrower.minLtvBps (70%) + 800 <= lender.maxLtvBps (75%) ❌
+```
+
+## Profitability Calculation
+
+```typescript
+function calculateProfit(borrowIntent, lendIntent, fillAmount) {
+  const matcherCommission = fillAmount * borrowIntent.matcherCommissionBps / 10000;
+  const estimatedGasCost = gasPrice * gasLimit * ethPrice;
+
+  return matcherCommission - estimatedGasCost;
+}
+```
+
+The solver only executes matches where:
+```
+matcherCommission > gasCost + MIN_PROFIT_THRESHOLD
+```
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       SOLVER BOT                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │   Indexer   │───▶│  Matching   │───▶│  Executor   │     │
+│  │   Client    │    │   Engine    │    │             │     │
+│  └─────────────┘    └─────────────┘    └─────────────┘     │
+│         │                 │                   │             │
+│         ▼                 ▼                   ▼             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │   Envio     │    │ Profitability│   │  Blockchain │     │
+│  │   GraphQL   │    │   Scorer    │    │   (Base)    │     │
+│  └─────────────┘    └─────────────┘    └─────────────┘     │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Components
+
+1. **Indexer Client**: Fetches open intents from Envio GraphQL
+2. **Matching Engine**: Finds compatible intent pairs
+3. **Profitability Scorer**: Calculates expected profit per match
+4. **Executor**: Submits transactions to the blockchain
+
+## Strategies
+
+### Greedy Strategy (Default)
+Executes matches immediately when found, prioritizing by profit.
+
+```typescript
+// Pseudocode
+while (running) {
+  const intents = await fetchOpenIntents();
+  const matches = findCompatiblePairs(intents);
+  const profitable = matches.filter(m => calculateProfit(m) > threshold);
+
+  // Execute highest profit first
+  profitable.sort((a, b) => b.profit - a.profit);
+
+  for (const match of profitable) {
+    await executeMatch(match);
+  }
+
+  await sleep(MATCHING_INTERVAL_MS);
+}
+```
+
+### Optimal Strategy
+Finds the globally optimal set of matches considering partial fills.
+
+More complex but can extract more value when multiple matches are possible.
+
+## Monitoring
+
+### Logs
+
+```bash
+# Tail logs in real-time
+tail -f logs/solver.log
+
+# Filter by level
+grep "ERROR" logs/solver.log
+```
+
+### Metrics
+
+The solver exposes metrics at `/metrics` (if enabled):
+- `matches_executed_total`: Total successful matches
+- `matches_failed_total`: Failed match attempts
+- `profit_earned_total`: Cumulative profit in USDC
+- `gas_spent_total`: Cumulative gas in ETH
+
+## Troubleshooting
+
+### "Transaction reverted"
+
+Common causes:
+- Intent was already matched by another solver
+- Intent expired during execution
+- Insufficient gas price (front-run)
+
+Solution: Increase `GAS_PRICE_MULTIPLIER` or reduce `MATCHING_INTERVAL_MS`
+
+### "No profitable matches found"
+
+- Market conditions may not have compatible intents
+- Your `MIN_PROFIT_THRESHOLD_BPS` may be too high
+- Check that indexer is synced
+
+### "RPC rate limited"
+
+- Switch to a dedicated RPC provider (Alchemy, Infura)
+- Increase `MATCHING_INTERVAL_MS` to reduce request frequency
+
+## Security Considerations
+
+1. **Private Key Security**
+   - Never commit `.env` to version control
+   - Consider using a hardware wallet or KMS
+   - Use a dedicated wallet for the solver
+
+2. **Gas Management**
+   - Set `MAX_GAS_PRICE_GWEI` to prevent excessive spending during network congestion
+   - Monitor wallet balance for gas
+
+3. **MEV Protection**
+   - Consider using Flashbots or private mempools for large matches
+   - Front-running risk exists for high-value matches
+
+## Advanced: Custom Strategies
+
+You can implement custom matching strategies by extending the base solver:
+
+```typescript
+// custom-strategy.ts
+import { BaseSolver, Match } from '@floe/solver';
+
+class MyCustomSolver extends BaseSolver {
+  async selectMatches(candidates: Match[]): Promise<Match[]> {
+    // Implement your custom selection logic
+    return candidates.filter(m => this.meetsCustomCriteria(m));
+  }
+
+  private meetsCustomCriteria(match: Match): boolean {
+    // Your custom logic here
+    return true;
+  }
+}
+```
+
+## Economics Example
+
+```
+Scenario: Active market with 100 open intents
+
+Average match opportunity: 5 per hour
+Average loan size: $5,000
+Average matcher commission: 0.3%
+Average gas cost: $0.50
+
+Revenue per match: $5,000 × 0.3% = $15
+Cost per match: $0.50
+Profit per match: $14.50
+
+Hourly: 5 × $14.50 = $72.50
+Daily: $72.50 × 24 = $1,740
+Monthly: $1,740 × 30 = $52,200
+
+Note: Actual results depend on market activity and competition.
+```
+
+## Next Steps
+
+- [Run a Liquidation Bot](run-liquidation-bot.md)
+- [Contract Addresses](../developers/networks.md)
+
+---
+
+# Run a Liquidation Bot
+
+Liquidation bots protect lenders by liquidating unhealthy loans and earn rewards in the process.
+
+## What is a Liquidation Bot?
+
+Liquidation bots:
+1. Monitor active loans for health status
+2. Identify liquidatable positions (LTV breach or overdue)
+3. Execute liquidations to claim collateral + bonus
+4. Protect lenders from bad debt
+
+## Revenue Model
+
+Liquidators earn a **5% bonus** on collateral:
+
+```
+Example:
+- Loan debt: $5,000 USDC
+- Collateral: 2 ETH @ $3,000 = $6,000
+- Liquidator pays: $5,000 (the debt)
+- Liquidator receives: 2 ETH ($6,000)
+- Profit: $1,000 (including 5% bonus)
+```
+
+## Prerequisites
+
+- Node.js 18+
+- Base Mainnet RPC (Alchemy or Infura recommended)
+- Wallet with:
+  - ETH for gas
+  - USDC capital to pay off debts
+- Capital requirements scale with loan sizes you want to liquidate
+
+## Quick Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Floe-Labs/floe-monorepo.git
+cd floe-monorepo
+pnpm install
+pnpm build
+```
+
+### 2. Configure Environment
+
+```bash
+cd apps/liquidator
+cp .env.example .env
+```
+
+Edit `.env`:
+```bash
+# Required
+PRIVATE_KEY=your_private_key_here
+RPC_URL=https://base-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+
+# Optional
+LOG_LEVEL=info
+CHECK_INTERVAL_MS=10000
+MIN_PROFIT_USD=10
+MAX_GAS_PRICE_GWEI=100
+```
+
+### 3. Fund Your Wallet
+
+You need:
+- ETH for gas (~0.01 ETH minimum)
+- USDC to pay off loans (depends on loan sizes)
+
+### 4. Run the Bot
+
+```bash
+pnpm start
+```
+
+## Configuration Options
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PRIVATE_KEY` | Wallet private key | Required |
+| `RPC_URL` | Base Mainnet RPC | Required |
+| `LOG_LEVEL` | Logging verbosity | `info` |
+| `CHECK_INTERVAL_MS` | Health check frequency | `10000` |
+| `MIN_PROFIT_USD` | Minimum profit to execute | `10` |
+| `MAX_GAS_PRICE_GWEI` | Gas price limit | `100` |
+| `MAX_LOAN_SIZE_USD` | Largest loan to liquidate | `100000` |
+| `ENABLE_FLASHLOANS` | Use flash loans for capital | `false` |
+
+## Liquidation Conditions
+
+A loan is liquidatable when **either** is true:
+
+### 1. LTV Breach
+
+```
+Current LTV > Liquidation LTV (from lender's maxLtvBps)
+```
+
+Calculation:
+```typescript
+const currentLtv = (principal * 10000) / collateralValueUsd;
+const isLtvBreach = currentLtv > loan.liquidationLtvBps;
+```
+
+### 2. Overdue
+
+```
+Current Time > Loan Start Time + Duration
+```
+
+```typescript
+const isOverdue = Date.now() / 1000 > loan.startTime + loan.duration;
+```
+
+## Profitability Check
+
+```typescript
+function calculateLiquidationProfit(loan, prices) {
+  // What we pay
+  const debtToPay = calculateTotalDebt(loan);
+
+  // What we receive (collateral)
+  const collateralValue = loan.collateral * prices.eth / 1e18;
+
+  // Gas cost estimate
+  const gasCost = gasPrice * 300000 * prices.eth;
+
+  // Net profit
+  return collateralValue - debtToPay - gasCost;
+}
+```
+
+Only execute if:
+```
+profit > MIN_PROFIT_USD
+```
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    LIQUIDATION BOT                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │   Loan      │───▶│   Health    │───▶│ Liquidation │     │
+│  │   Monitor   │    │   Checker   │    │  Executor   │     │
+│  └─────────────┘    └─────────────┘    └─────────────┘     │
+│         │                 │                   │             │
+│         ▼                 ▼                   ▼             │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐     │
+│  │   Indexer   │    │   Oracle    │    │  Blockchain │     │
+│  │   GraphQL   │    │   Prices    │    │   (Base)    │     │
+│  └─────────────┘    └─────────────┘    └─────────────┘     │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Components
+
+1. **Loan Monitor**: Fetches active loans from indexer
+2. **Health Checker**: Evaluates LTV and overdue status
+3. **Liquidation Executor**: Executes profitable liquidations
+
+## Operating Strategies
+
+### Basic Strategy
+
+Check all loans periodically:
+
+```typescript
+while (running) {
+  const activeLoans = await fetchActiveLoans();
+
+  for (const loan of activeLoans) {
+    const isLiquidatable = await checkLiquidatable(loan);
+
+    if (isLiquidatable) {
+      const profit = calculateProfit(loan);
+
+      if (profit > MIN_PROFIT_USD) {
+        await executeLiquidation(loan);
+      }
+    }
+  }
+
+  await sleep(CHECK_INTERVAL_MS);
+}
+```
+
+### Priority Strategy
+
+Process highest-profit liquidations first:
+
+```typescript
+const liquidatable = activeLoans
+  .filter(loan => isLiquidatable(loan))
+  .map(loan => ({ loan, profit: calculateProfit(loan) }))
+  .filter(({ profit }) => profit > MIN_PROFIT_USD)
+  .sort((a, b) => b.profit - a.profit);
+
+for (const { loan } of liquidatable) {
+  await executeLiquidation(loan);
+}
+```
+
+### Flash Loan Strategy
+
+Use flash loans when you don't have capital:
+
+```typescript
+// Borrow USDC via flash loan
+// Pay off debt
+// Receive collateral
+// Sell collateral for USDC
+// Repay flash loan + fee
+// Keep profit
+```
+
+## Execution Flow
+
+### Step 1: Approve USDC (one-time)
+
+```typescript
+await usdcContract.approve(
+  LENDING_INTENT_MATCHER,
+  ethers.MaxUint256
+);
+```
+
+### Step 2: Execute Liquidation
+
+```typescript
+const tx = await sdk.lending.liquidateLoan(loanId);
+const receipt = await tx.wait();
+```
+
+### Step 3: Verify Success
+
+```typescript
+// Parse events
+const liquidationEvent = receipt.logs.find(
+  log => log.topics[0] === LIQUIDATION_TOPIC
+);
+
+if (liquidationEvent) {
+  console.log('Liquidation successful!');
+  // Record profit, update balances
+}
+```
+
+## Monitoring
+
+### Logs
+
+```bash
+# Real-time monitoring
+tail -f logs/liquidator.log
+
+# Filter for executions
+grep "LIQUIDATED" logs/liquidator.log
+
+# Check errors
+grep "ERROR" logs/liquidator.log
+```
+
+### Metrics
+
+Expose metrics at `/metrics`:
+- `loans_checked_total`: Loans evaluated
+- `liquidations_executed_total`: Successful liquidations
+- `liquidations_failed_total`: Failed attempts
+- `profit_earned_total`: Cumulative USDC profit
+- `gas_spent_total`: Gas in ETH
+
+### Health Checks
+
+```bash
+# API endpoint
+curl http://localhost:3001/health
+
+# Response
+{
+  "status": "healthy",
+  "lastCheck": "2025-01-15T10:30:00Z",
+  "loansMonitored": 150,
+  "usdcBalance": "25000.00",
+  "ethBalance": "0.5"
+}
+```
+
+## Risk Management
+
+### Capital Management
+
+| Strategy | Capital Required | Risk |
+|----------|------------------|------|
+| Small loans only (< $5k) | $10,000 | Low |
+| Medium loans (< $25k) | $50,000 | Medium |
+| All loans | $100,000+ | High |
+
+### Competition Risks
+
+- Other bots may liquidate first
+- MEV bots can front-run your transactions
+- Consider using Flashbots for large liquidations
+
+### Market Risks
+
+- Flash crashes may make collateral worthless fast
+- Stale prices can cause circuit breaker activation
+- Network congestion can delay transactions
+
+## Troubleshooting
+
+### "Loan not liquidatable"
+
+Possible causes:
+- LTV recovered (price moved favorably)
+- Another bot liquidated first
+- Circuit breaker is active
+
+### "Insufficient balance"
+
+- Add more USDC to your wallet
+- Lower `MAX_LOAN_SIZE_USD`
+- Enable flash loans if implemented
+
+### "Transaction reverted"
+
+- Loan was liquidated by competitor
+- Gas price too low (increase priority)
+- Contract paused (circuit breaker)
+
+### "Oracle price stale"
+
+- Wait for oracle update
+- Check L2 sequencer status
+- Verify RPC is synced
+
+## Advanced: Custom Liquidation Logic
+
+```typescript
+import { BaseLiquidator } from '@floe/liquidator';
+
+class MyLiquidator extends BaseLiquidator {
+  async shouldLiquidate(loan: Loan): Promise<boolean> {
+    // Custom logic
+    const profit = await this.calculateProfit(loan);
+    const gasPrice = await this.getGasPrice();
+
+    // Only liquidate if profit > 2x gas cost
+    return profit > gasPrice * 600000 * 2;
+  }
+
+  async executeLiquidation(loan: Loan): Promise<void> {
+    // Use Flashbots for MEV protection
+    await this.submitViaFlashbots(loan);
+  }
+}
+```
+
+## Economics Example
+
+```
+Scenario: 50 active loans monitored
+
+Average liquidation opportunity: 2 per week
+Average debt: $3,000
+Average collateral: $4,000
+Liquidator bonus: 5%
+
+Per liquidation:
+- Pay debt: $3,000
+- Receive collateral: $4,000
+- Gas cost: ~$2
+- Net profit: ~$998
+
+Weekly: 2 × $998 = $1,996
+Monthly: $1,996 × 4 = $7,984
+
+Note: Highly dependent on market volatility and competition.
+```
+
+## Best Practices
+
+1. **Monitor gas prices** - Don't overpay during congestion
+2. **Set appropriate limits** - Don't liquidate loans larger than your capital
+3. **Handle failures gracefully** - Retry logic for transient errors
+4. **Diversify strategies** - Don't rely on one approach
+5. **Keep logs** - Debug issues and track performance
+6. **Secure your keys** - Use hardware wallet or KMS
+
+## Security Considerations
+
+1. **Private Key Security**
+   - Never commit keys to version control
+   - Use environment variables or secrets manager
+   - Consider hardware wallet integration
+
+2. **MEV Protection**
+   - Large liquidations attract MEV bots
+   - Use private mempools (Flashbots, MEV Blocker)
+   - Submit bundles when possible
+
+3. **Capital Protection**
+   - Set maximum loan size limits
+   - Monitor wallet balance
+   - Implement circuit breakers
+
+## Next Steps
+
+- [Run a Solver Bot](run-solver-bot.md)
+- [Contract Addresses](../developers/networks.md)
+
+---
+
+
+# AgentKit Integration
+
+Build AI agents that can lend, borrow, match intents, execute flash loans, and manage loans on Floe — using [Coinbase AgentKit](https://docs.cdp.coinbase.com/agent-kit/).
+
+## What is AgentKit?
+
+AgentKit is Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe provides custom ActionProviders that expose **23 protocol actions**, making Floe a first-class verb alongside "transfer" and "swap" in any AgentKit agent.
+
+## Choose Your SDK
+
+| | TypeScript | Python |
+|---|-----------|--------|
+| **Package** | `@floe/agentkit-actions` | `floe-agentkit-actions` |
+| **Install** | `npm install @floe/agentkit-actions` | `pip install floe-agentkit-actions` |
+| **Runtime** | Node.js 18+ | Python 3.10+ |
+| **AI Frameworks** | Vercel AI SDK, LangChain, MCP Server, OpenAI Agents SDK | LangChain, OpenAI Function Calling |
+| **CLI** | `floe-agent` (via npx) | `floe-agent` (via pip) |
+| **GitHub** | [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions) | [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py) |
+
+Both SDKs provide the same 23 actions with identical behavior. Choose based on your stack.
+
+> **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
+>
+> **Need working capital for your agent?** See [Agent Working Capital](agent-working-capital.md) for credit facility actions that let agents request, match, and manage fixed-rate loans.
+
+## Actions Reference (23 total)
+
+All actions are available in both TypeScript and Python SDKs.
+
+### Read Actions (8)
+
+| Action | Description |
+|--------|-------------|
+| `get_markets` | Get info about Floe lending markets (rates, LTV bounds, pause status) |
+| `get_loan` | Get detailed loan information (participants, health, time remaining) |
+| `get_my_loans` | Get all loans for the connected wallet |
+| `check_loan_health` | Check loan health — current LTV vs liquidation threshold |
+| `get_price` | Get oracle price for a collateral/loan token pair (Chainlink + Pyth) |
+| `get_accrued_interest` | Get interest accrued on a loan |
+| `get_liquidation_quote` | Get profit/loss breakdown for liquidating an unhealthy loan |
+| `get_intent_book` | Look up an on-chain lend or borrow intent by hash |
+
+### Write Actions (7)
+
+| Action | Description |
+|--------|-------------|
+| `post_lend_intent` | Post a fixed-rate lending offer (auto-approves token) |
+| `post_borrow_intent` | Post a borrow request with collateral (auto-approves collateral) |
+| `match_intents` | Match a lend + borrow intent to create a loan |
+| `repay_loan` | Repay a loan fully or partially (with slippage protection) |
+| `add_collateral` | Add collateral to improve loan health |
+| `withdraw_collateral` | Withdraw excess collateral (enforces safety buffer) |
+| `liquidate_loan` | Liquidate an unhealthy loan |
+
+All write actions auto-approve tokens to the LendingIntentMatcher with a 1% buffer before submitting. Repay and liquidate actions include configurable slippage protection (default 5%).
+
+### Flash Loan Actions (5)
+
+| Action | Description |
+|--------|-------------|
+| `get_flash_loan_fee` | Get the protocol's flash loan fee (in bps) |
+| `estimate_flash_arb_profit` | Simulate a multi-leg arb route via Aerodrome QuoterV2 |
+| `flash_loan` | Execute a raw flash loan (receiver must implement `IFlashloanReceiver`) |
+| `flash_arb` | Execute a flash arb via a deployed FlashArbReceiver |
+| `get_flash_arb_balance` | Check accumulated profit in a FlashArbReceiver |
+
+> **`flash_loan` vs `flash_arb`:** `flash_loan` sends tokens to `msg.sender` and calls `receiveFlashLoan()` — your connected wallet must be a smart contract. EOA wallets will revert. Use `flash_arb` instead, which routes through a pre-deployed FlashArbReceiver contract that handles repayment automatically.
+
+### Deploy / Verify Actions (3)
+
+| Action | Description |
+|--------|-------------|
+| `deploy_flash_arb_receiver` | Deploy a new FlashArbReceiver with pre-flight checks |
+| `check_flash_arb_readiness` | Check environment readiness (fee, liquidity, oracle, router) |
+| `verify_flash_arb_receiver` | Verify a receiver's owner and immutable config |
+
+## Flash Arb Flow
+
+```
+1. deploy_flash_arb_receiver  →  Deploys FlashArbReceiver (stores address in session)
+2. check_flash_arb_readiness  →  Validates fee, liquidity, circuit breaker, router
+3. estimate_flash_arb_profit  →  Simulates arb route via Aerodrome QuoterV2
+4. flash_arb                  →  Borrows tokens → swaps via Aerodrome → repays + keeps profit
+5. get_flash_arb_balance      →  Check accumulated profit in receiver
+```
+
+## Contract Addresses (Base Mainnet)
+
+| Contract | Address |
+|----------|---------|
+| LendingIntentMatcher | `0x17946cD3e180f82e632805e5549EC913330Bb175` |
+| LendingViews | `0x9101027166bE205105a9E0c68d6F14f21f6c5003` |
+| PriceOracle | `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` |
+| Aerodrome SwapRouter | `0xBE6D8f0d05cC4be24d5167a3eF062215bE6D18a5` |
+| Aerodrome QuoterV2 | `0x254cF9E1E6e233aa1AC962CB9B05b2cFeAAe15b0` |
+| WETH | `0x4200000000000000000000000000000000000006` |
+
+## How Floe Differs from Aave/Compound
+
+| Feature | Aave/Compound | Floe |
+|---------|--------------|------|
+| Model | Pool-based, variable rate | Intent-based, fixed rate |
+| Rate | Algorithmic, changes per block | Fixed at match time |
+| Term | Open-ended | Fixed duration |
+| Matching | Automatic (pool) | Solver bots match offers |
+| Liquidation | Pool absorbs bad debt | Per-loan, with incentive |
+| Flash loans | From pool reserves | From protocol with receiver contract |
+
+---
+
+
+# TypeScript SDK
+
+The `@floe/agentkit-actions` package provides a Coinbase AgentKit ActionProvider with 23 Floe protocol actions for Node.js / TypeScript environments.
+
+## Installation
+
+```bash
+npm install @floe/agentkit-actions @coinbase/agentkit viem zod
+```
+
+## Quick Start
+
+```typescript
+import { AgentKit } from "@coinbase/agentkit";
+import { floeActionProvider } from "@floe/agentkit-actions";
+
+const agentkit = await AgentKit.from({
+  walletProvider: myWalletProvider,
+  actionProviders: [
+    floeActionProvider(), // defaults to Base Mainnet
+  ],
+});
+```
+
+## Framework Integrations
+
+### Vercel AI SDK
+
+```typescript
+import { AgentKit } from "@coinbase/agentkit";
+import { getVercelAITools } from "@coinbase/agentkit-vercel-ai-sdk";
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { floeActionProvider } from "@floe/agentkit-actions";
+
+const agentkit = await AgentKit.from({
+  walletProvider,
+  actionProviders: [floeActionProvider()],
+});
+
+const tools = await getVercelAITools(agentkit);
+
+const { text } = await generateText({
+  model: openai("gpt-4o"),
+  tools,
+  maxSteps: 10,
+  prompt: "Check the health of loan #42",
+});
+```
+
+### LangChain
+
+```typescript
+import { getLangChainTools } from "@coinbase/agentkit-langchain";
+
+const tools = await getLangChainTools(agentkit);
+// Pass tools to a LangChain agent
+```
+
+### MCP Server (Claude Desktop / Cursor)
+
+Expose all 23 Floe actions as MCP tools:
+
+```bash
+npm install @coinbase/agentkit-model-context-protocol @modelcontextprotocol/sdk
+```
+
+```typescript
+import { AgentKit } from "@coinbase/agentkit";
+import { getMcpTools } from "@coinbase/agentkit-model-context-protocol";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { floeActionProvider } from "@floe/agentkit-actions";
+
+const agentkit = await AgentKit.from({
+  walletProvider,
+  actionProviders: [floeActionProvider()],
+});
+
+const mcpTools = await getMcpTools(agentkit);
+const server = new McpServer({ name: "floe-lending", version: "1.0.0" });
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+```
+
+Configure in Claude Desktop (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "floe-lending": {
+      "command": "node",
+      "args": ["path/to/floe-mcp-server.js"],
+      "env": {
+        "PRIVATE_KEY": "0x...",
+        "BASE_RPC_URL": "https://mainnet.base.org"
+      }
+    }
+  }
+}
+```
+
+### OpenAI Agents SDK
+
+Use the `create-onchain-agent` scaffold:
+
+```bash
+npx create-onchain-agent@latest
+# Select "OpenAI Agents SDK" as framework
+```
+
+Then register `floeActionProvider()` alongside the built-in action providers.
+
+## CLI: `floe-agent`
+
+Interactive conversational agent for testing all 23 actions without writing any framework code.
+
+### Run directly
+
+```bash
+cd agentkit-actions
+npm run build
+npx tsx src/cli/bin.ts
+```
+
+### Or install globally
+
+```bash
+npm run build
+npm link
+floe-agent
+```
+
+### Setup flow
+
+The CLI prompts for:
+
+1. **Wallet provider** — Private Key (direct) or CDP Wallet (MPC managed)
+2. **AI provider** — OpenAI (GPT-4o), Anthropic (Claude), or Ollama (local)
+3. **RPC URL** — Custom Base Mainnet RPC (recommended for reliability)
+
+Configuration is saved to `.floe-agent.json` and reused on subsequent runs. API keys are never cached.
+
+### CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `help` | Show available commands |
+| `wallet` | Display current wallet address |
+| `config` | Show current configuration |
+| `save` | Save current config to `.floe-agent.json` |
+| `clear` | Clear conversation history |
+| `exit` | Exit the CLI |
+
+### Example Session
+
+```
+You: Check flash arb readiness
+  -> Shows fee, WETH liquidity, circuit breaker, SwapRouter status
+
+You: Deploy a FlashArbReceiver for me
+  -> Pre-flight checks, deploys contract, stores address in session
+
+You: Verify my FlashArbReceiver
+  -> Validates owner/LENDING_PROTOCOL/SWAP_ROUTER (no address needed)
+
+You: Execute a flash arb: borrow 0.01 WETH, swap WETH -> USDC tick spacing 100,
+     then USDC -> WETH tick spacing 100, min profit 0
+  -> Submits the flash arb transaction
+```
+
+## Wallet Providers
+
+| Provider | Use Case | Key Management |
+|----------|----------|----------------|
+| `CdpV2WalletProvider` | **Production** (recommended) | MPC server wallet via CDP API |
+| `CdpSmartWalletProvider` | **Gasless on Base** | Smart contract wallet, gas sponsorship |
+| `ViemWalletProvider` | **Development** | Raw private key in memory |
+| `PrivyWalletProvider` | **Embedded wallets** | Privy delegated/embedded wallets |
+
+> **Note:** Coinbase's [Agentic Wallet](https://docs.cdp.coinbase.com/agentic-wallet/docs/welcome) (CLI/MPC-based, send/trade only) is a different product and is NOT compatible with AgentKit ActionProviders. Floe actions require a full WalletProvider that can sign arbitrary contract calls.
+
+## Configuration
+
+```typescript
+floeActionProvider({
+  // Base Mainnet (default)
+  lendingIntentMatcherAddress: "0x17946cD3e180f82e632805e5549EC913330Bb175",
+  lendingViewsAddress: "0x9101027166bE205105a9E0c68d6F14f21f6c5003",
+
+  // Pre-configured market IDs for get_markets without arguments
+  knownMarketIds: ["0x..."],
+});
+```
+
+## Session State
+
+When you deploy via `deploy_flash_arb_receiver`, the contract address is stored on the provider instance. Subsequent calls to `flash_arb`, `get_flash_arb_balance`, and `verify_flash_arb_receiver` auto-use it — no need to pass the address again. Override anytime by passing `receiverAddress` explicitly.
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `PRIVATE_KEY` | Wallet private key (0x...) |
+| `CDP_API_KEY_NAME` | Coinbase CDP API key name |
+| `CDP_API_KEY_PRIVATE_KEY` | Coinbase CDP API private key |
+| `OPENAI_API_KEY` | OpenAI API key (for CLI) |
+| `ANTHROPIC_API_KEY` | Anthropic API key (for CLI) |
+| `BASE_RPC_URL` | Custom Base Mainnet RPC URL |
+
+## Examples
+
+### Chatbot (Vercel AI SDK + CdpWalletProvider)
+
+Full conversational agent on Base Mainnet with production MPC-managed keys:
+
+```bash
+cd examples
+cp .env.example .env  # fill in CDP_API_KEY_NAME, CDP_API_KEY_PRIVATE_KEY, OPENAI_API_KEY
+npx tsx chatbot.ts
+```
+
+### Standalone (No AI Framework)
+
+Call actions programmatically — useful for development and scripting:
+
+```bash
+cd examples
+cp .env.example .env  # fill in PRIVATE_KEY
+npx tsx standalone.ts
+```
+
+```typescript
+import { FloeActionProvider } from "@floe/agentkit-actions";
+
+const floe = new FloeActionProvider();
+const result = await floe.getMyLoans(walletProvider, {});
+console.log(result);
+```
+
+## Local Development
+
+Three ways to test without publishing to npm:
+
+### 1. `npm link` (live symlink)
+
+```bash
+# In agentkit-actions/
+npm run build && npm link
+
+# In your consumer project
+npm link @floe/agentkit-actions
+```
+
+### 2. `file:` protocol
+
+In your consumer's `package.json`:
+
+```json
+{
+  "dependencies": {
+    "@floe/agentkit-actions": "file:../agentkit-actions"
+  }
+}
+```
+
+### 3. `npm pack` (simulates real publish)
+
+```bash
+npm run build && npm pack
+# In consumer:
+npm install ../agentkit-actions/floe-agentkit-actions-0.1.0.tgz
+```
+
+## Source Code
+
+GitHub: [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions)
+
+---
+
+
+# Python SDK
+
+The `floe-agentkit-actions` package provides a Coinbase AgentKit ActionProvider with 23 Floe protocol actions for Python environments.
+
+## Installation
+
+```bash
+# Core package
+pip install floe-agentkit-actions
+
+# With CLI support
+pip install floe-agentkit-actions[cli]
+
+# With LangChain integration
+pip install floe-agentkit-actions[langchain]
+```
+
+## Quick Start
+
+### As an AgentKit Provider
+
+```python
+from coinbase_agentkit import AgentKit, AgentKitConfig
+from floe_agentkit_actions import floe_action_provider
+
+agentkit = AgentKit(AgentKitConfig(
+    wallet_provider=wallet_provider,
+    action_providers=[floe_action_provider()],
+))
+```
+
+### Standalone Usage
+
+Call actions directly without an AI framework:
+
+```python
+from floe_agentkit_actions import floe_action_provider
+
+floe = floe_action_provider()
+result = floe.get_price(wallet_provider, {
+    "collateral_token": "0x4200000000000000000000000000000000000006",  # WETH
+    "loan_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",      # USDC
+})
+print(result)
+```
+
+## Framework Integrations
+
+### LangChain
+
+```python
+from floe_agentkit_actions.integrations.langchain import get_floe_langchain_tools
+
+tools = get_floe_langchain_tools(wallet_provider)
+# Pass tools to a LangChain agent
+```
+
+### OpenAI Function Calling
+
+```python
+from floe_agentkit_actions.integrations.openai_agents import get_floe_openai_tools
+
+tools = get_floe_openai_tools(wallet_provider)
+# Pass tools to an OpenAI Agents SDK agent
+```
+
+## CLI: `floe-agent`
+
+Interactive AI-powered DeFi agent with support for OpenAI, Claude, and Ollama.
+
+```bash
+# Install with CLI extras
+pip install floe-agentkit-actions[cli]
+
+# Run
+floe-agent
+```
+
+The CLI prompts for wallet provider, AI provider, and RPC URL. Configuration is saved for reuse.
+
+### Example Session
+
+```
+You: What markets are available?
+  -> Lists all Floe lending markets with rates, LTV bounds
+
+You: Post a lend intent for 100 USDC at 5% APR
+  -> Auto-approves USDC, posts the lending offer on-chain
+
+You: Check the health of loan #42
+  -> Shows current LTV, liquidation threshold, buffer percentage
+```
+
+## Wallet Providers
+
+| Provider | Use Case |
+|----------|----------|
+| `EvmWalletProvider` | **Development / scripting** — raw private key |
+| `CdpWalletProvider` | **Production agents** — MPC-managed via CDP API |
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `PRIVATE_KEY` | Wallet private key (0x...) |
+| `CDP_API_KEY_NAME` | Coinbase CDP API key name |
+| `CDP_API_KEY_PRIVATE_KEY` | Coinbase CDP API secret |
+| `OPENAI_API_KEY` | OpenAI API key (for CLI) |
+| `ANTHROPIC_API_KEY` | Anthropic API key (for CLI) |
+| `BASE_RPC_URL` | Custom Base RPC URL (recommended) |
+
+## Development
+
+```bash
+# Install in editable mode with dev dependencies
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+```
+
+## Source Code
+
+GitHub: [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py)
+
+---
+
+
+# Agent Working Capital
+
+Floe provides autonomous AI agents with on-chain credit facilities — fixed-rate, fixed-term loans backed by crypto collateral. Instead of understanding the intent system directly, agents get a clean abstraction: request credit, match with a lender, manage the loan, and renew when needed.
+
+## How It Works
+
+An agent with ETH or cbBTC collateral can request a USDC credit line at a fixed rate and term. It can browse available lenders and match instantly, or post a borrow intent and let the solver bot find the best match. Loan funds are transferred directly to the agent's wallet, and collateral is held by the protocol until repayment.
+
+```
+┌──────────────────────────────────────────────────┐
+│  Agent (ETH/cbBTC collateral)                    │
+└──────────────┬───────────────────────────────────┘
+               │ request_credit → manual_match_credit
+               ▼
+┌──────────────────────────────────────────────────┐
+│  Floe Intent System (on-chain)                   │
+│  - BorrowIntent registered                       │
+│  - Match instantly or wait for solver             │
+└──────────────┬───────────────────────────────────┘
+               │ match (manual or solver)
+               ▼
+┌──────────────────────────────────────────────────┐
+│  Loan Created                                    │
+│  - USDC transferred to agent wallet              │
+│  - Fixed rate, fixed term, no surprises          │
+│  - Collateral held by protocol                   │
+│  - Discrete lifecycle: repay → renew if needed   │
+└──────────────────────────────────────────────────┘
+```
+
+## What Already Exists
+
+The core infrastructure is live:
+
+- **BorrowIntent** supports the full flow — an agent posts a $5K USDC request at 12% rate, 30-day term, with 1.5 ETH collateral
+- **Markets** for USDC/WETH and USDC/cbBTC are deployable (oracle infrastructure supports both via Chainlink + Pyth)
+- **`post_borrow_intent`** AgentKit action handles token approval + intent registration automatically
+- **Solver bot** auto-matches compatible intent pairs without agent intervention
+- **ERC-1271 support** means smart contract agent wallets (CDP Smart Wallet, Safe, AA wallets) can sign intents natively
+- **Manual match support** — agents can browse available lend intents and match directly, bypassing the solver wait
+
+## Credit Facility Actions
+
+These actions wrap the existing protocol primitives into an agent-friendly credit facility abstraction:
+
+| Action | Description |
+|--------|-------------|
+| `request_credit` | Query the intent book for available lend intents. If a suitable offer is found, call `manual_match_credit` to fund instantly. |
+| `manual_match_credit` | Create a counter-intent and directly match with a specific lend intent — no waiting for the solver bot. |
+| `check_credit_status` | Loan health, remaining balance, and time to expiry in one call. |
+| `repay_credit` | Repay a loan in full or partially, with slippage protection. |
+| `renew_credit_line` | Repay an expiring loan and open a new credit request — two discrete on-chain steps, no auto-rollover. |
+
+### Example Flow
+
+```
+Agent: request_credit — "I need $5K USDC, willing to pay up to 12% APR for 30 days,
+        I have 1.5 ETH as collateral"
+  → Returns available lend intents that match these parameters
+
+Agent: manual_match_credit — "Match me with lend intent 0xabc..."
+  → Creates borrow intent, matches on-chain, USDC arrives in agent wallet
+
+Agent: check_credit_status — "How's my loan doing?"
+  → Current LTV 62%, liquidation at 85%, 22 days remaining, $5,041 owed
+
+Agent: repay_credit — "Repay my loan"
+  → Repays principal + accrued interest, collateral returned
+
+Agent: renew_credit_line — "I need to extend"
+  → Repays current loan, posts new borrow intent for fresh term
+```
+
+## Key Design Decisions
+
+**No auto-rollover.** Loans have a discrete lifecycle: borrow → repay → (optionally) borrow again. The `renew_credit_line` action makes this seamless but keeps each loan explicit and auditable.
+
+**Two matching paths.** Agents can post an intent and wait for the solver bot to find the best match, or browse available lenders and match instantly via `manual_match_credit`. The manual path is faster; the solver path may find better rates.
+
+**Fixed rate, fixed term.** Unlike pool-based protocols where rates change every block, Floe locks the rate at match time. Agents can budget for exact borrowing costs.
+
+**Native smart wallet support.** ERC-1271 signature validation means CDP Smart Wallets, Safe multisigs, and account-abstracted wallets work out of the box — no EOA required.
+
+## Supported Markets
+
+| Market | Collateral | Loan Token | Status |
+|--------|-----------|------------|--------|
+| WETH/USDC | WETH | USDC | Live |
+| cbBTC/USDC | cbBTC | USDC | Deployable |
+
+Both markets use Chainlink as the primary oracle with Pyth as fallback, and are protected by the protocol's circuit breaker system.
+
+---
+
+
+# Contract Addresses
+
+All Floe smart contracts deployed on supported networks.
+
+## Base Mainnet (Production)
+
+| Parameter    | Value                                |
+| ------------ | ------------------------------------ |
+| Network Name | Base                                 |
+| Chain ID     | 8453                                 |
+| Currency     | ETH                                  |
+| RPC URL      | `https://mainnet.base.org`           |
+| Explorer     | [basescan.org](https://basescan.org) |
+
+### Core Contracts
+
+| Contract             | Address                                      |
+| -------------------- | -------------------------------------------- |
+| LendingIntentMatcher | `0x17946cD3e180f82e632805e5549EC913330Bb175` |
+| PriceOracle          | `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` |
+| LendingViews         | `0x9101027166bE205105a9E0c68d6F14f21f6c5003` |
+
+### Aerodrome (Flash Arb)
+
+| Contract        | Address                                      |
+| --------------- | -------------------------------------------- |
+| SwapRouter      | `0xBE6D8f0d05cC4be24d5167a3eF062215bE6D18a5` |
+| QuoterV2        | `0x254cF9E1E6e233aa1AC962CB9B05b2cFeAAe15b0` |
+
+### Token Addresses
+
+| Token  | Role       | Address                                      | Decimals |
+| ------ | ---------- | -------------------------------------------- | -------- |
+| USDC   | Loan Token | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6        |
+| USDT   | Loan Token | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6        |
+| WETH   | Collateral | `0x4200000000000000000000000000000000000006` | 18       |
+| cbBTC  | Collateral | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8        |
+
+### Active Markets
+
+| Market     | Loan Token | Collateral Token |
+| ---------- | ---------- | ---------------- |
+| USDC/WETH  | USDC       | WETH             |
+| USDC/cbBTC | USDC       | cbBTC            |
+| USDT/WETH  | USDT       | WETH             |
+| USDT/cbBTC | USDT       | cbBTC            |
+
+### Configuration
+
+```javascript
+const BASE_MAINNET_CONFIG = {
+  chainId: 8453,
+  name: "Base",
+  rpcUrl: "https://mainnet.base.org",
+  lendingIntentMatcher: "0x17946cD3e180f82e632805e5549EC913330Bb175",
+  priceOracle: "0xEA058a06b54dce078567f9aa4dBBE82a100210Cc",
+  tokens: {
+    USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    USDT: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",
+    WETH: "0x4200000000000000000000000000000000000006",
+    cbBTC: "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+  },
+};
+```
+
+***
+
+## Base Sepolia (Testnet)
+
+| Parameter    | Value                                                |
+| ------------ | ---------------------------------------------------- |
+| Network Name | Base Sepolia                                         |
+| Chain ID     | 84532                                                |
+| Currency     | ETH                                                  |
+| RPC URL      | `https://sepolia.base.org`                           |
+| Explorer     | [sepolia.basescan.org](https://sepolia.basescan.org) |
+
+### Core Contracts
+
+| Contract             | Address                                      |
+| -------------------- | -------------------------------------------- |
+| LendingIntentMatcher | `0xF351eDF229ded7E2e2b23E44c70e9964CbA91B2E` |
+| PriceOracle          | `0x71020b939b1f0988b2d93c2d930fea5b370203a5` |
+
+> ⚠️ Testnet contracts may differ from mainnet. Use for development only.
+
+***
+
+## Adding Base to Your Wallet
+
+### MetaMask / Rainbow / Other Wallets
+
+1. Open wallet settings
+2. Add network manually with:
+   * **Network Name**: Base
+   * **RPC URL**: `https://mainnet.base.org`
+   * **Chain ID**: `8453`
+   * **Currency Symbol**: ETH
+   * **Block Explorer**: `https://basescan.org`
+
+Or visit [chainlist.org](https://chainlist.org/?search=base) for one-click add.
+
+***
+
+## RPC Providers
+
+### Public RPCs (Rate Limited)
+
+| Network      | URL                        |
+| ------------ | -------------------------- |
+| Base Mainnet | `https://mainnet.base.org` |
+| Base Sepolia | `https://sepolia.base.org` |
+
+### Recommended Providers
+
+For production applications:
+
+* [Alchemy](https://www.alchemy.com/) - `https://base-mainnet.g.alchemy.com/v2/YOUR_KEY`
+* [Infura](https://www.infura.io/) - `https://base-mainnet.infura.io/v3/YOUR_KEY`
+* [QuickNode](https://www.quicknode.com/)
+
+***
+
+## Protocol Constants
+
+| Parameter             | Value       | Description                                   |
+| --------------------- | ----------- | --------------------------------------------- |
+| `minLtvGapBps`        | 800 (8%)    | Min gap between origination & liquidation LTV |
+| `withdrawalBufferBps` | 300 (3%)    | Buffer below liquidation for withdrawals      |
+| `stalenessTimeout`    | 3,600 sec   | Oracle staleness threshold                    |
+| `maxDeviationBps`     | 1,500 (15%) | Max price deviation before circuit breaker    |
+| `liquidationBonus`    | 500 (5%)    | Bonus for liquidators                         |
+| `gracePeriod`         | 86,400 sec  | Grace period after loan expiry (24 hours)     |
+
+***
+
+## Verified Contracts
+
+All contracts are verified on Basescan:
+
+* [LendingIntentMatcher](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175#code)
+* [PriceOracle](https://basescan.org/address/0xEA058a06b54dce078567f9aa4dBBE82a100210Cc#code)
+* [LendingViews](https://basescan.org/address/0x9101027166bE205105a9E0c68d6F14f21f6c5003#code)
+
+***
+
+## Bridging Assets to Base
+
+### Bridge ETH
+
+* [Base Bridge](https://bridge.base.org) (Official)
+* [Superbridge](https://superbridge.app)
+
+### Get USDC on Base
+
+* Bridge from Ethereum via [Circle CCTP](https://www.circle.com/en/cross-chain-transfer-protocol)
+* Swap on [Uniswap](https://app.uniswap.org/) (Base)
+* Withdraw from exchanges that support Base
+
+---
+
+# FAQ
+
+Common questions about using Floe.
+
+## General
+
+### What is Floe?
+
+Floe is a peer-to-peer, intent-based lending protocol on Base. Users create intents specifying their lending or borrowing terms, and solvers match compatible pairs to create loans.
+
+### How is Floe different from Aave or Compound?
+
+| Feature      | Floe                | Aave/Compound      |
+| ------------ | ------------------- | ------------------ |
+| Architecture | P2P intent matching | Liquidity pools    |
+| Rates        | Negotiated          | Algorithmic        |
+| Counterparty | Single (known)      | Pool (anonymous)   |
+| Risk         | Isolated per loan   | Shared across pool |
+| Terms        | Custom              | Standardized       |
+
+### What blockchain is Floe on?
+
+Floe is deployed on **Base Mainnet** (Chain ID: 8453), an Ethereum Layer 2.
+
+### What tokens are supported?
+
+Floe supports 4 tokens across 4 active markets:
+
+* **Loan tokens**: USDC, USDT
+* **Collateral tokens**: WETH (Wrapped ETH), cbBTC (Coinbase Wrapped BTC)
+
+**Active markets**: USDC/WETH, USDC/cbBTC, USDT/WETH, USDT/cbBTC
+
+***
+
+## Borrowing
+
+### How do I borrow USDC or USDT?
+
+1. Connect wallet with ETH on Base
+2. Create a borrow intent with your terms
+3. Wait for a lender match
+4. Receive USDC or USDT (minus matcher fee)
+
+### What collateral do I need?
+
+You need WETH (Wrapped ETH) or cbBTC (Coinbase Wrapped BTC), depending on which market you choose. Your collateral must be worth more than your loan amount:
+
+* **Minimum**: Enough to meet your specified LTV
+* **Recommended**: Extra buffer for price volatility
+
+### What is LTV?
+
+**Loan-to-Value** ratio = Loan Amount / Collateral Value
+
+Example: $5,000 loan with $10,000 collateral = 50% LTV
+
+### What happens if I don't repay on time?
+
+Your loan becomes **overdue** and can be liquidated. A liquidator will pay off your debt and take your collateral.
+
+### Can I repay early?
+
+Yes. Under the default **Flexible** term protection, there's no prepayment penalty — you only pay interest for the time you actually borrowed. Penalty-based and No Prepayment term options are coming in v2.
+
+### Can I add more collateral?
+
+Yes. Go to your loan in the Loans page and click "Add Collateral" to improve your LTV.
+
+***
+
+## Lending
+
+### How do I earn interest?
+
+1. Create a lend intent with your terms
+2. Wait for a borrower match
+3. Earn interest over the loan duration
+4. Receive principal + interest at repayment
+
+### What rates can I expect?
+
+Rates are market-driven. Typical ranges:
+
+* **Conservative**: 4-6% APR
+* **Moderate**: 6-8% APR
+* **Higher risk**: 8%+ APR
+
+### Can my lend intent be partially filled?
+
+Yes, if you enable `allowPartialFill`. Your intent can match multiple borrowers until fully filled.
+
+### What if the borrower doesn't repay?
+
+If the borrower's LTV exceeds the liquidation threshold or the loan becomes overdue:
+
+* Liquidators pay off the debt
+* You receive full repayment (from liquidator)
+* Borrower loses collateral
+
+In rare underwater cases, you may experience bad debt.
+
+***
+
+## Intents
+
+### What is an intent?
+
+An intent is an on-chain declaration of your desired terms. It's not a loan—it's an offer that can be matched.
+
+### How long do intents last?
+
+You set the `expiry` when creating an intent. Common choices:
+
+* 7 days (typical)
+* 14 days (patient)
+* 24 hours (urgent)
+
+### Can I cancel my intent?
+
+Yes, as long as it hasn't been fully matched. Cancellation returns your deposited collateral (borrowers) or releases your USDC allowance (lenders).
+
+### Why hasn't my intent been matched?
+
+Possible reasons:
+
+* Your rate expectations don't overlap with available counterparties
+* Matcher commission is too low (solvers don't find it profitable)
+* Not enough market activity
+* Duration or LTV incompatibility
+
+Try adjusting your terms to be more competitive.
+
+***
+
+## Loans
+
+### How is interest calculated?
+
+```
+Interest = Principal × (APR / 365) × Days
+```
+
+Example: $5,000 at 6% APR for 30 days = $24.66
+
+### Can I extend my loan?
+
+Not directly. You would need to repay and create a new borrow intent.
+
+### Can I transfer my loan to someone else?
+
+No. Loans are non-transferable.
+
+### What is the liquidation bonus?
+
+Liquidators receive a **5% bonus** on collateral value as incentive to liquidate unhealthy loans.
+
+***
+
+## Liquidation
+
+### When can my loan be liquidated?
+
+Your loan can be liquidated when:
+
+1. **LTV exceeds threshold**: Your current LTV goes above the liquidation LTV (lender's maxLTV)
+2. **Loan is overdue**: Duration has passed and you haven't repaid
+
+### What is the 8% LTV gap?
+
+Floe requires at least 8% gap between:
+
+* **Origination LTV** (your borrowing level)
+* **Liquidation LTV** (when liquidation is allowed)
+
+This ensures borrowers have buffer from day one.
+
+### What happens when I'm liquidated?
+
+1. A liquidator pays your debt (principal + interest)
+2. The liquidator receives your collateral
+3. You lose all collateral but owe nothing more
+
+### Can I prevent liquidation?
+
+Yes:
+
+* Add collateral before reaching threshold
+* Repay the loan early
+* Monitor prices during volatile markets
+
+***
+
+## Technical
+
+### What is a solver?
+
+A solver (or matcher) is an automated bot that finds and matches compatible intents. Solvers earn the matcher commission.
+
+### What is the circuit breaker?
+
+The circuit breaker pauses protocol operations when oracle data is unreliable (stale, invalid, or deviating too much). It protects users from liquidations based on bad prices.
+
+### Why did my transaction fail?
+
+Common reasons:
+
+* Intent was already matched (race condition)
+* Insufficient token allowance
+* Circuit breaker active
+* Gas price too low
+* Contract paused
+
+Check the [Error Codes](02-error-codes.md) reference.
+
+### How do I get ETH for gas?
+
+Bridge ETH to Base using:
+
+* [Base Bridge](https://bridge.base.org)
+* [Superbridge](https://superbridge.app)
+* Centralized exchange withdrawal to Base
+
+***
+
+## Security
+
+### Is Floe audited?
+
+Audit information is available in the [Security Model](../protocol/05-security-model.md) documentation.
+
+### How are my funds protected?
+
+* All loans are overcollateralized
+* Dual-oracle system with fallback
+* Circuit breaker prevents bad liquidations
+* No pool risk (P2P isolation)
+* UUPS upgradeable for security patches
+
+### Can I lose money?
+
+**Borrowers**: You can lose your collateral if liquidated **Lenders**: You can experience bad debt if collateral becomes worthless very quickly
+
+See [Risk & Liquidation](../user-guides/04-risk-and-liquidation.md).
+
+***
+
+## Lendr AI
+
+### What is Lendr?
+
+Lendr is an AI assistant that helps you interact with Floe using natural language. Instead of filling forms, just tell Lendr what you want.
+
+### What can Lendr do?
+
+* Create borrow/lend intents
+* Check loan health
+* Add collateral
+* Repay loans
+* Explain protocol concepts
+* Answer questions
+
+### Is Lendr safe?
+
+Yes:
+
+* Lendr cannot access your private keys
+* Every transaction requires your wallet signature
+* Lendr only reads public blockchain data
+
+***
+
+## Fees
+
+### What fees does Floe charge?
+
+Floe currently charges **no protocol fees**. You only pay:
+
+* Interest (to lenders)
+* Matcher commission (to solvers)
+* Gas (to the network)
+
+### Why am I paying a matcher fee?
+
+The matcher commission incentivizes solvers to match your intent. Without it, your intent might not get matched.
+
+### Can I avoid the matcher fee?
+
+Yes, if you manually match with a counterparty through the UI. But automated solver matching is faster and more reliable.
+
+***
+
+## Getting Help
+
+### Where can I get support?
+
+* **In-app**: Ask Lendr AI
+* **X/Twitter**: [@FloeLabs](https://twitter.com/FloeLabs)
+* **Email**: hello@floelabs.xyz
+
+### How do I report a bug?
+
+1. Check if it's a known issue in Discord
+2. Report via Discord or email
+3. Include transaction hash if applicable
+
+### How do I request a feature?
+
+Share your ideas in Discord or tag us on X. We love hearing from users.
+
+***
+
+## More Questions
+
+### Can my loan be partially liquidated?
+
+Yes, for **solvent loans** (where collateral value exceeds debt). Liquidators can partially liquidate — repaying a portion of the debt and receiving proportional collateral. This reduces your position size rather than closing it entirely. **Underwater loans** (where collateral value is less than debt) must be fully liquidated.
+
+### Is LendrBot available on Telegram?
+
+Yes. LendrBot is now available on Telegram for chatting about your positions, creating intents, and getting help. Search for **LendrBot** on Telegram or visit [t.me/LendrBot](https://t.me/LendrBot).
+
+### What markets are available?
+
+Floe has 4 active markets: **USDC/WETH**, **USDC/cbBTC**, **USDT/WETH**, and **USDT/cbBTC**.
+
+### Is Floe tracked on DefiLlama?
+
+Yes. Floe's TVL is tracked on DefiLlama.
+
+***
+
+## Glossary
+
+| Term               | Definition                               |
+| ------------------ | ---------------------------------------- |
+| **APR**            | Annual Percentage Rate - yearly interest |
+| **bps**            | Basis points - 100 bps = 1%              |
+| **Intent**         | On-chain offer to lend or borrow         |
+| **LTV**            | Loan-to-Value ratio                      |
+| **Matcher/Solver** | Bot that matches intents                 |
+| **Oracle**         | Price data source (Chainlink/Pyth)       |
+| **Principal**      | Original loan amount                     |
+| **WETH**           | Wrapped ETH (ERC-20 version of ETH)      |
+| **cbBTC**          | Coinbase Wrapped BTC (ERC-20 version of BTC) |
+
+---
+
+# Glossary
+
+Key terms for using Floe.
+
+## APR
+Annual Percentage Rate — the yearly interest rate on a loan. 5% APR means you pay/earn 5% per year.
+
+## Collateral
+The asset (WETH or cbBTC) you deposit to secure a loan. If you can't repay, this gets liquidated.
+
+## Intent
+A signed message stating your lending or borrowing terms. Gets matched with a compatible counterparty.
+
+## Lender
+Someone who provides USDC to earn interest.
+
+## Borrower
+Someone who deposits collateral to borrow USDC.
+
+## LTV (Loan-to-Value)
+How much you've borrowed vs your collateral value:
+```
+LTV = Loan Amount / Collateral Value × 100%
+```
+Higher LTV = higher risk of liquidation.
+
+## Liquidation
+When your LTV exceeds the maximum allowed, anyone can repay your loan and take your collateral (plus a 5% bonus).
+
+## Liquidation LTV
+The LTV threshold where you can be liquidated. Set by the lender (typically 75-80%).
+
+## Matcher
+A bot that finds compatible lend and borrow intents and creates loans. Earns a small commission.
+
+## Oracle
+Price feed that tells the protocol the current ETH/USD price. Floe uses Chainlink and Pyth.
+
+## Circuit Breaker
+Safety mechanism that pauses the protocol if prices are stale or invalid.
+
+## Lendr
+Floe's AI assistant. Chat with it for help creating intents or understanding your loans.
+
+## Market
+A loan/collateral token pair. Active markets: USDC/WETH, USDC/cbBTC, USDT/WETH, USDT/cbBTC.
+
+## Partial Fill
+When an intent is matched for less than its full amount. If `allowPartialFill` is enabled, a single intent can be matched multiple times by different counterparties until fully filled.
+
+## Bad Debt
+When a loan's collateral value falls below the outstanding debt. The lender absorbs the loss in this scenario.
+
+## Underwater Loan
+A loan where collateral value is less than the debt owed. Underwater loans must be fully liquidated and result in bad debt for the lender.
+
+## Hook
+A smart contract callback executed before or after a lending operation. Hooks enable extensibility for custom logic like automated collateral management.
+
+## Condition
+A requirement that must be satisfied for a lending operation to proceed. Conditions are checked on-chain as part of hook execution.
+
+## Flash Loan
+A loan that is borrowed and repaid within the same transaction. Flash loans require no collateral but must be repaid atomically.
+
+## Health Factor
+A measure of how close a loan is to liquidation. Derived from the ratio of current LTV to liquidation LTV — the higher the buffer, the healthier the position.
+
+## Slippage Protection
+The `maxTotalRepayment` parameter that caps how much a liquidator or repayer pays, preventing sandwich attacks or unexpected price movements from increasing costs.
+
+## EIP-712
+An Ethereum standard for typed structured data hashing and signing. Floe uses EIP-712 for off-chain intent signatures, providing human-readable signing prompts in wallets.
+
+## ERC-1271
+A standard for smart contract signature validation. Allows smart contract wallets (like Safe multisigs) to sign and create intents on Floe.
+
+## ERC-4626
+A tokenized vault standard. Floe supports ERC-4626 vault wrappers that allow lending positions to be represented as yield-bearing vault shares.
+
+## UUPS
+Universal Upgradeable Proxy Standard — the upgrade pattern used by Floe's smart contracts. Allows the protocol to deploy security patches and new features while preserving existing state.
+
+## Sequencer
+The L2 (Base) transaction ordering service. Floe's circuit breaker checks sequencer liveness to prevent operations during L2 downtime.
+
+## Domain Separator
+An EIP-712 value that binds signatures to a specific contract on a specific chain, preventing cross-chain and cross-contract replay attacks.
+
+## AgentKit
+Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `@floe/agentkit-actions` package provides 23 protocol actions as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP.
+
+## Credit Score
+An on-chain creditworthiness score computed by [Cred Protocol](https://cred.xyz) based on DeFi lending/borrowing history. Displayed as a radar chart on the Floe dashboard and as tier badges in the loan book. Informational only — does not gate access.
+
+## Grace Period
+A configurable window of time after a loan's expiry date during which the borrower can still repay without being liquidated. Once the grace period ends, the loan becomes eligible for liquidation.
+
+## Minimum Interest
+A floor on the total interest earned by a lender on any loan. Ensures that short-duration or small-principal loans are still economically worthwhile.
+
+## Safe (Gnosis Safe)
+A multi-signature smart contract wallet. Floe supports Safe natively — Safe wallets are detected automatically, forced to on-chain transaction mode, and shown Safe-aware messaging for co-signer confirmation.
+
+## Flash Arbitrage
+A strategy that uses a flash loan to exploit price differences between Floe and external DEXs (like Aerodrome) within a single atomic transaction. Executed via a deployed FlashArbReceiver contract.
+
+## Duration Range
+An intent parameter specifying minimum and maximum acceptable loan durations instead of a single fixed value. Increases matching flexibility by allowing the matcher to select any duration within the overlapping range of a lend/borrow pair.
+
+---
+
+
+# Changelog
+
+Notable changes and updates to the Floe protocol.
+
+## Version History
+
+### v1.3.0 - AgentKit, Flash Loans & Safe Support (March 2026)
+
+**Theme**: AI agent integration, flash loan infrastructure, multisig support, and smart contract parameter updates.
+
+**AgentKit Integration**:
+
+* **@floe/agentkit-actions** — 23 AI agent actions for Floe via [Coinbase AgentKit](https://docs.cdp.coinbase.com/agent-kit/). Supports Vercel AI SDK, LangChain, OpenAI Agents SDK, and MCP server for Claude Desktop/Cursor.
+* **floe-agent CLI** — Interactive terminal agent for testing all 23 actions without framework code
+* **Flash Loan Actions** — `flash_loan`, `flash_arb`, `estimate_flash_arb_profit`, `get_flash_loan_fee`, `get_flash_arb_balance`
+* **Deploy Actions** — `deploy_flash_arb_receiver`, `check_flash_arb_readiness`, `verify_flash_arb_receiver`
+
+**Flash Loans**:
+
+* **Flash Loan Support** — Uncollateralized loans borrowed and repaid within a single transaction via `flashLoan()` on LendingIntentMatcher
+* **FlashArbReceiver** — Deployable contract for executing flash arbitrage through Aerodrome DEX on Base
+* **Pre-Flight Checks** — Automated verification of fee readability, WETH liquidity, circuit breaker status, and SwapRouter availability before deployment
+
+**Credit Scores**:
+
+* **Cred Protocol Integration** — On-chain credit scores displayed on the dashboard as a radar chart and as tier badges (Excellent/Good/Fair/New) in the loan book
+* **Shareable Score Cards** — Generate and share credit score card images on X/Twitter and other platforms
+
+**Safe / Multisig Support**:
+
+* **Safe App Manifest** — Floe loads natively inside the Safe{Wallet} App Store
+* **safeWallet Connector** — Automatic detection via RainbowKit; Safe wallets bypass WalletConnect
+* **On-Chain Mode** — Safe wallets are forced to on-chain transaction mode (no EIP-712 signing)
+* **Safe-Aware Messaging** — Submission modals show "Transaction Proposed" with instructions for co-signer confirmation
+
+**Smart Contract Updates**:
+
+* **Grace Period** — Configurable grace period after loan expiry before liquidation is allowed
+* **Minimum Interest** — Floor interest amount ensuring lenders receive a minimum return on short-duration or small loans
+* **Duration Ranges** — Intents now specify min/max duration instead of a single value, improving matching flexibility
+* **Oracle Hardening** — Additional staleness and deviation checks on Chainlink + Pyth feeds
+
+**UX Improvements**:
+
+* **Design System Overhaul** — FLOE-001 through FLOE-012 design tokens, consistent spacing, typography, and color system
+* **Loan Book Wizard** — Step-by-step guided flow for creating and matching intents
+* **X-Bot Notifications** — LendrBot posts intent summaries and post-match alerts on X/Twitter
+
+***
+
+### v1.2.0 - Smart Contract Hardening (February 2026)
+
+**Theme**: Security hardening, new notification channels, and ecosystem integrations.
+
+**Smart Contract Fixes**
+
+**New Channels**:
+
+* **Telegram Bot** — LendrBot is now available on Telegram for chatting about positions, creating intents, and getting help
+* **X/Twitter Notifications** — LendrBot posts intent summaries and post-match alerts on X
+* **Farcaster Mini App** — Floe mini app for Farcaster
+* **DefiLlama TVL Tracking** — Floe TVL now tracked on DefiLlama via adapter
+
+***
+
+### v1.1.0 - Intent Creation Overhaul (February 2026)
+
+**Theme**: Guided UX, risk transparency, and multi-market expansion.
+
+**New Features**:
+
+* **Preset Templates** — Conservative, Balanced, and Aggressive presets for both lending and borrowing. Each preset auto-populates rate, LTV, duration, and collateral ratio to well-calibrated defaults. Users can also select Custom to set every parameter manually.
+* **Risk Preview Panel** — Real-time risk assessment shown alongside the intent form before submission. Displays LTV risk level (Safe / Moderate / High / Critical), estimated yield or total repayment, collateral liquidation drop %, and contextual warnings.
+* **Submit Confirmation Modal** — Pre-submit gate that summarizes all intent parameters and risk metrics. Shows warnings for thin liquidation buffers or aggressive settings before the transaction fires.
+* **Duration Bucket Selector** — Predefined duration options (1W, 1M, 3M, 6M, 1Y) replace free-text entry, reducing input errors and improving matching compatibility.
+* **Term Protection (Lender)** — Lenders can now configure early repayment terms: Flexible (no penalty, active now), Penalty-based, or No Prepayment. Penalty and no-prepayment options are staged for v2 backend support.
+* **Redesigned Loan Cards** — LTV donut gauge visualization, hero stats (current LTV, liquidation LTV, time remaining), stacked action buttons, health-state border accent (green/yellow/orange/red), and expandable details with match info and transaction links.
+* **Collateral Ratio Indicator** — Visual gauge on the borrow form showing real-time collateral health relative to the liquidation threshold as users adjust parameters.
+
+**Multi-Market Expansion**:
+
+* 4 active markets: USDC/WETH, USDC/cbBTC, USDT/WETH, USDT/cbBTC
+* Market-aware token dropdowns — selecting a loan asset filters collateral options to tokens with active markets, and vice versa
+* Auto-detection of market from token pair selection
+
+**Form Validation Improvements**:
+
+* Cross-field validation: min fill amount cannot exceed lend amount
+* NaN guards on all numeric inputs
+* Duration must be a positive number
+* Discriminated union type safety for confirmation modal
+* Real-time wallet balance validation with inline error messages
+
+**App Updates**:
+
+* Consolidated market derivation logic for smoother token pair selection
+* React Hook Form watch subscription pattern for reliable preset detection
+* Enhanced schema validation with Zod refinements
+
+***
+
+### v1.0.0 - Mainnet Launch (January 2025)
+
+**Deployment**: Base Mainnet (Chain ID: 8453)
+
+**Core Features**:
+
+* Intent-based P2P lending
+* USDC/WETH market
+* Dual-oracle price feeds (Chainlink + Pyth)
+* Circuit breaker protection
+* Solver-based intent matching
+* Liquidation system with 5% bonus
+
+**Contracts**:
+
+* LendingIntentMatcher: `0x17946cD3e180f82e632805e5549EC913330Bb175`
+
+**Apps**:
+
+* Web app at app.floelabs.xyz
+* Lendr AI assistant integration
+* Solver bot for automated matching
+* Liquidation bot for loan monitoring
+
+***
+
+## Contract Updates
+
+### LendingIntentMatcher v1.0.0
+
+Initial deployment with:
+
+* Lend/borrow intent registration
+* Intent matching with validation
+* Loan lifecycle management
+* Collateral operations (add/withdraw)
+* Liquidation for unhealthy loans
+* UUPS upgradeability
+
+***
+
+## Protocol Parameters
+
+### Current Parameters (v1.0.0)
+
+| Parameter              | Value       | Description                                   |
+| ---------------------- | ----------- | --------------------------------------------- |
+| `minLtvGapBps`         | 800 (8%)    | Min gap between origination & liquidation LTV |
+| `withdrawalBufferBps`  | 300 (3%)    | Buffer below liquidation for withdrawals      |
+| `stalenessTimeout`     | 3,600 sec   | Oracle staleness threshold                    |
+| `maxDeviationBps`      | 1,500 (15%) | Max price deviation before circuit breaker    |
+| `sequencerGracePeriod` | 3,600 sec   | Post-recovery wait period                     |
+| `liquidationBonus`     | 500 (5%)    | Bonus for liquidators                         |
+
+***
+
+## App Updates
+
+### Web App v1.0.0
+
+* Intent marketplace with filtering
+* Loan dashboard
+* Collateral management
+* Lendr AI chat integration
+* Wallet connection (RainbowKit)
+* Real-time price updates
+
+### Lendr AI v1.0.0
+
+* Natural language intent creation
+* Loan health monitoring
+* Market information queries
+* Protocol education
+
+***
+
+## SDK Updates
+
+### @floe/sdk v1.0.0
+
+* TypeScript/JavaScript support
+* Full contract interaction methods
+* TypeChain bindings
+* Event listening
+* Price utilities
+
+```typescript
+import { ModularLendingSDK } from '@floe/sdk';
+```
+
+***
+
+## Indexer Updates
+
+### Envio Indexer v1.0.0
+
+* Real-time event indexing
+* GraphQL API
+* Intent and loan entity tracking
+* Aggregated statistics
+* Circuit breaker state monitoring
+
+***
+
+## Security Updates
+
+### Audits
+
+_Audit details to be added_
+
+### Bug Bounty
+
+* Program active at security@floelabs.xyz
+* Critical: Up to $50,000
+* High: Up to $20,000
+* Medium: Up to $5,000
+* Low: Up to $1,000
+
+***
+
+## Migration Notes
+
+### From Testnet to Mainnet
+
+If you were testing on Base Sepolia:
+
+1. **New addresses**: Use mainnet contract addresses
+2. **Real assets**: Use real USDC and WETH
+3. **Network switch**: Connect to Base Mainnet (8453)
+
+### SDK Migration
+
+```typescript
+// Update config
+const config = {
+  rpcUrl: 'https://mainnet.base.org',  // Was sepolia
+  lendingIntentMatcher: '0x17946cD3e180f82e632805e5549EC913330Bb175',
+  loanToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+  collateralToken: '0x4200000000000000000000000000000000000006',
+};
+```
+
+***
+
+## Upcoming
+
+### Planned Features
+
+* Term Protection v2 — penalty-based and no-prepayment enforcement on-chain
+* AI Portfolio Agent — autonomous portfolio management via AgentKit
+* Mobile-optimized experience
+* Advanced matching algorithms and solver strategies
+* Protocol governance and fee distribution
+* Multi-chain expansion beyond Base
+
+***
+
+## Deprecations
+
+### Deprecated in v1.0.0
+
+* Testnet contracts (Base Sepolia) - use mainnet for production
+* Legacy SDK versions - update to v1.0.0
+
+***
+
+## Links
+
+* [Contract Addresses](../developers/02-contract-addresses.md)
+* [SDK Quick Start](../developers/01-sdk-quick-start.md)
+* [GitHub Repository](https://github.com/Floe-Labs/floe-monorepo)
+* [Discord Community](https://discord.gg/floe)
+
+***
+
+## Reporting Issues
+
+Found a bug or issue?
+
+1. **Security issues**: security@floelabs.xyz (do not disclose publicly)
+2. **General bugs**: GitHub Issues or Discord
+3. **Feature requests**: Discord #suggestions
+
+Include:
+
+* Transaction hash (if applicable)
+* Steps to reproduce
+* Expected vs actual behavior
+* Screenshots (if relevant)
