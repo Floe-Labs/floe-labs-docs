@@ -6,6 +6,14 @@ icon: rocket
 
 Get USDC into your agent's wallet in under a minute.
 
+## Check Live Offers First
+
+See what lenders are offering right now — no auth, no setup:
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/credit/offers"
+```
+
 ## Get Your Agent Capital in 3 Steps
 
 ```typescript
