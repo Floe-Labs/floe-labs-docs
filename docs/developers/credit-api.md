@@ -13,24 +13,83 @@ The Credit API lets any agent — regardless of language or framework — access
 See live lender offers on Base — no auth required:
 
 ```bash
-curl "https://credit-api.floelabs.xyz/v1/credit/offers?marketId=0x..."
+# WETH/USDC market
+curl "https://credit-api.floelabs.xyz/v1/credit/offers?marketId=0xfe92656527bae8e6d37a9e0bb785383fbb33f1f0c7e29fdd733f5af7390c2930"
+
+# Or browse all markets at once
+curl "https://credit-api.floelabs.xyz/v1/credit/offers"
 ```
 
 ---
 
-## Endpoints
+## Markets
+
+| Market | marketId | Collateral | Loan Token |
+|--------|----------|------------|------------|
+| WETH/USDC | `0xfe92656527bae8e6d37a9e0bb785383fbb33f1f0c7e29fdd733f5af7390c2930` | WETH (18 dec) | USDC (6 dec) |
+| cbBTC/USDC | `0xbd0fb0e71705bfb3cc5c5552d9276e6617761b37353bd9e1b37bb65c3af2d7f7` | cbBTC (8 dec) | USDC (6 dec) |
+
+**Token addresses (Base mainnet):**
+
+| Token | Address | Decimals |
+|-------|---------|----------|
+| WETH | `0x4200000000000000000000000000000000000006` | 18 |
+| USDC | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6 |
+| cbBTC | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8 |
+
+You can also discover markets programmatically via `GET /v1/markets`.
+
+---
+
+## Public Endpoints
+
+### GET /v1/markets
+
+List all active lending markets. **Public — no auth required.**
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/markets"
+```
+
+**Response:**
+
+```json
+{
+  "markets": [
+    {
+      "marketId": "0xfe92656527bae8e6d37a9e0bb785383fbb33f1f0c7e29fdd733f5af7390c2930",
+      "loanToken": {
+        "address": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "symbol": "USDC",
+        "decimals": 6
+      },
+      "collateralToken": {
+        "address": "0x4200000000000000000000000000000000000006",
+        "symbol": "WETH",
+        "decimals": 18
+      },
+      "isActive": true,
+      "offerCount": 12
+    }
+  ]
+}
+```
 
 ### GET /v1/credit/offers
 
 Query available lend intents. **Public — no auth required.**
 
 ```bash
-curl "https://credit-api.floelabs.xyz/v1/credit/offers?marketId=0x..."
+# All markets
+curl "https://credit-api.floelabs.xyz/v1/credit/offers"
+
+# Specific market
+curl "https://credit-api.floelabs.xyz/v1/credit/offers?marketId=0xfe9265..."
 ```
 
 | Query Param | Type | Required | Description |
 |-------------|------|----------|-------------|
-| `marketId` | bytes32 | Yes | Market ID (loan token + collateral token pair) |
+| `marketId` | bytes32 | No | Filter by market. Omit to see offers across all markets. |
 | `minAmount` | string | No | Minimum remaining amount (raw units) |
 | `maxRateBps` | string | No | Maximum interest rate in basis points |
 | `maxResults` | string | No | Max offers to return (default: 50) |
@@ -50,17 +109,28 @@ curl "https://credit-api.floelabs.xyz/v1/credit/offers?marketId=0x..."
       "maxDuration": "2592000",
       "expiry": "1711900800",
       "gracePeriod": "86400",
-      "minInterestBps": "5000"
+      "minInterestBps": "5000",
+      "marketId": "0xfe9265..."
     }
   ]
 }
+```
+
+### GET /v1/health
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/health"
+```
+
+```json
+{ "status": "ok", "timestamp": "2025-03-30T12:00:00.000Z" }
 ```
 
 ---
 
 ## Authentication
 
-All endpoints below require authentication. The offers endpoint above is public.
+All endpoints below require authentication. The endpoints above are public.
 
 The API uses **EIP-191 / EIP-1271 signed message** authentication. No API keys, no registration. Any wallet can authenticate.
 
@@ -77,13 +147,12 @@ The API uses **EIP-191 / EIP-1271 signed message** authentication. No API keys, 
 
 The timestamp must be within 5 minutes of the server time.
 
-### Python Example
+### Python
 
 ```python
 from eth_account import Account
 from eth_account.messages import encode_defunct
-import requests
-import time
+import requests, time
 
 private_key = "0x..."
 account = Account.from_key(private_key)
@@ -93,10 +162,41 @@ signed = account.sign_message(encode_defunct(text=message))
 
 headers = {
     "X-Wallet-Address": account.address,
-    "X-Signature": signed.signature.hex(),
+    "X-Signature": "0x" + signed.signature.hex(),
     "X-Timestamp": timestamp,
     "Content-Type": "application/json"
 }
+
+# Now use `headers` with any authenticated endpoint
+response = requests.post(
+    "https://credit-api.floelabs.xyz/v1/credit/instant-borrow",
+    headers=headers,
+    json={ "marketId": "0xfe9265...", "borrowAmount": "5000000000", ... }
+)
+```
+
+### TypeScript
+
+```typescript
+import { privateKeyToAccount } from "viem/accounts";
+
+const account = privateKeyToAccount("0x...");
+const timestamp = Math.floor(Date.now() / 1000).toString();
+const message = `Floe Credit API\nTimestamp: ${timestamp}`;
+const signature = await account.signMessage({ message });
+
+const headers = {
+  "X-Wallet-Address": account.address,
+  "X-Signature": signature,
+  "X-Timestamp": timestamp,
+  "Content-Type": "application/json",
+};
+
+// Now use `headers` with any authenticated endpoint
+const response = await fetch(
+  "https://credit-api.floelabs.xyz/v1/credit/instant-borrow",
+  { method: "POST", headers, body: JSON.stringify({ ... }) }
+);
 ```
 
 ### Smart Contract Wallets (ERC-1271)
@@ -118,7 +218,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
   -H "X-Signature: 0xYourSig" \
   -H "X-Timestamp: 1711814400" \
   -d '{
-    "marketId": "0x...",
+    "marketId": "0xfe92656527bae8e6d37a9e0bb785383fbb33f1f0c7e29fdd733f5af7390c2930",
     "borrowAmount": "5000000000",
     "collateralAmount": "2000000000000000000",
     "maxInterestRateBps": "1200",
@@ -129,11 +229,11 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `marketId` | bytes32 | Yes | Market ID |
+| `marketId` | bytes32 | Yes | Market ID (see [Markets](#markets) above) |
 | `borrowAmount` | string | Yes | Amount to borrow (raw units) |
 | `collateralAmount` | string | Yes | Collateral to post (raw units) |
-| `maxInterestRateBps` | string | Yes | Max acceptable rate (bps) |
-| `duration` | string | Yes | Loan duration in seconds |
+| `maxInterestRateBps` | string | Yes | Max acceptable rate (bps). 1200 = 12% APR |
+| `duration` | string | Yes | Loan duration in seconds. 2592000 = 30 days |
 | `minLtvBps` | string | No | Min LTV (default: 8000 = 80%) |
 
 **Response:**
@@ -171,10 +271,6 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
 }
 ```
 
-Sign and submit each transaction in order. The approval transaction may be omitted if the allowance is already sufficient.
-
----
-
 ### GET /v1/credit/status/:loanId
 
 Get loan status including health metrics and early repayment terms.
@@ -211,8 +307,6 @@ curl "https://credit-api.floelabs.xyz/v1/credit/status/42" \
 }
 ```
 
----
-
 ### POST /v1/credit/repay
 
 Build unsigned transactions to repay a loan in full.
@@ -230,8 +324,6 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/repay" \
 |-------|------|----------|-------------|
 | `loanId` | string | Yes | Loan ID to repay |
 | `slippageBps` | string | No | Slippage tolerance (default: 500 = 5%) |
-
----
 
 ### POST /v1/credit/repay-and-reborrow
 
@@ -258,36 +350,103 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/repay-and-reborrow" \
 
 ---
 
-### GET /v1/health
+## Submitting Transactions
 
-Health check. **Public — no auth required.**
+The API returns unsigned transaction calldata. Your agent signs and submits each transaction in order on Base (chain ID 8453).
 
-```bash
-curl "https://credit-api.floelabs.xyz/v1/health"
+### Python (web3.py)
+
+```python
+from web3 import Web3
+
+w3 = Web3(Web3.HTTPProvider("https://mainnet.base.org"))
+account = w3.eth.account.from_key("0x...")
+
+# transactions = response from instant-borrow endpoint
+for tx_data in transactions:
+    tx = {
+        "to": tx_data["to"],
+        "data": tx_data["data"],
+        "value": int(tx_data["value"], 16),
+        "chainId": tx_data["chainId"],
+        "gas": w3.eth.estimate_gas({
+            "to": tx_data["to"],
+            "data": tx_data["data"],
+            "value": int(tx_data["value"], 16),
+            "from": account.address,
+        }),
+        "nonce": w3.eth.get_transaction_count(account.address),
+        "maxFeePerGas": w3.eth.gas_price * 2,
+        "maxPriorityFeePerGas": w3.eth.gas_price,
+    }
+    signed = account.sign_transaction(tx)
+    tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+    receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    assert receipt.status == 1, f"Transaction failed: {tx_hash.hex()}"
+    print(f"  {tx_data['description']}: {tx_hash.hex()}")
 ```
 
-```json
-{ "status": "ok", "timestamp": "2025-03-30T12:00:00.000Z" }
+### TypeScript (viem)
+
+```typescript
+import { createWalletClient, http, createPublicClient } from "viem";
+import { base } from "viem/chains";
+import { privateKeyToAccount } from "viem/accounts";
+
+const account = privateKeyToAccount("0x...");
+const publicClient = createPublicClient({ chain: base, transport: http() });
+const walletClient = createWalletClient({ account, chain: base, transport: http() });
+
+// transactions = response from instant-borrow endpoint
+for (const txData of transactions) {
+  const hash = await walletClient.sendTransaction({
+    to: txData.to as `0x${string}`,
+    data: txData.data as `0x${string}`,
+    value: BigInt(txData.value),
+  });
+  const receipt = await publicClient.waitForTransactionReceipt({ hash });
+  if (receipt.status !== "success") throw new Error(`Failed: ${hash}`);
+  console.log(`  ${txData.description}: ${hash}`);
+}
 ```
+
+**Important:** Submit transactions in order. Each must confirm before sending the next. The approval transaction may be omitted if the allowance is already sufficient.
+
+All amounts are in raw token units (e.g., `"5000000000"` = 5,000 USDC with 6 decimals).
 
 ---
 
-## Error Responses
+## Error Handling
 
-| Status | Error | Meaning |
-|--------|-------|---------|
-| 400 | Invalid request | Missing/invalid fields |
-| 401 | Unauthorized | Missing or invalid auth headers |
-| 404 | NoLiquidityError | No matching lend intents available |
-| 404 | LoanNotFoundError | Loan doesn't exist or is already repaid |
-| 500 | Internal error | Server-side failure |
+| Status | Error | Meaning | What to Do |
+|--------|-------|---------|------------|
+| 400 | Invalid request | Missing/invalid fields | Check request body against the schema above |
+| 401 | Unauthorized | Missing or invalid auth headers | Verify signature, check timestamp freshness (< 5 min) |
+| 404 | NoLiquidityError | No matching lend intents available | Try a smaller amount, higher max rate, or different market |
+| 404 | LoanNotFoundError | Loan doesn't exist or is already repaid | Verify loanId, check if already repaid |
+| 500 | Internal error | Server-side failure | Retry after a few seconds |
 
-## Transaction Submission
+### Transaction Failures
 
-The API returns unsigned transaction calldata. Your agent is responsible for:
+If a transaction in the sequence fails:
 
-1. Signing each transaction with the wallet's private key
-2. Submitting transactions to the Base network in order
-3. Waiting for each transaction to confirm before submitting the next
+- **Approval failed:** No on-chain state changed. Safe to retry the entire sequence.
+- **Register borrow intent failed:** Your approval is still valid. Retry from the register step.
+- **Match failed:** Your borrow intent is registered on-chain. Call the API again — it will detect the existing intent and return only the match transaction.
 
-All amounts are in raw token units (e.g., `"5000000000"` = 5,000 USDC with 6 decimals).
+### Retry Strategy
+
+For transient failures (network timeouts, 500s), retry with exponential backoff:
+
+```python
+import time
+
+def retry_with_backoff(fn, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            return fn()
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(2 ** attempt)  # 1s, 2s, 4s
+```

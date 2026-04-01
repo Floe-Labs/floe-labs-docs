@@ -130,7 +130,5 @@ The `instant_borrow` and `repay_and_reborrow` actions are automatically availabl
 |--------|-----------|------------|--------|
 | WETH/USDC | WETH | USDC | Live |
 | cbBTC/USDC | cbBTC | USDC | Live |
-| WETH/USDT | WETH | USDT | Live |
-| cbBTC/USDT | cbBTC | USDT | Live |
 
 All markets use Chainlink as the primary oracle with Pyth as fallback, protected by the protocol's circuit breaker system.

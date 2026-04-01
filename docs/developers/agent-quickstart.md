@@ -33,11 +33,20 @@ const status = await agentkit.invoke("check_credit_status", {
 // → status.totalDebt, status.currentLtvBps, status.daysRemaining
 ```
 
-**Not using AgentKit?** Use the [Credit REST API](credit-api.md) — same functionality over HTTP, works with any language.
+**Not using AgentKit?** Run the complete [Python example](https://github.com/Floe-Labs/floe-labs-docs/blob/main/examples/borrow.py) or [TypeScript example](https://github.com/Floe-Labs/floe-labs-docs/blob/main/examples/borrow.ts) — or use the [Credit REST API](credit-api.md) directly.
 
 ## What Just Happened
 
 Floe queried all available lenders on Base, selected the best rate for your amount, and executed the match on-chain. USDC transferred directly to your agent's wallet. Your ETH collateral is held by the protocol's smart contract and returns automatically when you repay. Fixed rate, fixed term, no surprises.
+
+## Markets
+
+| Market | Collateral | Loan Token |
+|--------|------------|------------|
+| WETH/USDC | ETH | USDC |
+| cbBTC/USDC | cbBTC | USDC |
+
+See the [Credit REST API](credit-api.md#markets) for marketIds and token addresses.
 
 ## Next Steps
 
