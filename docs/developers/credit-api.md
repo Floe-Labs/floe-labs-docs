@@ -223,7 +223,8 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
     "collateralAmount": "2000000000000000000",
     "maxInterestRateBps": "1200",
     "duration": "2592000",
-    "minLtvBps": "8000"
+    "minLtvBps": "8000",
+    "maxLtvBps": "7500"
   }'
 ```
 
@@ -235,6 +236,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
 | `maxInterestRateBps` | string | Yes | Max acceptable rate (bps). 1200 = 12% APR |
 | `duration` | string | Yes | Loan duration in seconds. 2592000 = 30 days |
 | `minLtvBps` | string | No | Min LTV (default: 8000 = 80%) |
+| `maxLtvBps` | string | No | Max initial LTV (bps). Rejects if oracle-computed LTV exceeds this. 7500 = 75% |
 
 **Response:**
 
@@ -421,6 +423,7 @@ All amounts are in raw token units (e.g., `"5000000000"` = 5,000 USDC with 6 dec
 | Status | Error | Meaning | What to Do |
 |--------|-------|---------|------------|
 | 400 | Invalid request | Missing/invalid fields | Check request body against the schema above |
+| 400 | InitialLtvExceededError | Oracle-computed initial LTV exceeds `maxLtvBps` | Increase collateral, decrease borrow amount, or raise `maxLtvBps` |
 | 401 | Unauthorized | Missing or invalid auth headers | Verify signature, check timestamp freshness (< 5 min) |
 | 404 | NoLiquidityError | No matching lend intents available | Try a smaller amount, higher max rate, or different market |
 | 404 | LoanNotFoundError | Loan doesn't exist or is already repaid | Verify loanId, check if already repaid |

@@ -89,6 +89,7 @@ resp = requests.post(
         "collateralAmount": COLLATERAL_AMOUNT,
         "maxInterestRateBps": MAX_RATE_BPS,
         "duration": DURATION,
+        "maxLtvBps": "7500",
     },
 )
 
