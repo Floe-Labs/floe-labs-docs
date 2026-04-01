@@ -100,6 +100,7 @@ const borrowResp = await fetch(`${API_BASE}/v1/credit/instant-borrow`, {
     collateralAmount: COLLATERAL_AMOUNT,
     maxInterestRateBps: MAX_RATE_BPS,
     duration: DURATION,
+    maxLtvBps: "7500",
   }),
 });
 
