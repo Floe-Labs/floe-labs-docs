@@ -223,7 +223,6 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
     "collateralAmount": "2000000000000000000",
     "maxInterestRateBps": "1200",
     "duration": "2592000",
-    "minLtvBps": "8000",
     "maxLtvBps": "7500"
   }'
 ```
