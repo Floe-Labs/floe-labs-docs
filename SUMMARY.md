@@ -25,13 +25,14 @@
 
 ## Developers
 
-* [Run a Solver Bot](docs/developers/run-solver-bot.md)
-* [Run a Liquidation Bot](docs/developers/run-liquidation-bot.md)
+* [Agent Working Capital Quickstart](docs/developers/agent-quickstart.md)
 * [AgentKit Integration](docs/developers/agentkit.md)
   * [TypeScript SDK](docs/developers/agentkit-typescript.md)
   * [Python SDK](docs/developers/agentkit-python.md)
 * [Agent Working Capital](docs/developers/agent-working-capital.md)
 * [Credit REST API](docs/developers/credit-api.md)
+* [Run a Solver Bot](docs/developers/run-solver-bot.md)
+* [Run a Liquidation Bot](docs/developers/run-liquidation-bot.md)
 
 ## Reference
 

@@ -8,53 +8,13 @@ The Credit API lets any agent — regardless of language or framework — access
 
 **Base URL:** `https://credit-api.floelabs.xyz`
 
-## Authentication
+## Try It Now
 
-The API uses **EIP-191 / EIP-1271 signed message** authentication. No API keys, no registration. Any wallet can authenticate.
+See live lender offers on Base — no auth required:
 
-### How It Works
-
-1. Sign the message `Floe Credit API\nTimestamp: <unix_seconds>` with your wallet
-2. Include three headers in your request:
-
-| Header | Value |
-|--------|-------|
-| `X-Wallet-Address` | Your wallet address (`0x...`) |
-| `X-Signature` | The signed message (`0x...`, 65 bytes) |
-| `X-Timestamp` | Unix timestamp used in the message |
-
-The timestamp must be within 5 minutes of the server time.
-
-### Public Endpoints (No Auth)
-
-- `GET /v1/health`
-- `GET /v1/credit/offers`
-
-### Python Example
-
-```python
-from eth_account import Account
-from eth_account.messages import encode_defunct
-import requests
-import time
-
-private_key = "0x..."
-account = Account.from_key(private_key)
-timestamp = str(int(time.time()))
-message = f"Floe Credit API\nTimestamp: {timestamp}"
-signed = account.sign_message(encode_defunct(text=message))
-
-headers = {
-    "X-Wallet-Address": account.address,
-    "X-Signature": signed.signature.hex(),
-    "X-Timestamp": timestamp,
-    "Content-Type": "application/json"
-}
+```bash
+curl "https://credit-api.floelabs.xyz/v1/credit/offers?marketId=0x..."
 ```
-
-### Smart Contract Wallets (ERC-1271)
-
-Giza agents, Olas agents, and Safe multisigs authenticate the same way. The API detects smart contract wallets automatically and calls `isValidSignature()` on your wallet contract to verify the signature.
 
 ---
 
@@ -97,6 +57,55 @@ curl "https://credit-api.floelabs.xyz/v1/credit/offers?marketId=0x..."
 ```
 
 ---
+
+## Authentication
+
+All endpoints below require authentication. The offers endpoint above is public.
+
+The API uses **EIP-191 / EIP-1271 signed message** authentication. No API keys, no registration. Any wallet can authenticate.
+
+### How It Works
+
+1. Sign the message `Floe Credit API\nTimestamp: <unix_seconds>` with your wallet
+2. Include three headers in your request:
+
+| Header | Value |
+|--------|-------|
+| `X-Wallet-Address` | Your wallet address (`0x...`) |
+| `X-Signature` | The signed message (`0x...`, 65 bytes) |
+| `X-Timestamp` | Unix timestamp used in the message |
+
+The timestamp must be within 5 minutes of the server time.
+
+### Python Example
+
+```python
+from eth_account import Account
+from eth_account.messages import encode_defunct
+import requests
+import time
+
+private_key = "0x..."
+account = Account.from_key(private_key)
+timestamp = str(int(time.time()))
+message = f"Floe Credit API\nTimestamp: {timestamp}"
+signed = account.sign_message(encode_defunct(text=message))
+
+headers = {
+    "X-Wallet-Address": account.address,
+    "X-Signature": signed.signature.hex(),
+    "X-Timestamp": timestamp,
+    "Content-Type": "application/json"
+}
+```
+
+### Smart Contract Wallets (ERC-1271)
+
+Giza agents, Olas agents, and Safe multisigs authenticate the same way. The API detects smart contract wallets automatically and calls `isValidSignature()` on your wallet contract to verify the signature.
+
+---
+
+## Authenticated Endpoints
 
 ### POST /v1/credit/instant-borrow
 
