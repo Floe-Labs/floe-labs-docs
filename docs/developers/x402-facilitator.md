@@ -13,11 +13,10 @@ The facilitator is a proxy: your agent sends a request, we handle the payment. I
 ## Try It Now
 
 ```bash
-# 1. Check your balance
-curl -H "Authorization: Bearer floe_YOUR_API_KEY" \
-  https://x402.floelabs.xyz/agents/balance
+# Check if an API requires x402 payment (no auth needed)
+curl "https://x402.floelabs.xyz/proxy/check?url=https://some-x402-api.com/data"
 
-# 2. Call any x402 API through the proxy
+# Call any x402 API through the proxy
 curl -X POST https://x402.floelabs.xyz/proxy/fetch \
   -H "Authorization: Bearer floe_YOUR_API_KEY" \
   -H "Content-Type: application/json" \
@@ -37,19 +36,40 @@ Contact the Floe team for pilot access. You'll receive:
 
 ### 2. Fund Your Account
 
-Transfer USDC to your Privy wallet address on Base, then register the deposit:
+Send USDC to your Privy wallet address on Base. That's it.
+
+Your balance updates automatically within 30 seconds — no API call needed, no transaction hash to copy. Just send USDC and start making calls.
 
 ```bash
-# After sending USDC on-chain
-curl -X POST https://x402.floelabs.xyz/agents/deposit \
-  -H "Authorization: Bearer floe_YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{ "txHash": "0xYOUR_TX_HASH" }'
+# Check your balance anytime
+curl -H "Authorization: Bearer floe_YOUR_API_KEY" \
+  https://x402.floelabs.xyz/agents/balance
 ```
 
-The facilitator verifies the on-chain transfer and credits your balance.
+### 3. Check What It'll Cost
 
-### 3. Make Paid API Calls
+Before calling a paid API, check the price:
+
+```bash
+curl "https://x402.floelabs.xyz/proxy/check?url=https://api.example.com/premium-data"
+```
+
+```json
+{
+  "x402": true,
+  "status": 402,
+  "payment": {
+    "amount": "750000",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "payTo": "0x...",
+    "network": "base"
+  }
+}
+```
+
+No auth required. `amount` is in raw USDC units (750000 = $0.75).
+
+### 4. Make Paid API Calls
 
 ```bash
 curl -X POST https://x402.floelabs.xyz/proxy/fetch \
@@ -67,14 +87,14 @@ curl -X POST https://x402.floelabs.xyz/proxy/fetch \
 2. If the server returns 200 → response passed through to you (no charge)
 3. If the server returns 402 → facilitator checks your balance, signs an EIP-3009 payment, retries with the payment header, debits your ledger, returns the content
 
-### 4. Monitor Your Usage
+### 5. Monitor Your Usage
 
 ```bash
 # Check balance
 curl -H "Authorization: Bearer floe_YOUR_API_KEY" \
   https://x402.floelabs.xyz/agents/balance
 
-# View payment history
+# View payment history (paginated)
 curl -H "Authorization: Bearer floe_YOUR_API_KEY" \
   "https://x402.floelabs.xyz/agents/transactions?limit=20"
 ```
@@ -85,9 +105,40 @@ curl -H "Authorization: Bearer floe_YOUR_API_KEY" \
 
 **Base URL:** `https://x402.floelabs.xyz`
 
-All endpoints require `Authorization: Bearer <apiKey>` unless noted.
+### Public Endpoints (No Auth)
 
-### POST /proxy/fetch
+#### GET /proxy/check
+
+Check if a URL requires x402 payment and how much it costs.
+
+```bash
+curl "https://x402.floelabs.xyz/proxy/check?url=https://api.example.com/data"
+```
+
+**Free URL response:**
+```json
+{ "x402": false, "status": 200, "message": "This URL does not require x402 payment" }
+```
+
+**Paid URL response:**
+```json
+{
+  "x402": true,
+  "status": 402,
+  "payment": {
+    "amount": "750000",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "payTo": "0x...",
+    "network": "base"
+  }
+}
+```
+
+### Authenticated Endpoints
+
+All require `Authorization: Bearer <apiKey>`.
+
+#### POST /proxy/fetch
 
 Proxy a request through the facilitator. Handles x402 payments automatically.
 
@@ -103,7 +154,7 @@ Proxy a request through the facilitator. Handles x402 payments automatically.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `url` | string | Yes | Target URL |
-| `method` | string | No | HTTP method (default: GET) |
+| `method` | string | No | HTTP method (default: GET). Allowed: GET, POST, PUT, PATCH, DELETE, HEAD |
 | `headers` | object | No | Headers to forward to the target |
 | `body` | string | No | Request body (for POST/PUT/PATCH) |
 
@@ -112,27 +163,14 @@ Proxy a request through the facilitator. Handles x402 payments automatically.
 | Status | Meaning |
 |--------|---------|
 | 200 | Success — response body from target (may have been paid) |
-| 400 | Invalid request or blocked URL |
+| 400 | Invalid request, blocked URL, or disallowed method |
 | 401 | Invalid API key |
 | 402 | Insufficient balance (`{ error: "insufficient_balance", available, required }`) |
 | 403 | Agent suspended |
 | 429 | Rate limit exceeded |
 | 502 | Target unreachable or payment header missing |
 
-### POST /agents/deposit
-
-Verify an on-chain USDC transfer to your Privy wallet and credit your balance.
-
-```json
-{ "txHash": "0x..." }
-```
-
-**Response:**
-```json
-{ "balance": "5000000000", "deposited": "5000000000", "txHash": "0x..." }
-```
-
-### GET /agents/balance
+#### GET /agents/balance
 
 ```json
 {
@@ -144,9 +182,9 @@ Verify an on-chain USDC transfer to your Privy wallet and credit your balance.
 
 - `balance` — your available credit (ledger balance after payments)
 - `privyWalletBalance` — on-chain USDC in your Privy wallet
-- `privyWalletAddress` — where to send USDC deposits
+- `privyWalletAddress` — where to send USDC to fund your account
 
-### GET /agents/transactions
+#### GET /agents/transactions
 
 Paginated payment history.
 
@@ -173,11 +211,19 @@ Paginated payment history.
 }
 ```
 
+#### POST /agents/deposit
+
+Manual deposit verification (optional — balances auto-update within 30s).
+
+```json
+{ "txHash": "0x..." }
+```
+
+Use this if you need the balance credited immediately rather than waiting for auto-detection.
+
 ---
 
 ## How It Works
-
-When your agent calls `POST /proxy/fetch`:
 
 ```
 Agent → Facilitator → Target API
@@ -190,6 +236,10 @@ Agent ← Facilitator ← Target API (200 + content)
 
 The x402 protocol uses **EIP-3009 transferWithAuthorization** — a gasless USDC transfer signed by the facilitator's Privy wallet. Coinbase's hosted facilitator settles the payment on-chain. Your agent never touches a private key.
 
+### Deposits
+
+Send USDC to your Privy wallet address on Base. The facilitator polls wallet balances every 30 seconds and auto-credits your ledger when it detects an increase. No API call, no tx hash — just send and wait.
+
 ### Custodial Architecture
 
 Each agent gets a dedicated Privy wallet (EOA on Base). USDC is segregated per-agent — not pooled. The facilitator signs payments server-side via Privy's authorization context. No private keys in memory.
@@ -200,10 +250,11 @@ Each agent gets a dedicated Privy wallet (EOA on Base). USDC is segregated per-a
 | USDC segregated | Each agent's funds in their own EOA |
 | Server-side signing | Via Privy API (~100ms latency) |
 | On-chain settlement | Coinbase facilitator executes `transferWithAuthorization` |
+| Auto-deposit | Balance detected every 30s, no manual step |
 
 ### Collateral Backing
 
-Your credit facility is backed by on-chain collateral (ETH or cbBTC) via Floe's lending protocol. The facilitator periodically checks that your collateral supports your credit balance. If collateral drops below threshold, your account is flagged.
+Your credit facility is backed by on-chain collateral (ETH or cbBTC) via Floe's lending protocol. The facilitator checks both WETH and cbBTC balances across all supported markets, even if you haven't borrowed yet.
 
 ---
 
@@ -245,23 +296,29 @@ API_KEY = "floe_YOUR_API_KEY"
 BASE = "https://x402.floelabs.xyz"
 headers = { "Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json" }
 
-# Make a paid API call
+# Check cost before calling
+check = requests.get(f"{BASE}/proxy/check", params={"url": "https://api.example.com/data"})
+print(check.json())  # { "x402": true, "payment": { "amount": "750000", ... } }
+
+# Make the paid call
 resp = requests.post(f"{BASE}/proxy/fetch", headers=headers, json={
-    "url": "https://some-x402-api.com/data",
+    "url": "https://api.example.com/data",
     "method": "GET",
 })
+print(resp.json())  # Response from the target API
 
-print(resp.status_code)  # 200 if successful
-print(resp.json())       # Response from the target API
+# Check balance
+balance = requests.get(f"{BASE}/agents/balance", headers=headers)
+print(balance.json())  # { "balance": "4250000", ... }
 ```
 
 ---
 
 ## Pricing
 
-You pay exactly what the x402 API charges — no markup. The facilitator deducts the `maxAmountRequired` from the 402 header. All amounts are in raw USDC units (6 decimals).
+You pay exactly what the x402 API charges — no markup. The facilitator deducts the `maxAmountRequired` from the 402 response header. All amounts are in raw USDC units (6 decimals).
 
-Check your spending with `GET /agents/transactions`.
+Use `GET /proxy/check` to see the cost before calling. Check your spending with `GET /agents/transactions`.
 
 ---
 
@@ -269,9 +326,10 @@ Check your spending with `GET /agents/transactions`.
 
 | Error | Meaning | Fix |
 |-------|---------|-----|
-| `insufficient_balance` | Ledger balance too low | Deposit more USDC to your Privy wallet |
+| `insufficient_balance` | Ledger balance too low | Send more USDC to your Privy wallet address |
 | `Agent suspended` | Account suspended by admin | Contact Floe team |
 | `Rate limit exceeded` | Too many requests per minute | Slow down or contact us for higher limits |
-| `Target URL not allowed` | SSRF protection blocked the URL | Only public HTTPS URLs are allowed |
+| `Target URL not allowed` | SSRF protection blocked the URL | Only public URLs are allowed in production |
 | `Network mismatch` | x402 server on wrong chain | Facilitator only supports Base mainnet |
 | `Payment asset mismatch` | x402 server wants non-USDC payment | Facilitator only supports USDC |
+| `Response too large` | Upstream response exceeds 10MB | Contact us if you need larger responses |
