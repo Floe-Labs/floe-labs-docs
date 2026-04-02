@@ -38,7 +38,7 @@ Contact the Floe team for pilot access. You'll receive:
 
 Send USDC to your Privy wallet address on Base. That's it.
 
-Your balance updates automatically within 30 seconds — no API call needed, no transaction hash to copy. Just send USDC and start making calls.
+Your balance updates automatically within 10 seconds — no API call needed, no transaction hash to copy. Just send USDC and start making calls.
 
 ```bash
 # Check your balance anytime
@@ -211,16 +211,6 @@ Paginated payment history.
 }
 ```
 
-#### POST /agents/deposit
-
-Manual deposit verification (optional — balances auto-update within 30s).
-
-```json
-{ "txHash": "0x..." }
-```
-
-Use this if you need the balance credited immediately rather than waiting for auto-detection.
-
 ### Admin Endpoints
 
 Admin endpoints require a separate admin API key (`Authorization: Bearer <adminApiKey>`).
@@ -293,7 +283,7 @@ The x402 protocol uses **EIP-3009 transferWithAuthorization** — a gasless USDC
 
 ### Deposits
 
-Send USDC to your Privy wallet address on Base. The facilitator polls wallet balances every 30 seconds and auto-credits your ledger when it detects an increase. No API call, no tx hash — just send and wait.
+Send USDC to your Privy wallet address on Base. The facilitator polls wallet balances every 10 seconds and auto-credits your ledger when it detects an increase. No API call, no tx hash — just send and wait.
 
 ### Custodial Architecture
 
@@ -305,7 +295,7 @@ Each agent gets a dedicated Privy wallet (EOA on Base). USDC is segregated per-a
 | USDC segregated | Each agent's funds in their own EOA |
 | Server-side signing | Via Privy API (~100ms latency) |
 | On-chain settlement | Coinbase facilitator executes `transferWithAuthorization` |
-| Auto-deposit | Balance detected every 30s, no manual step |
+| Auto-deposit | Balance detected every 10s, no manual step |
 
 ### Collateral Backing
 
