@@ -20,7 +20,7 @@
 * [Architecture](docs/protocol/architecture.md)
 * [Intent Auto Matching](docs/protocol/orderbook-matching.md)
 * [Oracles & Circuit Breaker](docs/protocol/oracles-conditions.md)
-* [Flash Loans](docs/protocol/flash-loans.md)
+* [Flash Loans](docs/developers/flash-loans.md)
 * [Security](docs/protocol/security.md)
 
 ## Developers
@@ -32,6 +32,7 @@
   * [Python SDK](docs/developers/agentkit-python.md)
 * [Agent Working Capital](docs/developers/agent-working-capital.md)
 * [Credit REST API](docs/developers/credit-api.md)
+* [Flash Loans](docs/developers/flash-loans.md)
 * [Run a Solver Bot](docs/developers/run-solver-bot.md)
 * [Run a Liquidation Bot](docs/developers/run-liquidation-bot.md)
 
