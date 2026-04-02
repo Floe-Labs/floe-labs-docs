@@ -221,6 +221,61 @@ Manual deposit verification (optional — balances auto-update within 30s).
 
 Use this if you need the balance credited immediately rather than waiting for auto-detection.
 
+### Admin Endpoints
+
+Admin endpoints require a separate admin API key (`Authorization: Bearer <adminApiKey>`).
+
+#### POST /admin/agents
+
+Register a new agent. Creates a Privy custodial wallet and returns the API key (shown once).
+
+```json
+{ "agentId": "my-agent-1" }
+```
+
+**Response (201):**
+```json
+{
+  "agentId": "my-agent-1",
+  "apiKey": "floe_abc123...",
+  "privyWalletAddress": "0x..."
+}
+```
+
+Save the `apiKey` — it's only shown once. The `privyWalletAddress` is where the agent sends USDC to fund their account.
+
+#### GET /admin/agents
+
+List all agents with current balances.
+
+**Response:**
+```json
+{
+  "agents": [
+    {
+      "id": "my-agent-1",
+      "privyWalletAddress": "0x...",
+      "status": "active",
+      "balance": "5000000000",
+      "createdAt": "2025-04-01T..."
+    }
+  ]
+}
+```
+
+#### PATCH /admin/agents/:id
+
+Suspend or reactivate an agent. Suspended agents receive 403 on all proxy requests.
+
+```json
+{ "status": "suspended" }
+```
+
+**Response:**
+```json
+{ "id": "my-agent-1", "status": "suspended" }
+```
+
 ---
 
 ## How It Works
