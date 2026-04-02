@@ -20,7 +20,6 @@
 * [Architecture](docs/protocol/architecture.md)
 * [Intent Auto Matching](docs/protocol/orderbook-matching.md)
 * [Oracles & Circuit Breaker](docs/protocol/oracles-conditions.md)
-* [Flash Loans](docs/developers/flash-loans.md)
 * [Security](docs/protocol/security.md)
 
 ## Developers
