@@ -26,6 +26,7 @@
 ## Developers
 
 * [Agent Working Capital Quickstart](docs/developers/agent-quickstart.md)
+* [x402 Credit Facilitator](docs/developers/x402-facilitator.md)
 * [AgentKit Integration](docs/developers/agentkit.md)
   * [TypeScript SDK](docs/developers/agentkit-typescript.md)
   * [Python SDK](docs/developers/agentkit-python.md)

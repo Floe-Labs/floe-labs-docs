@@ -58,6 +58,7 @@ See the [Credit REST API](credit-api.md#markets) for marketIds and token address
 
 ## Next Steps
 
+- **[x402 Credit Facilitator](x402-facilitator.md)** — Pay for any x402 API with your Floe credit. One HTTP call, no wallet needed.
 - **[Credit REST API](credit-api.md)** — HTTP endpoints for Python, Rust, or any language. Try `GET /v1/credit/offers` right now with no auth required.
 - **[AgentKit Integration](agentkit.md)** — Full reference for all 23+ Floe actions including repayment, renewal, and collateral management.
 - **[Agent Working Capital](agent-working-capital.md)** — Deep dive into credit facility design, supported markets, and early repayment terms.
