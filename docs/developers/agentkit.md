@@ -8,7 +8,7 @@ Build AI agents that can lend, borrow, match intents, execute flash loans, and m
 
 ## What is AgentKit?
 
-AgentKit is Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe provides custom ActionProviders that expose **23 protocol actions**, making Floe a first-class verb alongside "transfer" and "swap" in any AgentKit agent.
+AgentKit is Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe provides custom ActionProviders that expose **29 protocol actions**, making Floe a first-class verb alongside "transfer" and "swap" in any AgentKit agent.
 
 ## Choose Your SDK
 
@@ -21,13 +21,13 @@ AgentKit is Coinbase's open-source framework that gives AI agents on-chain capab
 | **CLI** | `floe-agent` (via npx) | `floe-agent` (via pip) |
 | **GitHub** | [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions) | [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py) |
 
-Both SDKs provide the same 23 actions with identical behavior. Choose based on your stack.
+Both SDKs provide the same 29 actions with identical behavior. Choose based on your stack.
 
 > **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
 >
 > **Need working capital for your agent?** See [Agent Working Capital](agent-working-capital.md) for credit facility actions that let agents request, match, and manage fixed-rate loans.
 
-## Actions Reference (23 total)
+## Actions Reference (29 total)
 
 All actions are available in both TypeScript and Python SDKs.
 
@@ -69,6 +69,19 @@ All write actions auto-approve tokens to the LendingIntentMatcher with a 1% buff
 | `get_flash_arb_balance` | Check accumulated profit in a FlashArbReceiver |
 
 > **`flash_loan` vs `flash_arb`:** `flash_loan` sends tokens to `msg.sender` and calls `receiveFlashLoan()` — your connected wallet must be a smart contract. EOA wallets will revert. Use `flash_arb` instead, which routes through a pre-deployed FlashArbReceiver contract that handles repayment automatically.
+
+### x402 Credit Actions (6)
+
+| Action | Description |
+|--------|-------------|
+| `grant_credit_delegation` | One-time setup: delegate collateral to a facilitator for automatic x402 payments |
+| `revoke_credit_delegation` | Revoke delegation — triggers wind-down (loans repaid, collateral returned) |
+| `check_credit_delegation` | Check delegation status: borrowed vs limit, rate cap, expiry |
+| `x402_fetch` | Fetch any URL through the facilitator proxy — auto-pays 402 responses |
+| `x402_get_balance` | Check credit status: limit, used, available, active loans |
+| `x402_get_transactions` | View payment history with pagination |
+
+> **x402 actions use a separate provider.** Register `x402ActionProvider` alongside `floeActionProvider` to get both lending and payment actions. See [x402 Credit Facilitator](x402-facilitator.md) for setup details.
 
 ### Deploy / Verify Actions (3)
 

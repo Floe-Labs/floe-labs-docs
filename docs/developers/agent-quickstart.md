@@ -56,10 +56,29 @@ Floe queried all available lenders on Base, selected the best rate for your amou
 
 See the [Credit REST API](credit-api.md#markets) for marketIds and token addresses.
 
+## Want Automatic API Payments?
+
+If your agent needs to call x402-enabled APIs, you don't need to manage USDC at all. Delegate your collateral to the x402 facilitator and it handles everything:
+
+```typescript
+// One-time setup: delegate collateral
+await agentkit.invoke("grant_credit_delegation", {
+  facilitatorAddress: "0x...",
+  facilitatorUrl: "https://x402.floelabs.xyz",
+  borrowLimit: "10000",
+  collateralToken: "0x4200000000000000000000000000000000000006",
+});
+
+// Now call any x402 API — payment is automatic
+await agentkit.invoke("x402_fetch", { url: "https://api.example.com/data" });
+```
+
+See **[x402 Credit Facilitator](x402-facilitator.md)** for details.
+
 ## Next Steps
 
-- **[x402 Credit Facilitator](x402-facilitator.md)** — Pay for any x402 API with your Floe credit. One HTTP call, no wallet needed.
-- **[Credit REST API](credit-api.md)** — HTTP endpoints for Python, Rust, or any language. Try `GET /v1/credit/offers` right now with no auth required.
-- **[AgentKit Integration](agentkit.md)** — Full reference for all 23+ Floe actions including repayment, renewal, and collateral management.
+- **[x402 Credit Facilitator](x402-facilitator.md)** — Pay for any x402 API automatically. Delegate collateral, facilitator handles the rest.
+- **[Credit REST API](credit-api.md)** — HTTP endpoints for Python, Rust, or any language.
+- **[AgentKit Integration](agentkit.md)** — Full reference for all 29 Floe actions.
 - **[Agent Working Capital](agent-working-capital.md)** — Deep dive into credit facility design, supported markets, and early repayment terms.
 - **Talk to us** — [Discord](https://discord.gg/floelabs) or reach out for pilot access.

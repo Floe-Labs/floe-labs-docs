@@ -112,6 +112,26 @@ const agentkit = await AgentKit.from({
 
 The `instant_borrow` and `repay_and_reborrow` actions are automatically available alongside the existing 23 Floe actions.
 
+## Routing Loan Proceeds
+
+All borrow actions accept an optional `onBehalfOf` address. When set, borrowed USDC is sent to that address instead of your wallet. This enables:
+
+- **Credit facilitators** — borrow on behalf of a custodial payment wallet
+- **Multi-wallet setups** — collateral in one wallet, capital in another
+- **Smart contract recipients** — route funds directly to a DeFi position
+
+```typescript
+await agentkit.invoke("instant_borrow", {
+  borrowAmount: "5000000000",
+  collateralAmount: "2000000000000000000",
+  maxInterestRateBps: "1200",
+  duration: "2592000",
+  onBehalfOf: "0x...payment_wallet",  // USDC goes here
+});
+```
+
+If omitted, USDC goes to your own wallet (current behavior).
+
 ## Key Design Decisions
 
 **Instant borrow.** One call to get capital. Floe queries available lend intents, picks the best rate, and executes the 2-transaction flow (register borrow intent + match) behind a single function call. If the selected lender is stale, it auto-retries with the next best offer.
