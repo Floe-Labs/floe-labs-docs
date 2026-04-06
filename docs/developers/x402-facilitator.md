@@ -101,7 +101,7 @@ print(resp.json())  # Response from the target API
 
 Registration is a two-step process:
 
-1. **Pre-register** ��� creates your custodial payment wallet
+1. **Pre-register** — creates your custodial payment wallet
 2. **Grant delegation on-chain** — approves the facilitator to borrow on your behalf
 3. **Complete registration** — facilitator verifies delegation, activates your account
 

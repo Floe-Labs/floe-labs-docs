@@ -8,7 +8,7 @@ Build AI agents that can lend, borrow, match intents, execute flash loans, and m
 
 ## What is AgentKit?
 
-AgentKit is Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe provides custom ActionProviders that expose **29 protocol actions**, making Floe a first-class verb alongside "transfer" and "swap" in any AgentKit agent.
+AgentKit is Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe provides custom ActionProviders that expose **36 protocol actions**, making Floe a first-class verb alongside "transfer" and "swap" in any AgentKit agent.
 
 ## Choose Your SDK
 
@@ -21,13 +21,13 @@ AgentKit is Coinbase's open-source framework that gives AI agents on-chain capab
 | **CLI** | `floe-agent` (via npx) | `floe-agent` (via pip) |
 | **GitHub** | [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions) | [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py) |
 
-Both SDKs provide the same 29 actions with identical behavior. Choose based on your stack.
+Both SDKs provide the same 36 actions with identical behavior. Choose based on your stack.
 
 > **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
 >
 > **Need working capital for your agent?** See [Agent Working Capital](agent-working-capital.md) for credit facility actions that let agents request, match, and manage fixed-rate loans.
 
-## Actions Reference (29 total)
+## Actions Reference (36 total)
 
 All actions are available in both TypeScript and Python SDKs.
 
