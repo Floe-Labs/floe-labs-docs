@@ -305,7 +305,13 @@ Response:
 { "privyWalletAddress": "0x..." }
 ```
 
-Errors: `400` invalid request, `401` signature verification failed, `409` agent already registered (idempotent retry returns the existing Privy wallet via a GET, not this POST), `429` nonce reused.
+Errors: `400` invalid request, `401` signature verification failed, `409` agent already registered (idempotent retry returns the existing Privy wallet via a GET, not this POST), `429` nonce reused — body:
+
+```json
+{ "error": "nonce_reused", "detail": "Nonce has already been consumed" }
+```
+
+**Note**: this is distinct from the global `rate_limit_exceeded` 429 on `/proxy/fetch`. Switch on the `error` field, not the status code. `nonce_reused` is not retryable with the same nonce — call `/agents/pre-register` again to mint a fresh one.
 
 #### POST /agents/register
 
@@ -376,10 +382,13 @@ The rate limit is 30 requests/minute per agent, enforced by a token bucket (`RC1
   "creditLimit": "10000000000",
   "creditUsed": "3200000000",
   "creditAvailable": "6800000000",
+  "pendingSettlements": "50000000",
   "activeLoans": [{ "loanId": "42", "principalRaw": "5000000000" }],
   "delegationActive": true
 }
 ```
+
+**`pendingSettlements`** (RC-12): sum of reservations in `pending_settlement` state — authorizations that have been signed and sent but not yet confirmed on-chain by the reconciliation loop. This amount is temporarily reserved against the agent's credit limit until the reconciliation loop finalizes each reservation to `settled` or `expired_unsettled`. See [Reservation Lifecycle (RC-12)](#reservation-lifecycle-rc-12).
 
 #### GET /agents/transactions
 
