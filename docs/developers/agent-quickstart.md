@@ -79,6 +79,6 @@ See **[x402 Credit Facilitator](x402-facilitator.md)** for details.
 
 - **[x402 Credit Facilitator](x402-facilitator.md)** — Pay for any x402 API automatically. Delegate collateral, facilitator handles the rest.
 - **[Credit REST API](credit-api.md)** — HTTP endpoints for Python, Rust, or any language.
-- **[AgentKit Integration](agentkit.md)** — Full action reference (36 in TypeScript, 29 in Python — see parity note on the AgentKit page).
+- **[AgentKit Integration](agentkit.md)** — Full action reference (36 in both TypeScript and Python — full parity as of April 2026).
 - **[Agent Working Capital](agent-working-capital.md)** — Deep dive into credit facility design, supported markets, and early repayment terms.
 - **Talk to us** — [Discord](https://discord.gg/floelabs) or reach out for pilot access.

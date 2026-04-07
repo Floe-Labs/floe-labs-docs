@@ -17,12 +17,12 @@ AgentKit is Coinbase's open-source framework that gives AI agents on-chain capab
 | **Package** | `@floe/agentkit-actions` | `floe-agentkit-actions` |
 | **Install** | `npm install @floe/agentkit-actions` | `pip install floe-agentkit-actions` |
 | **Runtime** | Node.js 18+ | Python 3.10+ |
-| **Actions exposed** | **36** (30 Floe + 6 X402) | **29** (23 Floe + 6 X402) — see parity note below |
+| **Actions exposed** | **36** (30 Floe + 6 X402) | **36** (30 Floe + 6 X402) — full parity as of April 2026 |
 | **AI Frameworks** | Vercel AI SDK, LangChain, MCP Server, OpenAI Agents SDK | LangChain, OpenAI Function Calling |
 | **CLI** | `floe-agent` (via npx) | `floe-agent` (via pip) |
 | **GitHub** | [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions) | [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py) |
 
-> **SDK parity note.** The TypeScript SDK is currently ahead of Python by 7 actions — specifically the high-level credit facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`). Python has all 23 base Floe actions plus all 6 X402 actions, matching TS for every non-credit-facility action. **Parity closure is tracked in `agentkit-actions-py/tests/test_action_count.py`.** If your agent needs the high-level credit facility actions today, use the TypeScript SDK; the Python SDK can still access credit via the lower-level `post_borrow_intent` + `match_intents` primitives it already exposes.
+> **SDK parity note.** As of April 2026, the Python SDK has full parity with TypeScript: 30 Floe actions plus 6 X402 actions (36 total in both). The high-level credit facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) are now available in both SDKs.
 
 > **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
 >
