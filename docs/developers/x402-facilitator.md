@@ -51,6 +51,70 @@ struct OperatorPermission {
 
 All five constraints are re-validated at the moment of each borrow match, so the facilitator provably cannot exceed them even if compromised.
 
+## Reservation Lifecycle (RC-12)
+
+Every paid call through `/proxy/fetch` creates a **reservation** that tracks the EIP-3009 authorization from the moment it is signed through final on-chain settlement. Reservations are the facilitator's double-charge defense: a single agent balance can be debited for an in-flight authorization at most once, and reconciliation closes out every reservation either as `settled` or as fully released.
+
+```mermaid
+stateDiagram-v2
+    [*] --> reserved: agent calls /proxy/fetch
+    reserved --> sent: X-PAYMENT attached, request in flight
+    sent --> pending_settlement: upstream returned 2xx
+    sent --> payment_rejected: upstream returned 402, or SSRF guard blocked before any bytes sent
+    sent --> pending_settlement: network error (ambiguous outcome)
+    pending_settlement --> settled: reconciliation observes matching USDC Transfer
+    pending_settlement --> expired_unsettled: validBefore passes with no Transfer
+    settled --> [*]
+    expired_unsettled --> [*]
+    payment_rejected --> [*]
+```
+
+| State | Balance reserved? | Agent action |
+|---|---|---|
+| `reserved` | yes | Waiting — no action |
+| `sent` | yes | Waiting — no action |
+| `pending_settlement` | yes | **Do not retry immediately.** Reconciliation runs every 15s; poll `GET /agents/:id/balance` (returns a `pendingSettlements` field) until the reservation finalizes. |
+| `settled` | no (consumed) | Done — tx hash available via admin endpoints |
+| `expired_unsettled` | no (released) | Safe to retry, possibly with a different provider |
+| `payment_rejected` | no (released) | Safe to retry immediately — no payment was ever claimed |
+
+### Ambiguous paid-request failure
+
+When a network error occurs **after** the facilitator has attached the `X-PAYMENT` header to the upstream request, the reservation transitions to `pending_settlement` rather than `payment_rejected`. The merchant may already have called `transferWithAuthorization` on-chain even though our socket died before the response came back, so the outcome is not yet decidable. In this case `/proxy/fetch` returns HTTP 502 with:
+
+```json
+{
+  "error": "upstream_paid_request_failed_ambiguous",
+  "detail": "<network error message>",
+  "reservation": {
+    "nonce": "0x...",
+    "validBefore": 1712513700
+  }
+}
+```
+
+Agents **must not retry immediately**. The reconciliation loop will finalize the reservation to `settled` (if a matching USDC `Transfer` is observed on-chain) or `expired_unsettled` (if `validBefore` passes with no transfer). Typical resolution latency is 15s–90s.
+
+### Settlement deadline
+
+The EIP-3009 authorization is signed with a `validBefore` timestamp set `X402_VALID_BEFORE_SECONDS` ahead of now (default `90`). If the facilitator receives a 2xx upstream response but `validBefore` has already passed, the merchant can no longer claim the authorization on-chain — so the reservation is released and `/proxy/fetch` returns HTTP 502 with:
+
+```json
+{
+  "error": "upstream_payment_unsettled",
+  "reservation": {
+    "nonce": "0x...",
+    "validBefore": 1712513700
+  }
+}
+```
+
+This is safe to retry immediately, ideally against a different provider that may respond faster.
+
+### Why 502 and not 202
+
+The facilitator made a paid upstream call and did not receive a confirmable settlement — this is a bad-gateway condition between the agent and a merchant the facilitator could not transact with cleanly, not a pending async response.
+
 ## Quick Start
 
 ### With AgentKit (recommended)
