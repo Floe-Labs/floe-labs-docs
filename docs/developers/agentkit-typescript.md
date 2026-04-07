@@ -4,7 +4,7 @@ icon: js
 
 # TypeScript SDK
 
-The `@floe/agentkit-actions` package provides a Coinbase AgentKit ActionProvider with 23 Floe protocol actions for Node.js / TypeScript environments.
+The `@floe/agentkit-actions` package provides Coinbase AgentKit ActionProviders with **36 total actions** (30 in `FloeActionProvider` + 6 in `X402ActionProvider`) for Node.js / TypeScript environments.
 
 ## Installation
 
@@ -63,7 +63,7 @@ const tools = await getLangChainTools(agentkit);
 
 ### MCP Server (Claude Desktop / Cursor)
 
-Expose all 23 Floe actions as MCP tools:
+Expose all 36 Floe actions as MCP tools:
 
 ```bash
 npm install @coinbase/agentkit-model-context-protocol @modelcontextprotocol/sdk
@@ -118,7 +118,7 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 ## CLI: `floe-agent`
 
-Interactive conversational agent for testing all 23 actions without writing any framework code.
+Interactive conversational agent for testing all 36 actions without writing any framework code.
 
 ### Run directly
 

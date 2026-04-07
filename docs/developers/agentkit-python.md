@@ -4,7 +4,9 @@ icon: python
 
 # Python SDK
 
-The `floe-agentkit-actions` package provides a Coinbase AgentKit ActionProvider with 23 Floe protocol actions for Python environments.
+The `floe-agentkit-actions` package provides Coinbase AgentKit ActionProviders with **29 total actions** (23 in `FloeActionProvider` + 6 in `X402ActionProvider`) for Python 3.10+ environments.
+
+> **Parity note.** The Python SDK is currently 7 credit-facility actions behind the TypeScript SDK (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`). All 23 base Floe actions and all 6 X402 actions are present and at parity. If your agent needs the high-level credit facility flow today, consider the TypeScript SDK, or compose the lower-level `post_borrow_intent` + `match_intents` primitives directly in Python. Parity closure is tracked in `agentkit-actions-py/tests/test_action_count.py`.
 
 ## Installation
 
