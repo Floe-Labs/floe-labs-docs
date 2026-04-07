@@ -354,8 +354,20 @@ Proxy a request. Handles x402 payments automatically.
 | 401 | Invalid API key |
 | 402 | Insufficient credit |
 | 403 | Account frozen or closed |
-| 429 | Rate limit exceeded |
-| 502 | Target unreachable |
+| 429 | Rate limit exceeded — see body shape below |
+| 502 | Target unreachable, or paid-request failure (see [Reservation Lifecycle](#reservation-lifecycle-rc-12)) |
+
+A `429` response body looks like:
+
+```json
+{
+  "error": "rate_limit_exceeded",
+  "limit": 30,
+  "retry_after_seconds": 7
+}
+```
+
+The rate limit is 30 requests/minute per agent, enforced by a token bucket (`RC12_RATE_LIMIT_PER_MINUTE` env var, default `30`). The `retry_after_seconds` field tells the agent when the next token will be available.
 
 #### GET /agents/balance
 
