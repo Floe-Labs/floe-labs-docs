@@ -110,7 +110,7 @@ const agentkit = await AgentKit.from({
 });
 ```
 
-The `instant_borrow` and `repay_and_reborrow` actions are automatically available alongside the existing 23 Floe actions.
+The `instant_borrow` and `repay_and_reborrow` actions are available in both the TypeScript and Python SDKs, alongside the other 30 Floe actions (30 total Floe + 6 X402 = 36 actions in each SDK). Python achieved full parity with TypeScript in April 2026 — see the [Python SDK page](agentkit-python.md) for details.
 
 ## Routing Loan Proceeds
 

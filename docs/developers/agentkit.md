@@ -8,7 +8,7 @@ Build AI agents that can lend, borrow, match intents, execute flash loans, and m
 
 ## What is AgentKit?
 
-AgentKit is Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe provides custom ActionProviders that expose **29 protocol actions**, making Floe a first-class verb alongside "transfer" and "swap" in any AgentKit agent.
+AgentKit is Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe provides custom ActionProviders that expose protocol actions, making Floe a first-class verb alongside "transfer" and "swap" in any AgentKit agent.
 
 ## Choose Your SDK
 
@@ -17,19 +17,20 @@ AgentKit is Coinbase's open-source framework that gives AI agents on-chain capab
 | **Package** | `@floe/agentkit-actions` | `floe-agentkit-actions` |
 | **Install** | `npm install @floe/agentkit-actions` | `pip install floe-agentkit-actions` |
 | **Runtime** | Node.js 18+ | Python 3.10+ |
+| **Actions exposed** | **36** (30 Floe + 6 X402) | **36** (30 Floe + 6 X402) — full parity as of April 2026 |
 | **AI Frameworks** | Vercel AI SDK, LangChain, MCP Server, OpenAI Agents SDK | LangChain, OpenAI Function Calling |
 | **CLI** | `floe-agent` (via npx) | `floe-agent` (via pip) |
 | **GitHub** | [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions) | [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py) |
 
-Both SDKs provide the same 29 actions with identical behavior. Choose based on your stack.
+> **SDK parity note.** As of April 2026, the Python SDK has full parity with TypeScript: 30 Floe actions plus 6 X402 actions (36 total in both). The high-level credit facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) are now available in both SDKs.
 
 > **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
 >
 > **Need working capital for your agent?** See [Agent Working Capital](agent-working-capital.md) for credit facility actions that let agents request, match, and manage fixed-rate loans.
 
-## Actions Reference (29 total)
+## Actions Reference (TypeScript — 36 total)
 
-All actions are available in both TypeScript and Python SDKs.
+The full list below reflects the **TypeScript SDK** surface. Where an action is Python-available too, it's marked. See the [Python SDK page](agentkit-python.md) for the Python-only list.
 
 ### Read Actions (8)
 

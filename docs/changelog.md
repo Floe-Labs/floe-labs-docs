@@ -8,6 +8,34 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.4.0 - Upgrade #12: Operator Delegation + x402 Credit Facilitator (April 2026)
+
+**Theme**: The operator pattern — agents grant a scoped on-chain permission and the facilitator handles everything else. This is the foundation for the x402 credit facilitator: agents never sign intents, never manage loans, never touch EIP-3009.
+
+**Smart contract upgrade (UUPS #12)**:
+
+* **`setOperator(operator, OperatorPermission)`** — agents grant a scoped, revocable permission. The `OperatorPermission` struct includes `borrowLimit`, `maxRateBps`, `expiry`, and `onBehalfOfRestriction` (which binds borrowed USDC routing to a specific recipient address).
+* **`revokeOperator(operator)`** — immediate revocation. Existing loans remain callable for repay/rollover to prevent agent-side griefing.
+* **`getOperatorPermission(agent, operator)`** — view the current permission state including running `borrowed` counter.
+* **Match-time re-validation** — the matcher re-checks `approved`, `expiry`, `maxRateBps`, `borrowLimit`, and `onBehalfOfRestriction` at every borrow match, so the facilitator provably cannot exceed the agent's constraints.
+* **`onBehalfOf` threaded through `BorrowIntent`/`LendIntent` structs** — operator-initiated intents route USDC to the specified address (not the operator).
+* Contracts deployed on Base mainnet: matcher proxy remains `0x17946cD3e180f82e632805e5549EC913330Bb175`; new impl at `0x88E52dEfE974fBfD8C542bB727318D76cd3CE1C8`, new LogicsManager at `0x6b6f7D0741E723beAA4777829B34d19849ED00dB`, new LendingCalcLib at `0x51CA3010E1962E0746de14c99B439ACC7557503f`.
+
+**x402 Credit Facilitator (RC-10)**:
+
+* **Agent-facing HTTP proxy** — agents receive an API key after granting operator delegation, then call `POST /proxy/fetch` with any x402 URL. The facilitator auto-borrows USDC on demand, signs EIP-3009 payment authorizations, and returns the API response.
+* **Auto-borrow service** — monitors agent credit balance and borrows against delegated collateral when below threshold. Respects `OperatorPermission` constraints on every match.
+* **Credit health monitoring** — tracks collateral-to-debt ratios and freezes spending before liquidation risk. Automatically unfreezes when ratios recover.
+* **Wind-down flow** — `POST /agents/close` or `revokeOperator` triggers full repayment + collateral return + remaining USDC transfer.
+* **Two-step registration** — `POST /agents/pre-register` creates the custodial Privy wallet; agent calls `setOperator` on-chain; `POST /agents/register` verifies and issues the API key.
+
+**SSRF hardening (RC-11)**:
+
+* **IP pinning via undici** — outbound proxy fetches resolve the hostname once, validate against RFC1918 / link-local / IMDS / IPv6 ULA / IPv4-mapped IPv6 ranges, and pin the TCP connect to the validated public IP. No TOCTOU window for DNS rebinding attacks.
+* **Hardcoded cloud metadata denylist** — `169.254.169.254` and `fd00:ec2::254` explicitly rejected at the DNS layer.
+* **`maxRedirections: 0`** — facilitator never follows 30x redirects (classic SSRF bypass path).
+* **Typed `CircuitBreakerActiveError`** — replaces fragile error-message string matching with structured 503 responses.
+
 ### v1.3.0 - AgentKit, Flash Loans & Safe Support (March 2026)
 
 **Theme**: AI agent integration, flash loan infrastructure, multisig support, and smart contract parameter updates.
