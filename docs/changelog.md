@@ -8,9 +8,18 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
-### v1.4.0 - Upgrade #12: Operator Delegation + x402 Credit Facilitator (April 2026)
+### v1.4.0 — Unified Developer Platform + Upgrade #12 (April 2026)
 
-**Theme**: The operator pattern — agents grant a scoped on-chain permission and the facilitator handles everything else. This is the foundation for the x402 credit facilitator: agents never sign intents, never manage loans, never touch EIP-3009.
+**Theme**: The operator pattern — agents grant a scoped on-chain permission and the facilitator handles everything else. This is the foundation for the x402 credit facilitator: agents never sign intents, never manage loans, never touch EIP-3009. Shipped alongside a unified developer platform (dashboard + API keys + webhooks) consolidating x402-facilitator into the Credit API.
+
+**Unified Developer Platform**:
+
+* **Developer Dashboard** (`dev-dashboard.floelabs.xyz`) — web UI for managing API keys, webhooks, and agents. Sign in with your EVM wallet (SIWE).
+* **API Keys** — programmatic access via `floe_live_*` developer keys (no per-request wallet signing). Max 5 active keys per developer.
+* **Webhooks** — push notifications for loan events (`loan.health_warning`, `loan.expiry_warning`, `loan.liquidated`, `loan.repaid`) with HMAC-signed payloads, at-least-once delivery, and manual retry.
+* **Unified API** — the x402 facilitator was merged into the Credit API at `credit-api.floelabs.xyz`. All endpoints under one base URL, dual auth (`floe_live_*` developer keys + `floe_*` agent keys).
+* **Agent Management** — 3-step setup wizard in dashboard (Create Wallet → Deposit & Delegate → Activate), balance/transaction monitoring, graceful winddown.
+* **Background Services** — automated credit health monitoring (1 min), delegation expiry detection (5 min), reservation reconciliation (15 s).
 
 **Smart contract upgrade (UUPS #12)**:
 
@@ -23,11 +32,11 @@ Notable changes and updates to the Floe protocol.
 
 **x402 Credit Facilitator (RC-10)**:
 
-* **Agent-facing HTTP proxy** — agents receive an API key after granting operator delegation, then call `POST /proxy/fetch` with any x402 URL. The facilitator auto-borrows USDC on demand, signs EIP-3009 payment authorizations, and returns the API response.
+* **Agent-facing HTTP proxy** — agents receive an API key after granting operator delegation, then call `POST /v1/proxy/fetch` with any x402 URL. The facilitator auto-borrows USDC on demand, signs EIP-3009 payment authorizations, and returns the API response.
 * **Auto-borrow service** — monitors agent credit balance and borrows against delegated collateral when below threshold. Respects `OperatorPermission` constraints on every match.
 * **Credit health monitoring** — tracks collateral-to-debt ratios and freezes spending before liquidation risk. Automatically unfreezes when ratios recover.
-* **Wind-down flow** — `POST /agents/close` or `revokeOperator` triggers full repayment + collateral return + remaining USDC transfer.
-* **Two-step registration** — `POST /agents/pre-register` creates the custodial Privy wallet; agent calls `setOperator` on-chain; `POST /agents/register` verifies and issues the API key.
+* **Wind-down flow** — `POST /v1/agents/close` or `revokeOperator` triggers full repayment + collateral return + remaining USDC transfer.
+* **Two-step registration** — `POST /v1/agents/pre-register` creates the custodial Privy wallet; developer calls `setOperator` on-chain; `POST /v1/agents/register` verifies and issues the agent API key.
 
 **SSRF hardening (RC-11)**:
 
@@ -35,6 +44,8 @@ Notable changes and updates to the Floe protocol.
 * **Hardcoded cloud metadata denylist** — `169.254.169.254` and `fd00:ec2::254` explicitly rejected at the DNS layer.
 * **`maxRedirections: 0`** — facilitator never follows 30x redirects (classic SSRF bypass path).
 * **Typed `CircuitBreakerActiveError`** — replaces fragile error-message string matching with structured 503 responses.
+
+***
 
 ### v1.3.0 - AgentKit, Flash Loans & Safe Support (March 2026)
 

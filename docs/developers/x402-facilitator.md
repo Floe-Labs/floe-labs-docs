@@ -6,6 +6,8 @@ icon: zap
 
 Pay for any x402-enabled API with Floe credit. No pre-funding, no wallet management — delegate your collateral and the facilitator handles everything.
 
+> You can also set up agents through the [Developer Dashboard](developer-dashboard.md) — a web UI at `dev-dashboard.floelabs.xyz`.
+
 **Works with 13,000+ existing x402 APIs** on Base — no per-service integration needed.
 
 ## How It Works
@@ -125,14 +127,14 @@ import { x402ActionProvider } from "@floe/agentkit-actions";
 const agentkit = await AgentKit.from({
   walletProvider,
   actionProviders: [
-    x402ActionProvider({ facilitatorUrl: "https://x402.floelabs.xyz" }),
+    x402ActionProvider({ facilitatorUrl: "https://credit-api.floelabs.xyz" }),
   ],
 });
 
 // One action: creates wallet, sets delegation, approves collateral, registers
 const result = await agentkit.invoke("grant_credit_delegation", {
   facilitatorAddress: "0x...",  // provided by the facilitator
-  facilitatorUrl: "https://x402.floelabs.xyz",
+  facilitatorUrl: "https://credit-api.floelabs.xyz",
   borrowLimit: "10000",         // $10K max credit
   maxRateBps: "1500",           // 15% max interest rate
   expiryDays: "90",             // 90-day delegation
@@ -158,7 +160,7 @@ MESSAGE="Register with Floe Facilitator
 Nonce: $NONCE"
 SIGNATURE=$(cast wallet sign "$MESSAGE" --private-key $YOUR_AGENT_PRIVKEY)
 
-curl -X POST https://x402.floelabs.xyz/agents/pre-register \
+curl -X POST https://credit-api.floelabs.xyz/v1/agents/pre-register \
   -H "Content-Type: application/json" \
   -d "{\"walletAddress\": \"$YOUR_AGENT_ADDRESS\", \"signature\": \"$SIGNATURE\", \"nonce\": \"$NONCE\"}"
 # → { "privyWalletAddress": "0x..." }
@@ -174,13 +176,13 @@ MESSAGE2="Register with Floe Facilitator
 Nonce: $NONCE2"
 SIGNATURE2=$(cast wallet sign "$MESSAGE2" --private-key $YOUR_AGENT_PRIVKEY)
 
-curl -X POST https://x402.floelabs.xyz/agents/register \
+curl -X POST https://credit-api.floelabs.xyz/v1/agents/register \
   -H "Content-Type: application/json" \
   -d "{\"walletAddress\": \"$YOUR_AGENT_ADDRESS\", \"signature\": \"$SIGNATURE2\", \"nonce\": \"$NONCE2\"}"
 # → { "apiKey": "floe_...", "privyWalletAddress": "0x...", "creditLimit": "10000000000" }
 
 # Step 4: Start making paid API calls with your returned API key
-curl -X POST https://x402.floelabs.xyz/proxy/fetch \
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer floe_YOUR_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{ "url": "https://api.example.com/data", "method": "GET" }'
@@ -192,7 +194,7 @@ curl -X POST https://x402.floelabs.xyz/proxy/fetch \
 from floe_agentkit_actions import x402_action_provider, X402Config
 
 provider = x402_action_provider(X402Config(
-    facilitator_url="https://x402.floelabs.xyz",
+    facilitator_url="https://credit-api.floelabs.xyz",
 ))
 # Register with AgentKit — 6 x402 actions available
 ```
@@ -203,11 +205,11 @@ Or use the REST API directly:
 import requests
 
 API_KEY = "floe_YOUR_API_KEY"
-BASE = "https://x402.floelabs.xyz"
+BASE = "https://credit-api.floelabs.xyz"
 headers = { "Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json" }
 
 # Make a paid API call
-resp = requests.post(f"{BASE}/proxy/fetch", headers=headers, json={
+resp = requests.post(f"{BASE}/v1/proxy/fetch", headers=headers, json={
     "url": "https://api.example.com/data",
     "method": "GET",
 })
@@ -273,7 +275,7 @@ You'll also need to approve the matcher to pull your collateral token (WETH or c
 
 ## REST API Reference
 
-**Base URL:** `https://x402.floelabs.xyz`
+**Base URL:** `https://credit-api.floelabs.xyz`
 
 ### Public (No Auth)
 
@@ -282,11 +284,11 @@ You'll also need to approve the matcher to pull your collateral token (WETH or c
 Liveness probe.
 
 ```bash
-curl https://x402.floelabs.xyz/health
+curl https://credit-api.floelabs.xyz/health
 # → { "status": "ok" }
 ```
 
-#### POST /agents/pre-register
+#### POST /v1/agents/pre-register
 
 Step 1 of registration. Creates your custodial Privy payment wallet and returns its address.
 
@@ -311,13 +313,13 @@ Errors: `400` invalid request, `401` signature verification failed, `409` agent 
 { "error": "nonce_reused", "detail": "Nonce has already been consumed" }
 ```
 
-**Note**: this is distinct from the global `rate_limit_exceeded` 429 on `/proxy/fetch`. Switch on the `error` field, not the status code. `nonce_reused` is not retryable with the same nonce — call `/agents/pre-register` again to mint a fresh one.
+**Note**: this is distinct from the global `rate_limit_exceeded` 429 on `/v1/proxy/fetch`. Switch on the `error` field, not the status code. `nonce_reused` is not retryable with the same nonce — call `/v1/agents/pre-register` again to mint a fresh one.
 
-#### POST /agents/register
+#### POST /v1/agents/register
 
 Step 3 of registration (step 2 is your on-chain `setOperator` call — not an HTTP endpoint). Verifies the on-chain operator permission, activates your account, and returns your API key.
 
-Same request shape as `/agents/pre-register` (EIP-191 signed, fresh nonce required).
+Same request shape as `/v1/agents/pre-register` (EIP-191 signed, fresh nonce required).
 
 Response:
 ```json
@@ -330,17 +332,17 @@ Response:
 
 Errors: `400` invalid request, `401` signature failed, `403` on-chain operator permission not found or not yet confirmed, `409` already registered.
 
-#### GET /proxy/check
+#### GET /v1/proxy/check
 
 Check if a URL requires x402 payment (unauthenticated probe).
 
 ```bash
-curl "https://x402.floelabs.xyz/proxy/check?url=https://api.example.com/data"
+curl "https://credit-api.floelabs.xyz/v1/proxy/check?url=https://api.example.com/data"
 ```
 
 ### Authenticated (Bearer token)
 
-#### POST /proxy/fetch
+#### POST /v1/proxy/fetch
 
 Proxy a request. Handles x402 payments automatically.
 
@@ -375,7 +377,7 @@ A `429` response body looks like:
 
 The rate limit is 30 requests/minute per agent, enforced by a token bucket (`RC12_RATE_LIMIT_PER_MINUTE` env var, default `30`). The `retry_after_seconds` field tells the agent when the next token will be available.
 
-#### GET /agents/balance
+#### GET /v1/agents/balance
 
 ```json
 {
@@ -390,7 +392,7 @@ The rate limit is 30 requests/minute per agent, enforced by a token bucket (`RC1
 
 **`pendingSettlements`** (RC-12): sum of reservations in `pending_settlement` state — authorizations that have been signed and sent but not yet confirmed on-chain by the reconciliation loop. This amount is temporarily reserved against the agent's credit limit until the reconciliation loop finalizes each reservation to `settled` or `expired_unsettled`. See [Reservation Lifecycle (RC-12)](#reservation-lifecycle-rc-12).
 
-#### GET /agents/transactions
+#### GET /v1/agents/transactions
 
 Paginated payment history.
 
@@ -411,7 +413,7 @@ Paginated payment history.
 }
 ```
 
-#### POST /agents/close
+#### POST /v1/agents/close
 
 Initiate wind-down. Repays all loans, transfers remaining USDC to your wallet, closes account.
 
@@ -459,4 +461,4 @@ Alternatively, `POST /agents/close` triggers a full wind-down: the facilitator r
 
 The facilitator monitors your collateral-to-debt ratio. If it drops too low, new spending is paused until the price recovers or you add collateral. Active loans are unaffected — they continue to maturity and can be rolled over.
 
-If you want to stop entirely, call `revoke_credit_delegation` or `POST /agents/close`. The facilitator repays loans, your collateral returns, and remaining USDC is transferred to your wallet.
+If you want to stop entirely, call `revoke_credit_delegation` or `POST /v1/agents/close`. The facilitator repays loans, your collateral returns, and remaining USDC is transferred to your wallet.
