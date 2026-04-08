@@ -28,6 +28,7 @@
 * [API Keys](docs/developers/api-keys.md)
 * [Webhooks](docs/developers/webhooks.md)
 * [Agent Working Capital Quickstart](docs/developers/agent-quickstart.md)
+* [Agent Runtime Contract](docs/developers/agent-runtime-contract.md)
 * [x402 Credit Facilitator](docs/developers/x402-facilitator.md)
 * [AgentKit Integration](docs/developers/agentkit.md)
   * [TypeScript SDK](docs/developers/agentkit-typescript.md)
