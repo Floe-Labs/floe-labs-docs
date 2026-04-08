@@ -35,13 +35,15 @@ Go to **Webhooks** in the sidebar, or see the [Webhooks documentation](webhooks.
 
 ### Agent Setup
 
-Register x402 agents through a guided wizard. The setup flow walks you through:
+Register x402 agents through a three-step guided wizard at `/agents`. The shipped flow is:
 
-1. **Create agent profile** — name and description
-2. **Configure delegation** — collateral token, borrow limit, rate cap, expiry
-3. **Generate agent key** — your `floe_*` key for the x402 proxy
+1. **Create Wallet** — Click **Create Agent Wallet**. The dashboard asks your wallet to sign a plain "Register with Floe Facilitator" message, then calls `POST /v1/agents/pre-register`. The server provisions a Privy custodial wallet for the agent and returns its `privyWalletAddress`, which is displayed in a code block.
+2. **Deposit & Delegate** — Send WETH collateral to the Privy wallet address from Step 1, then call `setOperator()` on `LendingIntentMatcher` from your own wallet to delegate borrow authority to the facilitator. **Known gap:** the wizard currently shows the address and a short instruction only — there is no one-click Authorize button yet, so you will need to call `setOperator` from your own wallet tooling (wagmi, cast, etc.). See the [Full Happy Path Example](agent-quickstart.md#full-happy-path-example) for a concrete wagmi snippet. A native Authorize button is on the roadmap.
+3. **Activate Agent** — Click **Complete Registration**. The dashboard signs another wallet message and calls `POST /v1/agents/register`, which verifies the on-chain delegation and mints your `floe_*` agent API key. The key is revealed once via a secret-reveal modal — copy it immediately.
 
-See [x402 Credit Facilitator](x402-facilitator.md) for the full agent lifecycle.
+Once activated, the same `/agents` page becomes a status view showing the Privy wallet address, agent status (`active` / `credit_frozen` / `pending_delegation`), delegation badge, and credit limit.
+
+See [x402 Credit Facilitator](x402-facilitator.md) for the full agent lifecycle and [Agent Runtime Contract](agent-runtime-contract.md) for what the agent itself does at runtime.
 
 ### API Documentation
 
