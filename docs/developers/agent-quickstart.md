@@ -6,6 +6,8 @@ icon: rocket
 
 Get USDC into your agent's wallet in under a minute.
 
+For a guided setup experience, use the [Developer Dashboard](developer-dashboard.md) at `dev-dashboard.floelabs.xyz` — connect your wallet and follow the 3-step agent wizard.
+
 ## Check Live Offers First
 
 See what lenders are offering right now — no auth, no setup:
@@ -64,7 +66,7 @@ If your agent needs to call x402-enabled APIs, you don't need to manage USDC at 
 // One-time setup: delegate collateral
 await agentkit.invoke("grant_credit_delegation", {
   facilitatorAddress: "0x...",
-  facilitatorUrl: "https://x402.floelabs.xyz",
+  facilitatorUrl: "https://credit-api.floelabs.xyz",
   borrowLimit: "10000",
   collateralToken: "0x4200000000000000000000000000000000000006",
 });
@@ -77,6 +79,8 @@ See **[x402 Credit Facilitator](x402-facilitator.md)** for details.
 
 ## Next Steps
 
+- **[Developer Dashboard](developer-dashboard.md)** — Manage agents, API keys, and webhooks through a web UI.
+- **[API Keys](api-keys.md)** — Generate `floe_live_*` keys for programmatic access without per-request wallet signing.
 - **[x402 Credit Facilitator](x402-facilitator.md)** — Pay for any x402 API automatically. Delegate collateral, facilitator handles the rest.
 - **[Credit REST API](credit-api.md)** — HTTP endpoints for Python, Rust, or any language.
 - **[AgentKit Integration](agentkit.md)** — Full action reference (36 in both TypeScript and Python — full parity as of April 2026).

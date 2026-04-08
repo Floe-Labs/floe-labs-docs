@@ -6,6 +6,8 @@ icon: webhook
 
 The Credit API lets any agent — regardless of language or framework — access Floe's instant credit facilities via HTTP. It returns unsigned transaction calldata that agents sign and submit with their own wallet.
 
+> **See also:** [API Keys](api-keys.md) | [Webhooks](webhooks.md) | [Developer Dashboard](developer-dashboard.md)
+
 **Base URL:** `https://credit-api.floelabs.xyz`
 
 ## Try It Now
@@ -132,7 +134,24 @@ curl "https://credit-api.floelabs.xyz/v1/health"
 
 All endpoints below require authentication. The endpoints above are public.
 
-The API uses **EIP-191 / EIP-1271 signed message** authentication. No API keys, no registration. Any wallet can authenticate.
+The API supports two authentication methods: **wallet signatures** (EIP-191) and **API keys**.
+
+### API Key Authentication
+
+If you prefer not to sign every request, you can authenticate with a developer API key. Generate keys through the [Developer Dashboard](developer-dashboard.md) at `dev-dashboard.floelabs.xyz` or via the developer endpoints below.
+
+API keys use the `Authorization: Bearer` header:
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/credit/status/42" \
+  -H "Authorization: Bearer floe_live_abc123..."
+```
+
+Keys are scoped to the wallet that created them. All actions performed with an API key are attributed to the owning wallet. See [API Keys](api-keys.md) for key management, rotation, and security best practices.
+
+### Wallet Signature Authentication (EIP-191)
+
+The API also supports **EIP-191 / EIP-1271 signed message** authentication. No API keys, no registration. Any wallet can authenticate.
 
 ### How It Works
 
@@ -452,3 +471,282 @@ def retry_with_backoff(fn, max_retries=3):
                 raise
             time.sleep(2 ** attempt)  # 1s, 2s, 4s
 ```
+
+---
+
+## Developer Endpoints
+
+These endpoints let you manage API keys, webhooks, and your developer profile programmatically. You can also manage these through the [Developer Dashboard](developer-dashboard.md).
+
+All developer endpoints require authentication (wallet signature or API key).
+
+### POST /v1/developer/keys
+
+Create a new API key.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/keys" \
+  -H "Content-Type: application/json" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400" \
+  -d '{ "name": "production-bot" }'
+```
+
+**Response:**
+
+```json
+{
+  "keyId": "key_abc123",
+  "key": "floe_live_abc123...",
+  "name": "production-bot",
+  "createdAt": "2026-04-07T12:00:00.000Z"
+}
+```
+
+> **Important:** The full key is only returned once at creation time. Store it securely.
+
+### GET /v1/developer/keys
+
+List all API keys for your wallet.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/keys" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400"
+```
+
+**Response:**
+
+```json
+{
+  "keys": [
+    {
+      "keyId": "key_abc123",
+      "name": "production-bot",
+      "prefix": "floe_live_abc1...",
+      "lastUsedAt": "2026-04-07T11:30:00.000Z",
+      "createdAt": "2026-04-01T08:00:00.000Z"
+    }
+  ]
+}
+```
+
+### DELETE /v1/developer/keys/:keyId
+
+Revoke an API key. Takes effect immediately.
+
+```bash
+curl -X DELETE "https://credit-api.floelabs.xyz/v1/developer/keys/key_abc123" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400"
+```
+
+### POST /v1/developer/webhooks
+
+Register a webhook endpoint. See [Webhooks](webhooks.md) for event types and payload format.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks" \
+  -H "Content-Type: application/json" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400" \
+  -d '{
+    "url": "https://your-server.com/webhooks/floe",
+    "events": ["health_warning", "liquidated", "repaid", "expiry_warning"]
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "webhookId": "wh_abc123",
+  "url": "https://your-server.com/webhooks/floe",
+  "events": ["health_warning", "liquidated", "repaid", "expiry_warning"],
+  "secret": "whsec_...",
+  "createdAt": "2026-04-07T12:00:00.000Z"
+}
+```
+
+### GET /v1/developer/webhooks
+
+List all registered webhooks.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhooks" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400"
+```
+
+### GET /v1/developer/profile
+
+Get your developer profile, including wallet address, registration date, and usage stats.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/profile" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400"
+```
+
+---
+
+## Agent Endpoints
+
+These endpoints manage the lifecycle of x402 credit-backed agents. All require authentication.
+
+### POST /v1/agents/pre-register
+
+Create a custodial payment wallet for your agent. This is the first step before granting on-chain delegation.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/agents/pre-register" \
+  -H "Content-Type: application/json" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400" \
+  -d '{
+    "collateralToken": "0x4200000000000000000000000000000000000006",
+    "borrowLimit": "10000000000",
+    "maxRateBps": "1500"
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "paymentWalletAddress": "0xCustodialWallet...",
+  "facilitatorAddress": "0xFacilitator...",
+  "status": "pending_delegation"
+}
+```
+
+### POST /v1/agents/register
+
+Complete registration after granting on-chain delegation. The facilitator verifies your delegation transaction and activates your account.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/agents/register" \
+  -H "Content-Type: application/json" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400" \
+  -d '{ "delegationTxHash": "0xabc..." }'
+```
+
+**Response:**
+
+```json
+{
+  "status": "active",
+  "apiKey": "floe_YOUR_API_KEY",
+  "creditLimit": "10000000000",
+  "paymentWalletAddress": "0xCustodialWallet..."
+}
+```
+
+### GET /v1/agents/balance
+
+Check your agent's credit balance, active loans, and delegation status.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/agents/balance" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "creditLimit": "10000000000",
+  "creditUsed": "3200000000",
+  "creditAvailable": "6800000000",
+  "activeLoans": [{ "loanId": "42", "principalRaw": "5000000000" }],
+  "delegationActive": true
+}
+```
+
+### GET /v1/agents/transactions
+
+Paginated history of x402 payments made through the proxy.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/agents/transactions?limit=20&cursor=41" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY"
+```
+
+### POST /v1/agents/close
+
+Initiate wind-down. Repays all active loans, transfers remaining USDC to your wallet, and closes the account.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/agents/close" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "status": "completed",
+  "loansRepaid": 2,
+  "loansRemaining": 0,
+  "usdcTransferred": "1500000000"
+}
+```
+
+---
+
+## x402 Proxy Endpoints
+
+These endpoints power the x402 payment proxy. Use them to check if a URL requires payment and to make paid API calls using your agent's credit balance.
+
+### GET /v1/proxy/check
+
+Check if a URL requires x402 payment. **Public -- no auth required.**
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/proxy/check?url=https://api.example.com/data"
+```
+
+**Response:**
+
+```json
+{
+  "requiresPayment": true,
+  "price": "750000",
+  "currency": "USDC",
+  "network": "base"
+}
+```
+
+### POST /v1/proxy/fetch
+
+Proxy a request to a target URL. If the target returns HTTP 402, the facilitator pays automatically from your credit balance and retries the request.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/proxy/fetch" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://api.example.com/data",
+    "method": "GET",
+    "headers": { "Accept": "application/json" }
+  }'
+```
+
+| Status | Meaning |
+|--------|---------|
+| 200 | Success -- response from target |
+| 400 | Invalid request or blocked URL |
+| 401 | Invalid API key |
+| 402 | Insufficient credit balance |
+| 403 | Account frozen or closed |
+| 429 | Rate limit exceeded |
+| 502 | Target URL unreachable |
