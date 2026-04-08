@@ -77,6 +77,150 @@ await agentkit.invoke("x402_fetch", { url: "https://api.example.com/data" });
 
 See **[x402 Credit Facilitator](x402-facilitator.md)** for details.
 
+## Full Happy Path Example
+
+End-to-end, from zero to your agent's first paid `/v1/proxy/fetch` call. This is the complete flow — everything the deployer does once, and the agent code that runs forever after.
+
+### 1. Developer signs in (SIWE)
+
+The deployer visits [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and connects a wallet via RainbowKit. The dashboard calls `POST /v1/auth/nonce`, the wallet signs the Sign-In With Ethereum message, and the dashboard calls `POST /v1/auth/verify` with the signature to receive a short-lived JWT. From here on, every dashboard request carries that JWT. **Takeaway:** no passwords, no email — wallet signature is identity.
+
+### 2. Mint a developer API key (`floe_live_*`)
+
+From the **Keys** page the deployer calls `POST /v1/keys` and receives a one-time reveal:
+
+```json
+{
+  "id": "key_01J...",
+  "key": "floe_live_7a2b9c4d8e...",
+  "label": "prod-backend",
+  "createdAt": "2026-04-07T12:00:00Z"
+}
+```
+
+**Takeaway:** this key is for dashboard and programmatic webhook/key management. It is **not** what the agent uses at runtime.
+
+### 3. Run the agent wizard
+
+On the **Agents** page the deployer walks through three steps: **Create Wallet → Deposit & Delegate → Activate Agent**. Step 1 ("Create Agent Wallet" button) signs a message in the browser wallet and calls `POST /v1/agents/pre-register`, which provisions a Privy custodial wallet and returns `privyWalletAddress`. **Takeaway:** the agent gets its own on-chain wallet that the deployer never holds keys for.
+
+### 4. Deposit WETH collateral
+
+The deployer sends WETH from their own wallet to the returned `privyWalletAddress`. **Takeaway:** this is the collateral backing every future `/proxy/fetch` charge.
+
+### 5. Sign `setOperator` on-chain
+
+The wizard currently shows the Privy wallet address and asks the deployer to delegate themselves. Until the dashboard ships a one-click Authorize button, call `setOperator` directly against the `LendingIntentMatcher` contract from the deployer's own wallet tooling:
+
+```ts
+import { useWriteContract } from 'wagmi';
+
+const { writeContract } = useWriteContract();
+
+writeContract({
+  address: LENDING_INTENT_MATCHER_ADDRESS,
+  abi: lendingIntentMatcherAbi,
+  functionName: 'setOperator',
+  args: [
+    facilitatorAddress,          // from the dashboard
+    {
+      borrowLimit: 10_000_000000n,      // 10,000 USDC (6 decimals)
+      maxRateBps: 1500n,                // cap at 15% APR
+      expiry: BigInt(Math.floor(Date.now() / 1000) + 90 * 24 * 3600), // 90 days
+      onBehalfOfRestriction: privyWalletAddress,
+    },
+  ],
+});
+```
+
+**Takeaway:** this single on-chain tx is the only time the deployer signs a transaction on behalf of the agent. After this the facilitator can borrow USDC from the credit line, capped by `borrowLimit` and `maxRateBps`.
+
+### 6. Activate the agent
+
+The deployer clicks **Complete Registration** in Step 3. The dashboard calls `POST /v1/agents/register`, which verifies the on-chain delegation and mints the agent's runtime key. The response reveals the `floe_*` key once via a secret-reveal modal:
+
+```json
+{ "apiKey": "floe_3c9f8e1a2b..." }
+```
+
+**Takeaway:** copy it now — the dashboard will never show it again. This is `FLOE_API_KEY`.
+
+### 7. Agent code — TypeScript
+
+```ts
+const FLOE = 'https://credit-api.floelabs.xyz/v1/proxy/fetch';
+
+async function paidFetch(url: string, body: unknown) {
+  const res = await fetch(FLOE, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.FLOE_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      url,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+  });
+
+  if (res.status === 429) {
+    const { retry_after_seconds } = await res.json();
+    await new Promise(r => setTimeout(r, retry_after_seconds * 1000));
+    return paidFetch(url, body); // safe to retry
+  }
+  if (res.status === 502) {
+    const b = await res.json();
+    if (b.error === 'upstream_paid_request_failed_ambiguous') {
+      // DO NOT retry — wait for pendingSettlements to drop first
+      throw new Error('ambiguous payment; wait for reconciliation');
+    }
+    // other 502s are safe to retry
+  }
+  if (!res.ok) throw new Error(`floe ${res.status}`);
+  return res.json();
+}
+
+const data = await paidFetch('https://api.somex402service.com/premium/analyze', { prompt: 'hi' });
+```
+
+**Takeaway:** one env var, one function, full x402 payment abstraction. See [Agent Runtime Contract](agent-runtime-contract.md) for the complete error matrix.
+
+### 8. Agent code — Python
+
+```python
+import os, time, httpx
+
+FLOE = "https://credit-api.floelabs.xyz/v1/proxy/fetch"
+
+def paid_fetch(url: str, body: dict) -> dict:
+    with httpx.Client(timeout=60) as c:
+        res = c.post(
+            FLOE,
+            headers={
+                "Authorization": f"Bearer {os.environ['FLOE_API_KEY']}",
+                "Content-Type": "application/json",
+            },
+            json={"url": url, "method": "POST",
+                  "headers": {"Content-Type": "application/json"},
+                  "body": __import__("json").dumps(body)},
+        )
+    if res.status_code == 429:
+        time.sleep(res.json()["retry_after_seconds"])
+        return paid_fetch(url, body)
+    if res.status_code == 502:
+        b = res.json()
+        if b.get("error") == "upstream_paid_request_failed_ambiguous":
+            raise RuntimeError("ambiguous payment; wait for reconciliation")
+    res.raise_for_status()
+    return res.json()
+
+data = paid_fetch("https://api.somex402service.com/premium/analyze", {"prompt": "hi"})
+```
+
+**Takeaway:** identical contract, identical retry rules, any language with an HTTP client will do.
+
 ## Next Steps
 
 - **[Developer Dashboard](developer-dashboard.md)** — Manage agents, API keys, and webhooks through a web UI.
