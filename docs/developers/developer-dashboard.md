@@ -10,14 +10,16 @@ The Developer Dashboard is your home base for managing API keys, webhooks, and x
 
 ## Authentication
 
-The dashboard uses wallet-based authentication via RainbowKit. There are no usernames, passwords, or email signups.
+The dashboard authenticates developers with **Sign-In With Ethereum (SIWE)** via RainbowKit. There are no usernames, passwords, or email signups — your wallet is your identity, and the signature is verified server-side against a server-issued nonce so the session cannot be replayed.
 
-1. Visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
-2. Click **Connect Wallet**
-3. Select your wallet (MetaMask, Coinbase Wallet, WalletConnect, etc.)
-4. Approve the signature request — this authenticates you automatically
+The flow is:
 
-That's it. One click, one signature, you're in. The signature proves wallet ownership without any on-chain transaction or gas cost.
+1. The dashboard calls `POST /v1/auth/nonce` to fetch a fresh nonce.
+2. You sign the SIWE message (domain, address, nonce, issued-at) with your wallet — RainbowKit handles the UI.
+3. The dashboard calls `POST /v1/auth/verify` with the signature and receives a JWT.
+4. The JWT is stored in the dashboard session and attached as `Authorization: Bearer <jwt>` on every subsequent developer API call (keys, webhooks, agent wizard).
+
+This is **only** for developers using the dashboard and `/v1/developer/*` / `/v1/keys` / `/v1/agents/*` endpoints. Agents themselves do **not** use SIWE — at runtime they authenticate with their `floe_*` API key on `POST /v1/proxy/fetch`. See the [Agent Runtime Contract](agent-runtime-contract.md) for the agent-side auth story.
 
 ## What You Can Do
 
