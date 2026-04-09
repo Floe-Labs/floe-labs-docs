@@ -24,6 +24,15 @@ All Floe smart contracts deployed on supported networks.
 | PriceOracle          | `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` |
 | LendingViews         | `0x9101027166bE205105a9E0c68d6F14f21f6c5003` |
 
+### x402 Credit Facilitator
+
+| Endpoint             | Value                                        |
+| -------------------- | -------------------------------------------- |
+| Facilitator API      | `https://credit-api.floelabs.xyz`            |
+| Facilitator EOA      | `0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1` |
+
+The **Facilitator EOA** is the address you pass as the `operator` argument to `setOperator` on `LendingIntentMatcher` when delegating credit to the Floe-hosted x402 facilitator. The corresponding private key lives only on the facilitator server; this address is the public half of the pair and is the one you grant `OperatorPermission` to. See [x402 Credit Facilitator](../docs/developers/x402-facilitator.md) for the full delegation flow.
+
 ### Aerodrome (Flash Arb)
 
 | Contract        | Address                                      |
@@ -58,6 +67,10 @@ const BASE_MAINNET_CONFIG = {
   rpcUrl: "https://mainnet.base.org",
   lendingIntentMatcher: "0x17946cD3e180f82e632805e5549EC913330Bb175",
   priceOracle: "0xEA058a06b54dce078567f9aa4dBBE82a100210Cc",
+  facilitator: {
+    apiUrl: "https://credit-api.floelabs.xyz",
+    eoa: "0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1",
+  },
   tokens: {
     USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     USDT: "0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2",

@@ -622,7 +622,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/agents/pre-register" \
 ```json
 {
   "paymentWalletAddress": "0xCustodialWallet...",
-  "facilitatorAddress": "0xFacilitator...",
+  "facilitatorAddress": "0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1",
   "status": "pending_delegation"
 }
 ```

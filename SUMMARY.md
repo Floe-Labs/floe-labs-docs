@@ -24,24 +24,29 @@
 
 ## Developers
 
+* [Agent Working Capital Quickstart](docs/developers/agent-quickstart.md)
 * [Developer Dashboard](docs/developers/developer-dashboard.md)
 * [API Keys](docs/developers/api-keys.md)
-* [Webhooks](docs/developers/webhooks.md)
-* [Agent Working Capital Quickstart](docs/developers/agent-quickstart.md)
 * [Agent Runtime Contract](docs/developers/agent-runtime-contract.md)
 * [x402 Credit Facilitator](docs/developers/x402-facilitator.md)
+* [Webhooks](docs/developers/webhooks.md)
 * [AgentKit Integration](docs/developers/agentkit.md)
   * [TypeScript SDK](docs/developers/agentkit-typescript.md)
   * [Python SDK](docs/developers/agentkit-python.md)
 * [Agent Working Capital](docs/developers/agent-working-capital.md)
 * [Credit REST API](docs/developers/credit-api.md)
-* [Flash Loans](docs/developers/flash-loans.md)
-* [Run a Solver Bot](docs/developers/run-solver-bot.md)
-* [Run a Liquidation Bot](docs/developers/run-liquidation-bot.md)
 
 ## Reference
 
+* [Error Codes](docs/reference/error-codes.md)
+* [Environment Variables](docs/reference/environment-variables.md)
 * [Contract Addresses](developers/networks.md)
 * [FAQ](faq/general.md)
 * [Glossary](docs/glossary.md)
 * [Changelog](docs/changelog.md)
+
+## Advanced
+
+* [Flash Loans](docs/developers/flash-loans.md)
+* [Run a Solver Bot](docs/developers/run-solver-bot.md)
+* [Run a Liquidation Bot](docs/developers/run-liquidation-bot.md)
