@@ -60,15 +60,18 @@ See the [Credit REST API](credit-api.md#markets) for marketIds and token address
 
 ## Want Automatic API Payments?
 
-If your agent needs to call x402-enabled APIs, you don't need to manage USDC at all. Delegate your collateral to the x402 facilitator and it handles everything:
+If your agent needs to call x402-enabled APIs, you don't need to manage USDC at all. Delegate your collateral to the x402 facilitator and it handles everything.
+
+`grant_credit_delegation` is the **AgentKit wrapper** — under the hood it pre-registers a Privy wallet, calls `setOperator` on the `LendingIntentMatcher` contract, approves collateral, and finalizes agent registration, all in one action. Use it when you are integrating via AgentKit. If you are integrating directly against the REST API + smart contract, use the `setOperator` snippet in the [Full Happy Path Example](#full-happy-path-example) below instead.
 
 ```typescript
-// One-time setup: delegate collateral
+// One-time setup: delegate collateral (AgentKit wrapper)
 await agentkit.invoke("grant_credit_delegation", {
-  facilitatorAddress: "0x...",
-  facilitatorUrl: "https://credit-api.floelabs.xyz",
-  borrowLimit: "10000",
-  collateralToken: "0x4200000000000000000000000000000000000006",
+  facilitator_url: "https://credit-api.floelabs.xyz",
+  facilitator_address: "0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1", // Base mainnet
+  borrow_limit: "10000",                // human-decimal USDC (not raw units)
+  max_rate_bps: 1500,                   // cap at 15% APR
+  expiry_days: 90,                      // delegation TTL
 });
 
 // Now call any x402 API — payment is automatic
@@ -83,7 +86,7 @@ End-to-end, from zero to your agent's first paid `/v1/proxy/fetch` call. This is
 
 ### 1. Developer signs in (SIWE)
 
-The deployer visits [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and connects a wallet via RainbowKit. The dashboard calls `POST /v1/auth/nonce`, the wallet signs the Sign-In With Ethereum message, and the dashboard calls `POST /v1/auth/verify` with the signature to receive a short-lived JWT. From here on, every dashboard request carries that JWT. **Takeaway:** no passwords, no email — wallet signature is identity.
+The deployer visits [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and connects a wallet via RainbowKit. The dashboard asks the wallet to sign a short timestamped message, then posts it to `POST /v1/developer/auth/verify` with `X-Wallet-Address`, `X-Signature`, and `X-Timestamp` headers. The API validates the signature against a ±5-minute replay window and returns a 7-day JWT. From here on, every dashboard request carries that JWT. **Takeaway:** no passwords, no email — wallet signature is identity.
 
 ### 2. Mint a developer API key (`floe_live_*`)
 
@@ -117,12 +120,14 @@ import { useWriteContract } from 'wagmi';
 
 const { writeContract } = useWriteContract();
 
+const FACILITATOR_EOA = '0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1'; // Base mainnet
+
 writeContract({
   address: LENDING_INTENT_MATCHER_ADDRESS,
   abi: lendingIntentMatcherAbi,
   functionName: 'setOperator',
   args: [
-    facilitatorAddress,          // from the dashboard
+    FACILITATOR_EOA,
     {
       borrowLimit: 10_000_000000n,      // 10,000 USDC (6 decimals)
       maxRateBps: 1500n,                // cap at 15% APR

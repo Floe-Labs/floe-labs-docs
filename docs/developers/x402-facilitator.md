@@ -133,7 +133,7 @@ const agentkit = await AgentKit.from({
 
 // One action: creates wallet, sets delegation, approves collateral, registers
 const result = await agentkit.invoke("grant_credit_delegation", {
-  facilitatorAddress: "0x...",  // provided by the facilitator
+  facilitatorAddress: "0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1",  // Floe-hosted facilitator EOA on Base mainnet
   facilitatorUrl: "https://credit-api.floelabs.xyz",
   borrowLimit: "10000",         // $10K max credit
   maxRateBps: "1500",           // 15% max interest rate

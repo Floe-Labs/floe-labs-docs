@@ -10,14 +10,16 @@ The Developer Dashboard is your home base for managing API keys, webhooks, and x
 
 ## Authentication
 
-The dashboard authenticates developers with **Sign-In With Ethereum (SIWE)** via RainbowKit. There are no usernames, passwords, or email signups — your wallet is your identity, and the signature is verified server-side against a server-issued nonce so the session cannot be replayed.
+The dashboard authenticates developers by having you sign a timestamped message with your wallet via RainbowKit. There are no usernames, passwords, or email signups — your wallet is your identity.
 
 The flow is:
 
-1. The dashboard calls `POST /v1/auth/nonce` to fetch a fresh nonce.
-2. You sign the SIWE message (domain, address, nonce, issued-at) with your wallet — RainbowKit handles the UI.
-3. The dashboard calls `POST /v1/auth/verify` with the signature and receives a JWT.
+1. You connect a wallet via RainbowKit.
+2. The dashboard asks the wallet to sign a short message that includes the current timestamp.
+3. The dashboard calls `POST /v1/developer/auth/verify` with `X-Wallet-Address`, `X-Signature`, and `X-Timestamp` headers. The API verifies the signature against a ±5-minute window and returns a JWT (7-day expiry) plus your developer record.
 4. The JWT is stored in the dashboard session and attached as `Authorization: Bearer <jwt>` on every subsequent developer API call (keys, webhooks, agent wizard).
+
+> The earlier `/v1/developer/auth/nonce` endpoint was removed — server-side nonces are not used; the timestamp window is what prevents replay. When we wire up full SIWE, this page will be updated.
 
 This is **only** for developers using the dashboard and `/v1/developer/*` / `/v1/keys` / `/v1/agents/*` endpoints. Agents themselves do **not** use SIWE — at runtime they authenticate with their `floe_*` API key on `POST /v1/proxy/fetch`. See the [Agent Runtime Contract](agent-runtime-contract.md) for the agent-side auth story.
 
