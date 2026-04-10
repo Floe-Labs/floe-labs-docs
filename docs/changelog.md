@@ -54,7 +54,7 @@ Notable changes and updates to the Floe protocol.
 **AgentKit Integration**:
 
 * **floe-agent** (npm) — 36 AI agent actions for Floe via [Coinbase AgentKit](https://docs.cdp.coinbase.com/agent-kit/). Supports Vercel AI SDK, LangChain, OpenAI Agents SDK, and MCP server for Claude Desktop/Cursor.
-* **floe-agent CLI** — Interactive terminal agent for testing all 23 actions without framework code
+* **floe-agent CLI** — Interactive terminal agent for testing all 36 actions without framework code
 * **Flash Loan Actions** — `flash_loan`, `flash_arb`, `estimate_flash_arb_profit`, `get_flash_loan_fee`, `get_flash_arb_balance`
 * **Deploy Actions** — `deploy_flash_arb_receiver`, `check_flash_arb_readiness`, `verify_flash_arb_receiver`
 
