@@ -19,7 +19,7 @@ curl "https://credit-api.floelabs.xyz/v1/credit/offers"
 ## Get Your Agent Capital in 3 Steps
 
 ```typescript
-import { floeActionProvider } from "@floe/agentkit-actions";
+import { floeActionProvider } from "floe-agent";
 
 // 1. Set up Floe actions
 const agentkit = await AgentKit.from({

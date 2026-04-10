@@ -4,19 +4,19 @@ icon: js
 
 # TypeScript SDK
 
-The `@floe/agentkit-actions` package provides Coinbase AgentKit ActionProviders with **36 total actions** (30 in `FloeActionProvider` + 6 in `X402ActionProvider`) for Node.js / TypeScript environments.
+The `floe-agent` package provides Coinbase AgentKit ActionProviders with **36 total actions** (30 in `FloeActionProvider` + 6 in `X402ActionProvider`) for Node.js / TypeScript environments.
 
 ## Installation
 
 ```bash
-npm install @floe/agentkit-actions @coinbase/agentkit viem zod
+npm install floe-agent @coinbase/agentkit viem zod
 ```
 
 ## Quick Start
 
 ```typescript
 import { AgentKit } from "@coinbase/agentkit";
-import { floeActionProvider } from "@floe/agentkit-actions";
+import { floeActionProvider } from "floe-agent";
 
 const agentkit = await AgentKit.from({
   walletProvider: myWalletProvider,
@@ -35,7 +35,7 @@ import { AgentKit } from "@coinbase/agentkit";
 import { getVercelAITools } from "@coinbase/agentkit-vercel-ai-sdk";
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { floeActionProvider } from "@floe/agentkit-actions";
+import { floeActionProvider } from "floe-agent";
 
 const agentkit = await AgentKit.from({
   walletProvider,
@@ -74,7 +74,7 @@ import { AgentKit } from "@coinbase/agentkit";
 import { getMcpTools } from "@coinbase/agentkit-model-context-protocol";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { floeActionProvider } from "@floe/agentkit-actions";
+import { floeActionProvider } from "floe-agent";
 
 const agentkit = await AgentKit.from({
   walletProvider,
@@ -236,7 +236,7 @@ npx tsx standalone.ts
 ```
 
 ```typescript
-import { FloeActionProvider } from "@floe/agentkit-actions";
+import { FloeActionProvider } from "floe-agent";
 
 const floe = new FloeActionProvider();
 const result = await floe.getMyLoans(walletProvider, {});
@@ -254,7 +254,7 @@ Three ways to test without publishing to npm:
 npm run build && npm link
 
 # In your consumer project
-npm link @floe/agentkit-actions
+npm link floe-agent
 ```
 
 ### 2. `file:` protocol
@@ -264,7 +264,7 @@ In your consumer's `package.json`:
 ```json
 {
   "dependencies": {
-    "@floe/agentkit-actions": "file:../agentkit-actions"
+    "floe-agent": "file:../agentkit-actions"
   }
 }
 ```
@@ -274,7 +274,7 @@ In your consumer's `package.json`:
 ```bash
 npm run build && npm pack
 # In consumer:
-npm install ../agentkit-actions/floe-agentkit-actions-0.1.0.tgz
+npm install ../agentkit-actions/floe-agent-0.2.0.tgz
 ```
 
 ## Source Code

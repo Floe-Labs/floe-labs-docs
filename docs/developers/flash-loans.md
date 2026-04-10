@@ -11,7 +11,7 @@ Borrow any token from Floe's lending pool with zero collateral — repay within 
 Before deploying anything, check if an arbitrage opportunity exists:
 
 ```typescript
-import { floeActionProvider } from "@floe/agentkit-actions";
+import { floeActionProvider } from "floe-agent";
 
 // Estimate profit for a USDC → WETH → USDC route through Aerodrome
 const estimate = await agentkit.invoke("estimate_flash_arb_profit", {
