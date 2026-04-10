@@ -88,7 +88,7 @@ The L2 (Base) transaction ordering service. Floe's circuit breaker checks sequen
 An EIP-712 value that binds signatures to a specific contract on a specific chain, preventing cross-chain and cross-contract replay attacks.
 
 ## AgentKit
-Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `@floe/agentkit-actions` package provides 23 protocol actions as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP.
+Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `floe-agent` package provides 23 protocol actions as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP.
 
 ## Credit Score
 An on-chain creditworthiness score computed by [Cred Protocol](https://cred.xyz) based on DeFi lending/borrowing history. Displayed as a radar chart on the Floe dashboard and as tier badges in the loan book. Informational only — does not gate access.

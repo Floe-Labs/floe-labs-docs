@@ -122,7 +122,7 @@ The facilitator made a paid upstream call and did not receive a confirmable sett
 ### With AgentKit (recommended)
 
 ```typescript
-import { x402ActionProvider } from "@floe/agentkit-actions";
+import { x402ActionProvider } from "floe-agent";
 
 const agentkit = await AgentKit.from({
   walletProvider,

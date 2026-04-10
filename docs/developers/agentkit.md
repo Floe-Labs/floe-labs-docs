@@ -14,8 +14,8 @@ AgentKit is Coinbase's open-source framework that gives AI agents on-chain capab
 
 | | TypeScript | Python |
 |---|-----------|--------|
-| **Package** | `@floe/agentkit-actions` | `floe-agentkit-actions` |
-| **Install** | `npm install @floe/agentkit-actions` | `pip install floe-agentkit-actions` |
+| **Package** | `floe-agent` | `floe-agentkit-actions` |
+| **Install** | `npm install floe-agent` | `pip install floe-agentkit-actions` |
 | **Runtime** | Node.js 18+ | Python 3.10+ |
 | **Actions exposed** | **36** (30 Floe + 6 X402) | **36** (30 Floe + 6 X402) — full parity as of April 2026 |
 | **AI Frameworks** | Vercel AI SDK, LangChain, MCP Server, OpenAI Agents SDK | LangChain, OpenAI Function Calling |

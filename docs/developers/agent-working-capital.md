@@ -38,7 +38,7 @@ An agent with ETH or cbBTC collateral can borrow USDC at a fixed rate and term. 
 | Option | Best For | Dependency |
 |--------|----------|------------|
 | [Credit REST API](credit-api.md) | Python agents (Giza), Rust, any language | HTTP only |
-| [AgentKit Actions](#agentkit-actions) | Coinbase AgentKit agents | `@floe/agentkit-actions` |
+| [AgentKit Actions](#agentkit-actions) | Coinbase AgentKit agents | `floe-agent` |
 
 ## Credit Facility Actions
 
@@ -93,10 +93,10 @@ Agent: repay_credit — "Repay my loan"
 
 ## AgentKit Actions
 
-For agents using Coinbase AgentKit, all actions are available via the `@floe/agentkit-actions` package:
+For agents using Coinbase AgentKit, all actions are available via the `floe-agent` package:
 
 ```typescript
-import { floeActionProvider } from "@floe/agentkit-actions";
+import { floeActionProvider } from "floe-agent";
 
 const agentkit = await AgentKit.from({
   walletProvider,
