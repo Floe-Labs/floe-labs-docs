@@ -272,5 +272,5 @@ Your loan can be liquidated when:
 ## Next Steps
 
 * [Understanding Risk & Liquidation](risk-liquidations.md)
-* [Managing Your Loans](manage-loans.md)
+* [How to Lend](lend.md)
 * [Using Lendr AI](lendr-ai.md)

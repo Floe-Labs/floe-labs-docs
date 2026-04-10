@@ -220,7 +220,6 @@ contract LendingIntentMatcherUpgradeable is
 
 ## Next Steps
 
-* [Intent Matching](02-intent-matching.md)
-* [Oracle System](03-oracle-system.md)
-* [Fee Structure](04-fee-structure.md)
-* [Security Model](05-security-model.md)
+* [Intent Matching](orderbook-matching.md)
+* [Oracles & Circuit Breaker](oracles-conditions.md)
+* [Security](security.md)

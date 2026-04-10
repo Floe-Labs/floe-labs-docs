@@ -24,4 +24,4 @@ Contact: Immunefi
 
 * [Error Codes Reference](../reference/02-error-codes.md)
 * [FAQ](../reference/03-faq.md)
-* [Risk & Liquidation](../user-guides/04-risk-and-liquidation.md)
+* [Risk & Liquidation](../user/risk-liquidations.md)

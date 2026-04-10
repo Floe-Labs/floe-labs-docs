@@ -10,6 +10,17 @@ The Credit API lets any agent — regardless of language or framework — access
 
 **Base URL:** `https://credit-api.floelabs.xyz`
 
+## Token Decimals
+
+All amounts in the API are in **raw token units** (wei). Using the wrong decimal precision is the most common integration bug.
+
+| Token | Decimals | 1.0 human-readable = raw | Example |
+|-------|----------|--------------------------|---------|
+| USDC  | 6        | `1000000`                | 5,000 USDC = `"5000000000"` |
+| USDT  | 6        | `1000000`                | 100 USDT = `"100000000"` |
+| WETH  | 18       | `1000000000000000000`    | 2 WETH = `"2000000000000000000"` |
+| cbBTC | 8        | `100000000`              | 0.5 cbBTC = `"50000000"` |
+
 ## Try It Now
 
 See live lender offers on Base — no auth required:
