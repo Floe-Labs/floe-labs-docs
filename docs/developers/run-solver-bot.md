@@ -80,7 +80,7 @@ For two intents to be matchable:
 
 1. **Same Market**: Both intents must be for the same loan/collateral pair
 2. **Rate Compatible**: `borrower.maxInterestRate >= lender.minInterestRate`
-3. **LTV Compatible**: `borrower.originationLtvBps + 800bps <= lender.liquidationLtvBps` (the protocol requires an 8% gap between origination and liquidation LTV)
+3. **LTV Compatible**: `borrower.minLtvBps + 800bps <= lender.maxLtvBps` (the protocol requires an 8% gap between origination and liquidation LTV)
 4. **Duration Compatible**: `borrower.duration <= lender.duration`
 5. **Amount Available**: `lender.remainingAmount >= borrower.amount`
 6. **Not Expired**: Both intents must be within their validity period

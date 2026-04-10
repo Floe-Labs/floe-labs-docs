@@ -20,7 +20,7 @@ The flow is:
 4. The JWT is stored in the dashboard session and attached as `Authorization: Bearer <jwt>` on every subsequent developer API call (keys, webhooks, agent wizard).
 
 > **Note:** This is a custom implementation — standard SIWE uses server-side nonces. Floe uses a +-5-minute timestamp window for replay protection instead.
-
+>
 > The earlier `/v1/developer/auth/nonce` endpoint was removed — server-side nonces are not used; the timestamp window is what prevents replay. When we wire up full SIWE, this page will be updated.
 
 This is **only** for developers using the dashboard and `/v1/developer/*` / `/v1/keys` / `/v1/agents/*` endpoints. Agents themselves do **not** use SIWE — at runtime they authenticate with their `floe_*` API key on `POST /v1/proxy/fetch`. See the [Agent Runtime Contract](agent-runtime-contract.md) for the agent-side auth story.

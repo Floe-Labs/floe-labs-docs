@@ -105,12 +105,11 @@ The private key for the **facilitator EOA** — a purpose-built wallet that subm
 **Blast radius.** A compromised facilitator private key can only borrow within the bounds each deployer explicitly granted (`borrowLimit`, `maxRateBps`, `expiry`), and only into the `onBehalfOfRestriction` address each deployer specified. The `LendingIntentMatcher` contract re-validates all five `OperatorPermission` fields on every match, so a stolen key cannot exceed its delegated scope.
 
 **Key Rotation Procedure:**
-1. Generate a new EOA (`cast wallet new`)
-2. Fund the new EOA with ~0.05 ETH for gas
-3. Update `FACILITATOR_PRIVATE_KEY` in the server env and restart
-4. Notify all deployers to re-run `setOperator` with the new facilitator address
-5. Old facilitator can still repay/close existing loans until all deployers migrate
-6. Once all deployers have migrated, drain remaining gas ETH from the old EOA
+1. Generate a new EOA (`cast wallet new`) and fund with ~0.05 ETH for gas
+2. Deploy a **parallel facilitator instance** with the new key (`FACILITATOR_PRIVATE_KEY=<new>`) — this instance handles new agent registrations while the old instance continues servicing existing loans
+3. Notify all deployers to re-run `setOperator` with the new facilitator address
+4. The old facilitator instance (still running with the old key) can continue to repay and close existing loans during the migration window — do NOT shut it down until all deployers have migrated
+5. Once all deployers have re-delegated to the new address, shut down the old instance and drain remaining gas ETH from the old EOA
 
 **Never commit this.**
 
