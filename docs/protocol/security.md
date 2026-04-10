@@ -18,10 +18,9 @@ Floe's approach to security, risk mitigation, and protecting user funds
 
 Contact: Immunefi
 
-##
 
 ## Next Steps
 
-* [Error Codes Reference](../reference/02-error-codes.md)
-* [FAQ](../reference/03-faq.md)
-* [Risk & Liquidation](../user-guides/04-risk-and-liquidation.md)
+* [Error Codes Reference](../reference/error-codes.md)
+* [FAQ](../../faq/general.md)
+* [Risk & Liquidation](../user/risk-liquidations.md)

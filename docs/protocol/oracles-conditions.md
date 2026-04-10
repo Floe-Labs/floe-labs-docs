@@ -212,7 +212,6 @@ When circuit breaker is active:
 
 **Recommendation**: Monitor circuit breaker status and prepare transactions.
 
-##
 
 ## Error Codes
 
@@ -257,6 +256,5 @@ PRIVATE_KEY="..." pnpm tsx scripts/update-pyth-prices-v2.ts
 
 ## Next Steps
 
-* [Fee Structure](04-fee-structure.md)
-* [Security Model](05-security-model.md)
-* [Error Codes Reference](../reference/02-error-codes.md)
+* [Security](security.md)
+* [Error Codes Reference](../reference/error-codes.md)

@@ -21,7 +21,7 @@ Solvers earn the **matcher commission** set by borrowers:
 
 - Node.js 18+
 - Base Mainnet RPC (Alchemy or Infura recommended)
-- Funded wallet with ETH for gas
+- Funded wallet with ETH for gas (we recommend at least 0.1 ETH for 200+ matches; a typical `matchLoanIntents` call costs 300-500k gas)
 - Capital for gas fees only (no loan capital needed)
 
 ## Quick Setup
@@ -80,7 +80,7 @@ For two intents to be matchable:
 
 1. **Same Market**: Both intents must be for the same loan/collateral pair
 2. **Rate Compatible**: `borrower.maxInterestRate >= lender.minInterestRate`
-3. **LTV Compatible**: `borrower.minLtv + 800bps <= lender.maxLtv`
+3. **LTV Compatible**: `borrower.minLtvBps + 800bps <= lender.maxLtvBps` (the protocol requires an 8% gap between origination and liquidation LTV)
 4. **Duration Compatible**: `borrower.duration <= lender.duration`
 5. **Amount Available**: `lender.remainingAmount >= borrower.amount`
 6. **Not Expired**: Both intents must be within their validity period

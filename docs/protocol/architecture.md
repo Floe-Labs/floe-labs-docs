@@ -143,7 +143,7 @@ function matchLoanIntents(...) external {
 
 ### Minimum Loan Duration
 
-The protocol enforces `minDuration > 0` — the absolute minimum loan term is **1 second**. There is no hard floor beyond non-zero. Users and agents set their own min/max duration range on each intent.
+The protocol enforces `minDuration > 0`. Typical loans range from 7 days to 12 months. Users and agents set their own min/max duration range on each intent.
 
 The protocol admin sets a configurable maximum duration (default **365 days**, hard ceiling 100 years).
 
@@ -216,11 +216,9 @@ contract LendingIntentMatcherUpgradeable is
 * New variables added at end of storage
 * Existing functionality maintained
 
-##
 
 ## Next Steps
 
-* [Intent Matching](02-intent-matching.md)
-* [Oracle System](03-oracle-system.md)
-* [Fee Structure](04-fee-structure.md)
-* [Security Model](05-security-model.md)
+* [Intent Matching](orderbook-matching.md)
+* [Oracles & Circuit Breaker](oracles-conditions.md)
+* [Security](security.md)

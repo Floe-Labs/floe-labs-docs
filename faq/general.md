@@ -211,7 +211,7 @@ Common reasons:
 * Gas price too low
 * Contract paused
 
-Check the [Error Codes](02-error-codes.md) reference.
+Check the [Error Codes](../docs/reference/error-codes.md) reference.
 
 ### How do I get ETH for gas?
 
@@ -227,7 +227,7 @@ Bridge ETH to Base using:
 
 ### Is Floe audited?
 
-Audit information is available in the [Security Model](../protocol/05-security-model.md) documentation.
+Audit information is available in the [Security](../docs/protocol/security.md) documentation.
 
 ### How are my funds protected?
 
@@ -241,7 +241,7 @@ Audit information is available in the [Security Model](../protocol/05-security-m
 
 **Borrowers**: You can lose your collateral if liquidated **Lenders**: You can experience bad debt if collateral becomes worthless very quickly
 
-See [Risk & Liquidation](../user-guides/04-risk-and-liquidation.md).
+See [Risk & Liquidation](../docs/user/risk-liquidations.md).
 
 ***
 

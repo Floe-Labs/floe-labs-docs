@@ -253,7 +253,7 @@ const privyWallet = "0x..."; // from the pre-register response
 
 await matcher.setOperator(
   FACILITATOR_OPERATOR,
-  ethers.parseUnits("10000", 6),          // borrowLimit: 10k USDC
+  ethers.parseUnits("10000", 6),          // borrowLimit in raw USDC units (6 decimals): 10k USDC
   1500,                                    // maxRateBps: 15%
   Math.floor(Date.now() / 1000) + 90 * 86400, // expiry: 90 days
   privyWallet,                             // onBehalfOfRestriction: YOUR Privy wallet
@@ -448,6 +448,8 @@ When granting delegation via `setOperator`, you provide these five fields. All a
 | `maxRateBps` | `uint256` | Interest rate ceiling in basis points (e.g. `1500` = 15% APR). Match reverts if a lend intent offers a higher rate. |
 | `expiry` | `uint256` | Unix timestamp after which the permission is invalid. Match reverts after this time. |
 | `onBehalfOfRestriction` | `address` | If non-zero, operator-initiated borrow intents must route the USDC to exactly this address. **Set this to your Privy wallet** (returned from pre-register) to bind facilitator borrowing to your custodial wallet. |
+
+> **Critical:** If `onBehalfOfRestriction` is set to the wrong address, the facilitator's borrowed USDC routes to that address instead of your wallet. Always use the `privyWalletAddress` returned from pre-registration.
 
 Additionally, you must **approve the collateral token** (WETH or cbBTC) for the matcher contract so the facilitator can pull collateral at match time. The AgentKit `grant_credit_delegation` action handles this with an unlimited approval by default (`args.collateralApproval` can override with a bounded amount for users who want tighter exposure control).
 

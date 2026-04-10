@@ -6,6 +6,8 @@ icon: js
 
 The `floe-agent` package provides Coinbase AgentKit ActionProviders with **36 total actions** (30 in `FloeActionProvider` + 6 in `X402ActionProvider`) for Node.js / TypeScript environments.
 
+> **Naming convention:** All action names and parameters in the TypeScript SDK use **camelCase** (e.g., `borrowAmount`, `maxInterestRateBps`). The Python SDK uses **snake_case** for the same fields. Code examples are not interchangeable between SDKs without adjusting case.
+
 ## Installation
 
 ```bash
@@ -97,13 +99,15 @@ Configure in Claude Desktop (`claude_desktop_config.json`):
       "command": "node",
       "args": ["path/to/floe-mcp-server.js"],
       "env": {
-        "PRIVATE_KEY": "0x...",
+        "PRIVATE_KEY": "${PRIVATE_KEY}",
         "BASE_RPC_URL": "https://mainnet.base.org"
       }
     }
   }
 }
 ```
+
+> **Security:** Never hardcode private keys in config files. Use environment variable references (`${PRIVATE_KEY}`) and set the actual key in your shell environment. Never commit keys to version control.
 
 ### OpenAI Agents SDK
 

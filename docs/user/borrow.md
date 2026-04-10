@@ -201,7 +201,7 @@ If ETH price rises, you can withdraw some:
 
 1. Click **"Withdraw Collateral"**
 2. Enter amount (max shown)
-3. Must stay below 77% LTV (3% buffer from 80%)
+3. Your current LTV must stay at or below 77% — that's the 80% liquidation threshold minus the required 3% withdrawal buffer (`withdrawalBufferBps = 300`)
 
 ## Liquidation
 
@@ -272,5 +272,5 @@ Your loan can be liquidated when:
 ## Next Steps
 
 * [Understanding Risk & Liquidation](risk-liquidations.md)
-* [Managing Your Loans](manage-loans.md)
+* [How to Lend](lend.md)
 * [Using Lendr AI](lendr-ai.md)

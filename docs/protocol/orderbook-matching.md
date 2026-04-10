@@ -384,6 +384,6 @@ Time T12: Tx included (reverts - intent expired)
 
 ## Next Steps
 
-* [Oracle System](03-oracle-system.md)
-* [Fee Structure](04-fee-structure.md)
-* [Run a Solver Bot](../developers/04-run-solver-bot.md)
+* [Oracles & Circuit Breaker](oracles-conditions.md)
+* [Security](security.md)
+* [Run a Solver Bot](../developers/run-solver-bot.md)

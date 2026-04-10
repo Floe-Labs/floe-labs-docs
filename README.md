@@ -31,7 +31,7 @@ Floe lets you borrow USDC or USDT against collateral eg cbBTC or WETH or earn yi
 |                |                                                                                                 |
 | -------------- | ----------------------------------------------------------------------------------------------- |
 | **Network**    | Base Mainnet                                                                                    |
-| **Contract**   | [`0x17946cD3...Bb175`](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175) |
+| **Contract**   | [`0x17946cD3e180f82e632805e5549EC913330Bb175`](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175) |
 | **Loan Token** | USDC, USDT                                                                                      |
 | **Collateral** | WETH, cbBTC                                                                                     |
 

@@ -10,6 +10,17 @@ The Credit API lets any agent — regardless of language or framework — access
 
 **Base URL:** `https://credit-api.floelabs.xyz`
 
+## Token Decimals
+
+All amounts in the API are in **raw token base units** (smallest unit for each token). Using the wrong decimal precision is the most common integration bug.
+
+| Token | Decimals | 1.0 human-readable = raw | Example |
+|-------|----------|--------------------------|---------|
+| USDC  | 6        | `1000000`                | 5,000 USDC = `"5000000000"` |
+| USDT  | 6        | `1000000`                | 100 USDT = `"100000000"` |
+| WETH  | 18       | `1000000000000000000`    | 2 WETH = `"2000000000000000000"` |
+| cbBTC | 8        | `100000000`              | 0.5 cbBTC = `"50000000"` |
+
 ## Try It Now
 
 See live lender offers on Base — no auth required:
@@ -25,6 +36,8 @@ curl "https://credit-api.floelabs.xyz/v1/credit/offers"
 ---
 
 ## Markets
+
+Market IDs are `keccak256(abi.encode(loanToken, collateralToken))`. Use `GET /v1/markets` to discover all available market IDs.
 
 | Market | marketId | Collateral | Loan Token |
 |--------|----------|------------|------------|
