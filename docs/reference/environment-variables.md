@@ -100,9 +100,17 @@ The private key for the **facilitator EOA** — a purpose-built wallet that subm
 **What the EOA holds.** The facilitator EOA is a delegated *signer*, not a custodian. It should hold:
 
 - **Base ETH for gas** — ~0.05 ETH floor, alert at 0.02 ETH. `matchLoanIntents` is ~300–500k gas per call.
-- **Nothing else.** Not USDC, not WETH, not cbBTC. The `onBehalfOfRestriction` field in each `OperatorPermission` binds borrowed USDC to settle directly into the deployer's Privy wallet, not the facilitator. If you find yourself wanting to pre-fund the facilitator with anything other than gas, something is wrong with the flow.
+- **Nothing else.** Not USDC, not WETH, not cbBTC. The `onBehalfOfRestriction` field in each `OperatorPermission` binds borrowed USDC routing directly to each agent's Privy wallet — USDC never passes through the facilitator EOA. Pre-funding the facilitator with tokens creates unnecessary liability. If you find yourself wanting to pre-fund the facilitator with anything other than gas, something is wrong with the flow.
 
-**Blast radius.** A compromised facilitator private key can only borrow within the bounds each deployer explicitly granted (`borrowLimit`, `maxRateBps`, `expiry`), and only into the `onBehalfOfRestriction` address each deployer specified. The `LendingIntentMatcher` contract re-validates all five `OperatorPermission` fields on every match, so a stolen key cannot exceed its delegated scope. Rotate by deploying a new EOA and asking every deployer to re-run `setOperator` with the new address — this is a coordinated migration, not an instant fix.
+**Blast radius.** A compromised facilitator private key can only borrow within the bounds each deployer explicitly granted (`borrowLimit`, `maxRateBps`, `expiry`), and only into the `onBehalfOfRestriction` address each deployer specified. The `LendingIntentMatcher` contract re-validates all five `OperatorPermission` fields on every match, so a stolen key cannot exceed its delegated scope.
+
+**Key Rotation Procedure:**
+1. Generate a new EOA (`cast wallet new`)
+2. Fund the new EOA with ~0.05 ETH for gas
+3. Update `FACILITATOR_PRIVATE_KEY` in the server env and restart
+4. Notify all deployers to re-run `setOperator` with the new facilitator address
+5. Old facilitator can still repay/close existing loans until all deployers migrate
+6. Once all deployers have migrated, drain remaining gas ETH from the old EOA
 
 **Never commit this.**
 

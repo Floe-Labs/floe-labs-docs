@@ -39,15 +39,6 @@ These are the errors your agent will see at runtime. This section is a condensed
 | 503 | `agent_features_unavailable` | Facilitator booted without Privy credentials configured. |
 | 503 | `agent_wallet_not_configured` | Agent has no Privy wallet — finish registration via `/agents/register`. |
 
-### `agent_missing_privy_wallet` vs `agent_wallet_not_configured`
-
-These two look similar but mean different things:
-
-- **`agent_missing_privy_wallet`** appears in the `error` field of the internal `proxy_requests.error` log column when the agent record exists but `privyWalletAddress` is null. It is recorded for debugging and never exposed directly to the agent.
-- **`agent_wallet_not_configured`** is the client-facing 500 response that surfaces the above condition with an actionable `message`.
-
-If you see either, finish agent registration through the Developer Dashboard.
-
 ---
 
 ## Developer auth

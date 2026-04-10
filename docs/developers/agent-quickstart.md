@@ -47,7 +47,7 @@ const status = await agentkit.invoke("check_credit_status", {
 
 ## What Just Happened
 
-Floe queried all available lenders on Base, selected the best rate for your amount, and executed the match on-chain. USDC transferred directly to your agent's wallet. Your ETH collateral is held by the protocol's smart contract and returns automatically when you repay. Fixed rate, fixed term, no surprises.
+Floe queried all available lenders on Base, selected the best rate for your amount, and executed the match on-chain. USDC is transferred to your delegated Privy wallet (or your main wallet if borrowing directly without the facilitator). Your ETH collateral is held by the protocol's smart contract and returns automatically when you repay. Fixed rate, fixed term, no surprises.
 
 ## Markets
 
@@ -138,7 +138,7 @@ writeContract({
 });
 ```
 
-**Takeaway:** this single on-chain tx is the only time the deployer signs a transaction on behalf of the agent. After this the facilitator can borrow USDC from the credit line, capped by `borrowLimit` and `maxRateBps`.
+**Takeaway:** this single on-chain tx is the only time the deployer signs a transaction on behalf of the agent. After this the facilitator can borrow USDC from the credit line, capped by `borrowLimit` and `maxRateBps`. If the `setOperator` transaction fails or is reorged, agent registration will fail with `delegation_not_found` — simply resubmit the transaction.
 
 ### 6. Activate the agent
 

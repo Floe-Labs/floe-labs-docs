@@ -143,7 +143,7 @@ function matchLoanIntents(...) external {
 
 ### Minimum Loan Duration
 
-The protocol enforces `minDuration > 0` — the absolute minimum loan term is **1 second**. There is no hard floor beyond non-zero. Users and agents set their own min/max duration range on each intent.
+The protocol enforces `minDuration > 0`. Typical loans range from 7 days to 12 months. Users and agents set their own min/max duration range on each intent.
 
 The protocol admin sets a configurable maximum duration (default **365 days**, hard ceiling 100 years).
 

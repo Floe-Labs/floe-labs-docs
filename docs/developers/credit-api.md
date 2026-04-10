@@ -37,6 +37,8 @@ curl "https://credit-api.floelabs.xyz/v1/credit/offers"
 
 ## Markets
 
+Market IDs are `keccak256(abi.encode(loanToken, collateralToken))`. Use `GET /v1/markets` to discover all available market IDs.
+
 | Market | marketId | Collateral | Loan Token |
 |--------|----------|------------|------------|
 | WETH/USDC | `0xfe92656527bae8e6d37a9e0bb785383fbb33f1f0c7e29fdd733f5af7390c2930` | WETH (18 dec) | USDC (6 dec) |
