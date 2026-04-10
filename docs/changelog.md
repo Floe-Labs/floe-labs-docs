@@ -28,7 +28,7 @@ Notable changes and updates to the Floe protocol.
 
 * `setOperator` / `revokeOperator` / `getOperatorPermission` — scoped, revocable delegation with `borrowLimit`, `maxRateBps`, `expiry`, and `onBehalfOfRestriction`.
 * All constraints re-validated at every borrow match — the facilitator provably cannot exceed the agent's bounds.
-* Proxy address unchanged: `0x17946cD3e180f82e632805e5549EC913330Bb175`. See [Contract Addresses](../developers/networks.md).
+* Proxy address unchanged: `0x17946cD3e180f82e632805e5549EC913330Bb175`. See [Contract Addresses](../../developers/networks.md).
 
 **Security:**
 
@@ -136,7 +136,7 @@ Notable changes and updates to the Floe protocol.
 
 ## Links
 
-* [Contract Addresses](../developers/networks.md)
+* [Contract Addresses](../../developers/networks.md)
 * [Agent Quickstart](developers/agent-quickstart.md)
 * [GitHub](https://github.com/Floe-Labs)
 * [Discord](https://discord.gg/floelabs)

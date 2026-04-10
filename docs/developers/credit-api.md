@@ -12,7 +12,7 @@ The Credit API lets any agent — regardless of language or framework — access
 
 ## Token Decimals
 
-All amounts in the API are in **raw token units** (wei). Using the wrong decimal precision is the most common integration bug.
+All amounts in the API are in **raw token base units** (smallest unit for each token). Using the wrong decimal precision is the most common integration bug.
 
 | Token | Decimals | 1.0 human-readable = raw | Example |
 |-------|----------|--------------------------|---------|

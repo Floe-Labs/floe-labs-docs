@@ -216,7 +216,6 @@ contract LendingIntentMatcherUpgradeable is
 * New variables added at end of storage
 * Existing functionality maintained
 
-##
 
 ## Next Steps
 

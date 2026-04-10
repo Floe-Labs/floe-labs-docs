@@ -211,7 +211,7 @@ Common reasons:
 * Gas price too low
 * Contract paused
 
-Check the [Error Codes](02-error-codes.md) reference.
+Check the [Error Codes](../docs/reference/error-codes.md) reference.
 
 ### How do I get ETH for gas?
 
