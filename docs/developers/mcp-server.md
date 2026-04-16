@@ -77,7 +77,7 @@ Point your MCP client to the hosted endpoint. No installation needed.
 Run the server locally. It proxies all requests to the Floe API — no secrets, no database, no RPC needed on your machine.
 
 ```bash
-FLOE_API_KEY=floe_live_YOUR_KEY npx @floelabs/mcp-server
+FLOE_API_KEY=floe_live_YOUR_KEY npx @floelabs/mcp-server --stdio
 ```
 
 **Claude Desktop config for local stdio:**
@@ -87,7 +87,7 @@ FLOE_API_KEY=floe_live_YOUR_KEY npx @floelabs/mcp-server
   "mcpServers": {
     "floe": {
       "command": "npx",
-      "args": ["@floelabs/mcp-server"],
+      "args": ["@floelabs/mcp-server", "--stdio"],
       "env": {
         "FLOE_API_KEY": "floe_live_YOUR_API_KEY"
       }
