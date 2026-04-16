@@ -24,7 +24,7 @@ Connect any AI agent to Floe's lending protocol using the [Model Context Protoco
 | **Language** | Any (MCP protocol) | Any (HTTP) | TypeScript / Python |
 | **Setup** | 1 line of config | Direct HTTP calls | npm/pip install |
 
-Use the **MCP server** when building AI agents that need to discover and use Floe tools dynamically. Use the **Credit API** for direct HTTP integration. Use **AgentKit** when building on Coinbase's agent framework.
+When building AI agents that need to discover and use Floe tools dynamically, choose the **MCP server**. For direct HTTP integration, the **Credit API** is the right fit. If you're building on Coinbase's agent framework, go with **AgentKit**.
 
 ---
 
@@ -74,7 +74,7 @@ Point your MCP client to the hosted endpoint. No installation needed.
 
 ### Option 2: Local via npx
 
-Run the server locally. It proxies all requests to the Floe API — no secrets, no database, no RPC needed on your machine.
+Run the server locally. It proxies requests to the Floe API — no local database or RPC setup needed. You still need to provide your `FLOE_API_KEY`.
 
 ```bash
 FLOE_API_KEY=floe_live_YOUR_KEY npx @floelabs/mcp-server --stdio
@@ -173,7 +173,7 @@ All write tools return **unsigned transactions**. The server never holds private
 
 Write tools return unsigned transactions — your agent signs them locally and submits.
 
-```
+```text
 1. Call write tool (e.g., create_counter_intent)
    → { transactions: [...], summary, warnings, expiresAt }
 
@@ -286,7 +286,7 @@ for tx_data in response["transactions"]:
 
 Here's how an AI agent borrows 1,000 USDC on Floe:
 
-```
+```text
 Agent: "I want to borrow 1000 USDC on Floe"
 
 Step 1: Browse available offers
@@ -339,7 +339,9 @@ async with MultiServerMCPClient({
 }) as client:
     tools = client.get_tools()
     agent = create_react_agent(model, tools)
-    result = await agent.invoke({"input": "Borrow 1000 USDC on Floe"})
+    result = await agent.ainvoke({
+        "messages": [{"role": "user", "content": "Borrow 1000 USDC on Floe"}]
+    })
 ```
 
 ### CrewAI
@@ -395,7 +397,7 @@ const markets = JSON.parse(result.content[0].text);
 
 ## Architecture
 
-```
+```text
 Your Agent → MCP Server → credit-api.floelabs.xyz → Envio Indexer / Base RPC
                 ↑                    ↑
          @floelabs/mcp-server   Private backend
