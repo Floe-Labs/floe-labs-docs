@@ -33,6 +33,7 @@
 * [AgentKit Integration](docs/developers/agentkit.md)
   * [TypeScript SDK](docs/developers/agentkit-typescript.md)
   * [Python SDK](docs/developers/agentkit-python.md)
+* [MCP Server](docs/developers/mcp-server.md)
 * [Agent Working Capital](docs/developers/agent-working-capital.md)
 * [Credit REST API](docs/developers/credit-api.md)
 

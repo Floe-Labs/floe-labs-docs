@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "floe": {
+      "url": "https://mcp.floelabs.xyz/mcp",
+      "headers": {
+        "Authorization": "Bearer floe_live_YOUR_API_KEY"
+      }
+    }
+  }
+}
