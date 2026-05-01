@@ -80,6 +80,7 @@ def sign_and_broadcast(tx_data, attempt_id, phase, auth_headers):
             "attempt_id": attempt_id,
             "phase": phase,
         },
+        timeout=60,
     )
     if not resp.ok:
         body = resp.json() if resp.content else {}
