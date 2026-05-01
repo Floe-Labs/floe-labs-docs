@@ -1,21 +1,24 @@
 """
 Floe Credit API — Borrow USDC with ETH collateral on Base.
 
+Demonstrates the full FLO-529 production flow:
+  - Idempotency-Key on POST /v1/credit/instant-borrow (retry-safe)
+  - attemptId capture from the response
+  - Signed txs broadcast via /v1/tx/broadcast with attempt_id + phase
+    (so the API can drive the borrow-attempt state machine and persist
+    the txHash before the receipt to survive 60s wait timeouts)
+  - Recovery branch: on match-phase failure, inspect attempt status
+    via GET /borrow-attempts/:id and either resume or abandon
+
 Usage:
   pip install web3 requests
   PRIVATE_KEY=0x... python borrow.py
-
-This script:
-  1. Queries available lender offers (no auth)
-  2. Authenticates with your wallet
-  3. Builds instant-borrow transactions
-  4. Signs and submits them to Base
-  5. Prints the loan details
 """
 
 import os
 import sys
 import time
+import uuid
 import requests
 from web3 import Web3
 from eth_account import Account
@@ -32,83 +35,28 @@ API_BASE = "https://credit-api.floelabs.xyz"
 RPC_URL = os.environ.get("RPC_URL", "https://mainnet.base.org")
 WETH_USDC_MARKET = "0xfe92656527bae8e6d37a9e0bb785383fbb33f1f0c7e29fdd733f5af7390c2930"
 
-# How much to borrow
-BORROW_AMOUNT = "5000000000"           # $5,000 USDC (6 decimals)
+BORROW_AMOUNT = "5000000000"               # $5,000 USDC (6 decimals)
 COLLATERAL_AMOUNT = "2000000000000000000"  # 2 ETH (18 decimals)
-MAX_RATE_BPS = "1200"                  # Up to 12% APR
-DURATION = "2592000"                   # 30 days in seconds
+MAX_RATE_BPS = "1200"                      # Up to 12% APR
+DURATION = "2592000"                       # 30 days
 
 # ── Setup ──
 
 account = Account.from_key(PRIVATE_KEY)
 w3 = Web3(Web3.HTTPProvider(RPC_URL))
 
-print(f"Wallet: {account.address}")
-print(f"Borrow: {int(BORROW_AMOUNT) / 1e6} USDC")
-print(f"Collateral: {int(COLLATERAL_AMOUNT) / 1e18} ETH")
-print()
 
-# ── Step 1: Check available offers ──
+# ── Helpers ──
 
-print("1. Checking available lender offers...")
-resp = requests.get(f"{API_BASE}/v1/credit/offers", params={"marketId": WETH_USDC_MARKET})
-resp.raise_for_status()
-offers = resp.json()["offers"]
+def sign_and_broadcast(tx_data, attempt_id, phase, auth_headers):
+    """
+    Sign one of the unsigned txs returned by the API and broadcast it via
+    /v1/tx/broadcast with attempt_id + phase. The broadcast endpoint
+    persists the txHash on the attempt row BEFORE awaiting the receipt,
+    so a 60s wait timeout no longer drops the hash on the floor.
 
-if not offers:
-    print("   No lender offers available. Try again later.")
-    sys.exit(1)
-
-best = min(offers, key=lambda o: int(o["minInterestRateBps"]))
-print(f"   Found {len(offers)} offers. Best rate: {int(best['minInterestRateBps']) / 100}% APR")
-print()
-
-# ── Step 2: Authenticate ──
-
-print("2. Authenticating...")
-timestamp = str(int(time.time()))
-message = f"Floe Credit API\nTimestamp: {timestamp}"
-signed = account.sign_message(encode_defunct(text=message))
-
-headers = {
-    "X-Wallet-Address": account.address,
-    "X-Signature": "0x" + signed.signature.hex(),
-    "X-Timestamp": timestamp,
-    "Content-Type": "application/json",
-}
-
-# ── Step 3: Build instant-borrow transactions ──
-
-print("3. Building borrow transactions...")
-resp = requests.post(
-    f"{API_BASE}/v1/credit/instant-borrow",
-    headers=headers,
-    json={
-        "marketId": WETH_USDC_MARKET,
-        "borrowAmount": BORROW_AMOUNT,
-        "collateralAmount": COLLATERAL_AMOUNT,
-        "maxInterestRateBps": MAX_RATE_BPS,
-        "duration": DURATION,
-        "maxLtvBps": "7500",
-    },
-)
-
-if resp.status_code == 404:
-    print(f"   No liquidity: {resp.json().get('message', 'No matching offers')}")
-    sys.exit(1)
-
-resp.raise_for_status()
-result = resp.json()
-transactions = result["transactions"]
-selected = result.get("selectedOffer", {})
-print(f"   Matched with lender at {int(selected.get('minInterestRateBps', 0)) / 100}% APR")
-print(f"   {len(transactions)} transactions to submit")
-print()
-
-# ── Step 4: Sign and submit transactions ──
-
-print("4. Submitting transactions to Base...")
-for i, tx_data in enumerate(transactions):
+    Returns dict {transactionHash, status} on success, raises on failure.
+    """
     tx = {
         "to": Web3.to_checksum_address(tx_data["to"]),
         "data": tx_data["data"],
@@ -121,17 +69,247 @@ for i, tx_data in enumerate(transactions):
     tx["maxFeePerGas"] = w3.eth.gas_price * 2
     tx["maxPriorityFeePerGas"] = w3.eth.gas_price
 
-    signed_tx = account.sign_transaction(tx)
-    tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-    receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    signed = account.sign_transaction(tx)
+    raw_hex = "0x" + signed.raw_transaction.hex()
 
-    status = "OK" if receipt.status == 1 else "FAILED"
-    print(f"   [{i+1}/{len(transactions)}] {tx_data['description']}: {tx_hash.hex()} ({status})")
+    resp = requests.post(
+        f"{API_BASE}/v1/tx/broadcast",
+        headers={**auth_headers, "Content-Type": "application/json"},
+        json={
+            "signed_transaction_hex": raw_hex,
+            "attempt_id": attempt_id,
+            "phase": phase,
+        },
+    )
+    if not resp.ok:
+        body = resp.json() if resp.content else {}
+        raise RuntimeError(
+            f"broadcast({phase}) failed: {resp.status_code} "
+            f"{body.get('error', '')} {body.get('message', '')}"
+        )
+    return resp.json()
 
-    if receipt.status != 1:
-        print(f"   Transaction failed. Aborting.")
+
+def recover_if_needed(attempt_id, auth_headers):
+    """
+    Recovery branch. Called when the match-phase broadcast fails or
+    returns an unexpected status. Inspects the attempt and either
+    resumes or abandons. Returns True if the loan ended up active,
+    False if abandoned/terminal.
+    """
+    status_resp = requests.get(
+        f"{API_BASE}/v1/credit/borrow-attempts/{attempt_id}",
+        headers=auth_headers,
+    )
+    if not status_resp.ok:
+        print(f"   recovery: GET /borrow-attempts/{attempt_id} failed")
+        return False
+    status = status_resp.json()
+    print(f"   recovery: attempt is in status='{status['status']}'")
+
+    if status["status"] == "active":
+        print(f"   recovery: loan already active (loanId={status['loanId']})")
+        return True
+
+    if status["status"] != "pending_match":
+        # Can't resume — already terminal or not in the right state.
+        return abandon(attempt_id, auth_headers)
+
+    # Try resume.
+    resume_resp = requests.post(
+        f"{API_BASE}/v1/credit/borrow-attempts/{attempt_id}/resume",
+        headers=auth_headers,
+    )
+    if not resume_resp.ok:
+        body = resume_resp.json() if resume_resp.content else {}
+        code = body.get("code")
+        print(f"   recovery: /resume returned {resume_resp.status_code} (code={code})")
+        if code in ("lend_intent_revoked", "lend_intent_expired", "lend_intent_insufficient"):
+            return abandon(attempt_id, auth_headers)
+        return False
+
+    transactions = resume_resp.json()["transactions"]
+    match_tx = transactions[0]
+    print("   recovery: resuming with fresh match tx")
+    result = sign_and_broadcast(match_tx, attempt_id, "match", auth_headers)
+    return result["status"] == "confirmed"
+
+
+def abandon(attempt_id, auth_headers):
+    """
+    Walk the abandon flow: get unsigned revoke (+ optional approve(0))
+    txs from the API and broadcast them. Always returns False.
+    """
+    print("   recovery: calling /abandon to clean up")
+    resp = requests.post(
+        f"{API_BASE}/v1/credit/borrow-attempts/{attempt_id}/abandon",
+        headers=auth_headers,
+    )
+    if not resp.ok:
+        print(f"   abandon failed: {resp.status_code}")
+        return False
+    transactions = resp.json()["transactions"]
+    for tx_data in transactions:
+        if tx_data.get("optional"):
+            print(f"   abandon: skipping optional tx ({tx_data['description']})")
+            continue
+        # For abandon we don't pass attempt_id+phase — the row is already
+        # marked abandoned by the API and there's no further state to drive.
+        tx = {
+            "to": Web3.to_checksum_address(tx_data["to"]),
+            "data": tx_data["data"],
+            "value": int(tx_data["value"], 16),
+            "chainId": tx_data["chainId"],
+            "from": account.address,
+            "nonce": w3.eth.get_transaction_count(account.address),
+        }
+        tx["gas"] = w3.eth.estimate_gas(tx)
+        tx["maxFeePerGas"] = w3.eth.gas_price * 2
+        tx["maxPriorityFeePerGas"] = w3.eth.gas_price
+        signed = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+        print(f"   abandon tx: {tx_hash.hex()}")
+        w3.eth.wait_for_transaction_receipt(tx_hash)
+    return False
+
+
+# ── Main flow ──
+
+def main():
+    print(f"Wallet:     {account.address}")
+    print(f"Borrow:     {int(BORROW_AMOUNT) / 1e6} USDC")
+    print(f"Collateral: {int(COLLATERAL_AMOUNT) / 1e18} ETH")
+    print()
+
+    # Step 1: Authenticate.
+    timestamp = str(int(time.time()))
+    message = f"Floe Credit API\nTimestamp: {timestamp}"
+    signed_msg = account.sign_message(encode_defunct(text=message))
+    auth_headers = {
+        "X-Wallet-Address": account.address,
+        "X-Signature": "0x" + signed_msg.signature.hex(),
+        "X-Timestamp": timestamp,
+    }
+
+    # Step 2: Generate an idempotency key. A network retry of the
+    # /instant-borrow call with the same key returns the cached attempt
+    # instead of registering a second on-chain intent.
+    idempotency_key = str(uuid.uuid4())
+    print(f"Idempotency-Key: {idempotency_key}")
+    print()
+
+    # Step 3: POST /v1/credit/instant-borrow.
+    print("1. Building borrow transactions...")
+    resp = requests.post(
+        f"{API_BASE}/v1/credit/instant-borrow",
+        headers={
+            **auth_headers,
+            "Content-Type": "application/json",
+            "Idempotency-Key": idempotency_key,
+        },
+        json={
+            "marketId": WETH_USDC_MARKET,
+            "borrowAmount": BORROW_AMOUNT,
+            "collateralAmount": COLLATERAL_AMOUNT,
+            "maxInterestRateBps": MAX_RATE_BPS,
+            "duration": DURATION,
+            "maxLtvBps": "7500",
+        },
+    )
+
+    if resp.status_code == 404:
+        print(f"   No liquidity: {resp.json().get('message', 'No matching offers')}")
+        sys.exit(1)
+    if not resp.ok:
+        body = resp.json() if resp.content else {}
+        print(f"   Error: {body.get('error')} — {body.get('message')}")
         sys.exit(1)
 
-print()
-print("Done! Loan created. USDC is in your wallet.")
-print(f"Check status: curl '{API_BASE}/v1/credit/status/<loanId>' with auth headers")
+    result = resp.json()
+    attempt_id = result["attemptId"]
+    print(f"   attemptId: {attempt_id}")
+    print(f"   status:    {result['status']}")
+    if result.get("reused"):
+        print("   (reused existing attempt — see GET /borrow-attempts/:id for state)")
+        ok = recover_if_needed(attempt_id, auth_headers)
+        sys.exit(0 if ok else 1)
+    print(f"   {len(result['transactions'])} transactions to submit")
+    selected = result.get("selectedOffer")
+    if selected:
+        print(f"   matched at {int(selected['minInterestRateBps']) / 100}% APR")
+    print()
+
+    # Step 4: Pull out txs by description. The API returns:
+    #   - optionally an "Approve collateral" tx
+    #   - "Register borrow intent"
+    #   - "Match loan intents"
+    approve_tx = next((t for t in result["transactions"] if "approve" in t["description"].lower()), None)
+    register_tx = next((t for t in result["transactions"] if "register" in t["description"].lower()), None)
+    match_tx = next((t for t in result["transactions"] if "match" in t["description"].lower()), None)
+    if not register_tx or not match_tx:
+        print("   missing register/match tx in response")
+        sys.exit(1)
+
+    # Step 5: ERC-20 approve (if needed). No attempt_id — this is a plain
+    # ERC-20 call and not part of the borrow_attempt state machine.
+    if approve_tx:
+        print("2. Approving collateral...")
+        tx = {
+            "to": Web3.to_checksum_address(approve_tx["to"]),
+            "data": approve_tx["data"],
+            "value": int(approve_tx["value"], 16),
+            "chainId": approve_tx["chainId"],
+            "from": account.address,
+            "nonce": w3.eth.get_transaction_count(account.address),
+        }
+        tx["gas"] = w3.eth.estimate_gas(tx)
+        tx["maxFeePerGas"] = w3.eth.gas_price * 2
+        tx["maxPriorityFeePerGas"] = w3.eth.gas_price
+        signed = account.sign_transaction(tx)
+        tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+        w3.eth.wait_for_transaction_receipt(tx_hash)
+        print(f"   approve: {tx_hash.hex()} OK")
+        print()
+
+    # Step 6: Register borrow intent. attempt_id+phase=register so the API
+    # persists registerTxHash + transitions pending_funding -> pending_on_chain
+    # before awaiting the receipt.
+    print("3. Registering borrow intent...")
+    reg = sign_and_broadcast(register_tx, attempt_id, "register", auth_headers)
+    print(f"   register: {reg['transactionHash']} {reg['status']}")
+    if reg["status"] != "confirmed":
+        print("   register reverted; the attempt is now funding_failed.")
+        sys.exit(1)
+    print()
+
+    # Step 7: Match. Wrapped in try/except so any failure routes to the
+    # recovery branch, which can resume or abandon as appropriate.
+    print("4. Matching loan intents...")
+    try:
+        m = sign_and_broadcast(match_tx, attempt_id, "match", auth_headers)
+        if m["status"] != "confirmed":
+            print(f"   match reverted: {m['transactionHash']}")
+            recovered = recover_if_needed(attempt_id, auth_headers)
+            sys.exit(0 if recovered else 1)
+        print(f"   match: {m['transactionHash']} {m['status']}")
+    except Exception as e:
+        print(f"   match broadcast threw: {e}")
+        recovered = recover_if_needed(attempt_id, auth_headers)
+        sys.exit(0 if recovered else 1)
+    print()
+
+    # Step 8: Confirm via GET — surfaces the real on-chain loanId.
+    print("5. Confirming...")
+    final_resp = requests.get(
+        f"{API_BASE}/v1/credit/borrow-attempts/{attempt_id}",
+        headers=auth_headers,
+    )
+    final = final_resp.json()
+    print(f"   final status: {final['status']}")
+    print(f"   on-chain loanId: {final.get('loanId') or '(not yet active)'}")
+    print()
+    print("Done! USDC is in your wallet.")
+
+
+if __name__ == "__main__":
+    main()

@@ -241,7 +241,7 @@ Giza agents, Olas agents, and Safe multisigs authenticate the same way. The API 
 
 ### POST /v1/credit/instant-borrow
 
-Build unsigned transactions for an instant borrow. The API selects the best available lender automatically.
+Build unsigned transactions for an instant borrow. The API selects the best available lender automatically and persists an attempt record so a partial flow (TX1 confirmed but TX2 not yet broadcast) is always recoverable.
 
 ```bash
 curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
@@ -249,6 +249,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
   -H "X-Wallet-Address: 0xYourWallet" \
   -H "X-Signature: 0xYourSig" \
   -H "X-Timestamp: 1711814400" \
+  -H "Idempotency-Key: 7f9a4e21-9c3a-4f2b-bc1d-2a8c1f5b8e3d" \
   -d '{
     "marketId": "0xfe92656527bae8e6d37a9e0bb785383fbb33f1f0c7e29fdd733f5af7390c2930",
     "borrowAmount": "5000000000",
@@ -269,10 +270,19 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
 | `minLtvBps` | string | No | Min LTV (default: 8000 = 80%) |
 | `maxLtvBps` | string | No | Max initial LTV (bps). Rejects if oracle-computed LTV exceeds this. 7500 = 75% |
 
+**Headers:**
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `Idempotency-Key` | No | Stripe-style opaque string (≤255 chars). Same key from the same wallet within 24h returns the cached attempt instead of starting a new one. Recommended (UUID v4). Without it the call is non-idempotent — a network retry can register a second on-chain intent and double-spend gas. |
+
 **Response:**
 
 ```json
 {
+  "attemptId": "pending:7f9a4e21-9c3a-4f2b-bc1d-2a8c1f5b8e3d",
+  "status": "pending_funding",
+  "reused": false,
   "transactions": [
     {
       "to": "0x833589fCD...",
@@ -303,6 +313,115 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
   }
 }
 ```
+
+| Response field | Description |
+|---------------|-------------|
+| `attemptId` | Synthetic placeholder ID for the attempt (`pending:<uuid>`). Pass this to `/v1/tx/broadcast` and the recovery endpoints below. The `attemptId` stays the same for the lifetime of the row — even after the loan goes active. The canonical on-chain `loanId` becomes available via `GET /v1/credit/borrow-attempts/:attemptId` (in the response's separate `loanId` field). |
+| `status` | Lifecycle state. `pending_funding` for a fresh attempt; later transitions to `pending_on_chain`, `pending_match`, `matching`, `active`, or one of the terminal states. See the lifecycle diagram below. |
+| `reused` | `true` when an idempotent retry returned the cached attempt. When `true`, `transactions` is `[]` and `selectedOffer` is **omitted** — the original lender struct isn't persisted, so the API doesn't surface stale fields. Call `GET /v1/credit/borrow-attempts/:attemptId` for canonical state, or `POST .../resume` to retry the match phase. |
+| `selectedOffer` | The lender offer matched at attempt creation. Present on fresh attempts only; omitted when `reused: true` (see above). |
+
+#### Broadcasting with attempt tracking
+
+When you broadcast each signed transaction, pass the `attempt_id` and `phase` so the API can drive the attempt state machine forward:
+
+```bash
+# After signing TX2 (registerBorrowIntent)
+curl -X POST "https://credit-api.floelabs.xyz/v1/tx/broadcast" \
+  -H "Content-Type: application/json" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400" \
+  -d '{
+    "signed_transaction_hex": "0x02f8...",
+    "attempt_id": "pending:7f9a4e21-9c3a-4f2b-bc1d-2a8c1f5b8e3d",
+    "phase": "register"
+  }'
+
+# After signing TX3 (matchLoanIntents)
+curl -X POST "https://credit-api.floelabs.xyz/v1/tx/broadcast" \
+  -d '{ "signed_transaction_hex": "0x02f8...", "attempt_id": "pending:...", "phase": "match" }' \
+  ...
+```
+
+Both fields are optional and must be provided together. When provided, the broadcast endpoint persists the txHash on the borrow-attempt row **before** awaiting `waitForTransactionReceipt`. This closes the receipt-wait timeout gap — if the receipt doesn't arrive within 60s, the row already has the hash and the reconciler can finish reconciliation on its next tick. Without `attempt_id`, the broadcast endpoint behaves exactly as before; the attempt row stays in `pending_funding` until the reconciler's expiry sweep terminates it.
+
+#### Recovery endpoints
+
+The borrow-attempt state machine is recoverable in two failure scenarios:
+
+**Scenario A — Client crash between TX1 and TX2.** The register tx confirmed and the row is in `pending_match`, but the client process died (or lost the response) before broadcasting the match tx.
+
+**Scenario B — Broadcast endpoint receipt timeout.** The client called `/v1/tx/broadcast` with `attempt_id`+`phase`, but `waitForTransactionReceipt` hit the 60s cap and threw. The tx is live on-chain (it was sent before the wait), the row already has `register_tx_hash` (or `match_tx_hash`) thanks to the pre-receipt persist, and the reconciler's `runOnce` will fetch the receipt and resolve the row on its next tick (default poll interval 30s) — **no client action required**.
+
+For Scenario A, three explicit endpoints let the client drive the recovery:
+
+All three recovery endpoints share two common error codes:
+
+| Status | `code` | When |
+|---|---|---|
+| 404 | `attempt_not_found` | The attempt ID doesn't exist, or the row exists but isn't an `instant_borrow` attempt (404 instead of 403 to avoid leaking the existence of unrelated rows) |
+| 403 | `forbidden` | The authenticated wallet is not the original initiator of the attempt |
+
+**`GET /v1/credit/borrow-attempts/:attemptId`** — current state, all tx hashes, real `loanId` once active. The `attemptId` here is the `pending:<uuid>` placeholder you received from `/v1/credit/instant-borrow` — it stays the same for the life of the row, even after the loan goes active (the on-chain `loanId` is surfaced in the response's `loanId` field, separate from `attemptId`).
+
+**`POST /v1/credit/borrow-attempts/:attemptId/resume`** — returns a fresh `matchLoanIntents` unsigned tx using the same registered borrow intent. Re-validates the lend offer on-chain; on conflict, returns 409 with one of:
+
+| `code` | Meaning | Recommended next step |
+|---|---|---|
+| `not_resumable` | Status is not `pending_match` (e.g. already `active`, `abandoned`, `expired`) | Call `GET /borrow-attempts/:id` for current state |
+| `lend_intent_revoked` | The originally-selected lender slot was zeroed | Call `/abandon` |
+| `lend_intent_expired` | Lend offer expired since attempt creation | Call `/abandon` |
+| `lend_intent_insufficient` | Lender's remaining capacity is now below the borrow amount | Call `/abandon` |
+| `missing_borrow_struct` (500) | Defensive — should never fire | Surface to support |
+| `missing_lend_intent_hash` (500) | Defensive — should never fire | Surface to support |
+
+**`POST /v1/credit/borrow-attempts/:attemptId/abandon`** — immediately marks the attempt `abandoned` and returns up to 2 unsigned txs:
+
+1. `revokeBorrowIntentByHash(borrowIntentHash)` — required. Removes the dangling intent on-chain.
+2. `approve(collateralToken, matcher, 0)` — optional (`optional: true`), only included when a non-zero allowance exists. Recommended to sign and broadcast for full hygiene.
+
+Returns 409 with `code: not_abandonable` if the attempt is already in a terminal state.
+
+The on-chain intent expires automatically 5–10 minutes after registration, so revoking is for cleanliness; the loan can never be matched after expiry regardless.
+
+#### Lifecycle
+
+The API drives a borrow-attempt state machine for every `/v1/credit/instant-borrow` call. When you broadcast each signed transaction with `attempt_id` + `phase`, the API persists the txHash *before* awaiting the receipt — so a 60s receipt-wait timeout never drops state on the floor.
+
+```
+POST /v1/credit/instant-borrow
+            │
+            ▼
+    pending_funding
+            │
+            │ POST /v1/tx/broadcast (phase=register, pre-receipt persist)
+            ▼
+   pending_on_chain
+            │
+            │ register receipt: success
+            ▼
+    pending_match  ◄────── POST /v1/credit/borrow-attempts/:id/resume
+            │
+            │ POST /v1/tx/broadcast (phase=match, pre-receipt persist)
+            ▼
+        matching
+            │
+            │ match receipt: success
+            ▼
+         active
+```
+
+Terminal branches (fired from any non-terminal status):
+
+| Trigger | Resulting status |
+|---|---|
+| `POST /v1/credit/borrow-attempts/:id/abandon` | `abandoned` |
+| `POST /v1/tx/broadcast` (register tx reverts) | `funding_failed` |
+| `POST /v1/tx/broadcast` (match tx reverts) | `match_failed` |
+| Borrow intent expired past `expiry + 60s buffer` (reconciler sweep) | `expired` |
+
+**Terminal states** (no further transitions): `active`, `repaid`, `rolled_over`, `funding_failed`, `match_failed`, `abandoned`, `expired`.
 
 ### GET /v1/credit/status/:loanId
 
