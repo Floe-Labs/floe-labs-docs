@@ -362,8 +362,24 @@ def main():
         f"{API_BASE}/v1/credit/borrow-attempts/{attempt_id}",
         headers=auth_headers,
     )
+    final_resp = requests.get(
+        f"{API_BASE}/v1/credit/borrow-attempts/{attempt_id}",
+        headers=auth_headers,
+    )
+    if not final_resp.ok:
+        body = {}
+        try:
+            body = final_resp.json()
+        except ValueError:
+            pass
+        print(
+            f"   confirm failed: {final_resp.status_code} "
+            f"{body.get('error', '')} {body.get('message', '')}"
+        )
+        sys.exit(1)
+
     final = final_resp.json()
-    print(f"   final status: {final['status']}")
+    print(f"   final status: {final.get('status', 'unknown')}")
     print(f"   on-chain loanId: {final.get('loanId') or '(not yet active)'}")
     print()
     print("Done! USDC is in your wallet.")
