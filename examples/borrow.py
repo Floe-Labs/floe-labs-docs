@@ -48,6 +48,21 @@ w3 = Web3(Web3.HTTPProvider(RPC_URL))
 
 # ── Helpers ──
 
+def _safe_json(resp):
+    """
+    Best-effort decode of a response body. Returns {} when the body is
+    empty or not valid JSON (e.g. an HTML error page from a proxy).
+    `requests.exceptions.JSONDecodeError` is a subclass of ValueError, so
+    catching ValueError handles both cases on every supported requests version.
+    """
+    if not resp.content:
+        return {}
+    try:
+        return resp.json()
+    except ValueError:
+        return {}
+
+
 def sign_and_broadcast(tx_data, attempt_id, phase, auth_headers):
     """
     Sign one of the unsigned txs returned by the API and broadcast it via
@@ -83,7 +98,7 @@ def sign_and_broadcast(tx_data, attempt_id, phase, auth_headers):
         timeout=60,
     )
     if not resp.ok:
-        body = resp.json() if resp.content else {}
+        body = _safe_json(resp)
         raise RuntimeError(
             f"broadcast({phase}) failed: {resp.status_code} "
             f"{body.get('error', '')} {body.get('message', '')}"
@@ -165,7 +180,7 @@ def recover_if_needed(attempt_id, auth_headers):
         headers=auth_headers,
     )
     if not resume_resp.ok:
-        body = resume_resp.json() if resume_resp.content else {}
+        body = _safe_json(resume_resp)
         code = body.get("code")
         print(f"   recovery: /resume returned {resume_resp.status_code} (code={code})")
         if code in ("lend_intent_revoked", "lend_intent_expired", "lend_intent_insufficient"):
@@ -276,10 +291,10 @@ def main():
     )
 
     if resp.status_code == 404:
-        print(f"   No liquidity: {resp.json().get('message', 'No matching offers')}")
+        print(f"   No liquidity: {_safe_json(resp).get('message', 'No matching offers')}")
         sys.exit(1)
     if not resp.ok:
-        body = resp.json() if resp.content else {}
+        body = _safe_json(resp)
         print(f"   Error: {body.get('error')} — {body.get('message')}")
         sys.exit(1)
 
@@ -363,11 +378,7 @@ def main():
         headers=auth_headers,
     )
     if not final_resp.ok:
-        body = {}
-        try:
-            body = final_resp.json()
-        except ValueError:
-            pass
+        body = _safe_json(final_resp)
         print(
             f"   confirm failed: {final_resp.status_code} "
             f"{body.get('error', '')} {body.get('message', '')}"
