@@ -362,10 +362,6 @@ def main():
         f"{API_BASE}/v1/credit/borrow-attempts/{attempt_id}",
         headers=auth_headers,
     )
-    final_resp = requests.get(
-        f"{API_BASE}/v1/credit/borrow-attempts/{attempt_id}",
-        headers=auth_headers,
-    )
     if not final_resp.ok:
         body = {}
         try:
