@@ -39,6 +39,7 @@ const TARGET_WALLET = process.env.TARGET_WALLET as `0x${string}` | undefined;
 // Pagination — small for the example so the loop is exercised on
 // realistic portfolios. Production callers can use the API's defaults.
 const PAGE_LIMIT = 5;
+const MAX_PAGES = 1_000;
 
 // Per-request timeout. Matches the Python example's requests timeout so a
 // stalled connection / unresponsive proxy can't hang the script forever.
@@ -229,10 +230,19 @@ async function main(): Promise<void> {
   // Per the API contract, paginate as long as `loans.length === limit`
   // (the page is "full"). Don't gate on summary.activeLoanCount —
   // that's the wallet-wide total and stays constant across pages.
+  //
+  // Hard cap on iterations as a safety net: a buggy backend that always
+  // returns a full page would otherwise spin forever.
   console.log(`--- Step 4: paginate active loans (page size ${PAGE_LIMIT}) ---`);
   let seen = 0;
   let skip = 0;
+  let pages = 0;
   while (true) {
+    if (pages >= MAX_PAGES) {
+      throw new Error(
+        `Pagination exceeded ${MAX_PAGES} pages; aborting to avoid an infinite loop.`,
+      );
+    }
     const page = await getPositions(targetWallet, { limit: PAGE_LIMIT, skip });
     const loans = page.positions;
     for (const loan of loans) {
@@ -243,6 +253,7 @@ async function main(): Promise<void> {
           `buffer=${fmtRate(loan.bufferBps)}`,
       );
     }
+    pages += 1;
     if (loans.length < PAGE_LIMIT) break;
     skip += PAGE_LIMIT;
   }

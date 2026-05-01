@@ -51,6 +51,7 @@ TARGET_WALLET = os.environ.get("TARGET_WALLET")
 # Pagination — small for the example so the loop is exercised on
 # realistic portfolios. Production callers can use the API's defaults.
 PAGE_LIMIT = 5
+MAX_PAGES = 1_000
 
 # ── Setup ──
 
@@ -188,10 +189,18 @@ def main():
     # Per the API contract, paginate as long as `len(loans) == limit`
     # (the page is "full"). Don't gate on summary.activeLoanCount —
     # that's the wallet-wide total and stays constant across pages.
+    #
+    # Hard cap on iterations as a safety net: a buggy backend that always
+    # returns a full page would otherwise spin forever.
     print(f"--- Step 4: paginate active loans (page size {PAGE_LIMIT}) ---")
     seen = 0
     skip = 0
+    pages = 0
     while True:
+        if pages >= MAX_PAGES:
+            raise RuntimeError(
+                f"Pagination exceeded {MAX_PAGES} pages; aborting to avoid an infinite loop."
+            )
         page = get_positions(target_wallet, limit=PAGE_LIMIT, skip=skip)
         loans = page["positions"]
         for loan in loans:
@@ -201,6 +210,7 @@ def main():
                 f"debt={int(loan['totalDebt']) / 1e6:,.2f} USDC, "
                 f"buffer={fmt_rate(loan['bufferBps'])}"
             )
+        pages += 1
         if len(loans) < PAGE_LIMIT:
             break
         skip += PAGE_LIMIT
