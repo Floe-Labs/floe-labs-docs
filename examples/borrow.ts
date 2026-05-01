@@ -143,21 +143,22 @@ async function signAndBroadcast(
  * unexpected status. Inspects the attempt and either resumes (fetches a fresh
  * match tx and retries) or abandons (revokes the on-chain intent).
  *
- * Returns true if the loan ended up active, false if abandoned/terminal.
+ * IMPORTANT: never auto-abandon a row in `matching` status. `matching` means
+ * the match tx was already submitted on-chain (the broadcast endpoint
+ * persisted the txHash before awaiting receipt). The receipt may still be
+ * mining — calling /abandon now would race with on-chain confirmation and
+ * create row-vs-chain divergence. Poll briefly; if still `matching` after
+ * the wait, surface a warning and exit non-zero so the operator can
+ * inspect the match tx hash manually.
+ *
+ * Returns true if the loan ended up active, false if abandoned/terminal/stuck.
  */
 async function recoverIfNeeded(
   attemptId: string,
   authHeaders: Record<string, string>,
 ): Promise<boolean> {
-  const statusResp = await fetch(
-    `${API_BASE}/v1/credit/borrow-attempts/${attemptId}`,
-    { headers: authHeaders },
-  );
-  if (!statusResp.ok) {
-    console.error(`   recovery: GET /borrow-attempts/${attemptId} failed`);
-    return false;
-  }
-  const status = (await statusResp.json()) as AttemptStatus;
+  const status = await pollAttemptUntilSettled(attemptId, authHeaders);
+  if (!status) return false;
   console.log(`   recovery: attempt is in status='${status.status}'`);
 
   if (status.status === "active") {
@@ -165,9 +166,22 @@ async function recoverIfNeeded(
     return true;
   }
 
+  if (status.status === "matching") {
+    // Polling timed out without the receipt resolving the row. The match tx
+    // may still confirm on-chain; the operator should check
+    // `status.matchTxHash` on a block explorer before doing anything else.
+    console.warn(
+      `   recovery: stuck in 'matching' (matchTxHash=${status.matchTxHash}). ` +
+        `Check the tx on-chain manually — DO NOT call /abandon while the match tx is live.`,
+    );
+    return false;
+  }
+
   if (status.status !== "pending_match") {
-    // Can't resume — already terminal or not in the right state. Try abandon
-    // to clean up any dangling on-chain intent.
+    // Definitively terminal-non-active (funding_failed, match_failed,
+    // abandoned, expired) or pre-register (pending_funding,
+    // pending_on_chain). Calling /abandon is safe: it idempotently
+    // revokes any on-chain intent and resets the allowance.
     return abandon(attemptId, authHeaders);
   }
 
@@ -195,6 +209,48 @@ async function recoverIfNeeded(
 }
 
 /**
+ * Fetch /borrow-attempts/:id, polling up to ~30s while status is `matching`
+ * to give an in-flight match receipt time to land. Returns the latest
+ * status, or undefined on a hard fetch error.
+ *
+ * Polling is bounded — the server has no obligation to advance from
+ * `matching` without help (the match-phase has no reconciler today; the
+ * eventual fallback is the expiry sweep). We poll just long enough that
+ * a slow Base block doesn't trigger the warning path on a healthy attempt.
+ */
+async function pollAttemptUntilSettled(
+  attemptId: string,
+  authHeaders: Record<string, string>,
+  maxAttempts = 6,
+  delayMs = 5000,
+): Promise<AttemptStatus | undefined> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const resp = await fetch(
+      `${API_BASE}/v1/credit/borrow-attempts/${attemptId}`,
+      { headers: authHeaders },
+    );
+    if (!resp.ok) {
+      console.error(`   recovery: GET /borrow-attempts/${attemptId} failed (${resp.status})`);
+      return undefined;
+    }
+    const status = (await resp.json()) as AttemptStatus;
+    if (status.status !== "matching") return status;
+    if (i < maxAttempts - 1) {
+      console.log(`   recovery: status='matching' — waiting ${delayMs}ms for receipt...`);
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  // Last fetch already done above on the final iteration if we didn't
+  // return early; re-fetch once to return the freshest snapshot.
+  const finalResp = await fetch(
+    `${API_BASE}/v1/credit/borrow-attempts/${attemptId}`,
+    { headers: authHeaders },
+  );
+  if (!finalResp.ok) return undefined;
+  return (await finalResp.json()) as AttemptStatus;
+}
+
+/**
  * Walk the abandon flow: get unsigned revoke (+ optional approve(0)) txs from
  * the API and broadcast them. Returns false (loan never went active).
  */
@@ -212,11 +268,15 @@ async function abandon(
     return false;
   }
   const { transactions } = (await resp.json()) as { transactions: UnsignedTx[] };
+  // Broadcast every tx the API returned, including the one marked
+  // `optional: true` (the approve(matcher, 0) reset). Skipping it would
+  // leave the matcher's collateral allowance set forever, which is a
+  // standing approval an attacker could theoretically exploit if the
+  // matcher contract were later compromised. Production hygiene >
+  // saving one approval's worth of gas. If your environment really
+  // doesn't want to pay for the cleanup, swap this loop for one that
+  // checks `tx.optional` and skips with explicit acknowledgement.
   for (const tx of transactions) {
-    if (tx.optional) {
-      console.log(`   abandon: skipping optional tx (${tx.description})`);
-      continue;
-    }
     // For abandon we don't pass attempt_id+phase — the row is already
     // marked abandoned by the API and there's no further state to drive.
     const nonce = await publicClient.getTransactionCount({ address: account.address });
@@ -229,7 +289,8 @@ async function abandon(
       maxFeePerGas: fees.maxFeePerGas,
       maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
     });
-    console.log(`   abandon tx: ${hash}`);
+    const tag = tx.optional ? `${tx.description} (optional)` : tx.description;
+    console.log(`   abandon: ${tag}: ${hash}`);
     await publicClient.waitForTransactionReceipt({ hash });
   }
   return false;
@@ -252,12 +313,25 @@ async function main(): Promise<void> {
     "X-Timestamp": timestamp,
   };
 
-  // Step 2: Generate an idempotency key. A network retry of the
+  // Step 2: Resolve an idempotency key. A network retry of the
   // /instant-borrow call with the same key returns the cached attempt
   // instead of registering a second on-chain intent. UUID v4 is the
   // recommended shape (Stripe-compatible).
-  const idempotencyKey = randomUUID();
-  console.log(`Idempotency-Key: ${idempotencyKey}\n`);
+  //
+  // Crash recovery requires the SAME key across re-runs. We read
+  // IDEMPOTENCY_KEY from the env first; only mint a fresh UUID when
+  // none is supplied. To recover from a crash, run again with
+  // IDEMPOTENCY_KEY=<key from previous run>.
+  const idempotencyKey = process.env.IDEMPOTENCY_KEY ?? randomUUID();
+  console.log(`Idempotency-Key: ${idempotencyKey}`);
+  if (!process.env.IDEMPOTENCY_KEY) {
+    console.log(
+      "   (newly minted — set IDEMPOTENCY_KEY=" +
+        idempotencyKey +
+        " to retry/recover this exact attempt later)",
+    );
+  }
+  console.log();
 
   // Step 3: POST /v1/credit/instant-borrow.
   console.log("1. Building borrow transactions...");

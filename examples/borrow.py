@@ -90,29 +90,72 @@ def sign_and_broadcast(tx_data, attempt_id, phase, auth_headers):
     return resp.json()
 
 
+def poll_attempt_until_settled(attempt_id, auth_headers, max_attempts=6, delay_sec=5):
+    """
+    Fetch /borrow-attempts/:id, polling up to ~30s while status is
+    'matching' to give an in-flight match receipt time to land. Returns
+    the latest status dict, or None on a hard fetch error.
+
+    Polling is bounded — the API has no obligation to advance from
+    'matching' without help (the match-phase has no reconciler today;
+    eventual fallback is the expiry sweep). We poll just long enough
+    that a slow Base block doesn't trigger the warning path on a
+    healthy attempt.
+    """
+    last = None
+    for i in range(max_attempts):
+        resp = requests.get(
+            f"{API_BASE}/v1/credit/borrow-attempts/{attempt_id}",
+            headers=auth_headers,
+        )
+        if not resp.ok:
+            print(f"   recovery: GET /borrow-attempts/{attempt_id} failed ({resp.status_code})")
+            return None
+        last = resp.json()
+        if last["status"] != "matching":
+            return last
+        if i < max_attempts - 1:
+            print(f"   recovery: status='matching' — waiting {delay_sec}s for receipt...")
+            time.sleep(delay_sec)
+    return last
+
+
 def recover_if_needed(attempt_id, auth_headers):
     """
     Recovery branch. Called when the match-phase broadcast fails or
     returns an unexpected status. Inspects the attempt and either
-    resumes or abandons. Returns True if the loan ended up active,
-    False if abandoned/terminal.
+    resumes or abandons.
+
+    IMPORTANT: never auto-abandon a row in 'matching' status. 'matching'
+    means the match tx was already submitted on-chain (the broadcast
+    endpoint persisted the txHash before awaiting receipt). The receipt
+    may still be mining — calling /abandon now would race with on-chain
+    confirmation and create row-vs-chain divergence. Poll briefly; if
+    still 'matching' after the wait, surface a warning and exit so the
+    operator can inspect the match tx hash manually.
     """
-    status_resp = requests.get(
-        f"{API_BASE}/v1/credit/borrow-attempts/{attempt_id}",
-        headers=auth_headers,
-    )
-    if not status_resp.ok:
-        print(f"   recovery: GET /borrow-attempts/{attempt_id} failed")
+    status = poll_attempt_until_settled(attempt_id, auth_headers)
+    if status is None:
         return False
-    status = status_resp.json()
     print(f"   recovery: attempt is in status='{status['status']}'")
 
     if status["status"] == "active":
         print(f"   recovery: loan already active (loanId={status['loanId']})")
         return True
 
+    if status["status"] == "matching":
+        # Polling timed out without the receipt resolving the row. The
+        # match tx may still confirm on-chain; the operator should
+        # check `status['matchTxHash']` on a block explorer before
+        # doing anything else.
+        print(
+            f"   recovery: stuck in 'matching' (matchTxHash={status['matchTxHash']}). "
+            "Check the tx on-chain manually — DO NOT call /abandon while the match tx is live."
+        )
+        return False
+
     if status["status"] != "pending_match":
-        # Can't resume — already terminal or not in the right state.
+        # Definitively terminal-non-active or pre-register; safe to abandon.
         return abandon(attempt_id, auth_headers)
 
     # Try resume.
@@ -149,10 +192,13 @@ def abandon(attempt_id, auth_headers):
         print(f"   abandon failed: {resp.status_code}")
         return False
     transactions = resp.json()["transactions"]
+    # Broadcast every tx, including the one marked optional: True (the
+    # approve(matcher, 0) reset). Skipping it would leave the matcher's
+    # collateral allowance set forever — production hygiene > saving
+    # one approval's worth of gas. If your environment really doesn't
+    # want to pay for the cleanup, swap the loop below for one that
+    # checks tx_data.get("optional") and skips with explicit acknowledgement.
     for tx_data in transactions:
-        if tx_data.get("optional"):
-            print(f"   abandon: skipping optional tx ({tx_data['description']})")
-            continue
         # For abandon we don't pass attempt_id+phase — the row is already
         # marked abandoned by the API and there's no further state to drive.
         tx = {
@@ -168,7 +214,8 @@ def abandon(attempt_id, auth_headers):
         tx["maxPriorityFeePerGas"] = w3.eth.gas_price
         signed = account.sign_transaction(tx)
         tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
-        print(f"   abandon tx: {tx_hash.hex()}")
+        tag = f"{tx_data['description']} (optional)" if tx_data.get("optional") else tx_data["description"]
+        print(f"   abandon: {tag}: {tx_hash.hex()}")
         w3.eth.wait_for_transaction_receipt(tx_hash)
     return False
 
@@ -191,11 +238,21 @@ def main():
         "X-Timestamp": timestamp,
     }
 
-    # Step 2: Generate an idempotency key. A network retry of the
+    # Step 2: Resolve an idempotency key. A network retry of the
     # /instant-borrow call with the same key returns the cached attempt
     # instead of registering a second on-chain intent.
-    idempotency_key = str(uuid.uuid4())
+    #
+    # Crash recovery requires the SAME key across re-runs. We read
+    # IDEMPOTENCY_KEY from the env first; only mint a fresh UUID when
+    # none is supplied. To recover from a crash, run again with
+    # IDEMPOTENCY_KEY=<key from previous run>.
+    idempotency_key = os.environ.get("IDEMPOTENCY_KEY") or str(uuid.uuid4())
     print(f"Idempotency-Key: {idempotency_key}")
+    if not os.environ.get("IDEMPOTENCY_KEY"):
+        print(
+            f"   (newly minted — set IDEMPOTENCY_KEY={idempotency_key} "
+            "to retry/recover this exact attempt later)"
+        )
     print()
 
     # Step 3: POST /v1/credit/instant-borrow.

@@ -352,6 +352,8 @@ The borrow-attempt state machine is recoverable in two failure scenarios:
 
 **Scenario A — Client crash between TX1 and TX2.** The register tx confirmed and the row is in `pending_match`, but the client process died (or lost the response) before broadcasting the match tx.
 
+> **Persistence requirement:** crash recovery only works if the client durably stored at least one of (`attemptId`, `Idempotency-Key`) before crashing. With the `attemptId` you can hit the recovery endpoints below directly. With the `Idempotency-Key` you can re-POST `/v1/credit/instant-borrow` and the API returns the cached attempt (`reused: true`) — read `attemptId` from that response and proceed to the recovery endpoints. If neither was persisted, the on-chain intent will simply expire on its own (5–10 min) and you'll need a fresh borrow.
+
 **Scenario B — Broadcast endpoint receipt timeout.** The client called `/v1/tx/broadcast` with `attempt_id`+`phase`, but `waitForTransactionReceipt` hit the 60s cap and threw. The tx is live on-chain (it was sent before the wait), the row already has `register_tx_hash` (or `match_tx_hash`) thanks to the pre-receipt persist, and the reconciler's `runOnce` will fetch the receipt and resolve the row on its next tick (default poll interval 30s) — **no client action required**.
 
 For Scenario A, three explicit endpoints let the client drive the recovery:
@@ -421,7 +423,9 @@ Terminal branches (fired from any non-terminal status):
 | `POST /v1/tx/broadcast` (match tx reverts) | `match_failed` |
 | Borrow intent expired past `expiry + 60s buffer` (reconciler sweep) | `expired` |
 
-**Terminal states** (no further transitions): `active`, `repaid`, `rolled_over`, `funding_failed`, `match_failed`, `abandoned`, `expired`.
+**Terminal states for the borrow-attempt state machine** (no further transitions *within this flow*): `active`, `repaid`, `rolled_over`, `funding_failed`, `match_failed`, `abandoned`, `expired`.
+
+> **Note on `active` vs. the loan lifecycle.** `active` is terminal for the *borrow-attempt* flow — once you reach it, the recovery endpoints stop driving the row. But the underlying on-chain loan continues its own lifecycle: it will eventually transition to `repaid` (when the borrower repays) or `rolled_over` (when the loan is renewed), both of which are tracked separately in the same row. For loan-level state, query `GET /v1/credit/status/:loanId` (using the on-chain `loanId` returned in `GET /borrow-attempts/:attemptId`) — that's the canonical surface for repayment terms, health factor, and accrued interest.
 
 ### GET /v1/credit/status/:loanId
 
