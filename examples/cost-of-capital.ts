@@ -27,6 +27,10 @@ const DURATION_SECONDS = 2_592_000n; // 30 days
 // Agent's rate ceiling. Reject any quote at or above this rate.
 const MAX_ACCEPTABLE_RATE_BPS = 1500n; // 15% APR
 
+// Per-request timeout. Matches the Python example's requests timeout so a
+// stalled connection / unresponsive proxy can't hang the script forever.
+const REQUEST_TIMEOUT_MS = 10_000;
+
 interface CostOfCapitalResponse {
   marketId: string;
   bestRateBps: string | null;
@@ -48,7 +52,9 @@ async function fetchCostOfCapital(
   if (opts.duration !== undefined) {
     url.searchParams.set("duration", opts.duration.toString());
   }
-  const resp = await fetch(url);
+  const resp = await fetch(url, {
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
   if (!resp.ok) {
     throw new Error(`HTTP ${resp.status}: ${await resp.text()}`);
   }

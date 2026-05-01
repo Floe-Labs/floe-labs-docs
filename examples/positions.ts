@@ -40,6 +40,10 @@ const TARGET_WALLET = process.env.TARGET_WALLET as `0x${string}` | undefined;
 // realistic portfolios. Production callers can use the API's defaults.
 const PAGE_LIMIT = 5;
 
+// Per-request timeout. Matches the Python example's requests timeout so a
+// stalled connection / unresponsive proxy can't hang the script forever.
+const REQUEST_TIMEOUT_MS = 15_000;
+
 // ── Setup ──
 
 const account = privateKeyToAccount(PRIVATE_KEY);
@@ -119,7 +123,10 @@ async function getPositions(
     url.searchParams.set("pendingLimit", String(opts.pendingLimit));
   }
 
-  const resp = await fetch(url, { headers: await signRequest() });
+  const resp = await fetch(url, {
+    headers: await signRequest(),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
 
   if (resp.status === 503) {
     // The API instance was started without an Envio indexer endpoint.
