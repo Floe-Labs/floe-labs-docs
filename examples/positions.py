@@ -20,11 +20,20 @@ Usage:
 """
 
 import os
+import re
 import sys
 import time
+from urllib.parse import quote
+
 import requests
 from eth_account import Account
 from eth_account.messages import encode_defunct
+
+# Defense-in-depth: reject obviously malformed wallets before we
+# interpolate them into the URL path. The API also validates, but a
+# caller-side check produces a clearer error and avoids a wasted round
+# trip if TARGET_WALLET is misconfigured.
+ADDRESS_RE = re.compile(r"^0x[a-fA-F0-9]{40}$")
 
 # ── Config ──
 
@@ -69,6 +78,12 @@ def sign_request():
 
 def get_positions(wallet, *, live=False, include_pending=False, limit=None, skip=None, pending_limit=None):
     """GET /v1/positions/:wallet with optional flags."""
+    if not ADDRESS_RE.match(wallet):
+        raise ValueError(
+            f"Invalid wallet address: {wallet!r}. "
+            "Expected a 0x-prefixed 20-byte address."
+        )
+
     params = {}
     if live:
         params["live"] = "true"
@@ -82,7 +97,7 @@ def get_positions(wallet, *, live=False, include_pending=False, limit=None, skip
         params["pendingLimit"] = str(pending_limit)
 
     resp = requests.get(
-        f"{API_BASE}/v1/positions/{wallet}",
+        f"{API_BASE}/v1/positions/{quote(wallet, safe='')}",
         headers=sign_request(),
         params=params,
         timeout=15,

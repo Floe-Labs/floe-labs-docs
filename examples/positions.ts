@@ -44,6 +44,12 @@ const PAGE_LIMIT = 5;
 // stalled connection / unresponsive proxy can't hang the script forever.
 const REQUEST_TIMEOUT_MS = 15_000;
 
+// Defense-in-depth: reject obviously malformed wallets before we
+// interpolate them into the URL path. The API also validates, but a
+// caller-side check produces a clearer error and avoids a wasted round
+// trip if TARGET_WALLET is misconfigured.
+const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;
+
 // ── Setup ──
 
 const account = privateKeyToAccount(PRIVATE_KEY);
@@ -114,7 +120,12 @@ async function getPositions(
   wallet: string,
   opts: GetPositionsOpts = {},
 ): Promise<CreditPositions> {
-  const url = new URL(`${API_BASE}/v1/positions/${wallet}`);
+  if (!ADDRESS_RE.test(wallet)) {
+    throw new Error(
+      `Invalid wallet address: ${wallet}. Expected a 0x-prefixed 20-byte address.`,
+    );
+  }
+  const url = new URL(`${API_BASE}/v1/positions/${encodeURIComponent(wallet)}`);
   if (opts.live) url.searchParams.set("live", "true");
   if (opts.includePending) url.searchParams.set("includePending", "true");
   if (opts.limit !== undefined) url.searchParams.set("limit", String(opts.limit));
