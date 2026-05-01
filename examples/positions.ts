@@ -11,7 +11,7 @@
  *   2. Live-mode read    (?live=true) — slower, fully on-chain. Health factor
  *                                       is computed against the live oracle.
  *   3. includePending     — surface borrow intents that haven't matched yet.
- *   4. Pagination         — loop with ?skip= until activeLoanCount < limit.
+ *   4. Pagination         — loop with ?skip= until positions.length < limit.
  *   5. 503 handling       — what to do when the API instance has no indexer.
  *
  * Usage:
