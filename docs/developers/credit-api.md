@@ -131,6 +131,68 @@ curl "https://credit-api.floelabs.xyz/v1/credit/offers?marketId=0xfe9265..."
 }
 ```
 
+### GET /v1/markets/:marketId/cost-of-capital
+
+Snapshot of the borrowing rate available in a market right now. **Public — no auth required.**
+
+Without `borrowAmount`, returns the rate floor + total available liquidity ("what's the cheapest quote anyone is offering?"). With `borrowAmount`, walks the offer ladder to compute the actual weighted rate the caller would pay ("what would I actually pay if I borrowed N right now?").
+
+```bash
+# Quote-only — best rate + total liquidity
+curl "https://credit-api.floelabs.xyz/v1/markets/0xfe92656527bae8e6d37a9e0bb785383fbb33f1f0c7e29fdd733f5af7390c2930/cost-of-capital"
+
+# Implied rate for a specific size (1,000 USDC = 1_000_000_000 raw, 30-day duration)
+curl "https://credit-api.floelabs.xyz/v1/markets/0xfe92656527bae8e6d37a9e0bb785383fbb33f1f0c7e29fdd733f5af7390c2930/cost-of-capital?borrowAmount=1000000000&duration=2592000"
+```
+
+| Query Param    | Type   | Required | Description |
+|----------------|--------|----------|-------------|
+| `borrowAmount` | string | No       | Raw token units. If omitted, response is quote-only (no implied rate). |
+| `duration`     | string | No       | Loan duration in seconds. When set, only offers whose `[minDuration, maxDuration]` covers this value count. |
+
+**Response (quote-only):**
+
+```json
+{
+  "marketId": "0xfe9265...",
+  "bestRateBps": "800",
+  "impliedRateBps": null,
+  "availableLiquidity": "12500000000",
+  "offerCount": 4,
+  "fetchedAt": 1711814400
+}
+```
+
+**Response (with `borrowAmount`, fillable):**
+
+```json
+{
+  "marketId": "0xfe9265...",
+  "bestRateBps": "800",
+  "impliedRateBps": "920",
+  "impliedFillBreakdown": [
+    { "offerHash": "0xabc...", "rate": "800", "amount": "400000000" },
+    { "offerHash": "0xdef...", "rate": "1000", "amount": "600000000" }
+  ],
+  "availableLiquidity": "12500000000",
+  "offerCount": 4,
+  "fetchedAt": 1711814400
+}
+```
+
+| Field                  | Type             | Description |
+|------------------------|------------------|-------------|
+| `bestRateBps`          | string \| null   | Lowest viable rate among offers. `null` when no offers exist (distinct from a real 0 bps quote). |
+| `impliedRateBps`       | string \| null   | Weighted-average rate at which `borrowAmount` would fill. `null` when omitted OR when liquidity is insufficient. |
+| `impliedFillBreakdown` | array (optional) | Per-offer slices that compose the fill. Only present when `impliedRateBps` is non-null. |
+| `availableLiquidity`   | string           | Sum of `remainingAmount` across viable offers (after duration filter). |
+| `offerCount`           | number           | Count of viable offers. |
+| `fetchedAt`            | number           | Unix seconds when the snapshot was assembled. |
+
+> **Insufficient-liquidity case:** if `borrowAmount > availableLiquidity`, the response sets `impliedRateBps: null` and omits `impliedFillBreakdown`. `bestRateBps` and `availableLiquidity` still reflect what's there — use both to decide whether to wait or downsize the borrow.
+
+> **Why bigint as string?** Rates and amounts are returned as decimal strings to avoid JSON-number precision loss past 2^53. Parse with `BigInt(...)` in TypeScript or `int(...)` in Python.
+
 ### GET /v1/health
 
 ```bash
@@ -241,7 +303,7 @@ Giza agents, Olas agents, and Safe multisigs authenticate the same way. The API 
 
 ### POST /v1/credit/instant-borrow
 
-Build unsigned transactions for an instant borrow. The API selects the best available lender automatically.
+Build unsigned transactions for an instant borrow. The API selects the best available lender automatically and persists an attempt record so a partial flow (TX1 confirmed but TX2 not yet broadcast) is always recoverable.
 
 ```bash
 curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
@@ -249,6 +311,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
   -H "X-Wallet-Address: 0xYourWallet" \
   -H "X-Signature: 0xYourSig" \
   -H "X-Timestamp: 1711814400" \
+  -H "Idempotency-Key: 7f9a4e21-9c3a-4f2b-bc1d-2a8c1f5b8e3d" \
   -d '{
     "marketId": "0xfe92656527bae8e6d37a9e0bb785383fbb33f1f0c7e29fdd733f5af7390c2930",
     "borrowAmount": "5000000000",
@@ -269,10 +332,19 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
 | `minLtvBps` | string | No | Min LTV (default: 8000 = 80%) |
 | `maxLtvBps` | string | No | Max initial LTV (bps). Rejects if oracle-computed LTV exceeds this. 7500 = 75% |
 
+**Headers:**
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `Idempotency-Key` | No | Stripe-style opaque string (≤255 chars). Same key from the same wallet within 24h returns the cached attempt instead of starting a new one. Recommended (UUID v4). Without it the call is non-idempotent — a network retry can register a second on-chain intent and double-spend gas. |
+
 **Response:**
 
 ```json
 {
+  "attemptId": "pending:7f9a4e21-9c3a-4f2b-bc1d-2a8c1f5b8e3d",
+  "status": "pending_funding",
+  "reused": false,
   "transactions": [
     {
       "to": "0x833589fCD...",
@@ -303,6 +375,119 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
   }
 }
 ```
+
+| Response field | Description |
+|---------------|-------------|
+| `attemptId` | Synthetic placeholder ID for the attempt (`pending:<uuid>`). Pass this to `/v1/tx/broadcast` and the recovery endpoints below. The `attemptId` stays the same for the lifetime of the row — even after the loan goes active. The canonical on-chain `loanId` becomes available via `GET /v1/credit/borrow-attempts/:attemptId` (in the response's separate `loanId` field). |
+| `status` | Lifecycle state. `pending_funding` for a fresh attempt; later transitions to `pending_on_chain`, `pending_match`, `matching`, `active`, or one of the terminal states. See the lifecycle diagram below. |
+| `reused` | `true` when an idempotent retry returned the cached attempt. When `true`, `transactions` is `[]` and `selectedOffer` is **omitted** — the original lender struct isn't persisted, so the API doesn't surface stale fields. Call `GET /v1/credit/borrow-attempts/:attemptId` for canonical state, or `POST .../resume` to retry the match phase. |
+| `selectedOffer` | The lender offer matched at attempt creation. Present on fresh attempts only; omitted when `reused: true` (see above). |
+
+#### Broadcasting with attempt tracking
+
+When you broadcast each signed transaction, pass the `attempt_id` and `phase` so the API can drive the attempt state machine forward:
+
+```bash
+# After signing TX2 (registerBorrowIntent)
+curl -X POST "https://credit-api.floelabs.xyz/v1/tx/broadcast" \
+  -H "Content-Type: application/json" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400" \
+  -d '{
+    "signed_transaction_hex": "0x02f8...",
+    "attempt_id": "pending:7f9a4e21-9c3a-4f2b-bc1d-2a8c1f5b8e3d",
+    "phase": "register"
+  }'
+
+# After signing TX3 (matchLoanIntents)
+curl -X POST "https://credit-api.floelabs.xyz/v1/tx/broadcast" \
+  -d '{ "signed_transaction_hex": "0x02f8...", "attempt_id": "pending:...", "phase": "match" }' \
+  ...
+```
+
+Both fields are optional and must be provided together. When provided, the broadcast endpoint persists the txHash on the borrow-attempt row **before** awaiting `waitForTransactionReceipt`. This closes the receipt-wait timeout gap — if the receipt doesn't arrive within 60s, the row already has the hash and the reconciler can finish reconciliation on its next tick. Without `attempt_id`, the broadcast endpoint behaves exactly as before; the attempt row stays in `pending_funding` until the reconciler's expiry sweep terminates it.
+
+#### Recovery endpoints
+
+The borrow-attempt state machine is recoverable in two failure scenarios:
+
+**Scenario A — Client crash between TX1 and TX2.** The register tx confirmed and the row is in `pending_match`, but the client process died (or lost the response) before broadcasting the match tx.
+
+> **Persistence requirement:** crash recovery only works if the client durably stored at least one of (`attemptId`, `Idempotency-Key`) before crashing. With the `attemptId` you can hit the recovery endpoints below directly. With the `Idempotency-Key` you can re-POST `/v1/credit/instant-borrow` and the API returns the cached attempt (`reused: true`) — read `attemptId` from that response and proceed to the recovery endpoints. If neither was persisted, the on-chain intent will simply expire on its own (5–10 min) and you'll need a fresh borrow.
+
+**Scenario B — Broadcast endpoint receipt timeout.** The client called `/v1/tx/broadcast` with `attempt_id`+`phase`, but `waitForTransactionReceipt` hit the 60s cap and threw. The tx is live on-chain (it was sent before the wait), the row already has `register_tx_hash` (or `match_tx_hash`) thanks to the pre-receipt persist, and the reconciler's `runOnce` will fetch the receipt and resolve the row on its next tick (default poll interval 30s) — **no client action required**.
+
+For Scenario A, three explicit endpoints let the client drive the recovery:
+
+All three recovery endpoints share two common error codes:
+
+| Status | `code` | When |
+|---|---|---|
+| 404 | `attempt_not_found` | The attempt ID doesn't exist, or the row exists but isn't an `instant_borrow` attempt (404 instead of 403 to avoid leaking the existence of unrelated rows) |
+| 403 | `forbidden` | The authenticated wallet is not the original initiator of the attempt |
+
+**`GET /v1/credit/borrow-attempts/:attemptId`** — current state, all tx hashes, real `loanId` once active. The `attemptId` here is the `pending:<uuid>` placeholder you received from `/v1/credit/instant-borrow` — it stays the same for the life of the row, even after the loan goes active (the on-chain `loanId` is surfaced in the response's `loanId` field, separate from `attemptId`).
+
+**`POST /v1/credit/borrow-attempts/:attemptId/resume`** — returns a fresh `matchLoanIntents` unsigned tx using the same registered borrow intent. Re-validates the lend offer on-chain; on conflict, returns 409 with one of:
+
+| `code` | Meaning | Recommended next step |
+|---|---|---|
+| `not_resumable` | Status is not `pending_match` (e.g. already `active`, `abandoned`, `expired`) | Call `GET /borrow-attempts/:id` for current state |
+| `lend_intent_revoked` | The originally-selected lender slot was zeroed | Call `/abandon` |
+| `lend_intent_expired` | Lend offer expired since attempt creation | Call `/abandon` |
+| `lend_intent_insufficient` | Lender's remaining capacity is now below the borrow amount | Call `/abandon` |
+| `missing_borrow_struct` (500) | Defensive — should never fire | Surface to support |
+| `missing_lend_intent_hash` (500) | Defensive — should never fire | Surface to support |
+
+**`POST /v1/credit/borrow-attempts/:attemptId/abandon`** — immediately marks the attempt `abandoned` and returns up to 2 unsigned txs:
+
+1. `revokeBorrowIntentByHash(borrowIntentHash)` — required. Removes the dangling intent on-chain.
+2. `approve(collateralToken, matcher, 0)` — optional (`optional: true`), only included when a non-zero allowance exists. Recommended to sign and broadcast for full hygiene.
+
+Returns 409 with `code: not_abandonable` if the attempt is already in a terminal state.
+
+The on-chain intent expires automatically 5–10 minutes after registration, so revoking is for cleanliness; the loan can never be matched after expiry regardless.
+
+#### Lifecycle
+
+The API drives a borrow-attempt state machine for every `/v1/credit/instant-borrow` call. When you broadcast each signed transaction with `attempt_id` + `phase`, the API persists the txHash *before* awaiting the receipt — so a 60s receipt-wait timeout never drops state on the floor.
+
+```
+POST /v1/credit/instant-borrow
+            │
+            ▼
+    pending_funding
+            │
+            │ POST /v1/tx/broadcast (phase=register, pre-receipt persist)
+            ▼
+   pending_on_chain
+            │
+            │ register receipt: success
+            ▼
+    pending_match  ◄────── POST /v1/credit/borrow-attempts/:id/resume
+            │
+            │ POST /v1/tx/broadcast (phase=match, pre-receipt persist)
+            ▼
+        matching
+            │
+            │ match receipt: success
+            ▼
+         active
+```
+
+Terminal branches (fired from any non-terminal status):
+
+| Trigger | Resulting status |
+|---|---|
+| `POST /v1/credit/borrow-attempts/:id/abandon` | `abandoned` |
+| `POST /v1/tx/broadcast` (register tx reverts) | `funding_failed` |
+| `POST /v1/tx/broadcast` (match tx reverts) | `match_failed` |
+| Borrow intent expired past `expiry + 60s buffer` (reconciler sweep) | `expired` |
+
+**Terminal states for the borrow-attempt state machine** (no further transitions *within this flow*): `active`, `repaid`, `rolled_over`, `funding_failed`, `match_failed`, `abandoned`, `expired`.
+
+> **Note on `active` vs. the loan lifecycle.** `active` is terminal for the *borrow-attempt* flow — once you reach it, the recovery endpoints stop driving the row. But the underlying on-chain loan continues its own lifecycle: it will eventually transition to `repaid` (when the borrower repays) or `rolled_over` (when the loan is renewed), both of which are tracked separately in the same row. For loan-level state, query `GET /v1/credit/status/:loanId` (using the on-chain `loanId` returned in `GET /borrow-attempts/:attemptId`) — that's the canonical surface for repayment terms, health factor, and accrued interest.
 
 ### GET /v1/credit/status/:loanId
 
@@ -339,6 +524,115 @@ curl "https://credit-api.floelabs.xyz/v1/credit/status/42" \
   }
 }
 ```
+
+### GET /v1/positions/:wallet
+
+Portfolio view for an address: every active borrower loan + a summary (total debt, weighted-average rate, worst health factor, next maturity).
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/positions/0xYourWallet" \
+  -H "X-Wallet-Address: 0xYourWallet" \
+  -H "X-Signature: 0xYourSig" \
+  -H "X-Timestamp: 1711814400"
+```
+
+| Query Param      | Type    | Required | Description |
+|------------------|---------|----------|-------------|
+| `live`           | boolean | No       | When `true`, fetches each loan's status from the chain (slower, fully live). Default `false` — derives from the indexer with live-computed accrued interest but origination LTV. |
+| `includePending` | boolean | No       | When `true`, includes the borrower's open borrow intents that haven't matched yet. Default `false`. |
+| `limit`          | number  | No       | Max active loans to return. Default 200, max 500. |
+| `skip`           | number  | No       | Pagination offset. Default 0. |
+| `pendingLimit`   | number  | No       | Max pending intents (when `includePending=true`). Default 50, max 200. |
+
+**Response (indexer mode, default):**
+
+```json
+{
+  "account": "0xYourWallet",
+  "positions": [
+    {
+      "loanId": "42",
+      "principal": "5000000000",
+      "accruedInterest": "32000000",
+      "totalDebt": "5032000000",
+      "collateralAmount": "2000000000000000000",
+      "currentLtvBps": "6200",
+      "liquidationLtvBps": "8500",
+      "bufferBps": "2300",
+      "isHealthy": true,
+      "isOverdue": false,
+      "isInGracePeriod": false,
+      "interestRateBps": "920",
+      "loanToken": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "collateralToken": "0x4200000000000000000000000000000000000006",
+      "earlyRepaymentTerms": {
+        "gracePeriod": "86400",
+        "minInterestBps": "5000",
+        "fullTermInterest": "65753424",
+        "earlyRepaymentPenalty": "896712",
+        "totalRepaymentIfRepaidNow": "5032896712"
+      }
+    }
+  ],
+  "summary": {
+    "activeLoanCount": 1,
+    "totalPrincipal": "5000000000",
+    "totalDebt": "5032000000",
+    "totalCollateralLocked": "2000000000000000000",
+    "weightedAvgInterestRateBps": "920",
+    "worstHealthFactor": null,
+    "nextMaturityAt": "1714406400",
+    "perCollateralToken": {
+      "0x4200000000000000000000000000000000000006": "2000000000000000000"
+    }
+  },
+  "source": "indexer",
+  "ltvStale": true,
+  "indexerBlockNumber": "12345678",
+  "fetchedAt": 1711814400
+}
+```
+
+**Response (live mode, `?live=true`):**
+
+```json
+{
+  "account": "0xYourWallet",
+  "positions": [ "..." ],
+  "summary": {
+    "activeLoanCount": 1,
+    "weightedAvgInterestRateBps": "920",
+    "worstHealthFactor": 1.371,
+    "...": "..."
+  },
+  "source": "chain",
+  "ltvStale": false,
+  "indexerBlockNumber": null,
+  "fetchedAt": 1711814400
+}
+```
+
+| Field                                | Type                  | Description |
+|--------------------------------------|-----------------------|-------------|
+| `positions[].accruedInterest`        | string                | Computed live from the clock — accurate even in indexer mode. |
+| `positions[].currentLtvBps`          | string                | Origination LTV in indexer mode (does NOT reflect price movement). Live oracle LTV when `live=true`. |
+| `positions[].bufferBps`              | string                | Headroom before liquidation: `liquidationLtvBps - currentLtvBps` (clamped to 0). >0 = safe; 0 = at threshold. |
+| `summary.worstHealthFactor`          | number \| null        | `liquidationLtv / currentLtv`; >1 = safe, <1 = liquidatable. **Always `null` in indexer mode** because origination LTV would lie about price-driven risk. Set `live=true` to compute. |
+| `summary.weightedAvgInterestRateBps` | string \| null        | Principal-weighted average. `null` for empty portfolio. |
+| `summary.nextMaturityAt`             | string \| null        | Earliest `startTime + duration` across active loans (Unix seconds). |
+| `summary.perCollateralToken`         | object                | Map of collateral-token address → total collateral locked (raw units), summed across this wallet's active loans. Useful for "how much WETH am I posting protocol-wide?" questions without iterating positions client-side. |
+| `source`                             | `"indexer" \| "chain"`| Where the position data came from. |
+| `ltvStale`                           | boolean               | `true` in indexer mode. Accrued interest is unaffected (always live); only LTV-derived fields reflect last-event values. |
+| `indexerBlockNumber`                 | string \| null        | Best-effort indexer head block (when the GraphQL endpoint exposes `chain_metadata`). `null` in live mode. |
+| `pendingBorrowIntents`               | array (optional)      | Only present when `includePending=true`. Empty array if no open intents. |
+
+> **When to use `live=true`:** any time you need an accurate health factor or LTV utilization. Indexer mode is faster and fine for "what do I owe" displays, but the LTV won't move with price. The route runs each loan's status query in parallel with bounded concurrency to keep RPC load sane.
+
+> **Pagination:** `summary.activeLoanCount` is the wallet's *total* loan count and stays constant across pages — don't gate pagination on it. Instead, paginate as long as `positions.length === limit`, advancing `skip` by `limit` each round, and stop when you receive fewer than `limit` results.
+
+> **Auth scope (today):** any authenticated caller can query any wallet's positions. Borrower addresses and loan IDs are public on-chain data. The signed request still uses your own wallet — only the `:wallet` path param identifies whose portfolio you're querying.
+
+> **503 Service Unavailable:** returned when the API instance was started without an Envio indexer endpoint configured. `getPositions` cannot run without indexer access (chain-only fallback would be too slow). Call the operations team or retry against another instance.
 
 ### POST /v1/credit/repay
 
