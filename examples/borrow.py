@@ -106,11 +106,20 @@ def sign_and_broadcast(tx_data, attempt_id, phase, auth_headers):
     return resp.json()
 
 
+_TRANSIENT_STATUSES = ("matching", "pending_on_chain")
+
+
 def poll_attempt_until_settled(attempt_id, auth_headers, max_attempts=6, delay_sec=5):
     """
-    Fetch /borrow-attempts/:id, polling up to ~30s while status is
-    'matching' to give an in-flight match receipt time to land. Returns
-    the latest status dict, or None on a hard fetch error.
+    Fetch /borrow-attempts/:id, polling up to ~30s while status is in
+    a transient lifecycle state ('matching' or 'pending_on_chain') to
+    give an in-flight tx receipt time to land. Returns the latest
+    status dict, or None on a hard fetch error.
+
+    'pending_on_chain' means the register tx was submitted and the row
+    is awaiting reconciliation; 'matching' means the match tx was
+    submitted and the row is awaiting its receipt. Both are in-flight
+    states — abandoning them would race with on-chain confirmation.
 
     Polling is bounded — the API has no obligation to advance from
     'matching' without help (the match-phase has no reconciler today;
@@ -128,10 +137,10 @@ def poll_attempt_until_settled(attempt_id, auth_headers, max_attempts=6, delay_s
             print(f"   recovery: GET /borrow-attempts/{attempt_id} failed ({resp.status_code})")
             return None
         last = resp.json()
-        if last["status"] != "matching":
+        if last["status"] not in _TRANSIENT_STATUSES:
             return last
         if i < max_attempts - 1:
-            print(f"   recovery: status='matching' — waiting {delay_sec}s for receipt...")
+            print(f"   recovery: status='{last['status']}' — waiting {delay_sec}s for receipt...")
             time.sleep(delay_sec)
     return last
 
@@ -142,13 +151,13 @@ def recover_if_needed(attempt_id, auth_headers):
     returns an unexpected status. Inspects the attempt and either
     resumes or abandons.
 
-    IMPORTANT: never auto-abandon a row in 'matching' status. 'matching'
-    means the match tx was already submitted on-chain (the broadcast
-    endpoint persisted the txHash before awaiting receipt). The receipt
-    may still be mining — calling /abandon now would race with on-chain
-    confirmation and create row-vs-chain divergence. Poll briefly; if
-    still 'matching' after the wait, surface a warning and exit so the
-    operator can inspect the match tx hash manually.
+    IMPORTANT: never auto-abandon a row in an in-flight lifecycle state
+    ('matching' or 'pending_on_chain'). Both mean a tx was already
+    submitted on-chain and the row is awaiting its receipt — calling
+    /abandon now would race with confirmation and create row-vs-chain
+    divergence. poll_attempt_until_settled() polls through both states;
+    if it returns still in one of them, surface a warning and exit so
+    the operator can inspect the tx hash manually.
     """
     status = poll_attempt_until_settled(attempt_id, auth_headers)
     if status is None:
@@ -170,8 +179,20 @@ def recover_if_needed(attempt_id, auth_headers):
         )
         return False
 
+    if status["status"] == "pending_on_chain":
+        # Register tx is submitted and awaiting reconciliation. Same
+        # rule as 'matching': don't abandon — the row may simply be
+        # lagging the chain. Re-run recovery later, or inspect manually.
+        print(
+            f"   recovery: stuck in 'pending_on_chain' (registerTxHash={status.get('registerTxHash')}). "
+            "Re-check before abandoning — register tx may still be reconciling."
+        )
+        return False
+
     if status["status"] != "pending_match":
-        # Definitively terminal-non-active or pre-register; safe to abandon.
+        # Remaining states are genuinely terminal-non-active or
+        # pre-register (e.g. funding_failed, abandoned, expired). Safe
+        # to abandon to clean up any residual on-chain state.
         return abandon(attempt_id, auth_headers)
 
     # Try resume.
