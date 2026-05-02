@@ -26,7 +26,9 @@ Today, operators have four bad options:
 3. **Borrow from Aave.** $125 of collateral for $100 of credit. Variable rates. Liquidation can hit mid-task.
 4. **Stop mid-task.** A LangChain workflow burned $47,000 in 11 days before anyone noticed. Gemini CLI racked up $300 in one session — OpenAI and Anthropic don't refund overages.
 
-**The fix:** Deterministic onchain cashflows + smart-contract-enforced repayment = a credit primitive that works at machine speed.
+On the merchant side: 30–90 day payment terms starve working capital. Invoices live in email, PDFs, and ERPs. No real-time visibility, no standardized data. Merchants front the bill, grow slower, discount more.
+
+**Same primitive solves both.** Deterministic onchain cashflows + signed receivables + smart-contract repayment.
 
 ---
 
@@ -35,8 +37,9 @@ Today, operators have four bad options:
 | | Today | 2030 |
 |---|---|---|
 | **Agent credit market** | ~$0 outstanding | $1–2T (McKinsey: $3–5T agentic commerce; BCG: $1T agentic ecommerce influence) |
+| **Tokenized private credit & receivables onchain** | ~$15B and growing | Significantly larger as institutional adoption compounds |
 
-For reference, in the human economy: U.S. consumers carry ~$5T of credit on ~$18T spending (~28%). U.S. businesses carry ~$13T of credit on ~$29T revenue (~45%). Global credit markets are ~1.5x GDP.
+For reference, in the human economy: U.S. consumers carry ~$5T of credit on ~$18T spending (~28%). U.S. businesses carry ~$13T of credit on ~$29T revenue (~45%). Global credit markets are ~1.5× GDP.
 
 Apply that ratio to a $3–5T agent economy and you get **$1–2T of agentic credit** that needs to exist by 2030.
 
@@ -74,7 +77,7 @@ Floe **is not**:
 - A pool-based DeFi money market (we're per-loan isolated).
 - A custodian.
 - A neobank for agents.
-- Limited to crypto-native borrowers.
+- Limited to crypto-native borrowers (receivables wedge serves SMBs that have never touched crypto).
 
 ---
 
@@ -90,6 +93,6 @@ A programmable, deterministic, onchain credit primitive can.
 
 ## What's next
 
-- **[Credit for Agents](../agents/credit-for-agents.md)** — secured working capital, gas-free
-- **[Quick Start (Agents)](../agents/quickstart-agents.md)** — get an agent borrowing in 5 minutes
-- **[How Floe Works](core-concepts.md)** — intents, isolated loans, LTV, oracles
+- **[The Three Credit Tiers](./agents/three-credit-tiers.md)** — secured (live), receivables (Q3), uncollateralized (Q3)
+- **[Quick Start (Agents)](./getting-started/quick-start-agents.md)** — get an agent borrowing in 5 minutes
+- **[Roadmap](./reference/roadmap.md)** — what ships when

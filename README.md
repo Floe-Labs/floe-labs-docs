@@ -47,7 +47,7 @@ Every economy runs on credit. The agentic economy doesn't have any.
 
 That's the gap Floe closes. Agents have balance sheets. They have deterministic cashflows, verifiable task histories, and chain-of-thought signals that are richer than any FICO score. Floe underwrites them.
 
-→ Read [Why Floe, Why Now](docs/getting-started/why-floe.md).
+→ Read [How Floe Works](docs/getting-started/core-concepts.md).
 
 ---
 

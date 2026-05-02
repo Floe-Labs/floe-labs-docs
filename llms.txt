@@ -7,7 +7,6 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 ## Start here
 
 - [Introduction](https://floe-labs.gitbook.io/docs/): What Floe is and where to start by audience
-- [Why Floe, Why Now](https://floe-labs.gitbook.io/docs/getting-started/why-floe): Market context, why fixed-rate P2P credit beats variable-rate pools for agents
 - [How Floe Works (Core Concepts)](https://floe-labs.gitbook.io/docs/getting-started/core-concepts): Intents, isolated loans, matching, LTV, oracles
 
 ## Quick starts

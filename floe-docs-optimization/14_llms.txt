@@ -1,0 +1,89 @@
+# Floe — Onchain Credit Protocol
+
+> Floe is the onchain credit layer and bureau, built for AI agents and backed by institutions. One protocol with three credit tiers: secured (live), receivables-backed (Q3 2026), and uncollateralized agent credit (Q3 2026). Live on Base mainnet. App: app.floelabs.xyz
+
+This file is a structured map of the Floe documentation, optimized for LLM agents reading it as part of a tool loop. Each page can also be queried directly by appending `?ask=<question>` to the URL — the response includes citations.
+
+## Start here
+
+- [Introduction](https://floe-labs.gitbook.io/docs/): What Floe is and where to start by audience
+- [Why Floe, Why Now](https://floe-labs.gitbook.io/docs/why-floe): Market context, four curves, Stripe analogy
+- [How Floe Works (Core Concepts)](https://floe-labs.gitbook.io/docs/getting-started/core-concepts): Intents, isolated loans, credit bureau, three tiers
+
+## Quick starts
+
+- [Quick Start (Humans)](https://floe-labs.gitbook.io/docs/getting-started/quick-start): Borrow / lend on Tier 1 in 5 minutes via web app
+- [Quick Start (Agents)](https://floe-labs.gitbook.io/docs/getting-started/quick-start-agents): Install SDK / connect MCP / first action call
+
+## For agent operators
+
+- [Credit for Agents](https://floe-labs.gitbook.io/docs/agents/credit-for-agents): Why agents pre-fund today, why that's broken, how Floe replaces it
+- [The Three Credit Tiers](https://floe-labs.gitbook.io/docs/agents/three-credit-tiers): Secured / Receivables / Uncollateralized — full mechanics
+- [x402 + Deferred Settlement](https://floe-labs.gitbook.io/docs/agents/x402-deferred-settlement): Tier 3 — credit at the HTTP 402 boundary
+- [CoT Underwriting & the Floe Credit Bureau](https://floe-labs.gitbook.io/docs/agents/cot-underwriting): How agents are underwritten and how the bureau works
+- [Pricing & Limits](https://floe-labs.gitbook.io/docs/agents/pricing-limits): Indicative ranges by profile
+
+## For users (lend / borrow today)
+
+- [How to Lend](https://floe-labs.gitbook.io/docs/user-guides/lend): Earn yield on USDC/USDT
+- [How to Borrow](https://floe-labs.gitbook.io/docs/user-guides/borrow): Borrow USDC/USDT against WETH/cbBTC
+- [Risk & Liquidations](https://floe-labs.gitbook.io/docs/user-guides/risk-liquidations): LTV zones, oracles, circuit breaker
+- [Credit Scores](https://floe-labs.gitbook.io/docs/user-guides/credit-scores): Onchain credit via Cred Protocol
+- [LendrBot](https://floe-labs.gitbook.io/docs/user-guides/lendr-ai): AI assistant in-app and on Telegram / X
+
+## For merchants (Tier 2 — Q3 2026)
+
+- [Receivables Financing — Overview](https://floe-labs.gitbook.io/docs/receivables/overview): Get paid now on signed pipeline; 80–90% advance, daily sweep
+
+## For institutions (Q3 2026)
+
+- [Institutions — Overview](https://floe-labs.gitbook.io/docs/institutions/overview): Asset class, returns profile, structure, onboarding
+
+## For developers
+
+- [AgentKit Integration](https://floe-labs.gitbook.io/docs/developers/agentkit): 23 actions across TypeScript + Python SDKs
+- [TypeScript SDK](https://floe-labs.gitbook.io/docs/developers/agentkit/agentkit-typescript)
+- [Python SDK](https://floe-labs.gitbook.io/docs/developers/agentkit/agentkit-python)
+- [MCP Server](https://floe-labs.gitbook.io/docs/developers/mcp-server): Hosted MCP endpoint, Glama + GitHub registry
+- [Credit REST API](https://floe-labs.gitbook.io/docs/developers/credit-api): Bureau profile, score, CoT submission
+- [Run a Solver Bot](https://floe-labs.gitbook.io/docs/developers/run-solver-bot): Earn matcher commissions
+- [Run a Liquidation Bot](https://floe-labs.gitbook.io/docs/developers/run-liquidation-bot): Earn liquidation bonus
+- [Agent Working Capital](https://floe-labs.gitbook.io/docs/developers/agent-working-capital): Credit facility actions
+
+## Protocol internals
+
+- [Architecture](https://floe-labs.gitbook.io/docs/protocol/architecture): Contracts, flows, data layer
+- [Intent Auto-Matching](https://floe-labs.gitbook.io/docs/protocol/orderbook-matching): Matching rules and solver economics
+- [Oracles & Circuit Breaker](https://floe-labs.gitbook.io/docs/protocol/oracles-conditions): Chainlink + Pyth + auto-pause conditions
+- [Flash Loans](https://floe-labs.gitbook.io/docs/protocol/flash-loans): Raw + arb flows
+- [Security](https://floe-labs.gitbook.io/docs/protocol/security): Audits, bug bounty, isolation guarantees
+
+## Reference
+
+- [Contract Addresses](https://floe-labs.gitbook.io/docs/reference/networks): Base mainnet
+- [Roadmap](https://floe-labs.gitbook.io/docs/reference/roadmap): What ships when
+- [FAQ](https://floe-labs.gitbook.io/docs/reference/general)
+- [Glossary](https://floe-labs.gitbook.io/docs/reference/glossary): Including ACP, CoT, deferred settlement, bureau, lien, sweep, tiers
+- [Changelog](https://floe-labs.gitbook.io/docs/reference/changelog)
+
+## Key facts for retrieval
+
+- **Network**: Base mainnet
+- **Loan tokens**: USDC, USDT
+- **Collateral (Tier 1)**: WETH, cbBTC
+- **Lending matcher contract**: 0x17946cD3e180f82e632805e5549EC913330Bb175
+- **Live tier**: Tier 1 (secured)
+- **Q3 2026 launches**: Tier 2 (receivables), Tier 3 (uncollateralized agent credit)
+- **AgentKit actions**: 23 total (8 read, 7 write, 5 flash loan, 3 deploy/verify)
+- **MCP endpoint**: https://mcp.floelabs.xyz/sse
+- **Distribution**: AgentKit, MCP, Vercel AI SDK, LangChain, CrewAI, ElizaOS, Crossmint GOAT (5 frameworks), Virtuals ACP
+
+## Querying these docs
+
+Append `?ask=<your question>` to any page URL. Example:
+
+```
+GET https://floe-labs.gitbook.io/docs/agents/three-credit-tiers?ask=What+is+the+sweep+percentage+for+Tier+3
+```
+
+Returns a direct natural-language answer with citations.

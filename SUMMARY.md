@@ -4,7 +4,6 @@
 
 ## Getting Started
 
-* [Why Floe](docs/getting-started/why-floe.md)
 * [Quick Start (Humans)](docs/getting-started/quick-start.md)
 * [Quick Start (Agents)](docs/agents/quickstart-agents.md)
 * [How Floe Works](docs/getting-started/core-concepts.md)
