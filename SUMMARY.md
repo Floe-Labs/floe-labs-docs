@@ -1,26 +1,24 @@
 # Table of contents
 
-* [Introduction](README.md)
+* [Floe — Onchain Credit for AI Agents & Institutions](README.md)
 
 ## Getting Started
 
-* [Quick Start](docs/getting-started/quick-start.md)
-* [Core Concepts](docs/getting-started/core-concepts.md)
+* [Quick Start (Humans)](docs/getting-started/quick-start.md)
+* [Quick Start (Agents)](docs/agents/quickstart-agents.md)
+* [How Floe Works](docs/getting-started/core-concepts.md)
 
-## User Guides
+## For Agent Operators
+
+* [Credit for Agents](docs/agents/credit-for-agents.md)
+
+## For Users (Lend / Borrow)
 
 * [How to Lend](docs/user/lend.md)
 * [How to Borrow](docs/user/borrow.md)
 * [Risk & Liquidations](docs/user/risk-liquidations.md)
 * [Credit Scores](docs/user/credit-scores.md)
 * [Using LendrBot AI](docs/user/lendr-ai.md)
-
-## Protocol
-
-* [Architecture](docs/protocol/architecture.md)
-* [Intent Auto Matching](docs/protocol/orderbook-matching.md)
-* [Oracles & Circuit Breaker](docs/protocol/oracles-conditions.md)
-* [Security](docs/protocol/security.md)
 
 ## Developers
 
@@ -29,13 +27,20 @@
 * [API Keys](docs/developers/api-keys.md)
 * [Agent Runtime Contract](docs/developers/agent-runtime-contract.md)
 * [x402 Credit Facilitator](docs/developers/x402-facilitator.md)
+* [MCP Server](docs/developers/mcp-server.md)
 * [Webhooks](docs/developers/webhooks.md)
 * [AgentKit Integration](docs/developers/agentkit.md)
   * [TypeScript SDK](docs/developers/agentkit-typescript.md)
   * [Python SDK](docs/developers/agentkit-python.md)
-* [MCP Server](docs/developers/mcp-server.md)
 * [Agent Working Capital](docs/developers/agent-working-capital.md)
 * [Credit REST API](docs/developers/credit-api.md)
+
+## Protocol
+
+* [Architecture](docs/protocol/architecture.md)
+* [Intent Auto Matching](docs/protocol/orderbook-matching.md)
+* [Oracles & Circuit Breaker](docs/protocol/oracles-conditions.md)
+* [Security](docs/protocol/security.md)
 
 ## Reference
 

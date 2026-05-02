@@ -1,181 +1,193 @@
-# Core Concepts
+# How Floe Works
 
-Understanding the key concepts that power the Floe protocol.
+The mechanics behind Floe's credit protocol — intents, isolated loans, and the matching engine.
 
-## Intents
+> **TL;DR.** A borrower (human or agent) signs an *intent*. A solver matches it with a lender's intent. The result is an isolated, fixed-rate loan with smart-contract-enforced repayment. Fixed rate. Fixed term. Per-loan isolated escrow. Gas-free for agents.
 
-An **intent** is a signed message expressing what you want to achieve, not how to achieve it.
+---
 
-### Lend Intent
+## 1. Intents
+
+An **intent** is a signed message expressing what you want to achieve, not how. Floe matches intents into loans.
+
+### Lend intent
 
 A lender's offer to provide capital:
 
-* **Amount**: How much USDT or USDC to lend / earn on.
-* **Min Interest Rate**: Minimum APR you'll accept
-* **Max LTV**: Maximum loan-to-value ratio (liquidation threshold)
-* **Duration**: Maximum loan duration
-* **Expiry**: When the offer expires if not matched
+- **Amount** — USDC or USDT to lend
+- **Min interest rate** — minimum APR accepted
+- **Max LTV** — liquidation threshold
+- **Duration** — max loan length (supports min/max range)
+- **Expiry** — when the offer becomes void
 
-### Borrow Intent
+### Borrow intent
 
-A borrower's request for a loan:
+A borrower's request:
 
-* **Amount**: How much USDC to borrow
-* **Collateral**: eg WETH to put up as security
-* **Max Interest Rate**: Maximum APR you'll pay
-* **Min LTV**: Your target loan-to-value ratio
-* **Duration**: How long you want the loan
+- **Amount** — USDC/USDT requested
+- **Collateral** — WETH or cbBTC posted by the borrower
+- **Max interest rate** — max APR willing to pay
+- **Min LTV** — target loan-to-value
+- **Duration** — desired term (supports min/max range)
 
-### Intent Matching
+### Matching rules
 
-2 options. A. Manually match existing intents. B. Auto matching in which two intents match when:
+Two intents match when:
 
-1. Same market (USDC/WETH)
-2. Rate compatible (borrower max ≥ lender min)
-3. LTV gap ≥ 8% (borrower's LTV + 8% ≤ lender's max LTV)
-4. Duration compatible (borrower ≤ lender)
-5. Both intents not expired
+1. Same market (e.g. USDC/WETH)
+2. Rate compatible — borrower's max ≥ lender's min
+3. LTV gap ≥ 8% — borrower's LTV + 8% ≤ lender's max LTV
+4. Duration compatible — overlap exists between the borrower's and lender's ranges
+5. Both intents are unexpired
 
-## Matchers (Solvers)
+Matching can be manual (browse the order book in-app) or automatic (solver bots).
 
-**Matchers** are off-chain bots that:
+---
 
-1. Monitor for open intents
+## 2. Solvers (matchers)
+
+**Solvers** are off-chain bots that:
+
+1. Monitor open intents
 2. Find compatible pairs
-3. Submit match transactions on-chain
-4. Earn commission for successful matches
+3. Submit match transactions onchain
+4. Earn a commission (set by intent creators, typically 0.1–2%)
 
-Floe's matching is permissionless. Anyone can run a matcher. See developers page.
+Solving is permissionless. Anyone can run a matcher — see [Run a Solver Bot](../developers/run-solver-bot.md).
 
-## Isolated Loans
+---
+
+## 3. Isolated loans
 
 Each loan is **isolated** with its own:
 
-* Principal amount
-* Collateral escrow
-* Interest rate
-* Liquidation threshold
-* Duration
+- Principal
+- Collateral escrow
+- Fixed interest rate
+- Liquidation threshold
+- Duration
 
-Unlike pool-based protocols, **bad debt doesn't spread** between loans, markets or across the protocol.
+Unlike pool-based protocols, **bad debt does not spread** between loans, markets, or across the protocol. A liquidation in one loan affects only the parties to that loan.
 
-## Loan-to-Value (LTV)
+---
 
-LTV measures how much you've borrowed relative to your collateral value:
+## 4. Loan-to-Value (LTV)
 
 ```
 LTV = (Loan Value / Collateral Value) × 100%
 ```
 
-### LTV Zones
+### LTV zones
 
-| Zone        | Range                                 | Status            |
-| ----------- | ------------------------------------- | ----------------- |
-| Safe        | Loan LTV Below Liquidation LTV        | Healthy           |
-| Buffer      | Loan LTV Within 8% of liquidation LTV | Caution           |
-| Danger      | Loan LTV Within 3% of liquidation     | High risk         |
-| Liquidation | Loan LTV At or above max LTV          | Can be liquidated |
+| Zone | Range | Status |
+|---|---|---|
+| Safe | Loan LTV below liquidation LTV (>8% gap) | Healthy |
+| Buffer | Within 8% of liquidation LTV | Caution |
+| Danger | Within 3% of liquidation | High risk |
+| Liquidation | At or above max LTV | Liquidatable |
 
-### Key Parameters
+### Key parameters
 
-| Parameter         | Value | Description                                          |
-| ----------------- | ----- | ---------------------------------------------------- |
-| Min LTV Gap       | 8%    | Required gap between origination and liquidation LTV |
-| Withdrawal Buffer | 3%    | Cannot withdraw collateral within 3% of liquidation  |
-| Liquidation Bonus | 5%    | Incentive for liquidators                            |
+| Parameter | Value | Description |
+|---|---|---|
+| Min LTV gap | 8% | Required gap between origination and liquidation LTV |
+| Withdrawal buffer | 3% | Cannot withdraw collateral within 3% of liquidation |
+| Liquidation bonus | 5% | Liquidator incentive |
 
-## Oracles
+---
 
-Floe uses a **dual-oracle system**:
+## 5. Oracles
 
-1. **Chainlink** (Primary): Industry-standard decentralized price feeds
-2. **Pyth** (Fallback): High-frequency price updates
+Dual-oracle system:
 
-### Circuit Breaker
+1. **Chainlink** (primary) — decentralized price feeds
+2. **Pyth** (fallback) — high-frequency updates
 
-The protocol automatically pauses if:
+### Circuit breaker
 
-* Price is stale (>1 hour old)
-* Price deviates >15%
-* L2 sequencer is down
-* Price returns zero
+The protocol auto-pauses when:
 
-## Grace Period
+- Price is stale (>1 hour old)
+- Price deviates >15%
+- L2 sequencer is down
+- Price returns zero
 
-When a loan reaches its expiry, a **grace period** gives the borrower additional time to repay before the loan becomes eligible for liquidation. The grace period is a protocol-level parameter set by governance.
+→ [Oracles & Circuit Breaker](../protocol/oracles-conditions.md)
 
-During the grace period:
+---
 
-* The loan is overdue but **not yet liquidatable**
-* Interest continues to accrue
-* The borrower can still repay in full
+## 6. Grace period & minimum interest
 
-Once the grace period expires, the loan becomes eligible for liquidation.
+**Grace period.** When a loan reaches expiry, the borrower has additional protocol-set time to repay before the loan becomes liquidatable. Interest continues to accrue.
 
-## Minimum Interest
+**Minimum interest.** Every loan enforces a floor on total interest paid, regardless of how short the term or how small the principal — preventing dust loans from being economically meaningless.
 
-Every loan enforces a **minimum interest** amount — a floor on the total interest a lender receives, regardless of how short the loan duration or how small the principal. This prevents dust loans or extremely short-term loans from being economically meaningless for lenders.
+---
 
-## Duration Ranges
+## 7. Duration ranges
 
-Intents now support **min and max duration** instead of a single fixed value. A lender can offer "30 to 90 days" and a borrower can request "14 to 60 days" — the matcher selects a compatible duration within the overlap.
+Intents support **min and max duration** instead of a fixed value. A lender offering "30 to 90 days" matches a borrower requesting "14 to 60 days" — the matcher picks a compatible duration in the overlap. This significantly improves match rates.
 
-This improves matching rates by expanding the set of compatible intent pairs.
+---
 
-## Credit Scores
+## 8. Credit scores
 
-Floe integrates with [Cred Protocol](https://cred.xyz) to display **on-chain credit scores**. Scores reflect your track record of repaying loans, maintaining healthy collateral, and avoiding liquidations across DeFi.
+Floe surfaces onchain credit scores via [Cred Protocol](https://cred.xyz) on the human dashboard — radar chart + tier badges (Excellent / Good / Fair / New). Today these are **informational only** and don't gate access.
 
-Credit scores are **informational only** — they don't gate access to any features. They appear as a radar chart on your dashboard and as tier badges (Excellent / Good / Fair / New) in the loan book. See [Credit Scores](../user/credit-scores.md) for details.
 
-## Safe / Multisig Support
+---
 
-Floe works natively inside **Safe{Wallet}** (formerly Gnosis Safe). When connected via a Safe, the app:
+## 12. Safe / Multisig support
 
-* Forces on-chain transaction mode (no off-chain signatures)
-* Shows Safe-aware messaging ("Transaction Proposed" instead of "Success")
-* Guides co-signers to confirm in the Safe app
+Floe works natively in **Safe{Wallet}**. The app forces onchain transaction mode (no off-chain signatures), shows Safe-aware messaging, and guides co-signers to confirm in the Safe app.
 
-## Lendr AI
+---
 
-**Lendr** is an AI assistant that helps you:
+## 13. LendrBot & agent interfaces
 
-* Create intents in natural language
-* Monitor loan health
-* Get market information
-* Understand protocol features
+- **LendrBot** — natural-language assistant for humans. "Borrow 5000 USDC for 30 days at max 6% APR."
+- **MCP server** — same actions exposed to any Claude/OpenAI/Cursor-compatible agent.
+- **AgentKit** — TS + Python SDKs with 36 actions.
 
-Example: "Borrow 5000 USDC for 30 days at max 6% APR"
+→ [LendrBot](../user/lendr-ai.md) · [MCP Server](../developers/mcp-server.md) · [AgentKit](../developers/agentkit.md)
 
-## Markets
+---
 
-A **market** defines a loan/collateral token pair. Floe currently has **4 active markets**:
+## 14. Markets
 
-| Market | Loan Token | Collateral Token |
-| ------ | ---------- | ---------------- |
+A market is a (loan token, collateral token) pair. Currently live:
+
+| Market | Loan token | Collateral token |
+|---|---|---|
 | USDC/WETH | USDC | WETH |
 | USDC/cbBTC | USDC | cbBTC |
 | USDT/WETH | USDT | WETH |
 | USDT/cbBTC | USDT | cbBTC |
 
-Markets are created by governance and have their own:
+New markets are added by governance and have their own default rate, default LTV, protocol fee, and liquidation incentive.
 
-* Default interest rate
-* Default LTV
-* Protocol fee
-* Liquidation incentive
+---
 
 ## Summary
 
-| Concept        | Description                                       |
-| -------------- | ------------------------------------------------- |
-| Intent         | Signed message expressing desired outcome         |
-| Matcher        | Bot that matches compatible intents               |
-| Isolated Loan  | Per-match escrow with own terms                   |
-| LTV            | Loan value ÷ collateral value                     |
-| Oracle         | Price feed (Chainlink + Pyth)                     |
-| Grace Period   | Buffer time after expiry before liquidation        |
-| Min Interest   | Floor interest amount per loan                     |
-| Duration Range | Min/max duration for flexible matching             |
-| Credit Score   | On-chain creditworthiness via Cred Protocol        |
-| Lendr          | AI assistant for the protocol                      |
+| Concept | What it is |
+|---|---|
+| Intent | Signed message expressing desired outcome |
+| Solver | Bot matching compatible intents |
+| Isolated loan | Per-match escrow with own terms |
+| LTV | Loan / collateral value (Tier 1) |
+| Oracle | Chainlink + Pyth with circuit breaker |
+| Grace period | Buffer time after expiry before liquidation |
+| Min interest | Floor interest amount per loan |
+| Duration range | Min/max for flexible matching |
+| Credit Bureau | Persistent trust/credit profiles |
+| LendrBot | AI assistant (natural language) |
+
+---
+
+## Next
+
+- [Credit for Agents](../agents/credit-for-agents.md) — secured working capital for AI agents
+- [How to Borrow](../user/borrow.md) — step-by-step (Tier 1)
+- [How to Lend](../user/lend.md) — earn yield as a lender
+- [Architecture](../protocol/architecture.md) — contracts and flow
