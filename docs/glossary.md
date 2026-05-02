@@ -107,3 +107,24 @@ A strategy that uses a flash loan to exploit price differences between Floe and 
 
 ## Duration Range
 An intent parameter specifying minimum and maximum acceptable loan durations instead of a single fixed value. Increases matching flexibility by allowing the matcher to select any duration within the overlapping range of a lend/borrow pair.
+
+## ACP — Agent Commerce Protocol
+Onchain protocol for agents to transact with each other and with services. Source of deterministic agent revenue Floe can underwrite against.
+
+## ACP — Agent Commerce Protocol
+Onchain protocol for agents to transact with each other and with services.
+
+## Facilitator (x402 Facilitator)
+A service that processes x402 payments on behalf of agents. Floe's facilitator borrows USDC via operator delegation and signs EIP-3009 authorizations — agents never handle payments directly.
+
+## LP (Liquidity Provider)
+A participant providing capital by posting lend intents on Floe.
+
+## Origination
+The act of creating a new loan at intent match time.
+
+## Solver (Matcher)
+Permissionless off-chain bot that matches compatible lend + borrow intents and submits the match transaction onchain. Earns matcher commission.
+
+## x402
+Open standard for HTTP-native USDC payments. Floe's facilitator handles x402 payment mechanics on behalf of agents.

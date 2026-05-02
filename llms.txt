@@ -1,0 +1,84 @@
+# Floe — Onchain Credit Protocol
+
+> Floe is the onchain credit layer for AI agents. Secured working capital backed by WETH/cbBTC collateral, fixed rates, per-loan isolated escrow. Gas-free for agents — Floe sponsors all gas. Live on Base mainnet. App: app.floelabs.xyz. Dashboard: dev-dashboard.floelabs.xyz.
+
+This file is a structured map of the Floe documentation, optimized for LLM agents reading it as part of a tool loop. Each page can also be queried directly by appending `?ask=<question>` to the URL — the response includes citations.
+
+## Start here
+
+- [Introduction](https://floe-labs.gitbook.io/docs/): What Floe is and where to start by audience
+- [Why Floe, Why Now](https://floe-labs.gitbook.io/docs/getting-started/why-floe): Market context, why fixed-rate P2P credit beats variable-rate pools for agents
+- [How Floe Works (Core Concepts)](https://floe-labs.gitbook.io/docs/getting-started/core-concepts): Intents, isolated loans, matching, LTV, oracles
+
+## Quick starts
+
+- [Quick Start (Humans)](https://floe-labs.gitbook.io/docs/getting-started/quick-start): Borrow / lend in 5 minutes via web app
+- [Quick Start (Agents)](https://floe-labs.gitbook.io/docs/agents/quickstart-agents): Install SDK / connect MCP / first action call
+
+## For agent operators
+
+- [Credit for Agents](https://floe-labs.gitbook.io/docs/agents/credit-for-agents): Why agents pre-fund today, why that's broken, how Floe replaces it with secured working capital
+
+## For users (lend / borrow today)
+
+- [How to Lend](https://floe-labs.gitbook.io/docs/user/lend): Earn yield on USDC/USDT
+- [How to Borrow](https://floe-labs.gitbook.io/docs/user/borrow): Borrow USDC/USDT against WETH/cbBTC
+- [Risk & Liquidations](https://floe-labs.gitbook.io/docs/user/risk-liquidations): LTV zones, oracles, circuit breaker
+- [Credit Scores](https://floe-labs.gitbook.io/docs/user/credit-scores): Onchain credit via Cred Protocol
+- [LendrBot](https://floe-labs.gitbook.io/docs/user/lendr-ai): AI assistant in-app and on Telegram / X
+
+## For developers
+
+- [AgentKit Integration](https://floe-labs.gitbook.io/docs/developers/agentkit): 36 actions across TypeScript + Python SDKs
+- [TypeScript SDK](https://floe-labs.gitbook.io/docs/developers/agentkit-typescript)
+- [Python SDK](https://floe-labs.gitbook.io/docs/developers/agentkit-python)
+- [MCP Server](https://floe-labs.gitbook.io/docs/developers/mcp-server): Hosted MCP endpoint
+- [x402 Credit Facilitator](https://floe-labs.gitbook.io/docs/developers/x402-facilitator): Zero-tx API payments via operator delegation
+- [Credit REST API](https://floe-labs.gitbook.io/docs/developers/credit-api): HTTP endpoints for any language
+- [Agent Runtime Contract](https://floe-labs.gitbook.io/docs/developers/agent-runtime-contract): Error matrix + retry rules
+- [Webhooks](https://floe-labs.gitbook.io/docs/developers/webhooks): Push notifications for loan events
+- [Agent Working Capital](https://floe-labs.gitbook.io/docs/developers/agent-working-capital): Credit facility actions
+- [Run a Solver Bot](https://floe-labs.gitbook.io/docs/developers/run-solver-bot): Earn matcher commissions
+- [Run a Liquidation Bot](https://floe-labs.gitbook.io/docs/developers/run-liquidation-bot): Earn liquidation bonus
+
+## Protocol internals
+
+- [Architecture](https://floe-labs.gitbook.io/docs/protocol/architecture): Contracts, flows, data layer
+- [Intent Auto-Matching](https://floe-labs.gitbook.io/docs/protocol/orderbook-matching): Matching rules and solver economics
+- [Oracles & Circuit Breaker](https://floe-labs.gitbook.io/docs/protocol/oracles-conditions): Chainlink + Pyth + auto-pause conditions
+- [Flash Loans](https://floe-labs.gitbook.io/docs/developers/flash-loans): Raw + arb flows
+- [Security](https://floe-labs.gitbook.io/docs/protocol/security): Audits, bug bounty, isolation guarantees
+
+## Reference
+
+- [Contract Addresses](https://floe-labs.gitbook.io/docs/developers/networks): Base mainnet
+- [Error Codes](https://floe-labs.gitbook.io/docs/reference/error-codes): Full error reference
+- [Environment Variables](https://floe-labs.gitbook.io/docs/reference/environment-variables): Self-hosting config
+- [FAQ](https://floe-labs.gitbook.io/docs/faq/general)
+- [Glossary](https://floe-labs.gitbook.io/docs/glossary)
+- [Changelog](https://floe-labs.gitbook.io/docs/changelog)
+
+## Key facts for retrieval
+
+- **Network**: Base mainnet (chain ID 8453)
+- **Loan tokens**: USDC, USDT
+- **Collateral**: WETH, cbBTC
+- **Lending matcher proxy**: 0x17946cD3e180f82e632805e5549EC913330Bb175
+- **Facilitator EOA**: 0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1
+- **Credit model**: Secured (overcollateralized), fixed rate, fixed term
+- **Gas**: Sponsored by Floe for agents using the x402 facilitator
+- **AgentKit actions**: 36 total (30 Floe + 6 x402)
+- **npm**: `floe-agent` (v0.2.0)
+- **PyPI**: `floe-agentkit-actions` (v0.2.0)
+- **MCP endpoint**: https://mcp.floelabs.xyz/mcp
+- **Distribution**: AgentKit, MCP, Vercel AI SDK, LangChain, CrewAI, ElizaOS, Crossmint GOAT, Virtuals ACP
+
+## Querying these docs
+
+Append `?ask=<your question>` to any page URL. Example:
+
+```
+GET https://floe-labs.gitbook.io/docs/agents/credit-for-agents?ask=How+does+an+agent+borrow+USDC
+```
+
+Returns a direct natural-language answer with citations.
