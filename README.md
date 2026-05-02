@@ -8,8 +8,6 @@ Structured credit and financing **on Base**
 
 Floe lets you borrow USDC or USDT against collateral eg cbBTC or WETH or earn yield by lending — with custom terms, no pools.
 
-{% embed url="https://www.loom.com/share/54748b0841f94948bfc959ac0ff58080" %}
-
 ## Get Started
 
 **App**: [app.floelabs.xyz](https://app.floelabs.xyz)
@@ -28,12 +26,12 @@ Floe lets you borrow USDC or USDT against collateral eg cbBTC or WETH or earn yi
 
 ## Key Info
 
-|                |                                                                                                 |
-| -------------- | ----------------------------------------------------------------------------------------------- |
-| **Network**    | Base Mainnet                                                                                    |
+|                |                                                                                                                         |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Network**    | Base Mainnet                                                                                                            |
 | **Contract**   | [`0x17946cD3e180f82e632805e5549EC913330Bb175`](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175) |
-| **Loan Token** | USDC, USDT                                                                                      |
-| **Collateral** | WETH, cbBTC                                                                                     |
+| **Loan Token** | USDC, USDT                                                                                                              |
+| **Collateral** | WETH, cbBTC                                                                                                             |
 
 ## Learn More
 
