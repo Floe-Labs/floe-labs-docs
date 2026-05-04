@@ -27,14 +27,27 @@ const headers = {
   "Content-Type": "application/json",
 };
 
+// Timeout-bounded fetch — bare fetch() can hang indefinitely on a stalled
+// connection or unresponsive upstream, which is exactly what you don't want
+// in a decision-loop demo that real callers might copy.
+async function fetchWithTimeout(url: string, init: RequestInit = {}, timeoutMs = 30_000): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function get(path: string): Promise<any> {
-  const r = await fetch(`${BASE}${path}`, { headers });
+  const r = await fetchWithTimeout(`${BASE}${path}`, { headers });
   if (!r.ok) throw new Error(`GET ${path} → ${r.status} ${await r.text()}`);
   return r.json();
 }
 
 async function post(path: string, body: unknown): Promise<any> {
-  const r = await fetch(`${BASE}${path}`, {
+  const r = await fetchWithTimeout(`${BASE}${path}`, {
     method: "POST",
     headers,
     body: JSON.stringify(body),

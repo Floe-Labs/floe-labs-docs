@@ -1279,13 +1279,22 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/x402/estimate" \
 }
 ```
 
-When the URL is not x402-protected, the response is `{ "url", "method", "x402": false, "fetchedAt" }`.
+When the URL is not x402-protected, the response is:
+
+```json
+{
+  "url": "https://api.example.com/paid-data",
+  "method": "GET",
+  "x402": false,
+  "fetchedAt": "2026-05-04T12:00:00.000Z"
+}
+```
 
 **Decision pattern:**
 
 ```text
 estimate_x402_cost(url)
-  → if reflection.willExceedAvailable || willExceedSpendLimit: skip
+  → if reflection.willExceedAvailable || reflection.willExceedSpendLimit: skip
   → else: proxy/fetch(url)
 ```
 
