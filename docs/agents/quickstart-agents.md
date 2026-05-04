@@ -26,7 +26,7 @@ npm install floe-agent @coinbase/agentkit viem zod
 pip install floe-agentkit-actions
 ```
 
-Both SDKs expose the same 36 actions. Pick the one that matches your stack.
+Both SDKs expose the same 45 actions. Pick the one that matches your stack.
 
 ---
 
@@ -91,7 +91,7 @@ Once matched, USDC lands in the agent's wallet. The loan shows up under `get_my_
 | `repay_credit` | When the agent has earned enough USDC |
 | `repay_and_reborrow` | Rollover into a new loan in one call |
 
-Full reference: [AgentKit Actions](../developers/agentkit.md) (36 actions).
+Full reference: [AgentKit Actions](../developers/agentkit.md) (45 actions).
 
 ---
 

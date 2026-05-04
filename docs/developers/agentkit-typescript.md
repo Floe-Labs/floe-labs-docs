@@ -4,7 +4,7 @@ icon: js
 
 # TypeScript SDK
 
-The `floe-agent` package provides Coinbase AgentKit ActionProviders with **36 total actions** (30 in `FloeActionProvider` + 6 in `X402ActionProvider`) for Node.js / TypeScript environments.
+The `floe-agent` package provides Coinbase AgentKit ActionProviders with **45 total actions** (30 in `FloeActionProvider` + 15 in `X402ActionProvider` — 6 credit delegation + 9 agent-awareness) for Node.js / TypeScript environments.
 
 > **Naming convention:** All action names and parameters in the TypeScript SDK use **camelCase** (e.g., `borrowAmount`, `maxInterestRateBps`). The Python SDK uses **snake_case** for the same fields. Code examples are not interchangeable between SDKs without adjusting case.
 
@@ -65,7 +65,7 @@ const tools = await getLangChainTools(agentkit);
 
 ### MCP Server (Claude Desktop / Cursor)
 
-Expose all 36 Floe actions as MCP tools:
+Expose all 45 Floe actions as MCP tools:
 
 ```bash
 npm install @coinbase/agentkit-model-context-protocol @modelcontextprotocol/sdk
@@ -122,7 +122,7 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 ## CLI: `floe-agent`
 
-Interactive conversational agent for testing all 36 actions without writing any framework code.
+Interactive conversational agent for testing all 45 actions (30 lending + 6 x402 + 9 agent-awareness) without writing any framework code.
 
 ### Run directly
 
@@ -278,8 +278,23 @@ In your consumer's `package.json`:
 ```bash
 npm run build && npm pack
 # In consumer:
-npm install ../agentkit-actions/floe-agent-0.2.0.tgz
+npm install ../agentkit-actions/floe-agent-0.3.0.tgz
 ```
+
+## Agent Awareness Actions (v0.3.0+)
+
+The `X402ActionProvider` now includes 9 actions that let an agent reason about its own credit before committing capital. Configure `facilitatorApiKey` to enable them:
+
+```typescript
+import { x402ActionProvider } from "floe-agent";
+
+const x402 = x402ActionProvider({
+  facilitatorUrl: "https://credit-api.floelabs.xyz/v1",
+  facilitatorApiKey: process.env.FLOE_AGENT_API_KEY,  // floe_*
+});
+```
+
+Tool names (the values passed to `@CreateAction({ name: ... })`, exposed to the LLM/MCP client as `snake_case` per Coinbase AgentKit convention — distinct from the camelCase TypeScript class methods that implement them): `get_credit_remaining`, `get_loan_state`, `get_spend_limit`, `set_spend_limit`, `clear_spend_limit`, `list_credit_thresholds`, `register_credit_threshold`, `delete_credit_threshold`, `estimate_x402_cost`. The corresponding class methods are `getCreditRemaining`, `getLoanState`, etc. See [Agent Awareness](agent-awareness.md) for the decision-loop pattern.
 
 ## Source Code
 

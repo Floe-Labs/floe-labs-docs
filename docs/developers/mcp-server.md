@@ -4,7 +4,7 @@ icon: plug
 
 # MCP Server
 
-Connect any AI agent to Floe's lending protocol using the [Model Context Protocol](https://modelcontextprotocol.io). The MCP server gives agents 27 tools for browsing markets, creating intents, managing loans, and executing on-chain transactions — all through a standard interface that works with Claude, GPT, LangChain, CrewAI, and any MCP-compatible client.
+Connect any AI agent to Floe's lending protocol using the [Model Context Protocol](https://modelcontextprotocol.io). The MCP server gives agents 36 tools for browsing markets, creating intents, managing loans, executing on-chain transactions, and reasoning about credit before paid calls — all through a standard interface that works with Claude, GPT, LangChain, CrewAI, and any MCP-compatible client.
 
 > **See also:** [Credit REST API](credit-api.md) | [AgentKit Integration](agentkit.md) | [API Keys](api-keys.md)
 
@@ -116,7 +116,7 @@ console.log(markets);
 
 ---
 
-## Tools Reference (27)
+## Tools Reference (36)
 
 ### Read Tools
 
@@ -166,6 +166,24 @@ All write tools return **unsigned transactions**. The server never holds private
 | `simulate_transaction` | Dry-run an unsigned transaction via `eth_call`. Returns success/revert and gas estimate. |
 | `broadcast_transaction` | Submit a signed transaction to Base Mainnet. Returns hash and receipt. |
 | `get_transaction_status` | Check confirmation status of a previously submitted transaction |
+
+### Agent Awareness Tools
+
+Lets an agent answer "do I have credit?", "is this call worth it?", and "where am I in the loan lifecycle?" before committing capital. All require an agent API key (`floe_*`); identity comes from the bearer token, so none of these tools take a wallet address.
+
+| Tool | Description |
+|------|-------------|
+| `get_credit_remaining` | Available USDC, headroom to auto-borrow, utilization in bps, session-cap state |
+| `get_loan_state` | Coarse state: `idle` \| `borrowing` \| `at_limit` \| `repaying` |
+| `get_spend_limit` | Currently active session spend cap, if any |
+| `set_spend_limit` | Set a session-level USDC ceiling (resets the session window) |
+| `clear_spend_limit` | Remove the session spend cap |
+| `list_credit_thresholds` | List registered credit-utilization webhook triggers |
+| `register_credit_threshold` | Register a webhook trigger at a utilization threshold (cap: 20 per agent) |
+| `delete_credit_threshold` | Remove a registered threshold |
+| `estimate_x402_cost` | Preflight an x402 URL — returns cost + reflection against your credit (no payment) |
+
+> **Decision-loop pattern:** call `estimate_x402_cost` → check `willExceedAvailable` / `willExceedSpendLimit` → conditionally `proxy/fetch`. This is the "answer the 3 rational-agent questions in one round-trip" workflow. See [Agent Awareness](agent-awareness.md) for the full pattern.
 
 ---
 

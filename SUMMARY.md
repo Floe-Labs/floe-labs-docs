@@ -33,6 +33,7 @@
   * [TypeScript SDK](docs/developers/agentkit-typescript.md)
   * [Python SDK](docs/developers/agentkit-python.md)
 * [Agent Working Capital](docs/developers/agent-working-capital.md)
+* [Agent Awareness](docs/developers/agent-awareness.md)
 * [Credit REST API](docs/developers/credit-api.md)
 
 ## Protocol

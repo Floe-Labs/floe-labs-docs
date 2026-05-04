@@ -8,6 +8,31 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.5.0 — Agent Awareness Primitives (May 2026)
+
+Lets agents reason about their own credit before committing capital. Answers the three rational-agent questions in one round-trip: "do I have credit?", "is this call worth its cost?", "where am I in the loan lifecycle?".
+
+**REST API (`credit-api.floelabs.xyz`):**
+
+* `GET /v1/agents/credit-remaining` — available USDC, headroom to auto-borrow, utilization in bps, session-cap state.
+* `GET /v1/agents/loan-state` — coarse state machine: `idle | borrowing | at_limit | repaying`.
+* `GET / PUT / DELETE /v1/agents/spend-limit` — operator-defined session ceiling, enforced inside the proxy paid-request transaction.
+* `GET / POST / DELETE /v1/agents/credit-thresholds` — webhook subscriptions for `credit.warning` / `credit.at_limit` / `credit.recovered`. Atomic hysteresis guarantees exactly-once delivery per edge crossing. Cap of 20 per agent.
+* `POST /v1/x402/estimate` — preflight an x402-protected URL, return cost + reflection against the calling agent's credit. SSRF-policy-keyed cache for cross-tenant isolation.
+
+**SDK Updates:**
+
+* `floe-agent` (npm) and `floe-agentkit-actions` (PyPI) updated to **0.3.0** — adds 9 agent-awareness actions to `X402ActionProvider`. **45 actions total** (30 Floe + 15 X402: 6 credit-delegation + 9 agent-awareness).
+* `@floelabs/mcp-server` (npm) updated to **0.2.0** — adds 9 corresponding MCP tools. **36 tools total**.
+* All names are snake_case and identical across REST / MCP / TS / Python: `get_credit_remaining`, `get_loan_state`, `{get,set,clear}_spend_limit`, `{list,register,delete}_credit_threshold`, `estimate_x402_cost`.
+
+**Docs:**
+
+* New concept page: [Agent Awareness](developers/agent-awareness.md) with the decision-loop pattern.
+* End-to-end demo: [`examples/agent-awareness.ts`](https://github.com/Floe-Labs/floe-labs-docs/tree/main/examples/agent-awareness.ts) and [`.py`](https://github.com/Floe-Labs/floe-labs-docs/tree/main/examples/agent-awareness.py).
+
+***
+
 ### v1.4.0 — Unified Developer Platform + x402 Credit Facilitator (April 2026)
 
 **Developer Platform:**

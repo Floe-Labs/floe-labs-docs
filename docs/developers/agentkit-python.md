@@ -4,9 +4,9 @@ icon: python
 
 # Python SDK
 
-The `floe-agentkit-actions` package provides Coinbase AgentKit ActionProviders with **36 total actions** (30 in `FloeActionProvider` + 6 in `X402ActionProvider`) for Python 3.10+ environments.
+The `floe-agentkit-actions` package provides Coinbase AgentKit ActionProviders with **45 total actions** (30 in `FloeActionProvider` + 15 in `X402ActionProvider` — 6 credit delegation + 9 agent-awareness) for Python 3.10+ environments.
 
-> **Parity note.** As of April 2026, the Python SDK has full parity with the TypeScript SDK: 30 Floe actions plus 6 X402 actions (36 total). The previously TS-only credit-facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) are all available in Python.
+> **Parity note.** As of May 2026, the Python SDK has full parity with the TypeScript SDK: 30 Floe actions, 6 X402 credit-delegation actions, and 9 agent-awareness actions (45 total). The previously TS-only credit-facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) and the v0.3.0 agent-awareness actions are all available in Python.
 
 > **Naming convention:** All action names and parameters in the Python SDK use **snake_case** (e.g., `borrow_amount`, `max_interest_rate_bps`). The TypeScript SDK uses camelCase for the same fields. Code examples are not interchangeable between SDKs without adjusting case.
 
@@ -126,6 +126,21 @@ pip install -e ".[dev]"
 # Run tests
 pytest
 ```
+
+## Agent Awareness Actions (v0.3.0+)
+
+The `X402ActionProvider` now includes 9 actions that let an agent reason about its own credit before committing capital. Configure `facilitator_api_key` to enable them:
+
+```python
+from floe_agentkit_actions import x402_action_provider, X402Config
+
+x402 = x402_action_provider(X402Config(
+    facilitator_url="https://credit-api.floelabs.xyz/v1",
+    facilitator_api_key=os.environ["FLOE_AGENT_API_KEY"],  # floe_*
+))
+```
+
+Action names: `get_credit_remaining`, `get_loan_state`, `get_spend_limit`, `set_spend_limit`, `clear_spend_limit`, `list_credit_thresholds`, `register_credit_threshold`, `delete_credit_threshold`, `estimate_x402_cost`. See [Agent Awareness](agent-awareness.md) for the decision-loop pattern.
 
 ## Source Code
 
