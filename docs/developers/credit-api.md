@@ -750,9 +750,65 @@ All amounts are in raw token units (e.g., `"5000000000"` = 5,000 USDC with 6 dec
 | 400 | Invalid request | Missing/invalid fields | Check request body against the schema above |
 | 400 | InitialLtvExceededError | Oracle-computed initial LTV exceeds `maxLtvBps` | Increase collateral, decrease borrow amount, or raise `maxLtvBps` |
 | 401 | Unauthorized | Missing or invalid auth headers | Verify signature, check timestamp freshness (< 5 min) |
-| 404 | NoLiquidityError | No matching lend intents available | Try a smaller amount, higher max rate, or different market |
+| 404 | NoLiquidityError | No matching lend intents for these parameters | See [Diagnosing NoLiquidityError](#diagnosing-noliquidityerror) — the response carries `primaryReason` and a parameter-specific `suggestion` |
 | 404 | LoanNotFoundError | Loan doesn't exist or is already repaid | Verify loanId, check if already repaid |
 | 500 | Internal error | Server-side failure | Retry after a few seconds |
+
+### Diagnosing NoLiquidityError
+
+A 404 `NoLiquidityError` does **not** always mean the order book is empty. Most often it means your request parameters don't match any open offer — usually the LTV gap rule (`borrower.minLtvBps + 800 ≤ lender.maxLtvBps`), but it can also be rate, duration, amount, or `minFillAmount`. The response body tells you which.
+
+```json
+{
+  "error": "NoLiquidityError",
+  "message": "No matching lend intents for 100000000000 in market 0xfe9265...",
+  "primaryReason": "LTV_GAP_TOO_SMALL",
+  "suggestion": "Your minLtvBps (8000) needs a lender with maxLtvBps ≥ 8800. Best available is 8500. Lower minLtvBps to ≤ 7700, or wait for a lender at maxLtvBps ≥ 8800.",
+  "rejectionsByCode": { "LTV_GAP_TOO_SMALL": 12 },
+  "closestOffers": [
+    {
+      "rate": "500",
+      "available": "990000000000",
+      "maxLtvBps": "8500",
+      "minDuration": "86400",
+      "maxDuration": "31536000",
+      "minFillAmount": "0"
+    }
+  ]
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `primaryReason` | The dominant rule that rejected the most offers. Use this to drive your retry logic. |
+| `suggestion` | Human-readable, parameter-specific guidance. Safe to surface to end users / agent logs. |
+| `rejectionsByCode` | Histogram of rejection codes across the order book. Useful when several rules are failing at once. |
+| `closestOffers` | Up to 3 cheapest offers by rate (excluding cancelled), with all fields you need to self-diagnose. All bigints are decimal strings. |
+
+#### `primaryReason` values
+
+| Code | What it means | How to fix |
+|---|---|---|
+| `LTV_GAP_TOO_SMALL` | Your `minLtvBps + 800` exceeds every available lender's `maxLtvBps` | Lower `minLtvBps`, or wait for higher-LTV liquidity |
+| `LIQUIDATION_LTV_TOO_LOW` | Your `maxLtvBps` is too close to the lender's liquidation threshold (also needs an 800 bps gap) | Lower `maxLtvBps`, or find a lender with a higher liquidation threshold |
+| `RATE_TOO_HIGH` | Cheapest open offer is above your `maxInterestRateBps` | Raise `maxInterestRateBps` to ≥ the offer's `rate`, or wait for cheaper offers |
+| `AMOUNT_TOO_LARGE` | No single offer has enough `available` to fill your `borrowAmount` | Reduce `borrowAmount`, or wait for deeper liquidity |
+| `BELOW_MIN_FILL` | Your `borrowAmount` is below every lender's `minFillAmount` | Increase `borrowAmount`, or find a lender with a lower floor |
+| `DURATION_TOO_LONG` | Your `duration` exceeds every offer's `maxDuration` | Reduce `duration`, or find a longer-duration lender |
+| `DURATION_TOO_SHORT` | Your `duration` is below every offer's `minDuration` | Increase `duration`, or find a shorter-duration lender |
+| `EXPIRED` | All open offers have expired | Wait for fresh lender intents |
+| `NOT_YET_VALID` | All open offers activate later (`validFromTimestamp` in the future) | Retry after the offers' `validFromTimestamp` |
+| `NO_OFFERS` | The order book is empty, or every candidate intent was stale on re-validation | Post a borrow intent to wait for matching, or retry shortly (indexer may be behind chain state) |
+
+#### Worked example — the LTV gap rule
+
+The protocol enforces `borrower.minLtvBps + 800 ≤ lender.maxLtvBps` (8 % buffer between origination and liquidation LTV — see [Order book matching](../protocol/orderbook-matching.md#5-ltv-gap)). A request that *looks* compatible on rate alone can still be rejected:
+
+- Borrower posts: `borrowAmount = 100,000 USDC`, `maxInterestRateBps = 500`, **`minLtvBps = 8000`**
+- Order book shows: `990,000,000 USDC available at 500 bps`, **`maxLtvBps = 8500`**
+- Result: 404 `LTV_GAP_TOO_SMALL` — `8000 + 800 = 8800 > 8500`
+
+Fix: lower `minLtvBps` to ≤ `7700`, or wait for a lender at `maxLtvBps ≥ 8800`.
 
 ### Transaction Failures
 
