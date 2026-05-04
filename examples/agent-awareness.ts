@@ -8,7 +8,7 @@
  *
  * Usage:
  *   FLOE_API_KEY=floe_... TARGET_URL=https://some-x402-api.com/data \
- *     npx tsx agent-awareness.ts
+ *     npx tsx examples/agent-awareness.ts
  *
  * Mirror of agent-awareness.py — same behavior, same output format.
  */
