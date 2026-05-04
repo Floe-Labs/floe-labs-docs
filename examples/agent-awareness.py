@@ -73,17 +73,23 @@ def main() -> None:
     print(f"  price: {est.get('priceRaw')} raw USDC ({est.get('network')})")
     print(f"  cached: {est.get('cached')}")
 
+    # Fail-closed: if the API didn't return a reflection block, abort. The
+    # reflection is what tells us whether the call would exceed available
+    # credit or our session spend-limit; without it we have no decision basis,
+    # so don't fall through to the paid call.
     r = est.get("reflection")
-    if r:
-        print(f"  available: {r.get('available')}")
-        if r.get("willExceedAvailable"):
-            print("  ❌ would exceed available credit — DO NOT CALL")
-            return
-        if r.get("willExceedSpendLimit"):
-            print("  ❌ would exceed session spend-limit — DO NOT CALL")
-            return
-        if r.get("willExceedHeadroom"):
-            print("  ⚠️  would dip into auto-borrow headroom — proceeding (informational)")
+    if not r:
+        print("  ❌ estimate response missing reflection block — DO NOT CALL")
+        return
+    print(f"  available: {r.get('available')}")
+    if r.get("willExceedAvailable"):
+        print("  ❌ would exceed available credit — DO NOT CALL")
+        return
+    if r.get("willExceedSpendLimit"):
+        print("  ❌ would exceed session spend-limit — DO NOT CALL")
+        return
+    if r.get("willExceedHeadroom"):
+        print("  ⚠️  would dip into auto-borrow headroom — proceeding (informational)")
 
     # Question 1 was answered by the reflection block above. Proceed.
     print("\n[proxy/fetch] paying and calling target...")

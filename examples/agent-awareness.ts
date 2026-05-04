@@ -66,20 +66,26 @@ async function main(): Promise<void> {
   console.log(`  price: ${est.priceRaw} raw USDC (${est.network})`);
   console.log(`  cached: ${est.cached}`);
 
+  // Fail-closed: if the API didn't return a reflection block, abort. The
+  // reflection is what tells us whether the call would exceed available
+  // credit or our session spend-limit; without it we have no decision basis,
+  // so don't fall through to the paid call.
   const r = est.reflection;
-  if (r) {
-    console.log(`  available: ${r.available}`);
-    if (r.willExceedAvailable) {
-      console.log("  ❌ would exceed available credit — DO NOT CALL");
-      return;
-    }
-    if (r.willExceedSpendLimit) {
-      console.log("  ❌ would exceed session spend-limit — DO NOT CALL");
-      return;
-    }
-    if (r.willExceedHeadroom) {
-      console.log("  ⚠️  would dip into auto-borrow headroom — proceeding (informational)");
-    }
+  if (!r) {
+    console.log("  ❌ estimate response missing reflection block — DO NOT CALL");
+    return;
+  }
+  console.log(`  available: ${r.available}`);
+  if (r.willExceedAvailable) {
+    console.log("  ❌ would exceed available credit — DO NOT CALL");
+    return;
+  }
+  if (r.willExceedSpendLimit) {
+    console.log("  ❌ would exceed session spend-limit — DO NOT CALL");
+    return;
+  }
+  if (r.willExceedHeadroom) {
+    console.log("  ⚠️  would dip into auto-borrow headroom — proceeding (informational)");
   }
 
   // Question 1 was answered by the reflection block above. Proceed.

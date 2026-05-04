@@ -1184,7 +1184,7 @@ When the cap is hit, `POST /v1/proxy/fetch` returns:
 }
 ```
 
-### GET / POST / DELETE /v1/agents/credit-thresholds
+### GET / POST /v1/agents/credit-thresholds, DELETE /v1/agents/credit-thresholds/:id
 
 Webhook subscriptions that fire when the agent's `utilizationBps` crosses a threshold. Three event names are emitted via the existing developer webhook stack:
 
@@ -1283,7 +1283,7 @@ When the URL is not x402-protected, the response is `{ "url", "method", "x402": 
 
 **Decision pattern:**
 
-```
+```text
 estimate_x402_cost(url)
   → if reflection.willExceedAvailable || willExceedSpendLimit: skip
   → else: proxy/fetch(url)

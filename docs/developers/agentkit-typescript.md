@@ -294,7 +294,7 @@ const x402 = x402ActionProvider({
 });
 ```
 
-Action names: `get_credit_remaining`, `get_loan_state`, `get_spend_limit`, `set_spend_limit`, `clear_spend_limit`, `list_credit_thresholds`, `register_credit_threshold`, `delete_credit_threshold`, `estimate_x402_cost`. See [Agent Awareness](agent-awareness.md) for the decision-loop pattern.
+Tool names (the values passed to `@CreateAction({ name: ... })`, exposed to the LLM/MCP client as `snake_case` per Coinbase AgentKit convention — distinct from the camelCase TypeScript class methods that implement them): `get_credit_remaining`, `get_loan_state`, `get_spend_limit`, `set_spend_limit`, `clear_spend_limit`, `list_credit_thresholds`, `register_credit_threshold`, `delete_credit_threshold`, `estimate_x402_cost`. The corresponding class methods are `getCreditRemaining`, `getLoanState`, etc. See [Agent Awareness](agent-awareness.md) for the decision-loop pattern.
 
 ## Source Code
 
