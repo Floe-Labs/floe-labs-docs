@@ -1044,6 +1044,261 @@ curl "https://credit-api.floelabs.xyz/v1/agents/transactions?limit=20&cursor=41"
   -H "Authorization: Bearer floe_YOUR_API_KEY"
 ```
 
+---
+
+## Agent Awareness Endpoints
+
+These five primitives let an agent reason about its own credit before committing capital. They answer the three rational-agent questions:
+
+1. **Do I have enough credit to make this call?** → `GET /v1/agents/credit-remaining`
+2. **Is this call worth its cost?** → `POST /v1/x402/estimate`
+3. **Where am I in the loan lifecycle?** → `GET /v1/agents/loan-state`
+
+Plus operator controls (`/spend-limit`) and event subscriptions (`/credit-thresholds`) for long-running agents that want webhook-based alerts.
+
+### GET /v1/agents/credit-remaining
+
+Decision-grade headroom view. Use BEFORE every paid call to gate against the agent's available USDC.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/agents/credit-remaining" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "available": "6800000000",
+  "creditIn": "10000000000",
+  "creditOut": "3200000000",
+  "creditLimit": "10000000000",
+  "headroomToAutoBorrow": "6800000000",
+  "utilizationBps": 3200,
+  "sessionSpendLimit": "5000000",
+  "sessionSpent": "1200000",
+  "sessionSpendRemaining": "3800000",
+  "asOf": "2026-05-04T12:00:00.000Z"
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `available` | string | Current spendable USDC, raw 6-decimal units (`creditIn − creditOut`) |
+| `creditIn` | string | Total active facility-loan principal currently funded for this agent |
+| `creditOut` | string | Sum of pending + successful x402 spend (deduped against active reservations) |
+| `creditLimit` | string | On-chain operator borrow limit (set at /register) |
+| `headroomToAutoBorrow` | string | `creditLimit - creditOut` — the most you can spend before the facility loan is fully drawn |
+| `utilizationBps` | number | `creditOut / creditLimit` in bps (10000 = 100%) |
+| `sessionSpendLimit` | string \| null | Operator-set session cap (see `PUT /v1/agents/spend-limit`) |
+| `sessionSpent` | string | USDC spent in the current session window (zero when no cap is set) |
+| `sessionSpendRemaining` | string \| null | Cap minus spend in the current session window |
+| `asOf` | string | ISO-8601 timestamp the snapshot was computed |
+
+| Status | Meaning |
+|---|---|
+| 200 | OK |
+| 401 | Invalid API key |
+| 404 | `no_credit_limit` — agent hasn't completed `/v1/agents/register` |
+
+### GET /v1/agents/loan-state
+
+Coarse state-machine view. Useful for gating actions that only make sense in specific states.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/agents/loan-state" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "state": "borrowing",
+  "reason": "facility_loan_pending_match",
+  "details": {
+    "source": "facility",
+    "status": "pending_match",
+    "available": "0",
+    "creditLimit": "10000000000"
+  }
+}
+```
+
+State values (precedence: borrowing > repaying > at_limit > idle):
+
+| State | Meaning |
+|---|---|
+| `idle` | No active borrow attempt or pending repay |
+| `borrowing` | Facility or instant-borrow attempt in pre-active state |
+| `repaying` | Active loan with a pending `repay_tx_hash` |
+| `at_limit` | `available === 0` AND `creditOut >= creditLimit` |
+
+### GET / PUT / DELETE /v1/agents/spend-limit
+
+Operator-defined soft cap, enforced off-chain in the proxy paid-request flow. Distinct from the on-chain `creditLimit` — lets an agent self-bound to a session budget.
+
+`PUT` resets the session window — anything spent before this call no longer counts.
+
+```bash
+# Set a $5 session cap
+curl -X PUT "https://credit-api.floelabs.xyz/v1/agents/spend-limit" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"limitRaw": "5000000"}'
+
+# Get current state
+curl "https://credit-api.floelabs.xyz/v1/agents/spend-limit" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY"
+
+# Remove the cap
+curl -X DELETE "https://credit-api.floelabs.xyz/v1/agents/spend-limit" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY"
+```
+
+`PUT` request body:
+
+| Field | Type | Description |
+|---|---|---|
+| `limitRaw` | string | Cap in raw USDC units (6 decimals). Must be positive. |
+
+`GET` response:
+
+```json
+{
+  "active": true,
+  "limitRaw": "5000000",
+  "sessionSpentRaw": "1200000",
+  "sessionRemainingRaw": "3800000"
+}
+```
+
+When the cap is hit, `POST /v1/proxy/fetch` returns:
+
+```json
+{
+  "error": "spend_limit_exceeded",
+  "spent": "5000000",
+  "limit": "5000000",
+  "required": "1000000"
+}
+```
+
+### GET / POST / DELETE /v1/agents/credit-thresholds
+
+Webhook subscriptions that fire when the agent's `utilizationBps` crosses a threshold. Three event names are emitted via the existing developer webhook stack:
+
+- `credit.warning` — utilization crossed `thresholdBps` from below (threshold < 9500 bps)
+- `credit.at_limit` — same, but emitted when threshold ≥ 9500 bps so urgent vs informational can be routed separately
+- `credit.recovered` — utilization dropped back below threshold
+
+Hysteresis guarantees exactly-once delivery per edge crossing — an agent oscillating around the boundary won't be spammed. Cap of **20 thresholds per agent**.
+
+```bash
+# Register a threshold at 80% utilization
+curl -X POST "https://credit-api.floelabs.xyz/v1/agents/credit-thresholds" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"thresholdBps": 8000}'
+
+# List
+curl "https://credit-api.floelabs.xyz/v1/agents/credit-thresholds" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY"
+
+# Delete by id
+curl -X DELETE "https://credit-api.floelabs.xyz/v1/agents/credit-thresholds/42" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY"
+```
+
+`POST` request body:
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `thresholdBps` | number | Yes | 1–10000. ≥ 9500 emits `credit.at_limit` instead of `credit.warning`. |
+| `webhookId` | number | No | Pin to a specific webhook owned by the calling developer. Omit for fanout to all matching webhooks. |
+
+Webhook payload:
+
+```json
+{
+  "event": "credit.warning",
+  "agentId": "0x...",
+  "thresholdBps": 8000,
+  "utilizationBps": 8123,
+  "creditLimit": "10000000000",
+  "creditOut": "8123000000",
+  "available": "1877000000",
+  "firedAt": "2026-05-04T12:00:00.000Z"
+}
+```
+
+Subscribe a webhook to credit events using the `events` array on `POST /v1/developer/webhooks`. The `credit.*` and `*` wildcards are supported.
+
+| Status | Meaning |
+|---|---|
+| 200 | Idempotent: duplicate `(agentId, thresholdBps)` returns the existing row |
+| 201 | Created |
+| 404 | `webhook_not_found_or_not_owned` — pinned `webhookId` doesn't belong to caller |
+| 409 | `subscription_limit_reached` — 20 per agent |
+
+> **Polling alternative for serverless agents:** ephemeral runners that can't receive webhooks should poll `GET /v1/agents/credit-remaining` and compare `utilizationBps` locally. No threshold subscription needed.
+
+### POST /v1/x402/estimate
+
+Preflight an x402-protected URL and return its USDC cost without paying. The response also reflects against the calling agent's `available` and `sessionSpendRemaining` so the agent can decide gating in **one round-trip** — the unique value vs the agent doing its own preflight.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/x402/estimate" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://api.example.com/paid-data", "method": "GET"}'
+```
+
+**Response (URL is x402-protected):**
+
+```json
+{
+  "url": "https://api.example.com/paid-data",
+  "method": "GET",
+  "x402": true,
+  "priceRaw": "5000",
+  "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "network": "base",
+  "payTo": "0x...",
+  "scheme": "exact",
+  "cached": false,
+  "fetchedAt": "2026-05-04T12:00:00.000Z",
+  "reflection": {
+    "available": "6800000000",
+    "headroomToAutoBorrow": "6800000000",
+    "sessionSpendRemaining": "3800000",
+    "willExceedAvailable": false,
+    "willExceedHeadroom": false,
+    "willExceedSpendLimit": false
+  }
+}
+```
+
+When the URL is not x402-protected, the response is `{ "url", "method", "x402": false, "fetchedAt" }`.
+
+**Decision pattern:**
+
+```
+estimate_x402_cost(url)
+  → if reflection.willExceedAvailable || willExceedSpendLimit: skip
+  → else: proxy/fetch(url)
+```
+
+Results are cached in-memory for ~30s, keyed by `(method, url, ssrfPolicy)`. SSRF policies do NOT leak across tenants — the cache key includes a fingerprint of `(domainAllowlist, allowLocalhost)`.
+
+| Status | Meaning |
+|---|---|
+| 200 | OK (whether or not URL is x402-protected) |
+| 400 | `blocked_destination` (SSRF guard rejected: private IP / IMDS / disallowed scheme) |
+| 401 | Invalid API key |
+| 429 | Rate limit exceeded (`scope: sliding_window` or `token_bucket`) |
+| 502 | `preflight_failed` — DNS / TCP / TLS / timeout reaching target |
+
 ### POST /v1/agents/close
 
 Initiate wind-down. Repays all active loans, transfers remaining USDC to your wallet, and closes the account.

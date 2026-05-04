@@ -60,5 +60,5 @@ Because Floe is intent-based and per-loan isolated, you can:
 ## Next
 
 - **Get started:** [Quick Start (Agents)](quickstart-agents.md) — borrow in 5 minutes
-- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 36 actions across TS + Python
+- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 45 actions across TS + Python
 - **x402 proxy:** [x402 Credit Facilitator](../developers/x402-facilitator.md) — zero-tx API payments

@@ -147,7 +147,7 @@ Floe works natively in **Safe{Wallet}**. The app forces onchain transaction mode
 
 - **LendrBot** — natural-language assistant for humans. "Borrow 5000 USDC for 30 days at max 6% APR."
 - **MCP server** — same actions exposed to any Claude/OpenAI/Cursor-compatible agent.
-- **AgentKit** — TS + Python SDKs with 36 actions.
+- **AgentKit** — TS + Python SDKs with 45 actions.
 
 → [LendrBot](../user/lendr-ai.md) · [MCP Server](../developers/mcp-server.md) · [AgentKit](../developers/agentkit.md)
 
