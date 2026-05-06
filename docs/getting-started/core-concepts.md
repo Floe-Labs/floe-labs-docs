@@ -14,7 +14,7 @@ An **intent** is a signed message expressing what you want to achieve, not how. 
 
 A lender's offer to provide capital:
 
-- **Amount** — USDC or USDT to lend
+- **Amount** — USDC to lend
 - **Min interest rate** — minimum APR accepted
 - **Max LTV** — liquidation threshold
 - **Duration** — max loan length (supports min/max range)
@@ -24,19 +24,19 @@ A lender's offer to provide capital:
 
 A borrower's request:
 
-- **Amount** — USDC/USDT requested
-- **Collateral** — WETH or cbBTC posted by the borrower
+- **Amount** — USDC requested as working capital
+- **Collateral** — USDC deposit (for the USDC/USDC market), or WETH/cbBTC for volatile markets
 - **Max interest rate** — max APR willing to pay
-- **Min LTV** — target loan-to-value
+- **Min LTV** — target loan-to-value (up to 95% for USDC/USDC)
 - **Duration** — desired term (supports min/max range)
 
 ### Matching rules
 
 Two intents match when:
 
-1. Same market (e.g. USDC/WETH)
-2. Rate compatible — borrower's max ≥ lender's min
-3. LTV gap ≥ 8% — borrower's LTV + 8% ≤ lender's max LTV
+1. Same market (e.g., USDC/USDC or USDC/WETH)
+2. Rate compatible — borrower's max rate >= lender's min rate
+3. LTV gap met — for volatile markets, borrower's LTV + 8% <= lender's max LTV. For USDC/USDC, only 0.5% gap required.
 4. Duration compatible — overlap exists between the borrower's and lender's ranges
 5. Both intents are unexpired
 
@@ -51,7 +51,7 @@ Matching can be manual (browse the order book in-app) or automatic (solver bots)
 1. Monitor open intents
 2. Find compatible pairs
 3. Submit match transactions onchain
-4. Earn a commission (set by intent creators, typically 0.1–2%)
+4. Earn a commission (set by intent creators, typically 0.1-2%)
 
 Solving is permissionless. Anyone can run a matcher — see [Run a Solver Bot](../developers/run-solver-bot.md).
 
@@ -67,17 +67,52 @@ Each loan is **isolated** with its own:
 - Liquidation threshold
 - Duration
 
-Unlike pool-based protocols, **bad debt does not spread** between loans, markets, or across the protocol. A liquidation in one loan affects only the parties to that loan.
+Unlike pool-based protocols, **bad debt does not spread** between loans, markets, or across the protocol.
 
 ---
 
-## 4. Loan-to-Value (LTV)
+## 4. Markets
+
+A market is a (loan token, collateral token) pair. Currently live:
+
+| Market | Deposit | Borrow | Max LTV | Liquidation risk |
+|---|---|---|---|---|
+| **USDC/USDC** | USDC | USDC | **95%** | **Interest accrual only** |
+| WETH/USDC | WETH | USDC | 70% | Price volatility |
+| cbBTC/USDC | cbBTC | USDC | 70% | Price volatility |
+
+### Same-token markets (USDC/USDC)
+
+The USDC/USDC market is designed for **secured working capital**. Because the collateral and loan are the same asset:
+
+- The oracle returns a fixed 1:1 ratio (hardcoded, no Chainlink dependency)
+- Price-driven liquidation is impossible
+- LTV can be much higher (up to 99.5% protocol cap, 95% recommended)
+- The LTV gap is reduced to 0.5% (vs. 8% for volatile markets)
+- No circuit breaker impact — the market is immune to oracle failures
+
+The only path to liquidation is if accrued interest pushes the debt above the liquidation threshold. At 95% origination LTV with typical rates, this takes months.
+
+### Volatile markets (WETH/USDC, cbBTC/USDC)
+
+Traditional over-collateralized lending. Post ETH or BTC, borrow USDC at lower LTV (30-70%). Requires monitoring collateral health.
+
+---
+
+## 5. Loan-to-Value (LTV)
 
 ```
-LTV = (Loan Value / Collateral Value) × 100%
+LTV = (Loan Value / Collateral Value) x 100%
 ```
 
-### LTV zones
+### For USDC/USDC
+
+| Zone | What it means |
+|---|---|
+| 95% origination | Healthy — normal operating range |
+| 95.5% liquidation | Only reachable via interest accrual over long periods |
+
+### For volatile markets
 
 | Zone | Range | Status |
 |---|---|---|
@@ -86,17 +121,15 @@ LTV = (Loan Value / Collateral Value) × 100%
 | Danger | Within 3% of liquidation | High risk |
 | Liquidation | At or above max LTV | Liquidatable |
 
-### Key parameters
-
-| Parameter | Value | Description |
-|---|---|---|
-| Min LTV gap | 8% | Required gap between origination and liquidation LTV |
-| Withdrawal buffer | 3% | Cannot withdraw collateral within 3% of liquidation |
-| Liquidation bonus | 5% | Liquidator incentive |
-
 ---
 
-## 5. Oracles
+## 6. Oracles
+
+### USDC/USDC markets
+
+No external oracle. The protocol hardcodes a 1:1 ratio for same-token pairs. No price feed to go stale, no circuit breaker to trip.
+
+### Volatile markets
 
 Dual-oracle system:
 
@@ -105,66 +138,47 @@ Dual-oracle system:
 
 ### Circuit breaker
 
-The protocol auto-pauses when:
+The protocol auto-pauses volatile markets when:
 
 - Price is stale (>1 hour old)
 - Price deviates >15%
 - L2 sequencer is down
 - Price returns zero
 
-→ [Oracles & Circuit Breaker](../protocol/oracles-conditions.md)
+USDC/USDC markets are **unaffected** by circuit breaker events.
+
+-> [Oracles & Circuit Breaker](../protocol/oracles-conditions.md)
 
 ---
 
-## 6. Grace period & minimum interest
+## 7. Grace period & minimum interest
 
-**Grace period.** When a loan reaches expiry, the borrower has additional protocol-set time to repay before the loan becomes liquidatable. Interest continues to accrue.
+**Grace period.** When a loan reaches expiry, the borrower has additional time to repay before the loan becomes liquidatable. Interest continues to accrue.
 
-**Minimum interest.** Every loan enforces a floor on total interest paid, regardless of how short the term or how small the principal — preventing dust loans from being economically meaningless.
+**Minimum interest.** Every loan enforces a floor on total interest paid, regardless of how short the term — preventing dust loans from being economically meaningless.
 
 ---
 
-## 7. Duration ranges
+## 8. Duration ranges
 
 Intents support **min and max duration** instead of a fixed value. A lender offering "30 to 90 days" matches a borrower requesting "14 to 60 days" — the matcher picks a compatible duration in the overlap. This significantly improves match rates.
 
 ---
 
-## 8. Credit scores
+## 9. Credit scores
 
-Floe surfaces onchain credit scores via [Cred Protocol](https://cred.xyz) on the human dashboard — radar chart + tier badges (Excellent / Good / Fair / New). Today these are **informational only** and don't gate access.
-
-
----
-
-## 12. Safe / Multisig support
-
-Floe works natively in **Safe{Wallet}**. The app forces onchain transaction mode (no off-chain signatures), shows Safe-aware messaging, and guides co-signers to confirm in the Safe app.
+Floe surfaces onchain credit scores via [Cred Protocol](https://cred.xyz) on the human dashboard. Today these are **informational only** and don't gate access. Over time, strong credit history will unlock higher LTV and better rates.
 
 ---
 
-## 13. LendrBot & agent interfaces
+## 10. Agent interfaces
 
-- **LendrBot** — natural-language assistant for humans. "Borrow 5000 USDC for 30 days at max 6% APR."
-- **MCP server** — same actions exposed to any Claude/OpenAI/Cursor-compatible agent.
-- **AgentKit** — TS + Python SDKs with 45 actions.
+- **AgentKit** — TypeScript + Python SDKs with 36 actions
+- **MCP server** — same actions exposed to any Claude/OpenAI/Cursor-compatible agent
+- **Credit REST API** — HTTP endpoints for any language
+- **LendrBot** — natural-language assistant for humans
 
-→ [LendrBot](../user/lendr-ai.md) · [MCP Server](../developers/mcp-server.md) · [AgentKit](../developers/agentkit.md)
-
----
-
-## 14. Markets
-
-A market is a (loan token, collateral token) pair. Currently live:
-
-| Market | Loan token | Collateral token |
-|---|---|---|
-| USDC/WETH | USDC | WETH |
-| USDC/cbBTC | USDC | cbBTC |
-| USDT/WETH | USDT | WETH |
-| USDT/cbBTC | USDT | cbBTC |
-
-New markets are added by governance and have their own default rate, default LTV, protocol fee, and liquidation incentive.
+-> [AgentKit](../developers/agentkit.md) | [MCP Server](../developers/mcp-server.md) | [Credit REST API](../developers/credit-api.md)
 
 ---
 
@@ -175,19 +189,19 @@ New markets are added by governance and have their own default rate, default LTV
 | Intent | Signed message expressing desired outcome |
 | Solver | Bot matching compatible intents |
 | Isolated loan | Per-match escrow with own terms |
-| LTV | Loan / collateral value (Tier 1) |
-| Oracle | Chainlink + Pyth with circuit breaker |
+| Same-token market | USDC/USDC — no price risk, 95% LTV |
+| LTV | Loan / collateral value ratio |
+| Oracle | Hardcoded 1:1 for same-token; Chainlink + Pyth for volatile |
 | Grace period | Buffer time after expiry before liquidation |
 | Min interest | Floor interest amount per loan |
 | Duration range | Min/max for flexible matching |
-| Credit Bureau | Persistent trust/credit profiles |
-| LendrBot | AI assistant (natural language) |
+| Credit history | On-chain repayment record, unlocks higher LTV over time |
 
 ---
 
 ## Next
 
 - [Credit for Agents](../agents/credit-for-agents.md) — secured working capital for AI agents
-- [How to Borrow](../user/borrow.md) — step-by-step (Tier 1)
+- [How to Borrow](../user/borrow.md) — step-by-step
 - [How to Lend](../user/lend.md) — earn yield as a lender
 - [Architecture](../protocol/architecture.md) — contracts and flow

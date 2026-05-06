@@ -6,7 +6,7 @@ Key terms for using Floe.
 Annual Percentage Rate — the yearly interest rate on a loan. 5% APR means you pay/earn 5% per year.
 
 ## Collateral
-The asset (WETH or cbBTC) you deposit to secure a loan. If you can't repay, this gets liquidated.
+The asset you deposit to secure a loan. For the USDC/USDC market, your collateral is USDC itself (same-token). For volatile markets, WETH or cbBTC. If you can't repay, collateral may be liquidated.
 
 ## Intent
 A signed message stating your lending or borrowing terms. Gets matched with a compatible counterparty.
@@ -34,7 +34,7 @@ The LTV threshold where you can be liquidated. Set by the lender (typically 75-8
 A bot that finds compatible lend and borrow intents and creates loans. Earns a small commission.
 
 ## Oracle
-Price feed that tells the protocol the current ETH/USD price. Floe uses Chainlink and Pyth.
+Price feed that tells the protocol asset values. For volatile markets (WETH, cbBTC), Floe uses Chainlink (primary) and Pyth (fallback). For same-token markets (USDC/USDC), the oracle returns a hardcoded 1:1 ratio — no external feed dependency.
 
 ## Circuit Breaker
 Safety mechanism that pauses the protocol if prices are stale or invalid.
@@ -43,7 +43,10 @@ Safety mechanism that pauses the protocol if prices are stale or invalid.
 Floe's AI assistant. Chat with it for help creating intents or understanding your loans.
 
 ## Market
-A loan/collateral token pair. Active markets: USDC/WETH, USDC/cbBTC, USDT/WETH, USDT/cbBTC.
+A loan/collateral token pair. Active markets: USDC/USDC (secured working capital), WETH/USDC, cbBTC/USDC.
+
+## Same-Token Market
+A market where the loan and collateral are the same asset (e.g., USDC/USDC). The oracle returns a fixed 1:1 ratio, there is no price-volatility liquidation risk, and LTV can be much higher (up to 99.5%). Designed for secured working capital lines.
 
 ## Partial Fill
 When an intent is matched for less than its full amount. If `allowPartialFill` is enabled, a single intent can be matched multiple times by different counterparties until fully filled.
@@ -88,7 +91,10 @@ The L2 (Base) transaction ordering service. Floe's circuit breaker checks sequen
 An EIP-712 value that binds signatures to a specific contract on a specific chain, preventing cross-chain and cross-contract replay attacks.
 
 ## AgentKit
-Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `floe-agent` package provides 45 actions (30 Floe + 15 X402: 6 credit-delegation + 9 agent-awareness) as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP.
+Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `floe-agent` package provides 36 actions (30 lending + 6 x402) as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP.
+
+## Working Capital
+USDC borrowed against a USDC deposit via the USDC/USDC market. At 95% LTV, a $10,000 deposit yields $9,500 in spendable working capital. No price risk, no crypto complexity.
 
 ## Credit Score
 An on-chain creditworthiness score computed by [Cred Protocol](https://cred.xyz) based on DeFi lending/borrowing history. Displayed as a radar chart on the Floe dashboard and as tier badges in the loan book. Informational only — does not gate access.
