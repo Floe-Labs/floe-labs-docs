@@ -2,38 +2,53 @@
 icon: hand-wave
 ---
 
-# Floe — Onchain Credit for AI Agents & Institutions
+# Floe — Working Capital for AI Agents
 
-**Secured working capital for AI agents.** Borrow USDC against ETH or BTC collateral at fixed rates. Per-loan isolated escrow. Gas-free for agents — Floe sponsors all gas. Live on Base mainnet.
+**Get a USDC credit line in one API call.** Deposit USDC, borrow up to 95% instantly, pay only for what you use. No crypto complexity. Live on Base.
 
 ---
 
 ## What Floe does
 
-Floe gives agents and their operators instant access to USDC working capital — without pre-funding wallets, without variable-rate pools, and with smart-contract-enforced repayment.
+Floe gives AI agents and developers instant access to working capital. Deposit dollars (USDC), get a credit line, spend it on APIs, compute, or anything your agent needs. Repay when you're ready — your deposit returns automatically.
 
 | What | How |
 |---|---|
-| **Secured credit** | Post WETH or cbBTC as collateral → borrow USDC at a fixed rate |
-| **x402 payment proxy** | Delegate to the Floe facilitator → your agent calls any x402 API, Floe handles payment |
-| **Gas-free** | Floe sponsors all gas for agents using the facilitator |
+| **Secured credit line** | Deposit USDC as collateral, borrow up to 95% USDC at a fixed rate |
+| **x402 payment proxy** | Your agent calls any paid API — Floe handles payment automatically |
+| **Gas-free** | Floe sponsors all blockchain transaction costs |
+| **Fiat on/offramp** | Fund with a credit card or bank transfer (coming soon) |
 
-→ See [Credit for Agents](docs/agents/credit-for-agents.md) for the full picture.
+No crypto wallet expertise required. No token swaps. No gas management.
+
+> **Already have ETH or BTC?** Floe also supports WETH and cbBTC as collateral for USDC loans — [see all markets](docs/developers/credit-api.md#markets).
 
 ---
 
 ## Get started
 
-| If you are… | Start here |
+| If you are... | Start here |
 |---|---|
-| A human earning yield or borrowing | [Quick Start (Humans)](docs/getting-started/quick-start.md) |
+| A developer building an AI agent | [Agent Quickstart](docs/developers/agent-quickstart.md) — working capital in 5 minutes |
 | An agent operator (Vapi, Retell, Browserbase, etc.) | [Quick Start (Agents)](docs/agents/quickstart-agents.md) |
-| A developer building on the protocol | [AgentKit Integration](docs/developers/agentkit.md) · [MCP Server](docs/developers/mcp-server.md) |
+| A human earning yield or borrowing | [Quick Start (Humans)](docs/getting-started/quick-start.md) |
+| Exploring the API | [Credit REST API](docs/developers/credit-api.md) — no SDK needed |
 
-**App:** [app.floelabs.xyz](https://app.floelabs.xyz)
-**Network:** Base Mainnet
-**Loan tokens:** USDC, USDT
-**Collateral:** WETH, cbBTC (more coming)
+**Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
+**Network:** Base (Coinbase's L2 — fast, cheap, built for payments)
+
+---
+
+## How it works (30-second version)
+
+```
+1. Deposit USDC             →  Your agent deposits $1,000 USDC
+2. Get a credit line        →  Floe issues up to $950 USDC working capital (95% LTV)
+3. Spend it                 →  Agent calls paid APIs, buys compute, pays for services
+4. Repay when ready         →  Pay back principal + small fixed fee, get deposit back
+```
+
+Fixed rate. Fixed term. No surprises. No liquidation risk on stablecoin deposits — your collateral and loan are both USDC, so there's no price volatility.
 
 ---
 
@@ -41,33 +56,30 @@ Floe gives agents and their operators instant access to USDC working capital —
 
 Every economy runs on credit. The agentic economy doesn't have any.
 
-- **100M+** x402 machine payments since May 2025
-- **106K** agents with onchain identity (ERC-8004)
+- **100M+** machine-to-machine payments since May 2025
+- **106K** agents with onchain identity
 - **$0** in agent credit outstanding
 
-That's the gap Floe closes. Agents have balance sheets. They have deterministic cashflows, verifiable task histories, and chain-of-thought signals that are richer than any FICO score. Floe underwrites them.
-
-→ Read [How Floe Works](docs/getting-started/core-concepts.md).
+Floe closes that gap. Agents have deterministic cashflows, verifiable task histories, and chain-of-thought signals richer than any FICO score. Floe underwrites them.
 
 ---
 
 ## What's underneath
 
-- **Intent-based matching.** No pools. Each loan is an isolated escrow with its own rate, term, and collateral.
-- **Permissionless solvers.** Anyone can run a matcher bot.
+- **Intent-based matching.** No pools. Each loan is isolated with its own rate and term.
 - **Dual-oracle pricing.** Chainlink primary, Pyth fallback, with circuit breakers.
-- **Operator delegation.** Agents grant a scoped on-chain permission (`setOperator`). The facilitator handles all borrowing, repayment, and rollover — zero transactions for the agent.
+- **Operator delegation.** Agents grant a scoped on-chain permission. The facilitator handles all borrowing, repayment, and rollover — zero transactions for the agent.
+- **Same-token markets.** USDC/USDC loans have no price-volatility risk — the protocol enforces a fixed 1:1 ratio.
 
-→ [Architecture](docs/protocol/architecture.md) · [Security](docs/protocol/security.md) · [Contract Addresses](developers/networks.md)
+[Architecture](docs/protocol/architecture.md) | [Security](docs/protocol/security.md) | [Contract Addresses](developers/networks.md)
 
 ---
 
 ## Stay in the loop
 
-- **App:** [app.floelabs.xyz](https://app.floelabs.xyz)
+- **Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
 - **X / Twitter:** [@FloeLabs](https://twitter.com/FloeLabs)
 - **GitHub:** [Floe-Labs](https://github.com/Floe-Labs)
-- **In-app chat:** LendrBot (humans) · MCP server (agents)
 - **Email:** hello@floelabs.xyz
 
 ---
