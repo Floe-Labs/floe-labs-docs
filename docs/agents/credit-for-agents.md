@@ -12,7 +12,9 @@ Your agent deposits USDC and borrows up to 95% back as working capital. Same tok
 
 For agents that already hold ETH or BTC: Floe also supports WETH and cbBTC collateral for USDC loans.
 
--> [Quick Start (Agents)](quickstart-agents.md)
+> **Don't have USDC?** Fund your agent with a bank account or card directly from the [Floe dashboard](https://dev-dashboard.floelabs.xyz) — no crypto exchange needed. See [Bank Account → First API Call](fiat-to-x402.md).
+
+→ [Quick Start (Agents)](quickstart-agents.md)
 
 ---
 

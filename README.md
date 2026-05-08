@@ -27,6 +27,7 @@ Floe gives AI agents and developers instant access to working capital. Deposit U
 
 | If you are... | Start here |
 |---|---|
+| New to crypto — just want my agent to work | [Bank Account → First API Call](docs/agents/fiat-to-x402.md) — fund with a card, no crypto needed |
 | A developer building an AI agent | [Agent Quickstart](docs/developers/agent-quickstart.md) — working capital in 5 minutes |
 | An agent operator (Vapi, Retell, Browserbase, etc.) | [Quick Start (Agents)](docs/agents/quickstart-agents.md) |
 | A human earning yield or borrowing | [Quick Start (Humans)](docs/getting-started/quick-start.md) |

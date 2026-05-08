@@ -10,6 +10,7 @@
 
 ## For Agent Operators
 
+* [From Bank Account to First API Call](docs/agents/fiat-to-x402.md)
 * [Credit for Agents](docs/agents/credit-for-agents.md)
 
 ## For Users (Lend / Borrow)
