@@ -4,7 +4,7 @@ icon: rocket
 
 # Agent Working Capital Quickstart
 
-Get USDC working capital into your agent's wallet in under a minute.
+Give your agent a balance sheet in under a minute.
 
 For a guided setup experience, use the [Developer Dashboard](developer-dashboard.md) at `dev-dashboard.floelabs.xyz`.
 

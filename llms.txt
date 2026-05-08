@@ -1,6 +1,6 @@
-# Floe — Onchain Credit Protocol
+# Floe — Working Capital for AI Agents
 
-> Floe is the onchain credit layer for AI agents. Secured working capital backed by WETH/cbBTC collateral, fixed rates, per-loan isolated escrow. Gas-free for agents — Floe sponsors all gas. Live on Base mainnet. App: app.floelabs.xyz. Dashboard: dev-dashboard.floelabs.xyz.
+> Floe is the credit bureau and capital rail for AI agents. Deposit USDC, borrow up to 95% as working capital (same-token, no price risk). Also supports WETH/cbBTC collateral. Fixed rates, per-loan isolated escrow, gas-free for agents. 3,000+ lines issued, zero defaults. Live on Base mainnet. Dashboard: dev-dashboard.floelabs.xyz.
 
 This file is a structured map of the Floe documentation, optimized for LLM agents reading it as part of a tool loop. Each page can also be queried directly by appending `?ask=<question>` to the URL — the response includes citations.
 

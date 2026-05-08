@@ -1,6 +1,8 @@
 # Credit for Agents
 
-Working capital for AI agents. Fixed rates. No price-volatility risk. **Gas-free — Floe sponsors all transaction costs.**
+Financial independence is the precursor to agent autonomy. Long-running agents can't do anything meaningful without their own fundable balance sheet. Floe gives them one.
+
+**3,000+ secured working capital lines issued. Zero defaults or losses.** Fixed rates. No price-volatility risk. Gas-free — Floe sponsors all transaction costs.
 
 ---
 
@@ -52,7 +54,7 @@ Floe's USDC/USDC market eliminates all of that:
 - **No liquidation risk from price movements** — collateral and loan are the same asset
 - **95% LTV** — deposit $10K, get $9.5K (vs. 30-70% on volatile collateral)
 - **No token swaps needed** — if you have USDC, you're ready
-- **Fiat on-ramp coming soon** — deposit with a credit card or bank transfer, get a credit line instantly
+- **Fiat on-ramp built in** — buy USDC from the [dashboard](../developers/developer-dashboard.md) with a credit card or bank transfer
 
 ---
 

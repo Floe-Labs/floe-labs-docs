@@ -52,13 +52,16 @@ Fixed rate. Fixed term. No surprises. No liquidation risk on stablecoin deposits
 
 ## Why this matters
 
-Every economy runs on credit. The agentic economy doesn't have any.
+Financial independence is the precursor to agent autonomy. Long-running agents can't do anything meaningful without their own fundable balance sheet.
 
-- **100M+** machine-to-machine payments since May 2025
-- **106K** agents with onchain identity
-- **$0** in agent credit outstanding
+Every economy in history has run on credit. Credit needs trust as collateral. Agents don't have FICO — but they have something better: deterministic cashflows and chain-of-thought.
 
-Floe closes that gap. Agents have deterministic cashflows, verifiable task histories, and chain-of-thought signals richer than any FICO score. Floe underwrites them.
+- **100M+** machine payments via x402 since May 2025
+- **100K+** agents with onchain identity — less than 1% of the agent population
+- **3,000+** secured working capital lines issued through Floe
+- **Zero** defaults or losses
+
+Floe is the credit bureau and capital rail for AI agents.
 
 ---
 
