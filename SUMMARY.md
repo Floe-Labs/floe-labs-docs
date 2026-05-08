@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Floe — Onchain Credit for AI Agents & Institutions](README.md)
+* [Floe — Working Capital for AI Agents](README.md)
 
 ## Getting Started
 
