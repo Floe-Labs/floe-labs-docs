@@ -34,9 +34,9 @@ A borrower's request:
 
 Two intents match when:
 
-1. Same market (e.g. USDC/WETH)
-2. Rate compatible — borrower's max ≥ lender's min
-3. LTV gap ≥ 8% — borrower's LTV + 8% ≤ lender's max LTV
+1. Same market (e.g., USDC/USDC or USDC/WETH)
+2. Rate compatible — borrower's max rate >= lender's min rate
+3. LTV gap met — for volatile markets: borrower's LTV + 8% <= lender's max LTV; for USDC/USDC: only 0.5% gap required
 4. Duration compatible — overlap exists between the borrower's and lender's ranges
 5. Both intents are unexpired
 
@@ -157,12 +157,15 @@ Floe works natively in **Safe{Wallet}**. The app forces onchain transaction mode
 
 A market is a (loan token, collateral token) pair. Currently live:
 
-| Market | Loan token | Collateral token |
-|---|---|---|
-| USDC/WETH | USDC | WETH |
-| USDC/cbBTC | USDC | cbBTC |
-| USDT/WETH | USDT | WETH |
-| USDT/cbBTC | USDT | cbBTC |
+| Market | Loan token | Collateral | Max LTV | Liquidation risk |
+|---|---|---|---|---|
+| **USDC/USDC** | USDC | USDC | **95%** | **Interest accrual only** |
+| USDC/WETH | USDC | WETH | 70% | Price volatility |
+| USDC/cbBTC | USDC | cbBTC | 70% | Price volatility |
+| USDT/WETH | USDT | WETH | 70% | Price volatility |
+| USDT/cbBTC | USDT | cbBTC | 70% | Price volatility |
+
+**USDC/USDC (same-token market):** The protocol hardcodes a 1:1 oracle ratio — no external price feed, no circuit breaker impact. LTV gap reduced to 0.5% (vs 8% for volatile markets). Designed for secured working capital lines.
 
 New markets are added by governance and have their own default rate, default LTV, protocol fee, and liquidation incentive.
 

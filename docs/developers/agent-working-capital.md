@@ -4,17 +4,19 @@ icon: vault
 
 # Agent Working Capital
 
-Floe provides autonomous AI agents with on-chain credit facilities — fixed-rate, fixed-term loans backed by crypto collateral. Agents get a clean abstraction: borrow instantly, manage the loan, and renew when needed.
+Floe provides AI agents with instant credit lines — deposit USDC, borrow up to 95%, spend on anything, repay when ready.
 
 ## How It Works
 
-An agent with ETH or cbBTC collateral can borrow USDC at a fixed rate and term. With **instant borrow**, the agent makes a single call — Floe finds the best available lender and executes the match automatically. Loan funds transfer directly to the agent's wallet, and collateral is held by the protocol until repayment.
+An agent deposits USDC as collateral and borrows USDC at a fixed rate and term. With **instant borrow**, the agent makes a single call — Floe finds the best available lender and executes the match automatically. Working capital transfers directly to the agent's wallet, and the USDC deposit is held by the protocol until repayment.
+
+> **Have ETH or BTC?** Floe also supports WETH and cbBTC collateral — same API, just a different `marketId`.
 
 ```
 ┌──────────────────────────────────────────────────┐
-│  Agent (ETH/cbBTC collateral)                    │
+│  Agent ($10,000 USDC deposit)                    │
 └──────────────┬───────────────────────────────────┘
-               │ instant_borrow("get me $5K USDC now")
+               │ instant_borrow("get me $9,500 USDC working capital")
                ▼
 ┌──────────────────────────────────────────────────┐
 │  Floe Credit API / AgentKit                      │
@@ -146,9 +148,10 @@ If omitted, USDC goes to your own wallet (current behavior).
 
 ## Supported Markets
 
-| Market | Collateral | Loan Token | Status |
-|--------|-----------|------------|--------|
-| WETH/USDC | WETH | USDC | Live |
-| cbBTC/USDC | cbBTC | USDC | Live |
+| Market | Deposit (Collateral) | Borrow (Working Capital) | Max LTV | Status |
+|--------|---------------------|--------------------------|---------|--------|
+| **USDC/USDC** | USDC | USDC | **95%** | **Live** |
+| WETH/USDC | WETH | USDC | 70% | Live |
+| cbBTC/USDC | cbBTC | USDC | 70% | Live |
 
-All markets use Chainlink as the primary oracle with Pyth as fallback, protected by the protocol's circuit breaker system.
+**USDC/USDC** uses a hardcoded 1:1 oracle (no Chainlink dependency, no circuit breaker impact). WETH and cbBTC markets use Chainlink primary + Pyth fallback with circuit breaker protection.

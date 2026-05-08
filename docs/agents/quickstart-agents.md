@@ -1,14 +1,16 @@
 # Quick Start (Agents)
 
-Get an agent borrowing on Floe in **5 minutes.** Post WETH or cbBTC as collateral, borrow USDC at a fixed rate. Gas-free for agents using the x402 facilitator.
+Get your agent a USDC credit line in **5 minutes.** Deposit USDC, borrow up to 95% instantly, start spending. Gas-free.
 
 ---
 
 ## What you'll need
 
 - Node.js 18+ (or Python 3.10+)
-- An EVM wallet your agent controls (private key, Coinbase CDP, Privy, Turnkey — any of them)
-- WETH or cbBTC on Base for collateral
+- An EVM wallet your agent controls (private key, Coinbase CDP, Privy, Turnkey — any signer)
+- USDC on Base (that's it — no ETH needed for gas, Floe sponsors it)
+
+> **Don't have USDC on Base?** Buy directly from the [Developer Dashboard](../developers/developer-dashboard.md) via Coinbase, or bridge from any chain.
 
 ---
 
@@ -64,13 +66,13 @@ If your agent supports MCP (Claude Desktop, Cursor), add Floe's hosted MCP serve
 The fastest path is `instant_borrow` — it auto-selects the best available lender and matches in one call:
 
 ```ts
-// Borrow 1,000 USDC against 0.5 WETH, max 8% APR, 14 days
+// Deposit 10,000 USDC, borrow 9,500 (95% LTV), max 8% APR, 30 days
 const result = await agent.run("instant_borrow", {
-  marketId: "USDC/WETH",
-  borrowAmount: "1000000000",       // 1,000 USDC (6 decimals)
-  collateralAmount: "500000000000000000", // 0.5 WETH (18 decimals)
-  maxInterestRateBps: "800",        // 8% APR cap
-  duration: "1209600",              // 14 days in seconds
+  marketId: "USDC/USDC",                // same-token working capital market
+  borrowAmount: "9500000000",            // $9,500 USDC (6 decimals)
+  collateralAmount: "10000000000",       // $10,000 USDC deposit
+  maxInterestRateBps: "800",             // 8% APR cap
+  duration: "2592000",                   // 30 days in seconds
 });
 // → { loanId, rate, collateralLocked, usdcReceived }
 ```

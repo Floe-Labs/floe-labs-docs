@@ -51,12 +51,13 @@ Floe queried all available lenders on Base, selected the best rate for your amou
 
 ## Markets
 
-| Market | Collateral | Loan Token |
-|--------|------------|------------|
-| WETH/USDC | ETH | USDC |
-| cbBTC/USDC | cbBTC | USDC |
+| Market | Deposit (Collateral) | Borrow (Working Capital) | Max LTV |
+|--------|---------------------|--------------------------|---------|
+| **USDC/USDC** | USDC | USDC | **95%** |
+| WETH/USDC | ETH | USDC | 70% |
+| cbBTC/USDC | cbBTC | USDC | 70% |
 
-See the [Credit REST API](credit-api.md#markets) for marketIds and token addresses.
+**USDC/USDC is the recommended market for most agents.** No price volatility, no liquidation surprises. See the [Credit REST API](credit-api.md#markets) for marketIds and token addresses.
 
 ## Want Automatic API Payments?
 
@@ -107,9 +108,13 @@ From the **Keys** page the deployer calls `POST /v1/keys` and receives a one-tim
 
 On the **Agents** page the deployer walks through three steps: **Create Wallet → Deposit & Delegate → Activate Agent**. Step 1 ("Create Agent Wallet" button) signs a message in the browser wallet and calls `POST /v1/agents/pre-register`, which provisions a Privy custodial wallet and returns `privyWalletAddress`. **Takeaway:** the agent gets its own on-chain wallet that the deployer never holds keys for.
 
-### 4. Deposit WETH collateral
+### 4. Fund the agent wallet
 
-The deployer sends WETH from their own wallet to the returned `privyWalletAddress`. **Takeaway:** this is the collateral backing every future `/proxy/fetch` charge.
+Send USDC to the returned `privyWalletAddress`. You can:
+- Transfer USDC from your own wallet, OR
+- **Buy USDC directly from the dashboard** — click "Fund Wallet" and complete the Coinbase checkout (credit card, debit card, or bank transfer). USDC lands directly in the agent's wallet on Base.
+
+**Takeaway:** this USDC deposit is the collateral backing every future `/proxy/fetch` charge. No ETH or gas tokens needed.
 
 ### 5. Sign `setOperator` on-chain
 

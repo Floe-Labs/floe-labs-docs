@@ -2,38 +2,38 @@
 icon: hand-wave
 ---
 
-# Floe — Onchain Credit for AI Agents & Institutions
+# Floe — Working Capital for AI Agents
 
-**Secured working capital for AI agents.** Borrow USDC against ETH or BTC collateral at fixed rates. Per-loan isolated escrow. Gas-free for agents — Floe sponsors all gas. Live on Base mainnet.
+**Get a USDC credit line in one API call.** Deposit USDC, borrow up to 95% instantly, pay only for what you use. No crypto complexity. Live on Base.
 
 ---
 
 ## What Floe does
 
-Floe gives agents and their operators instant access to USDC working capital — without pre-funding wallets, without variable-rate pools, and with smart-contract-enforced repayment.
+Floe gives AI agents and developers instant access to working capital. Deposit USDC, get a credit line, spend it on APIs, compute, or anything your agent needs. Repay when you're ready — your deposit returns automatically.
 
 | What | How |
 |---|---|
-| **Secured credit** | Post WETH or cbBTC as collateral → borrow USDC at a fixed rate |
-| **x402 payment proxy** | Delegate to the Floe facilitator → your agent calls any x402 API, Floe handles payment |
-| **Gas-free** | Floe sponsors all gas for agents using the facilitator |
+| **Secured credit line** | Deposit USDC, borrow up to 95% at a fixed rate |
+| **x402 payment proxy** | Your agent calls any paid API — Floe handles payment automatically |
+| **Gas-free** | Floe sponsors all blockchain transaction costs |
+| **Fund with fiat** | Buy USDC directly from the dashboard via Coinbase (credit card or bank transfer) |
 
-→ See [Credit for Agents](docs/agents/credit-for-agents.md) for the full picture.
+> **Already have ETH or BTC?** Floe also supports WETH and cbBTC as collateral for USDC loans — [see all markets](developers/networks.md).
 
 ---
 
 ## Get started
 
-| If you are… | Start here |
+| If you are... | Start here |
 |---|---|
-| A human earning yield or borrowing | [Quick Start (Humans)](docs/getting-started/quick-start.md) |
+| A developer building an AI agent | [Agent Quickstart](docs/developers/agent-quickstart.md) — working capital in 5 minutes |
 | An agent operator (Vapi, Retell, Browserbase, etc.) | [Quick Start (Agents)](docs/agents/quickstart-agents.md) |
-| A developer building on the protocol | [AgentKit Integration](docs/developers/agentkit.md) · [MCP Server](docs/developers/mcp-server.md) |
+| A human earning yield or borrowing | [Quick Start (Humans)](docs/getting-started/quick-start.md) |
+| Exploring the API | [Credit REST API](docs/developers/credit-api.md) — no SDK needed |
 
-**App:** [app.floelabs.xyz](https://app.floelabs.xyz)
-**Network:** Base Mainnet
-**Loan tokens:** USDC, USDT
-**Collateral:** WETH, cbBTC (more coming)
+**Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
+**Network:** Base (Coinbase's L2 — fast, cheap, built for payments)
 
 ---
 
@@ -58,13 +58,16 @@ That's the gap Floe closes. Agents have balance sheets. They have deterministic 
 - **Dual-oracle pricing.** Chainlink primary, Pyth fallback, with circuit breakers.
 - **Operator delegation.** Agents grant a scoped on-chain permission (`setOperator`). The facilitator handles all borrowing, repayment, and rollover — zero transactions for the agent.
 
-→ [Architecture](docs/protocol/architecture.md) · [Security](docs/protocol/security.md) · [Contract Addresses](developers/networks.md)
+- **Same-token markets.** USDC/USDC loans have no price-volatility risk — the protocol enforces a fixed 1:1 ratio, enabling 95% LTV.
+- **Fiat on-ramp.** Fund your agent's wallet via Coinbase directly from the dashboard — no crypto bridges needed.
+
+[Architecture](docs/protocol/architecture.md) | [Security](docs/protocol/security.md) | [Contract Addresses](developers/networks.md)
 
 ---
 
 ## Stay in the loop
 
-- **App:** [app.floelabs.xyz](https://app.floelabs.xyz)
+- **Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
 - **X / Twitter:** [@FloeLabs](https://twitter.com/FloeLabs)
 - **GitHub:** [Floe-Labs](https://github.com/Floe-Labs)
 - **In-app chat:** LendrBot (humans) · MCP server (agents)

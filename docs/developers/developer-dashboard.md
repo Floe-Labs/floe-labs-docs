@@ -4,73 +4,90 @@ icon: layout-dashboard
 
 # Developer Dashboard
 
-The Developer Dashboard is your home base for managing API keys, webhooks, and x402 agent configurations. Everything you need to integrate with Floe lives here.
+The Developer Dashboard is your home base for managing agents, API keys, webhooks, funding, and credit monitoring. Everything you need to integrate with Floe lives here.
 
 **URL:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
 
 ## Authentication
 
-The dashboard authenticates developers by having you sign a timestamped message with your wallet via RainbowKit. There are no usernames, passwords, or email signups — your wallet is your identity.
+The dashboard authenticates developers by having you sign a timestamped message with your wallet via RainbowKit. No usernames, passwords, or email signups — your wallet is your identity.
 
-The flow is:
+1. Connect a wallet (MetaMask, Coinbase Wallet, Rainbow, or WalletConnect)
+2. Sign a timestamped message
+3. Receive a 7-day JWT — attached automatically to every dashboard API call
 
-1. You connect a wallet via RainbowKit.
-2. The dashboard asks the wallet to sign a short message that includes the current timestamp.
-3. The dashboard calls `POST /v1/developer/auth/verify` with `X-Wallet-Address`, `X-Signature`, and `X-Timestamp` headers. The API verifies the signature against a ±5-minute window and returns a JWT (7-day expiry) plus your developer record.
-4. The JWT is stored in the dashboard session and attached as `Authorization: Bearer <jwt>` on every subsequent developer API call (keys, webhooks, agent wizard).
+> Email and Google login also work — Privy auto-creates an embedded wallet for users without an external wallet.
 
-> **Note:** This is a custom implementation — standard SIWE uses server-side nonces. Floe uses a +-5-minute timestamp window for replay protection instead.
->
-> The earlier `/v1/developer/auth/nonce` endpoint was removed — server-side nonces are not used; the timestamp window is what prevents replay. When we wire up full SIWE, this page will be updated.
-
-This is **only** for developers using the dashboard and `/v1/developer/*` / `/v1/keys` / `/v1/agents/*` endpoints. Agents themselves do **not** use SIWE — at runtime they authenticate with their `floe_*` API key on `POST /v1/proxy/fetch`. See the [Agent Runtime Contract](agent-runtime-contract.md) for the agent-side auth story.
+This is **only** for developers using the dashboard. Agents authenticate with their `floe_*` API key at runtime — see [Agent Runtime Contract](agent-runtime-contract.md).
 
 ## What You Can Do
 
+### Agents (Multi-Agent)
+
+Create and manage up to **5 agents per developer**. Each agent has its own credit line, delegation, and API key.
+
+1. **Create Agent** — Name it, set a borrow limit, rate cap, and delegation expiry. The dashboard provisions a Privy wallet and returns the agent's wallet address.
+2. **Fund Agent** — Send USDC to the agent's wallet, or **buy USDC directly via Coinbase** (credit card or bank transfer) using the "Fund Wallet" button. No crypto bridges needed.
+3. **Delegate** — Call `setOperator()` on `LendingIntentMatcher` from your wallet to authorize the facilitator to borrow on the agent's behalf.
+4. **Activate** — Click **Complete Registration**. The dashboard verifies the on-chain delegation and mints the agent's runtime API key (revealed once — copy it immediately).
+
+Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `closed`), USDC balance (live), credit limit, delegation expiry, and active loans.
+
+**Agent limits:**
+- Max 5 agents per developer
+- Max 1 active API key per agent
+- Borrow limit: 1–10B USDC (raw, 6 decimals)
+- Rate cap: 1–10,000 bps (0.01%–100%)
+- Delegation expiry: 1 minute–1 year
+
+### Fund Wallet (Fiat On-Ramp)
+
+Buy USDC directly from the dashboard using a credit card, debit card, or bank transfer — powered by Coinbase CDP. Funds land as USDC on Base directly in your agent's wallet.
+
+1. Click **Fund Wallet** on any agent card
+2. Enter an amount ($1–$100,000 USD) or use a preset ($50, $100, $500)
+3. Complete the Coinbase checkout in the popup
+4. Dashboard polls your agent's balance — shows success when USDC arrives (~30s–2min)
+
+No crypto bridges, no token swaps, no gas tokens needed.
+
 ### API Keys
 
-Create and manage developer API keys (`floe_live_*`) for authenticating with the [Credit API](credit-api.md) developer endpoints and webhook management. Label keys by environment, set permissions (read-only or read/write), and revoke compromised keys instantly.
+Create and manage developer API keys (`floe_live_*`) for authenticating with the [Credit API](credit-api.md) developer endpoints and webhook management. Label keys by environment and revoke compromised keys instantly.
 
-Go to **Keys** in the sidebar, or see the [API Keys documentation](api-keys.md).
+Go to **Keys** in the sidebar, or see [API Keys](api-keys.md).
 
 ### Webhooks
 
-Register webhook endpoints to receive push notifications for loan events — health warnings, expiry alerts, liquidations, and repayments. Configure event filters, test deliveries, and monitor delivery logs.
+Register webhook endpoints to receive push notifications for loan events — health warnings, expiry alerts, liquidations, repayments, **credit utilization warnings**, and **delegation expiry alerts**.
 
-Go to **Webhooks** in the sidebar, or see the [Webhooks documentation](webhooks.md).
+Go to **Webhooks** in the sidebar, or see [Webhooks](webhooks.md).
 
-### Agent Setup
+### Alerts
 
-Register x402 agents through a three-step guided wizard at `/agents`. The shipped flow is:
+The dashboard monitors your agents and fires alerts when:
 
-1. **Create Wallet** — Click **Create Agent Wallet**. The dashboard asks your wallet to sign a plain "Register with Floe Facilitator" message, then calls `POST /v1/agents/pre-register`. The server provisions a Privy custodial wallet for the agent and returns its `privyWalletAddress`, which is displayed in a code block.
-2. **Deposit & Delegate** — Send WETH collateral to the Privy wallet address from Step 1, then call `setOperator()` on `LendingIntentMatcher` from your own wallet to delegate borrow authority to the facilitator.
+| Alert | Trigger | What to do |
+|---|---|---|
+| **Credit utilization warning** | Borrowed principal exceeds 80% of credit limit | Top up collateral or repay before API calls fail with `insufficient_balance` |
+| **Delegation expiry** | Operator delegation expires within 7 days (warning) or 24 hours (urgent) | Re-delegate via `setOperator` or the dashboard |
 
-> **Roadmap:** A one-click Authorize button is planned. Until then, call `setOperator` from your wallet tooling (wagmi, cast, etc.). See the [wagmi snippet in the Agent Quickstart](agent-quickstart.md#5-sign-setoperator-on-chain).
-3. **Activate Agent** — Click **Complete Registration**. The dashboard signs another wallet message and calls `POST /v1/agents/register`, which verifies the on-chain delegation and mints your `floe_*` agent API key. The key is revealed once via a secret-reveal modal — copy it immediately.
-
-Once activated, the same `/agents` page becomes a status view showing the Privy wallet address, agent status (`active` / `credit_frozen` / `pending_delegation`), delegation badge, and credit limit.
-
-See [x402 Credit Facilitator](x402-facilitator.md) for the full agent lifecycle and [Agent Runtime Contract](agent-runtime-contract.md) for what the agent itself does at runtime.
-
-### API Documentation
-
-Browse interactive API documentation directly from the dashboard under the **Docs** section. Endpoint schemas, request/response examples, and error codes are all available inline.
+Alerts are delivered via webhooks and shown in the dashboard.
 
 ## Quick Navigation
 
 | Section | Path | What It Does |
 |---------|------|--------------|
 | Overview | `/` | Dashboard home with usage summary |
+| Agents | `/agents` | Create, fund, and manage agents (up to 5) |
+| Agent Detail | `/agents/:id` | Status, balance, delegation, keys |
 | API Keys | `/keys` | Create, list, and revoke developer keys |
 | Webhooks | `/webhooks` | Register endpoints, test deliveries, view logs |
-| Webhook Detail | `/webhooks/:id` | Edit a webhook, rotate secret, view delivery history |
-| Agents | `/agents` | Register and manage x402 agents |
 | Docs | `/docs` | Interactive API reference |
 
 ## Next Steps
 
-- **[API Keys](api-keys.md)** — Create your first developer key and start calling authenticated endpoints.
-- **[Webhooks](webhooks.md)** — Set up push notifications for loan events.
-- **[Credit API](credit-api.md)** — Full HTTP API reference for lending, borrowing, and loan management.
+- **[API Keys](api-keys.md)** — Create your first developer key.
+- **[Webhooks](webhooks.md)** — Set up push notifications for loan events and alerts.
+- **[Agent Quickstart](agent-quickstart.md)** — Full happy-path walkthrough from zero to first paid API call.
 - **[x402 Credit Facilitator](x402-facilitator.md)** — Delegate collateral and let your agent pay for APIs automatically.
