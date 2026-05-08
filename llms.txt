@@ -16,6 +16,7 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 
 ## For agent operators
 
+- [Bank Account → First API Call](https://floe-labs.gitbook.io/docs/agents/fiat-to-x402): Fund with a bank account or card, get a USDC credit line, call any x402 API — no crypto experience needed
 - [Credit for Agents](https://floe-labs.gitbook.io/docs/agents/credit-for-agents): Why agents pre-fund today, why that's broken, how Floe replaces it with secured working capital
 
 ## For users (lend / borrow today)
