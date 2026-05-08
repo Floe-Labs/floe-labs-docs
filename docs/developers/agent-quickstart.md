@@ -59,9 +59,7 @@ Floe queried all available lenders on Base, selected the best rate for your amou
 | WETH/USDC | ETH | USDC | 70% |
 | cbBTC/USDC | cbBTC | USDC | 70% |
 
-**USDC/USDC is the recommended market for most agents.** No price volatility means no liquidation surprises.
-
-See the [Credit REST API](credit-api.md#markets) for marketIds and token addresses.
+**USDC/USDC is the recommended market for most agents.** No price volatility, no liquidation surprises. See the [Credit REST API](credit-api.md#markets) for marketIds and token addresses.
 
 ## Want Automatic API Payments?
 
@@ -113,11 +111,13 @@ This key is for dashboard and webhook management — it's **not** what the agent
 
 On the **Agents** page, walk through: **Create Wallet > Deposit & Delegate > Activate Agent**. Step 1 provisions a payment wallet and returns `privyWalletAddress`.
 
-### 4. Deposit USDC collateral
+### 4. Fund the agent wallet
 
-Send USDC from your wallet to the returned `privyWalletAddress`. This is the collateral backing every future API charge.
+Send USDC to the returned `privyWalletAddress`. You can:
+- Transfer USDC from your own wallet, OR
+- **Buy USDC directly from the dashboard** — click "Fund Wallet" and complete the Coinbase checkout (credit card, debit card, or bank transfer). USDC lands directly in the agent's wallet on Base.
 
-> **Coming soon:** Fund with credit card or bank transfer via the dashboard.
+**Takeaway:** this USDC deposit is the collateral backing every future `/proxy/fetch` charge. No ETH or gas tokens needed.
 
 ### 5. Sign `setOperator` on-chain
 

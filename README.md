@@ -10,18 +10,16 @@ icon: hand-wave
 
 ## What Floe does
 
-Floe gives AI agents and developers instant access to working capital. Deposit dollars (USDC), get a credit line, spend it on APIs, compute, or anything your agent needs. Repay when you're ready — your deposit returns automatically.
+Floe gives AI agents and developers instant access to working capital. Deposit USDC, get a credit line, spend it on APIs, compute, or anything your agent needs. Repay when you're ready — your deposit returns automatically.
 
 | What | How |
 |---|---|
-| **Secured credit line** | Deposit USDC as collateral, borrow up to 95% USDC at a fixed rate |
+| **Secured credit line** | Deposit USDC, borrow up to 95% at a fixed rate |
 | **x402 payment proxy** | Your agent calls any paid API — Floe handles payment automatically |
 | **Gas-free** | Floe sponsors all blockchain transaction costs |
-| **Fiat on/offramp** | Fund with a credit card or bank transfer (coming soon) |
+| **Fund with fiat** | Buy USDC directly from the dashboard via Coinbase (credit card or bank transfer) |
 
-No crypto wallet expertise required. No token swaps. No gas management.
-
-> **Already have ETH or BTC?** Floe also supports WETH and cbBTC as collateral for USDC loans — [see all markets](docs/developers/credit-api.md#markets).
+> **Already have ETH or BTC?** Floe also supports WETH and cbBTC as collateral for USDC loans — [see all markets](developers/networks.md).
 
 ---
 
@@ -70,6 +68,9 @@ Floe closes that gap. Agents have deterministic cashflows, verifiable task histo
 - **Dual-oracle pricing.** Chainlink primary, Pyth fallback, with circuit breakers.
 - **Operator delegation.** Agents grant a scoped on-chain permission. The facilitator handles all borrowing, repayment, and rollover — zero transactions for the agent.
 - **Same-token markets.** USDC/USDC loans have no price-volatility risk — the protocol enforces a fixed 1:1 ratio.
+
+- **Same-token markets.** USDC/USDC loans have no price-volatility risk — the protocol enforces a fixed 1:1 ratio, enabling 95% LTV.
+- **Fiat on-ramp.** Fund your agent's wallet via Coinbase directly from the dashboard — no crypto bridges needed.
 
 [Architecture](docs/protocol/architecture.md) | [Security](docs/protocol/security.md) | [Contract Addresses](developers/networks.md)
 

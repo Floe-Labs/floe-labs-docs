@@ -10,6 +10,8 @@ Floe provides AI agents with instant credit lines — deposit USDC, borrow up to
 
 An agent deposits USDC as collateral and borrows USDC at a fixed rate and term. With **instant borrow**, the agent makes a single call — Floe finds the best available lender and executes the match automatically. Working capital transfers directly to the agent's wallet, and the USDC deposit is held by the protocol until repayment.
 
+> **Have ETH or BTC?** Floe also supports WETH and cbBTC collateral — same API, just a different `marketId`.
+
 ```
 ┌──────────────────────────────────────────────────┐
 │  Agent ($10,000 USDC deposit)                    │
@@ -149,4 +151,4 @@ If omitted, USDC goes to your own wallet.
 | WETH/USDC | WETH | USDC | 70% | Live |
 | cbBTC/USDC | cbBTC | USDC | 70% | Live |
 
-USDC/USDC uses a hardcoded 1:1 oracle. WETH and cbBTC markets use Chainlink as the primary oracle with Pyth as fallback, protected by the protocol's circuit breaker system.
+**USDC/USDC** uses a hardcoded 1:1 oracle (no Chainlink dependency, no circuit breaker impact). WETH and cbBTC markets use Chainlink primary + Pyth fallback with circuit breaker protection.

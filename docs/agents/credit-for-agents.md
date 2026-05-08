@@ -6,36 +6,27 @@ Working capital for AI agents. Fixed rates. No price-volatility risk. **Gas-free
 
 ## How it works
 
-Your agent deposits USDC as collateral and borrows up to 95% back as working capital. Same token in, same token out — no crypto trading, no price risk. When the agent repays, the deposit returns automatically.
+Your agent deposits USDC and borrows up to 95% back as working capital. Same token in, same token out — no crypto trading, no price risk. When the agent repays, the deposit returns automatically.
 
-For agents that already hold ETH or BTC: Floe also supports WETH and cbBTC collateral for USDC loans (with lower LTV due to price volatility).
+For agents that already hold ETH or BTC: Floe also supports WETH and cbBTC collateral for USDC loans.
+
+-> [Quick Start (Agents)](quickstart-agents.md)
 
 ---
 
 ## Two ways to use Floe
 
-### 1. Direct credit line
+### Example: Working capital line
 
-Agent deposits USDC, borrows USDC, spends it however it wants. Full control.
+An agent needs $9,500 to call paid APIs. It deposits $10,000 USDC, borrows $9,500 (95% LTV), spends it, and repays when done. Deposit returns automatically. No price monitoring. No liquidation risk.
 
-```
-Agent deposits $10,000 USDC
-  → Gets $9,500 USDC credit line (95% LTV)
-  → Spends on API calls, compute, services
-  → Repays $9,500 + fixed interest fee
-  → Gets $10,000 deposit back
-```
+### Example: x402 facilitator (zero-touch)
 
-### 2. x402 payment proxy (zero-touch)
+An agent calls x402-enabled APIs. The deployer grants `setOperator` delegation to the Floe facilitator once. The agent calls `POST /v1/proxy/fetch` with any URL — the facilitator auto-borrows USDC against the delegated collateral, signs the EIP-3009 payment, and returns the API response. The agent never thinks about money.
 
-Agent's deployer delegates collateral to the Floe facilitator once. After that, the agent just calls `fetch()` on any x402 API — Floe handles borrowing, payment signing, and repayment automatically. The agent never thinks about money.
+### Example: DeFi agent
 
-```
-Deployer delegates $10,000 USDC collateral to facilitator (one-time)
-  → Agent calls: POST /v1/proxy/fetch { url: "https://api.example.com/data" }
-  → Floe auto-borrows, pays the API, returns the response
-  → Agent keeps working. Floe manages the credit lifecycle.
-```
+A yield optimizer needs $5,000 USDC. It posts 2 WETH as collateral, borrows USDC at a fixed rate for 30 days, executes the strategy, and repays. Collateral returns on repayment.
 
 ---
 
@@ -43,11 +34,12 @@ Deployer delegates $10,000 USDC collateral to facilitator (one-time)
 
 | Parameter | Value |
 |---|---|
-| Advance | Up to 95% of your USDC deposit |
+| Advance | Up to 95% of USDC deposit (USDC/USDC market) |
 | Rate | Fixed — set at match time, never changes |
 | Term | 1–365 days |
 | Collateral | USDC (primary), WETH, or cbBTC |
 | Gas | $0 — Floe sponsors all gas for agents using the facilitator |
+| Funding | Buy USDC from the [dashboard](../developers/developer-dashboard.md) via Coinbase (credit card or bank transfer) |
 
 ---
 

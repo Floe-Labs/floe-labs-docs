@@ -7,10 +7,10 @@ Get your agent a USDC credit line in **5 minutes.** Deposit USDC, borrow up to 9
 ## What you'll need
 
 - Node.js 18+ (or Python 3.10+)
-- An EVM wallet your agent controls (private key, Coinbase CDP, Privy, Turnkey — any signer works)
+- An EVM wallet your agent controls (private key, Coinbase CDP, Privy, Turnkey — any signer)
 - USDC on Base (that's it — no ETH needed for gas, Floe sponsors it)
 
-> **Don't have USDC on Base?** Fund via [Coinbase](https://www.coinbase.com), [Bridge](https://bridge.xyz), or any Base bridge. Fiat on-ramp coming soon.
+> **Don't have USDC on Base?** Buy directly from the [Developer Dashboard](../developers/developer-dashboard.md) via Coinbase, or bridge from any chain.
 
 ---
 
@@ -66,13 +66,13 @@ If your agent supports MCP (Claude Desktop, Cursor), add Floe's hosted MCP serve
 The fastest path is `instant_borrow` — deposits your USDC collateral and borrows against it in one call:
 
 ```ts
-// Deposit 10,000 USDC as collateral, borrow 9,500 USDC (95% LTV)
+// Deposit 10,000 USDC, borrow 9,500 (95% LTV), max 8% APR, 30 days
 const result = await agent.run("instant_borrow", {
-  marketId: "USDC/USDC",                // same-token market
+  marketId: "USDC/USDC",                // same-token working capital market
   borrowAmount: "9500000000",            // $9,500 USDC (6 decimals)
   collateralAmount: "10000000000",       // $10,000 USDC deposit
-  maxInterestRateBps: "800",             // max 8% APR
-  duration: "2592000",                   // 30 days
+  maxInterestRateBps: "800",             // 8% APR cap
+  duration: "2592000",                   // 30 days in seconds
 });
 // → { loanId, rate, collateralLocked, usdcReceived }
 ```

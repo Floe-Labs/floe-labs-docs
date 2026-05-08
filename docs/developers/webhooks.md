@@ -16,6 +16,8 @@ Webhooks push loan events to your server in real time. Instead of polling the [C
 | `loan.expiry_warning` | 24 hours before loan maturity | `maturityTime`, `hoursRemaining` |
 | `loan.liquidated` | Loan was liquidated on-chain | `principal`, `collateralAmount`, `liquidationLtvBps` |
 | `loan.repaid` | Loan was fully repaid | `principal`, `collateralAmount`, `interestRateBps` |
+| `credit.utilization_warning` | Borrowed principal exceeds 80% of credit limit | `utilizationBps`, `creditLimitRaw`, `creditUsedRaw` |
+| `delegation.expiry_warning` | Operator delegation expires within 7 days (or 24 hours for urgent) | `expiryTimestamp`, `hoursRemaining`, `agentId` |
 
 ## Scopes
 

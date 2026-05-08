@@ -8,6 +8,36 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.6.0 — Same-Token Markets, Fiat On-Ramp, Multi-Agent (May 2026)
+
+**Same-Token Markets (Upgrade #13):**
+
+* **USDC/USDC market live on Base Mainnet.** Deposit USDC, borrow up to 95% as working capital. No price-volatility risk — the oracle returns a hardcoded 1:1 ratio.
+* New protocol constants: `SAME_TOKEN_MAX_LTV_BPS` (99.5% cap), `SAME_TOKEN_MIN_LTV_GAP_BPS` (0.5% gap). Normal markets (WETH/USDC, cbBTC/USDC) are completely unaffected.
+* Oracle `getPrice()` and `getPriceChecked()` short-circuit for same-token pairs — immune to Chainlink staleness, circuit breaker, and sequencer downtime.
+* Market ID: `0x5027ae5ed5c85380c5dfa34a79915f41f139f4e859f56d15a6f958ea6b662820`
+* 4 contracts upgraded: `LendingLogicsManager`, `LendingCalcLib`, `LendingViewsUpgradeable`, `PriceOracleUpgradeable`
+
+**Fiat On-Ramp:**
+
+* **Buy USDC from the Developer Dashboard** via Coinbase CDP. Credit card, debit card, or bank transfer — USDC lands directly in your agent's wallet on Base. No crypto bridges needed.
+* `POST /v1/onramp/session-token` mints a CDP session token for authenticated developers
+* Webhook verification via Hook0 HMAC-SHA256 for audit trail
+
+**Multi-Agent System:**
+
+* **Up to 5 agents per developer**, each with independent credit limits, rate caps, and delegation expiry.
+* New API routes: `GET/POST /v1/developer/agents`, `GET /v1/developer/agents/:id`, `POST /v1/developer/agents/:id/close`, key management per agent.
+* Agent modes: `managed` (new, server-provisioned) and `legacy` (existing SDK-registered agents).
+* Per-agent session spend limits via `PUT /v1/agents/spend-limit`.
+
+**New Webhook Events:**
+
+* `credit.utilization_warning` — fires when borrowed principal exceeds 80% of credit limit.
+* `delegation.expiry_warning` — fires 7 days and 24 hours before operator delegation expires.
+
+---
+
 ### v1.5.0 — Agent Awareness Primitives (May 2026)
 
 Lets agents reason about their own credit before committing capital. Answers the three rational-agent questions in one round-trip: "do I have credit?", "is this call worth its cost?", "where am I in the loan lifecycle?".

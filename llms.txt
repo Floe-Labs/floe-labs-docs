@@ -62,11 +62,14 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 
 - **Network**: Base mainnet (chain ID 8453)
 - **Loan tokens**: USDC, USDT
-- **Collateral**: WETH, cbBTC
+- **Collateral**: USDC (primary, same-token market at 95% LTV), WETH, cbBTC
+- **Primary market**: USDC/USDC — deposit USDC, borrow up to 95% as working capital, hardcoded 1:1 oracle, no price risk
 - **Lending matcher proxy**: 0x17946cD3e180f82e632805e5549EC913330Bb175
 - **Facilitator EOA**: 0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1
-- **Credit model**: Secured (overcollateralized), fixed rate, fixed term
+- **Credit model**: Secured, fixed rate, fixed term. USDC/USDC has no price-volatility liquidation risk.
 - **Gas**: Sponsored by Floe for agents using the x402 facilitator
+- **Fiat on-ramp**: Buy USDC via Coinbase (credit card / bank transfer) from the Developer Dashboard
+- **Multi-agent**: Up to 5 agents per developer, each with independent credit line
 - **AgentKit actions**: 45 total (30 Floe + 6 x402 + 9 agent-awareness)
 - **MCP tools**: 36 (12 read + 9 write + 3 analysis + 3 utility + 9 agent-awareness)
 - **Agent-awareness primitives**: get_credit_remaining, get_loan_state, {get,set,clear}_spend_limit, {list,register,delete}_credit_threshold, estimate_x402_cost

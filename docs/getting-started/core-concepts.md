@@ -36,7 +36,7 @@ Two intents match when:
 
 1. Same market (e.g., USDC/USDC or USDC/WETH)
 2. Rate compatible — borrower's max rate >= lender's min rate
-3. LTV gap met — for volatile markets, borrower's LTV + 8% <= lender's max LTV. For USDC/USDC, only 0.5% gap required.
+3. LTV gap met — for volatile markets: borrower's LTV + 8% <= lender's max LTV; for USDC/USDC: only 0.5% gap required
 4. Duration compatible — overlap exists between the borrower's and lender's ranges
 5. Both intents are unexpired
 
@@ -178,7 +178,33 @@ Floe surfaces onchain credit scores via [Cred Protocol](https://cred.xyz) on the
 - **Credit REST API** — HTTP endpoints for any language
 - **LendrBot** — natural-language assistant for humans
 
--> [AgentKit](../developers/agentkit.md) | [MCP Server](../developers/mcp-server.md) | [Credit REST API](../developers/credit-api.md)
+---
+
+## 13. LendrBot & agent interfaces
+
+- **LendrBot** — natural-language assistant for humans. "Borrow 5000 USDC for 30 days at max 6% APR."
+- **MCP server** — same actions exposed to any Claude/OpenAI/Cursor-compatible agent.
+- **AgentKit** — TS + Python SDKs with 45 actions.
+
+→ [LendrBot](../user/lendr-ai.md) · [MCP Server](../developers/mcp-server.md) · [AgentKit](../developers/agentkit.md)
+
+---
+
+## 14. Markets
+
+A market is a (loan token, collateral token) pair. Currently live:
+
+| Market | Loan token | Collateral | Max LTV | Liquidation risk |
+|---|---|---|---|---|
+| **USDC/USDC** | USDC | USDC | **95%** | **Interest accrual only** |
+| USDC/WETH | USDC | WETH | 70% | Price volatility |
+| USDC/cbBTC | USDC | cbBTC | 70% | Price volatility |
+| USDT/WETH | USDT | WETH | 70% | Price volatility |
+| USDT/cbBTC | USDT | cbBTC | 70% | Price volatility |
+
+**USDC/USDC (same-token market):** The protocol hardcodes a 1:1 oracle ratio — no external price feed, no circuit breaker impact. LTV gap reduced to 0.5% (vs 8% for volatile markets). Designed for secured working capital lines.
+
+New markets are added by governance and have their own default rate, default LTV, protocol fee, and liquidation incentive.
 
 ---
 

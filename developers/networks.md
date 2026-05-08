@@ -42,21 +42,24 @@ The **Facilitator EOA** is the address you pass as the `operator` argument to `s
 
 ### Token Addresses
 
-| Token  | Role       | Address                                      | Decimals |
-| ------ | ---------- | -------------------------------------------- | -------- |
-| USDC   | Loan Token | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6        |
-| USDT   | Loan Token | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6        |
-| WETH   | Collateral | `0x4200000000000000000000000000000000000006` | 18       |
-| cbBTC  | Collateral | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8        |
+| Token  | Role                  | Address                                      | Decimals |
+| ------ | --------------------- | -------------------------------------------- | -------- |
+| USDC   | Loan + Collateral     | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6        |
+| USDT   | Loan Token            | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6        |
+| WETH   | Collateral            | `0x4200000000000000000000000000000000000006` | 18       |
+| cbBTC  | Collateral            | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8        |
 
 ### Active Markets
 
-| Market     | Loan Token | Collateral Token |
-| ---------- | ---------- | ---------------- |
-| USDC/WETH  | USDC       | WETH             |
-| USDC/cbBTC | USDC       | cbBTC            |
-| USDT/WETH  | USDT       | WETH             |
-| USDT/cbBTC | USDT       | cbBTC            |
+| Market     | Loan Token | Collateral Token | Max LTV | Notes |
+| ---------- | ---------- | ---------------- | ------- | ----- |
+| **USDC/USDC** | USDC    | USDC             | **95%** | Secured working capital — no price risk, hardcoded 1:1 oracle |
+| USDC/WETH  | USDC       | WETH             | 70%     | |
+| USDC/cbBTC | USDC       | cbBTC            | 70%     | |
+| USDT/WETH  | USDT       | WETH             | 70%     | |
+| USDT/cbBTC | USDT       | cbBTC            | 70%     | |
+
+The **USDC/USDC market** (`marketId: 0x5027ae5ed5c85380c5dfa34a79915f41f139f4e859f56d15a6f958ea6b662820`) is the recommended market for AI agents. Deposit USDC, borrow up to 95% as working capital. No liquidation risk from price movements — the only path to liquidation is unpaid interest accrual.
 
 ### Configuration
 
