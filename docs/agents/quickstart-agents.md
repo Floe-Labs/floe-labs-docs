@@ -28,7 +28,7 @@ npm install floe-agent @coinbase/agentkit viem zod
 pip install floe-agentkit-actions
 ```
 
-Both SDKs expose the same 45 actions. Pick the one that matches your stack.
+Both SDKs expose the same 36 actions. Pick the one that matches your stack.
 
 ---
 
@@ -61,9 +61,9 @@ If your agent supports MCP (Claude Desktop, Cursor), add Floe's hosted MCP serve
 
 ---
 
-## Step 3 — Borrow
+## Step 3 — Get working capital
 
-The fastest path is `instant_borrow` — it auto-selects the best available lender and matches in one call:
+The fastest path is `instant_borrow` — deposits your USDC collateral and borrows against it in one call:
 
 ```ts
 // Deposit 10,000 USDC, borrow 9,500 (95% LTV), max 8% APR, 30 days
@@ -77,38 +77,38 @@ const result = await agent.run("instant_borrow", {
 // → { loanId, rate, collateralLocked, usdcReceived }
 ```
 
-Or browse available offers first with `request_credit`, then match a specific one with `manual_match_credit`.
+USDC lands in your agent's wallet. Done.
 
-Once matched, USDC lands in the agent's wallet. The loan shows up under `get_my_loans`.
+> **Have ETH or BTC instead?** Use the WETH/USDC or cbBTC/USDC markets — same `instant_borrow` call, just change the `marketId` and `collateralAmount`.
 
 ---
 
-## Step 4 — Manage the loan
+## Step 4 — Manage the credit line
 
-| Action | When to call |
+| Action | When to use |
 |---|---|
-| `check_loan_health` | On a timer / before risky operations |
-| `check_credit_status` | See accrued interest, time to expiry, early repay costs |
-| `add_collateral` | If LTV is creeping toward liquidation |
-| `repay_credit` | When the agent has earned enough USDC |
-| `repay_and_reborrow` | Rollover into a new loan in one call |
+| `check_credit_status` | See balance, accrued interest, time to expiry |
+| `repay_credit` | Repay and get your deposit back |
+| `repay_and_reborrow` | Roll over into a new loan in one call |
+| `add_collateral` | Increase your deposit to extend the credit line |
 
-Full reference: [AgentKit Actions](../developers/agentkit.md) (45 actions).
+Full action reference: [AgentKit Actions](../developers/agentkit.md) (36 actions).
 
 ---
 
 ## Common issues
 
-- **Match never happens.** Your max rate is below market or your matcher commission is 0. Increase the commission first.
-- **Liquidation risk.** Set up a `check_loan_health` timer in your agent loop, every 60s minimum during volatile markets.
-- **Token approval errors.** Floe's write actions auto-approve with a 1% buffer. If your wallet provider blocks, approve manually first.
-- **`flash_loan` reverts.** Your wallet is an EOA. Use `flash_arb` (or `deploy_flash_arb_receiver` first) — see [Flash Loans](../developers/flash-loans.md).
+| Problem | Fix |
+|---|---|
+| Match never happens | Your max rate is below market. Increase `maxInterestRateBps` or the matcher commission. |
+| Token approval errors | Floe's write actions auto-approve with a 1% buffer. If your wallet blocks, approve USDC manually first. |
+| Want zero-touch payments | Use the [x402 facilitator](../developers/x402-facilitator.md) — delegate once, then just call `fetch()`. |
 
 ---
 
 ## Next steps
 
 - [Credit for Agents](credit-for-agents.md) — full overview
-- [AgentKit TypeScript SDK](../developers/agentkit-typescript.md) · [Python SDK](../developers/agentkit-python.md)
-- [x402 Credit Facilitator](../developers/x402-facilitator.md) — zero-tx API payments
-- [MCP Server](../developers/mcp-server.md)
+- [Agent Quickstart (Developer)](../developers/agent-quickstart.md) — complete happy-path walkthrough
+- [x402 Credit Facilitator](../developers/x402-facilitator.md) — zero-touch API payments
+- [Credit REST API](../developers/credit-api.md) — HTTP endpoints, no SDK needed

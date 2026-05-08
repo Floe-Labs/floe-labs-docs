@@ -1,6 +1,6 @@
 # Credit for Agents
 
-Secured working capital for AI agents. Fixed rates. Per-loan isolated escrow. **Gas-free — Floe sponsors all gas costs.**
+Working capital for AI agents. Fixed rates. No price-volatility risk. **Gas-free — Floe sponsors all transaction costs.**
 
 ---
 
@@ -14,7 +14,7 @@ For agents that already hold ETH or BTC: Floe also supports WETH and cbBTC colla
 
 ---
 
-## How an agent uses Floe in practice
+## Two ways to use Floe
 
 ### Example: Working capital line
 
@@ -30,7 +30,7 @@ A yield optimizer needs $5,000 USDC. It posts 2 WETH as collateral, borrows USDC
 
 ---
 
-## Pricing
+## What it costs
 
 | Parameter | Value |
 |---|---|
@@ -43,25 +43,40 @@ A yield optimizer needs $5,000 USDC. It posts 2 WETH as collateral, borrows USDC
 
 ---
 
-## Composability
+## Why USDC collateral?
 
-Because Floe is intent-based and per-loan isolated, you can:
+Most DeFi lending requires volatile crypto as collateral (ETH, BTC). That means managing liquidation risk, monitoring prices, and over-collateralizing significantly.
 
-- Run dozens of small lines simultaneously without cross-contamination
-- Build agent-to-agent credit (one agent lends to another's intent)
-- Use Floe as a primitive inside a larger agent framework — it's just another tool
+Floe's USDC/USDC market eliminates all of that:
+
+- **No liquidation risk from price movements** — collateral and loan are the same asset
+- **95% LTV** — deposit $10K, get $9.5K (vs. 30-70% on volatile collateral)
+- **No token swaps needed** — if you have USDC, you're ready
+- **Fiat on-ramp coming soon** — deposit with a credit card or bank transfer, get a credit line instantly
+
+---
+
+## Building credit history
+
+Every loan your agent takes and repays builds on-chain credit history. This history will unlock:
+
+- **Higher LTV** (up to 150% for qualified agents — underwritten by receivables)
+- **Lower rates** from lenders who can verify repayment track record
+- **Larger credit lines** as the agent proves reliability
 
 ---
 
 ## What Floe will not do
 
-- Custody your agent's funds. Floe is non-custodial. Smart contracts hold collateral and route repayments.
-- Liquidate without warning. Smart-contract-enforced grace periods give agents time to act.
+- **Custody your agent's funds.** Collateral is held by audited smart contracts, not by Floe.
+- **Liquidate without cause.** For USDC/USDC loans, the only path to liquidation is unpaid interest — no price-driven liquidations.
+- **Change your rate mid-term.** Fixed rate, fixed term, always.
 
 ---
 
 ## Next
 
-- **Get started:** [Quick Start (Agents)](quickstart-agents.md) — borrow in 5 minutes
-- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 45 actions across TS + Python
-- **x402 proxy:** [x402 Credit Facilitator](../developers/x402-facilitator.md) — zero-tx API payments
+- **Get started:** [Agent Quickstart](../developers/agent-quickstart.md) — working capital in 5 minutes
+- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 36 actions across TypeScript + Python
+- **x402 proxy:** [x402 Credit Facilitator](../developers/x402-facilitator.md) — zero-touch API payments
+- **Dashboard:** [Developer Dashboard](../developers/developer-dashboard.md) — manage agents via web UI

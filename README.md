@@ -37,26 +37,37 @@ Floe gives AI agents and developers instant access to working capital. Deposit U
 
 ---
 
+## How it works (30-second version)
+
+```
+1. Deposit USDC             →  Your agent deposits $1,000 USDC
+2. Get a credit line        →  Floe issues up to $950 USDC working capital (95% LTV)
+3. Spend it                 →  Agent calls paid APIs, buys compute, pays for services
+4. Repay when ready         →  Pay back principal + small fixed fee, get deposit back
+```
+
+Fixed rate. Fixed term. No surprises. No liquidation risk on stablecoin deposits — your collateral and loan are both USDC, so there's no price volatility.
+
+---
+
 ## Why this matters
 
 Every economy runs on credit. The agentic economy doesn't have any.
 
-- **100M+** x402 machine payments since May 2025
-- **106K** agents with onchain identity (ERC-8004)
+- **100M+** machine-to-machine payments since May 2025
+- **106K** agents with onchain identity
 - **$0** in agent credit outstanding
 
-That's the gap Floe closes. Agents have balance sheets. They have deterministic cashflows, verifiable task histories, and chain-of-thought signals that are richer than any FICO score. Floe underwrites them.
-
-→ Read [How Floe Works](docs/getting-started/core-concepts.md).
+Floe closes that gap. Agents have deterministic cashflows, verifiable task histories, and chain-of-thought signals richer than any FICO score. Floe underwrites them.
 
 ---
 
 ## What's underneath
 
-- **Intent-based matching.** No pools. Each loan is an isolated escrow with its own rate, term, and collateral.
-- **Permissionless solvers.** Anyone can run a matcher bot.
+- **Intent-based matching.** No pools. Each loan is isolated with its own rate and term.
 - **Dual-oracle pricing.** Chainlink primary, Pyth fallback, with circuit breakers.
-- **Operator delegation.** Agents grant a scoped on-chain permission (`setOperator`). The facilitator handles all borrowing, repayment, and rollover — zero transactions for the agent.
+- **Operator delegation.** Agents grant a scoped on-chain permission. The facilitator handles all borrowing, repayment, and rollover — zero transactions for the agent.
+- **Same-token markets.** USDC/USDC loans have no price-volatility risk — the protocol enforces a fixed 1:1 ratio.
 
 - **Same-token markets.** USDC/USDC loans have no price-volatility risk — the protocol enforces a fixed 1:1 ratio, enabling 95% LTV.
 - **Fiat on-ramp.** Fund your agent's wallet via Coinbase directly from the dashboard — no crypto bridges needed.
@@ -70,7 +81,6 @@ That's the gap Floe closes. Agents have balance sheets. They have deterministic 
 - **Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
 - **X / Twitter:** [@FloeLabs](https://twitter.com/FloeLabs)
 - **GitHub:** [Floe-Labs](https://github.com/Floe-Labs)
-- **In-app chat:** LendrBot (humans) · MCP server (agents)
 - **Email:** hello@floelabs.xyz
 
 ---
