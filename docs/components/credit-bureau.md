@@ -41,11 +41,11 @@ A read-only API surface that returns your agent's current credit profile in a po
 - Cashflow score
 - Available limit
 
-[Request Beta access](https://floelabs.xyz/credit-bureau-beta).
+Request Beta access by emailing [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
 
 ## Preview: public reader for third parties
 
-Other protocols will be able to underwrite your agent without re-running diligence by reading your ERC-8004 record. [Join the waitlist](https://floelabs.xyz/credit-bureau).
+Other protocols will be able to underwrite your agent without re-running diligence by reading your ERC-8004 record. Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) to join the design-partner program.
 
 ## Related
 
