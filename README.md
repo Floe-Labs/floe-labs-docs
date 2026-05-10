@@ -2,24 +2,24 @@
 icon: hand-wave
 ---
 
-# Floe — Working Capital for AI Agents
+# Floe — The Financial OS for AI Agents
 
-**Get a USDC credit line in one API call.** Deposit USDC, borrow up to 95% instantly, pay only for what you use. No crypto complexity. Live on Base.
+**Wallet, fiat on/off-ramp, working capital, x402 payments, and portable credit.** One SDK. Works with AgentKit, LangChain, CrewAI, ElizaOS, OpenAI, Claude, and any framework that speaks HTTP.
 
 ---
 
-## What Floe does
+## The Floe Stack
 
-Floe gives AI agents and developers instant access to working capital. Deposit USDC, get a credit line, spend it on APIs, compute, or anything your agent needs. Repay when you're ready — your deposit returns automatically.
+Everything your agent needs to earn, spend, and build credit. Six components. One SDK.
 
-| What | How |
-|---|---|
-| **Secured credit line** | Deposit USDC, borrow up to 95% at a fixed rate |
-| **x402 payment proxy** | Your agent calls any paid API — Floe handles payment automatically |
-| **Gas-free** | Floe sponsors all blockchain transaction costs |
-| **Fund with fiat** | Buy USDC directly from the dashboard via Coinbase (credit card or bank transfer) |
-
-> **Already have ETH or BTC?** Floe also supports WETH and cbBTC as collateral for USDC loans — [see all markets](developers/networks.md).
+| # | Component | What it does | Status |
+|---|---|---|---|
+| 01 | **[Agent Wallet](docs/components/wallet.md)** | Non-custodial smart-contract wallet with ERC-8004 identity, programmable spend limits, allowed-destination permissions enforced on-chain. | `GA` |
+| 02 | **[Fiat on/off-ramp](docs/components/onramp.md)** | USDC in via cards, bank, Apple Pay, Google Pay. Local payouts in 100+ countries. | Onramp `GA` · Offramp `Preview` |
+| 03 | **[Secured working capital](docs/components/secured-credit.md)** | Instant credit against on-chain collateral. One API call to borrow. 3,000+ lines · zero defaults. | `GA` |
+| 04 | **[Unsecured working capital](docs/components/unsecured-credit.md)** | Credit underwritten against agent receivables and chain-of-thought signals. | `Preview` |
+| 05 | **[x402 payment facilitator](docs/components/x402.md)** | One proxy endpoint to pay any of 13,000+ x402 APIs. ~50ms signing. | `GA` |
+| 06 | **[Credit & trust bureau](docs/components/credit-bureau.md)** | Every repayment writes to a portable ERC-8004 record. | Reader `Beta` · Writer `Preview` |
 
 ---
 
@@ -27,27 +27,32 @@ Floe gives AI agents and developers instant access to working capital. Deposit U
 
 | If you are... | Start here |
 |---|---|
-| New to crypto — just want my agent to work | [Bank Account → First API Call](docs/agents/fiat-to-x402.md) — fund with a card, no crypto needed |
-| A developer building an AI agent | [Agent Quickstart](docs/developers/agent-quickstart.md) — working capital in 5 minutes |
-| An agent operator (Vapi, Retell, Browserbase, etc.) | [Quick Start (Agents)](docs/agents/quickstart-agents.md) |
+| New to Floe | [5-minute Quickstart](docs/getting-started/quickstart.md) — wires the full loop |
+| Building with Coinbase AgentKit | [AgentKit guide](docs/frameworks/agentkit.md) |
+| Building with LangChain | [LangChain guide](docs/frameworks/langchain.md) |
+| Building with CrewAI | [CrewAI guide](docs/frameworks/crewai.md) |
+| Using Claude Desktop / Claude Code / Cursor | [Claude / MCP guide](docs/frameworks/claude-mcp.md) |
+| Calling Floe directly over HTTP | [REST API guide](docs/frameworks/http.md) |
+| New to crypto — just want my agent to work | [Bank Account → First API Call](docs/agents/fiat-to-x402.md) |
 | A human earning yield or borrowing | [Quick Start (Humans)](docs/getting-started/quick-start.md) |
-| Exploring the API | [Credit REST API](docs/developers/credit-api.md) — no SDK needed |
 
 **Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
 **Network:** Base (Coinbase's L2 — fast, cheap, built for payments)
 
 ---
 
-## How it works (30-second version)
+## How it works — the full financial loop
 
 ```
-1. Deposit USDC             →  Your agent deposits $1,000 USDC
-2. Get a credit line        →  Floe issues up to $950 USDC working capital (95% LTV)
-3. Spend it                 →  Agent calls paid APIs, buys compute, pays for services
-4. Repay when ready         →  Pay back principal + small fixed fee, get deposit back
+1. Setup     register your agent (ERC-8004 identity, programmable wallet)
+2. Fund      USDC in via cards, bank, Apple Pay, Google Pay, or on-chain
+3. Borrow    one API call to instant_borrow — fixed rate, fixed term, isolated
+4. Spend     x402_fetch any of 13,000+ APIs through the Floe facilitator
+5. Repay     repay_loan — collateral auto-returns in the same tx
+6. Trust     every repayment writes to your agent's on-chain credit record
 ```
 
-Fixed rate. Fixed term. No surprises. No liquidation risk on stablecoin deposits — your collateral and loan are both USDC, so there's no price volatility.
+See [Quickstart](docs/getting-started/quickstart.md) for the runnable version.
 
 ---
 
@@ -62,7 +67,7 @@ Every economy in history has run on credit. Credit needs trust as collateral. Ag
 - **3,000+** secured working capital lines issued through Floe
 - **Zero** defaults or losses
 
-Floe is the credit bureau and capital rail for AI agents.
+Floe is the **Financial OS** for that economy — the wallet, the rails, the working-capital lender, the x402 facilitator, and the credit bureau, in one SDK.
 
 ---
 
@@ -71,12 +76,22 @@ Floe is the credit bureau and capital rail for AI agents.
 - **Intent-based matching.** No pools. Each loan is isolated with its own rate and term.
 - **Dual-oracle pricing.** Chainlink primary, Pyth fallback, with circuit breakers.
 - **Operator delegation.** Agents grant a scoped on-chain permission. The facilitator handles all borrowing, repayment, and rollover — zero transactions for the agent.
-- **Same-token markets.** USDC/USDC loans have no price-volatility risk — the protocol enforces a fixed 1:1 ratio.
-
 - **Same-token markets.** USDC/USDC loans have no price-volatility risk — the protocol enforces a fixed 1:1 ratio, enabling 95% LTV.
 - **Fiat on-ramp.** Fund your agent's wallet via Coinbase directly from the dashboard — no crypto bridges needed.
+- **Portable credit.** Every repayment writes to an ERC-8004 record other protocols can read.
 
 [Architecture](docs/protocol/architecture.md) | [Security](docs/protocol/security.md) | [Contract Addresses](developers/networks.md)
+
+---
+
+## Maturity legend
+
+Throughout the docs you'll see component and framework badges:
+
+- `GA` — production, supported, on the pricing page
+- `Beta` — usable, API may change, gated by feature flag
+- `Preview` — design-partner / waitlist
+- `Roadmap` — committed, no code yet
 
 ---
 
