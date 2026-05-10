@@ -1,40 +1,58 @@
 # Table of contents
 
-* [Floe — Working Capital for AI Agents](README.md)
+* [Floe — The Financial OS for AI Agents](README.md)
 
 ## Getting Started
 
+* [Quickstart (5 minutes)](docs/getting-started/quickstart.md)
+* [Core Concepts](docs/getting-started/core-concepts.md)
 * [Quick Start (Humans)](docs/getting-started/quick-start.md)
-* [Quick Start (Agents)](docs/agents/quickstart-agents.md)
-* [How Floe Works](docs/getting-started/core-concepts.md)
 
-## For Agent Operators
+## Components
 
-* [From Bank Account to First API Call](docs/agents/fiat-to-x402.md)
-* [Credit for Agents](docs/agents/credit-for-agents.md)
+* [Agent Wallet](docs/components/wallet.md)
+* [Fiat on/off-ramp](docs/components/onramp.md)
+* [Secured working capital](docs/components/secured-credit.md)
+* [Unsecured working capital](docs/components/unsecured-credit.md)
+* [x402 payment facilitator](docs/components/x402.md)
+* [Credit & trust bureau](docs/components/credit-bureau.md)
 
-## For Users (Lend / Borrow)
+## Frameworks
 
-* [How to Lend](docs/user/lend.md)
-* [How to Borrow](docs/user/borrow.md)
+* [Coinbase AgentKit](docs/frameworks/agentkit.md)
+  * [TypeScript SDK](docs/developers/agentkit-typescript.md)
+  * [Python SDK](docs/developers/agentkit-python.md)
+* [LangChain](docs/frameworks/langchain.md)
+* [Vercel AI SDK](docs/frameworks/vercel-ai.md)
+* [CrewAI](docs/frameworks/crewai.md)
+* [ElizaOS](docs/frameworks/elizaos.md)
+* [OpenAI Agents SDK](docs/frameworks/openai.md)
+* [Claude Desktop / Claude Code / Cursor (MCP)](docs/frameworks/claude-mcp.md)
+* [Plain HTTP / REST](docs/frameworks/http.md)
+
+## Guides
+
+* [Agent Operators — From Bank Account to First API Call](docs/agents/fiat-to-x402.md)
+* [Agent Operators — Credit for Agents](docs/agents/credit-for-agents.md)
+* [Lenders — How to Lend](docs/user/lend.md)
+* [Borrowers — How to Borrow](docs/user/borrow.md)
 * [Risk & Liquidations](docs/user/risk-liquidations.md)
 * [Credit Scores](docs/user/credit-scores.md)
 * [Using LendrBot AI](docs/user/lendr-ai.md)
 
 ## Developers
 
-* [Agent Working Capital Quickstart](docs/developers/agent-quickstart.md)
 * [Developer Dashboard](docs/developers/developer-dashboard.md)
 * [API Keys](docs/developers/api-keys.md)
 * [Agent Runtime Contract](docs/developers/agent-runtime-contract.md)
 * [x402 Credit Facilitator](docs/developers/x402-facilitator.md)
 * [MCP Server](docs/developers/mcp-server.md)
 * [Webhooks](docs/developers/webhooks.md)
-* [AgentKit Integration](docs/developers/agentkit.md)
-  * [TypeScript SDK](docs/developers/agentkit-typescript.md)
-  * [Python SDK](docs/developers/agentkit-python.md)
 * [Agent Working Capital](docs/developers/agent-working-capital.md)
 * [Agent Awareness](docs/developers/agent-awareness.md)
+
+## API Reference
+
 * [Credit REST API](docs/developers/credit-api.md)
 
 ## Protocol
