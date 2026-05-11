@@ -1,0 +1,22 @@
+{
+  "id": "bloomfilter",
+  "name": "Bloomfilter",
+  "provider": "Bloomfilter",
+  "homepage": "https://bloomfilter.io",
+  "description": "Domain registration and DNS management with no account.",
+  "resource": "https://api.bloomfilter.io/v1/domains",
+  "method": "POST",
+  "category": "web-search",
+  "tags": [
+    "dns",
+    "domains",
+    "registration"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

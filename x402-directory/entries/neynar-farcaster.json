@@ -1,0 +1,22 @@
+{
+  "id": "neynar-farcaster",
+  "name": "Neynar Farcaster",
+  "provider": "Neynar",
+  "homepage": "https://neynar.com",
+  "description": "Farcaster cast data. No API keys, pay-per-call USDC.",
+  "resource": "https://api.neynar.com/v2/farcaster/x402/cast",
+  "method": "GET",
+  "category": "social-news",
+  "tags": [
+    "farcaster",
+    "social",
+    "casts"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

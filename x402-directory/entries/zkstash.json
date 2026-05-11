@@ -1,0 +1,22 @@
+{
+  "id": "zkstash",
+  "name": "zkStash",
+  "provider": "zkStash",
+  "homepage": "https://zkstash.xyz",
+  "description": "Shared memory layer for agents.",
+  "resource": "https://api.zkstash.xyz/v1/store",
+  "method": "POST",
+  "category": "storage",
+  "tags": [
+    "memory",
+    "agents",
+    "shared"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

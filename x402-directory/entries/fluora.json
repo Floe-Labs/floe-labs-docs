@@ -1,0 +1,22 @@
+{
+  "id": "fluora",
+  "name": "Fluora",
+  "provider": "Fluora",
+  "homepage": "https://fluora.xyz",
+  "description": "Agent workflow orchestration with x402 billing.",
+  "resource": "https://api.fluora.xyz/v1/workflow",
+  "method": "POST",
+  "category": "agent-tooling",
+  "tags": [
+    "workflow",
+    "orchestration",
+    "agents"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

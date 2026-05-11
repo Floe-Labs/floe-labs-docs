@@ -1,0 +1,22 @@
+{
+  "id": "einstein-ai",
+  "name": "Einstein AI",
+  "provider": "Einstein AI",
+  "homepage": "https://einstein.ai",
+  "description": "Whale tracking, MEV, and smart-money signals.",
+  "resource": "https://api.einstein.ai/v1/whales",
+  "method": "GET",
+  "category": "crypto-data",
+  "tags": [
+    "whales",
+    "mev",
+    "smart-money"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

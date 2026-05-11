@@ -1,0 +1,22 @@
+{
+  "id": "hyperbrowser",
+  "name": "Hyperbrowser",
+  "provider": "Hyperbrowser",
+  "homepage": "https://hyperbrowser.ai",
+  "description": "Pay-per-use browser automation for agents.",
+  "resource": "https://api.hyperbrowser.ai/v1/browse",
+  "method": "POST",
+  "category": "browser-compute",
+  "tags": [
+    "browser",
+    "automation",
+    "agents"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

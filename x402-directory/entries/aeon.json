@@ -1,0 +1,22 @@
+{
+  "id": "aeon",
+  "name": "AEON",
+  "provider": "AEON",
+  "homepage": "https://aeon.xyz",
+  "description": "Real-world merchant settlement in SEA, LATAM, Africa.",
+  "resource": "https://api.aeon.xyz/v1/settle",
+  "method": "POST",
+  "category": "payments-commerce",
+  "tags": [
+    "merchants",
+    "settlement",
+    "global"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.10",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

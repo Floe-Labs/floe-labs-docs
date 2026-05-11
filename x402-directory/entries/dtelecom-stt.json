@@ -1,0 +1,22 @@
+{
+  "id": "dtelecom-stt",
+  "name": "dTelecom STT",
+  "provider": "dTelecom",
+  "homepage": "https://dtelecom.org",
+  "description": "Real-time speech-to-text in 99+ languages.",
+  "resource": "https://api.dtelecom.org/v1/transcribe",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "speech-to-text",
+    "transcription",
+    "multilingual"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

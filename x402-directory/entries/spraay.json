@@ -1,0 +1,22 @@
+{
+  "id": "spraay",
+  "name": "Spraay",
+  "provider": "Spraay",
+  "homepage": "https://spraay.ai",
+  "description": "AI inference including Replicate-backed image/video/audio.",
+  "resource": "https://api.spraay.ai/v1/run",
+  "method": "POST",
+  "category": "media-generation",
+  "tags": [
+    "replicate",
+    "inference",
+    "multimodal"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.02",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

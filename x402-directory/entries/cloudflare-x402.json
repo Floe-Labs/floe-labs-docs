@@ -1,0 +1,23 @@
+{
+  "id": "cloudflare-x402",
+  "name": "Cloudflare Pay-per-Crawl",
+  "provider": "Cloudflare",
+  "homepage": "https://www.cloudflare.com",
+  "description": "Pay-per-crawl for AI agents accessing web content.",
+  "resource": "https://x402.cloudflare.com/crawl",
+  "method": "POST",
+  "category": "infra-gateway",
+  "tags": [
+    "cloudflare",
+    "crawl",
+    "web",
+    "ai"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "preview"
+}

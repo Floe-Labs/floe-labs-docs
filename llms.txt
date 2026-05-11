@@ -35,6 +35,7 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 - [MCP Server](https://floe-labs.gitbook.io/docs/developers/mcp-server): Hosted MCP endpoint, 36 tools
 - [Agent Awareness](https://floe-labs.gitbook.io/docs/developers/agent-awareness): Decision-loop primitives — credit-remaining, loan-state, spend-limit, credit-thresholds, x402-estimate
 - [x402 Credit Facilitator](https://floe-labs.gitbook.io/docs/developers/x402-facilitator): Zero-tx API payments via operator delegation
+- [x402 API Directory](https://floe-labs.gitbook.io/docs/x402-directory): 60 verified x402 APIs callable with Floe credit — web search, crypto data, LLM inference, media generation, and more
 - [Credit REST API](https://floe-labs.gitbook.io/docs/developers/credit-api): HTTP endpoints for any language
 - [Agent Runtime Contract](https://floe-labs.gitbook.io/docs/developers/agent-runtime-contract): Error matrix + retry rules
 - [Webhooks](https://floe-labs.gitbook.io/docs/developers/webhooks): Push notifications for loan + credit events (credit.warning, credit.at_limit, credit.recovered)

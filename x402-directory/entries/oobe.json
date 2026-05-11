@@ -1,0 +1,22 @@
+{
+  "id": "oobe",
+  "name": "OOBE",
+  "provider": "OOBE",
+  "homepage": "https://oobe.xyz",
+  "description": "Decentralized identity and reputation scoring.",
+  "resource": "https://api.oobe.xyz/v1/score",
+  "method": "GET",
+  "category": "identity-reputation",
+  "tags": [
+    "identity",
+    "reputation",
+    "score"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

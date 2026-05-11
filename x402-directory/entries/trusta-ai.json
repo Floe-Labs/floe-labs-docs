@@ -1,0 +1,22 @@
+{
+  "id": "trusta-ai",
+  "name": "Trusta.AI",
+  "provider": "Trusta.AI",
+  "homepage": "https://trusta.ai",
+  "description": "Pay USDC on Base to publish attestations.",
+  "resource": "https://api.trusta.ai/v1/attest",
+  "method": "POST",
+  "category": "identity-reputation",
+  "tags": [
+    "attestation",
+    "identity",
+    "trust"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

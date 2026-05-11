@@ -1,0 +1,22 @@
+{
+  "id": "mcpay",
+  "name": "MCPay",
+  "provider": "MCPay",
+  "homepage": "https://mcpay.xyz",
+  "description": "Payment layer for MCP tool servers.",
+  "resource": "https://api.mcpay.xyz/v1/pay",
+  "method": "POST",
+  "category": "agent-tooling",
+  "tags": [
+    "mcp",
+    "payments",
+    "tools"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

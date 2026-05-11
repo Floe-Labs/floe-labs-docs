@@ -1,0 +1,22 @@
+{
+  "id": "coingecko",
+  "name": "CoinGecko",
+  "provider": "CoinGecko",
+  "homepage": "https://www.coingecko.com",
+  "description": "Crypto price and market data via x402.",
+  "resource": "https://api.coingecko.com/api/v3/x402/coins",
+  "method": "GET",
+  "category": "crypto-data",
+  "tags": [
+    "prices",
+    "markets",
+    "tokens"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

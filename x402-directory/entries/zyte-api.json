@@ -1,0 +1,22 @@
+{
+  "id": "zyte-api",
+  "name": "Zyte API",
+  "provider": "Zyte",
+  "homepage": "https://www.zyte.com",
+  "description": "Web scraping with anti-bot unblocking and data extraction.",
+  "resource": "https://api.zyte.com/v1/extract",
+  "method": "POST",
+  "category": "web-search",
+  "tags": [
+    "scraping",
+    "extraction",
+    "unblocking"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

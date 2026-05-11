@@ -1,0 +1,22 @@
+{
+  "id": "exa-search",
+  "name": "Exa Search",
+  "provider": "Exa",
+  "homepage": "https://exa.ai",
+  "description": "AI-native web search API with semantic understanding.",
+  "resource": "https://api.exa.ai/search",
+  "method": "POST",
+  "category": "web-search",
+  "tags": [
+    "search",
+    "semantic",
+    "ai"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

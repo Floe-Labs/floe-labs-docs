@@ -1,0 +1,22 @@
+{
+  "id": "bitrefill",
+  "name": "Bitrefill",
+  "provider": "Bitrefill",
+  "homepage": "https://www.bitrefill.com",
+  "description": "Gift cards, eSIMs, and mobile top-ups via x402.",
+  "resource": "https://api.bitrefill.com/v1/x402/purchase",
+  "method": "POST",
+  "category": "payments-commerce",
+  "tags": [
+    "gift-cards",
+    "esim",
+    "mobile"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "1.00",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

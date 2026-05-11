@@ -1,0 +1,22 @@
+{
+  "id": "gloria-ai",
+  "name": "Gloria AI",
+  "provider": "Gloria AI",
+  "homepage": "https://gloria.ai",
+  "description": "Real-time structured news signals for agents.",
+  "resource": "https://api.gloria.ai/v1/signals",
+  "method": "GET",
+  "category": "social-news",
+  "tags": [
+    "news",
+    "signals",
+    "realtime"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

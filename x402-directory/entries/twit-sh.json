@@ -1,0 +1,22 @@
+{
+  "id": "twit-sh",
+  "name": "twit.sh",
+  "provider": "twit.sh",
+  "homepage": "https://twit.sh",
+  "description": "Real-time Twitter/X data. No API keys needed.",
+  "resource": "https://api.twit.sh/v1/x402/tweets",
+  "method": "GET",
+  "category": "web-search",
+  "tags": [
+    "twitter",
+    "social",
+    "realtime"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

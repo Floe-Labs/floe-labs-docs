@@ -1,0 +1,23 @@
+{
+  "id": "robtex",
+  "name": "Robtex",
+  "provider": "Robtex",
+  "homepage": "https://www.robtex.com",
+  "description": "50+ endpoints: DNS, IP reputation, BGP, passive DNS.",
+  "resource": "https://api.robtex.com/x402/dns",
+  "method": "GET",
+  "category": "web-search",
+  "tags": [
+    "dns",
+    "ip",
+    "security",
+    "reputation"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

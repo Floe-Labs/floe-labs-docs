@@ -1,0 +1,22 @@
+{
+  "id": "mycelia-signal",
+  "name": "Mycelia Signal",
+  "provider": "Mycelia",
+  "homepage": "https://mycelia.xyz",
+  "description": "Ed25519-signed price oracle — 7 feeds incl BTC, ETH, SOL.",
+  "resource": "https://api.mycelia.xyz/v1/price",
+  "method": "GET",
+  "category": "crypto-data",
+  "tags": [
+    "oracle",
+    "prices",
+    "signed"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "askclaude",
+  "name": "AskClaude",
+  "provider": "AskClaude",
+  "homepage": "https://askclaude.shop",
+  "description": "Claude Haiku $0.01, Sonnet $0.03, Opus $0.10 per question. Streaming.",
+  "resource": "https://askclaude.shop/api/ask",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "claude",
+    "llm",
+    "streaming",
+    "ai"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "tiered",
+  "floeCompatible": true,
+  "status": "verified"
+}

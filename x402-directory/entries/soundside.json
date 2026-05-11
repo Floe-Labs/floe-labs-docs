@@ -1,0 +1,23 @@
+{
+  "id": "soundside",
+  "name": "Soundside",
+  "provider": "Soundside",
+  "homepage": "https://soundside.ai",
+  "description": "22 image/video/audio/music tools and providers on Base.",
+  "resource": "https://api.soundside.ai/v1/generate",
+  "method": "POST",
+  "category": "media-generation",
+  "tags": [
+    "audio",
+    "music",
+    "image",
+    "multi-tool"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.02",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

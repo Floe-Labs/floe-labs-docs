@@ -1,0 +1,22 @@
+{
+  "id": "messari",
+  "name": "Messari",
+  "provider": "Messari",
+  "homepage": "https://messari.io",
+  "description": "Crypto intelligence APIs — research, metrics, profiles.",
+  "resource": "https://api.messari.io/x402/assets",
+  "method": "GET",
+  "category": "crypto-data",
+  "tags": [
+    "research",
+    "metrics",
+    "intelligence"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "blockrun",
+  "name": "BlockRun.AI",
+  "provider": "BlockRun.AI",
+  "homepage": "https://blockrun.ai",
+  "description": "ChatGPT, Claude, Google, DeepSeek, xAI — pay-as-you-go on Base.",
+  "resource": "https://api.blockrun.ai/v1/chat",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "llm",
+    "multi-model",
+    "gateway"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}
