@@ -9,10 +9,12 @@ On-chain analytics, prices, wallet intelligence. All payable with Floe credit on
 | API | Provider | Price | Method | Status |
 |-----|----------|-------|--------|--------|
 | AdEx AURA | AdEx | $0.005 | GET | Verified |
+| Alchemy RPC | Alchemy | $0.001 | POST | Verified |
 | CoinGecko | CoinGecko | $0.001 | GET | Verified |
 | DappLooker AI | DappLooker | $0.005 | POST | Verified |
 | DiamondClaws | DiamondClaws | $0.002 | GET | Verified |
 | Einstein AI | Einstein AI | $0.01 | GET | Verified |
+| Heurist Deep Research | Heurist | $0.05 | POST | Verified |
 | invy.bot | invy.bot | $0.002 | GET | Verified |
 | Messari | Messari | $0.005 | GET | Verified |
 | Mycelia Signal | Mycelia | $0.001 | GET | Verified |
@@ -38,6 +40,23 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://api.adex.network/v1/aura", "method": "GET"}'
+```
+
+## Alchemy RPC
+
+**Provider:** [Alchemy](https://www.alchemy.com)
+**Endpoint:** `POST https://api.alchemy.com/v2/x402`
+**Price:** $0.001 USDC per call · Base mainnet · x402 v2
+**Floe compatible:** Yes
+
+> Enhanced RPC and web3 APIs with x402 billing.
+
+```bash
+# Call through Floe
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://api.alchemy.com/v2/x402", "method": "POST"}'
 ```
 
 ## CoinGecko
@@ -106,6 +125,23 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://api.einstein.ai/v1/whales", "method": "GET"}'
+```
+
+## Heurist Deep Research
+
+**Provider:** [Heurist](https://heurist.ai)
+**Endpoint:** `POST https://api.heurist.ai/v1/research`
+**Price:** $0.05 USDC per call · Base mainnet · x402 v2
+**Floe compatible:** Yes
+
+> AI research platform for crypto and DeFi analysis.
+
+```bash
+# Call through Floe
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://api.heurist.ai/v1/research", "method": "POST"}'
 ```
 
 ## invy.bot

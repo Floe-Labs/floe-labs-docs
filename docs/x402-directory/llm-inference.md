@@ -13,6 +13,7 @@ AI model inference — Claude, GPT, open-source models. All payable with Floe cr
 | BlockRun.AI | BlockRun.AI | $0.01 | POST | Verified |
 | Daydreams Router | Daydreams | $0.01 | POST | Verified |
 | dTelecom STT | dTelecom | $0.01 | POST | Verified |
+| Ekai Labs | Ekai Labs | $0.01 | POST | Verified |
 | Octomil | Octomil | $0.005 | POST | Verified |
 | Venice | Venice | $0.01 | POST | Verified |
 
@@ -101,6 +102,23 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://api.dtelecom.org/v1/transcribe", "method": "POST"}'
+```
+
+## Ekai Labs
+
+**Provider:** [Ekai Labs](https://ekai.ai)
+**Endpoint:** `POST https://api.ekai.ai/v1/infer`
+**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Floe compatible:** Yes
+
+> Universal context layer with pay-per-inference.
+
+```bash
+# Call through Floe
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://api.ekai.ai/v1/infer", "method": "POST"}'
 ```
 
 ## Octomil

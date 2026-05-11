@@ -8,6 +8,7 @@ Image, video, audio, and music generation. All payable with Floe credit on Base.
 
 | API | Provider | Price | Method | Status |
 |-----|----------|-------|--------|--------|
+| Freepik | Freepik | $0.02 | POST | Verified |
 | Genbase | Genbase | $0.10 | POST | Verified |
 | Imference | Imference | $0.05 | POST | Verified |
 | Kodo | Kodo | $0.05 | POST | Verified |
@@ -15,6 +16,23 @@ Image, video, audio, and music generation. All payable with Floe credit on Base.
 | Spraay | Spraay | $0.02 | POST | Verified |
 
 ---
+
+## Freepik
+
+**Provider:** [Freepik](https://www.freepik.com)
+**Endpoint:** `POST https://api.freepik.com/v1/x402/generate`
+**Price:** $0.02 USDC per call · Base mainnet · x402 v2
+**Floe compatible:** Yes
+
+> Design assets and AI image generation.
+
+```bash
+# Call through Floe
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://api.freepik.com/v1/x402/generate", "method": "POST"}'
+```
 
 ## Genbase
 

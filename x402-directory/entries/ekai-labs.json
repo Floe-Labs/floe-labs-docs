@@ -1,0 +1,22 @@
+{
+  "id": "ekai-labs",
+  "name": "Ekai Labs",
+  "provider": "Ekai Labs",
+  "homepage": "https://ekai.ai",
+  "description": "Universal context layer with pay-per-inference.",
+  "resource": "https://api.ekai.ai/v1/infer",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "context",
+    "inference",
+    "universal"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

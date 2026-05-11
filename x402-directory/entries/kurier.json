@@ -1,0 +1,22 @@
+{
+  "id": "kurier",
+  "name": "Kurier",
+  "provider": "Horizen Labs",
+  "homepage": "https://kurier.dev",
+  "description": "Pay-as-you-go ZK proof submission and verification.",
+  "resource": "https://api.kurier.dev/v1/proof",
+  "method": "POST",
+  "category": "infra-gateway",
+  "tags": [
+    "zk",
+    "proofs",
+    "verification"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.10",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,8 +1,8 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "generatedAt": "2026-05-11T23:35:22.680Z",
-  "entryCount": 60,
+  "generatedAt": "2026-05-11T23:53:10.128Z",
+  "entryCount": 76,
   "categories": [
     "web-search",
     "social-news",
@@ -151,6 +151,28 @@
       "status": "verified"
     },
     {
+      "id": "alchemy-rpc",
+      "name": "Alchemy RPC",
+      "provider": "Alchemy",
+      "homepage": "https://www.alchemy.com",
+      "description": "Enhanced RPC and web3 APIs with x402 billing.",
+      "resource": "https://api.alchemy.com/v2/x402",
+      "method": "POST",
+      "category": "crypto-data",
+      "tags": [
+        "rpc",
+        "web3",
+        "enhanced"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "apify",
       "name": "Apify",
       "provider": "Apify",
@@ -281,6 +303,28 @@
       "asset": "USDC",
       "priceUsd": "1.00",
       "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "blackswan",
+      "name": "BlackSwan",
+      "provider": "BlackSwan",
+      "homepage": "https://blackswan.ai",
+      "description": "Black swan event detection and risk alerts.",
+      "resource": "https://api.blackswan.ai/v1/alerts",
+      "method": "GET",
+      "category": "risk-security",
+      "tags": [
+        "risk",
+        "alerts",
+        "black-swan"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
+      "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -463,6 +507,28 @@
       "status": "verified"
     },
     {
+      "id": "djd-agent-score",
+      "name": "DJD Agent Score",
+      "provider": "DJD",
+      "homepage": "https://djd.xyz",
+      "description": "Agent reputation scoring and identity verification.",
+      "resource": "https://api.djd.xyz/v1/score",
+      "method": "GET",
+      "category": "identity-reputation",
+      "tags": [
+        "agent",
+        "score",
+        "identity"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "dtelecom-stt",
       "name": "dTelecom STT",
       "provider": "dTelecom",
@@ -503,6 +569,28 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "ekai-labs",
+      "name": "Ekai Labs",
+      "provider": "Ekai Labs",
+      "homepage": "https://ekai.ai",
+      "description": "Universal context layer with pay-per-inference.",
+      "resource": "https://api.ekai.ai/v1/infer",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "context",
+        "inference",
+        "universal"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
+      "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -573,6 +661,28 @@
       "status": "verified"
     },
     {
+      "id": "freepik",
+      "name": "Freepik",
+      "provider": "Freepik",
+      "homepage": "https://www.freepik.com",
+      "description": "Design assets and AI image generation.",
+      "resource": "https://api.freepik.com/v1/x402/generate",
+      "method": "POST",
+      "category": "media-generation",
+      "tags": [
+        "design",
+        "images",
+        "assets"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.02",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "genbase",
       "name": "Genbase",
       "provider": "Genbase",
@@ -617,6 +727,28 @@
       "status": "verified"
     },
     {
+      "id": "grove",
+      "name": "Grove",
+      "provider": "Grove",
+      "homepage": "https://grove.city",
+      "description": "Decentralized RPC gateway with x402 billing.",
+      "resource": "https://api.grove.city/v1/relay",
+      "method": "POST",
+      "category": "payments-commerce",
+      "tags": [
+        "rpc",
+        "gateway",
+        "decentralized"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "heurist-mesh",
       "name": "Heurist Mesh",
       "provider": "Heurist",
@@ -635,6 +767,28 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "heurist-research",
+      "name": "Heurist Deep Research",
+      "provider": "Heurist",
+      "homepage": "https://heurist.ai",
+      "description": "AI research platform for crypto and DeFi analysis.",
+      "resource": "https://api.heurist.ai/v1/research",
+      "method": "POST",
+      "category": "crypto-data",
+      "tags": [
+        "research",
+        "ai",
+        "defi"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.05",
+      "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -705,6 +859,28 @@
       "status": "verified"
     },
     {
+      "id": "kevros",
+      "name": "Kevros",
+      "provider": "Kevros",
+      "homepage": "https://kevros.xyz",
+      "description": "Smart contract vulnerability scanning.",
+      "resource": "https://api.kevros.xyz/v1/scan",
+      "method": "POST",
+      "category": "risk-security",
+      "tags": [
+        "contracts",
+        "vulnerability",
+        "audit"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.05",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "kodo",
       "name": "Kodo",
       "provider": "Kodo",
@@ -722,6 +898,28 @@
       "network": "eip155:8453",
       "asset": "USDC",
       "priceUsd": "0.05",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "kurier",
+      "name": "Kurier",
+      "provider": "Horizen Labs",
+      "homepage": "https://kurier.dev",
+      "description": "Pay-as-you-go ZK proof submission and verification.",
+      "resource": "https://api.kurier.dev/v1/proof",
+      "method": "POST",
+      "category": "infra-gateway",
+      "tags": [
+        "zk",
+        "proofs",
+        "verification"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.10",
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
@@ -746,6 +944,50 @@
       "asset": "USDC",
       "priceUsd": "0.50",
       "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "latinum",
+      "name": "Latinum",
+      "provider": "Latinum",
+      "homepage": "https://latinum.xyz",
+      "description": "Agent-to-agent payment orchestration.",
+      "resource": "https://api.latinum.xyz/v1/orchestrate",
+      "method": "POST",
+      "category": "agent-tooling",
+      "tags": [
+        "a2a",
+        "payments",
+        "orchestration"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "locus",
+      "name": "Locus",
+      "provider": "Locus",
+      "homepage": "https://locus.xyz",
+      "description": "Geospatial data and location intelligence for agents.",
+      "resource": "https://api.locus.xyz/v1/geo",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "geospatial",
+        "location",
+        "intelligence"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -882,6 +1124,28 @@
       "status": "verified"
     },
     {
+      "id": "obol",
+      "name": "Obol",
+      "provider": "Obol",
+      "homepage": "https://obol.dev",
+      "description": "AI code generation that opens GitHub PRs.",
+      "resource": "https://api.obol.dev/v1/codegen",
+      "method": "POST",
+      "category": "agent-tooling",
+      "tags": [
+        "code-gen",
+        "github",
+        "ai"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "5.00",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "octomil",
       "name": "Octomil",
       "provider": "Octomil",
@@ -894,6 +1158,28 @@
         "ml",
         "on-device",
         "mcp"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "omatrust",
+      "name": "OMATrust",
+      "provider": "OMATrust",
+      "homepage": "https://omatrust.xyz",
+      "description": "On-chain reputation and trust scoring.",
+      "resource": "https://api.omatrust.xyz/v1/trust",
+      "method": "GET",
+      "category": "identity-reputation",
+      "tags": [
+        "trust",
+        "reputation",
+        "onchain"
       ],
       "x402Version": 2,
       "network": "eip155:8453",
@@ -1127,6 +1413,28 @@
       "status": "verified"
     },
     {
+      "id": "sociologic",
+      "name": "SocioLogic",
+      "provider": "SocioLogic",
+      "homepage": "https://sociologic.xyz",
+      "description": "Verifiable random number generation API.",
+      "resource": "https://api.sociologic.xyz/v1/rng",
+      "method": "GET",
+      "category": "infra-gateway",
+      "tags": [
+        "rng",
+        "randomness",
+        "verifiable"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "soundside",
       "name": "Soundside",
       "provider": "Soundside",
@@ -1217,6 +1525,28 @@
       "status": "preview"
     },
     {
+      "id": "tip-md",
+      "name": "tip.md",
+      "provider": "tip.md",
+      "homepage": "https://tip.md",
+      "description": "Micropayment tipping for content creators.",
+      "resource": "https://api.tip.md/v1/tip",
+      "method": "POST",
+      "category": "payments-commerce",
+      "tags": [
+        "tipping",
+        "micropayments",
+        "creators"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "trusta-ai",
       "name": "Trusta.AI",
       "provider": "Trusta.AI",
@@ -1234,6 +1564,28 @@
       "network": "eip155:8453",
       "asset": "USDC",
       "priceUsd": "0.01",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "tweazy",
+      "name": "Tweazy",
+      "provider": "Tweazy",
+      "homepage": "https://tweazy.xyz",
+      "description": "On-chain tweet reads with MCP and CDP smart wallets.",
+      "resource": "https://api.tweazy.xyz/v1/read",
+      "method": "GET",
+      "category": "web-search",
+      "tags": [
+        "twitter",
+        "onchain",
+        "mcp"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"

@@ -14,6 +14,7 @@ Web search, scraping, and data extraction. All payable with Floe credit on Base.
 | Firecrawl Search | Firecrawl | $0.01 | POST | Verified |
 | Minifetch | Minifetch | $0.001 | POST | Verified |
 | Robtex | Robtex | $0.001 | GET | Verified |
+| Tweazy | Tweazy | $0.001 | GET | Verified |
 | twit.sh | twit.sh | $0.001 | GET | Verified |
 | Zyte API | Zyte | $0.01 | POST | Verified |
 
@@ -119,6 +120,23 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://api.robtex.com/x402/dns", "method": "GET"}'
+```
+
+## Tweazy
+
+**Provider:** [Tweazy](https://tweazy.xyz)
+**Endpoint:** `GET https://api.tweazy.xyz/v1/read`
+**Price:** $0.001 USDC per call · Base mainnet · x402 v2
+**Floe compatible:** Yes
+
+> On-chain tweet reads with MCP and CDP smart wallets.
+
+```bash
+# Call through Floe
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://api.tweazy.xyz/v1/read", "method": "GET"}'
 ```
 
 ## twit.sh
