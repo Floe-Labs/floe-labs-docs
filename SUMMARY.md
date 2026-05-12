@@ -68,6 +68,7 @@
 ## API Reference
 
 * [Credit REST API](docs/developers/credit-api.md)
+* [OpenAPI Spec](openapi/floe-api.yaml)
 
 ## Protocol
 
