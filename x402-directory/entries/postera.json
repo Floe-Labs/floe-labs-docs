@@ -1,0 +1,22 @@
+{
+  "id": "postera",
+  "name": "Postera",
+  "provider": "Postera",
+  "homepage": "https://postera.ai",
+  "description": "Per-read article paywall for AI agents.",
+  "resource": "https://api.postera.ai/v1/read",
+  "method": "GET",
+  "category": "social-news",
+  "tags": [
+    "articles",
+    "paywall",
+    "content"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

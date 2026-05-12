@@ -1,0 +1,22 @@
+{
+  "id": "aimo-network",
+  "name": "AiMo Network",
+  "provider": "AiMo",
+  "homepage": "https://aimo.network",
+  "description": "Permissionless pay-per-inference network.",
+  "resource": "https://api.aimo.network/v1/infer",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "inference",
+    "permissionless",
+    "decentralized"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

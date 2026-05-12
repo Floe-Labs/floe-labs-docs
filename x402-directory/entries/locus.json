@@ -1,0 +1,22 @@
+{
+  "id": "locus",
+  "name": "Locus",
+  "provider": "Locus",
+  "homepage": "https://locus.xyz",
+  "description": "Geospatial data and location intelligence for agents.",
+  "resource": "https://api.locus.xyz/v1/geo",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "geospatial",
+    "location",
+    "intelligence"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "otto-ai",
+  "name": "Otto AI Agent Swarm",
+  "provider": "Otto AI",
+  "homepage": "https://otto.ai",
+  "description": "Crypto news and alpha signals from agent swarm.",
+  "resource": "https://api.otto.ai/v1/alpha",
+  "method": "GET",
+  "category": "social-news",
+  "tags": [
+    "crypto",
+    "news",
+    "alpha",
+    "signals"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

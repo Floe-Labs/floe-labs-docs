@@ -1,0 +1,22 @@
+{
+  "id": "octomil",
+  "name": "Octomil",
+  "provider": "Octomil",
+  "homepage": "https://octomil.com",
+  "description": "On-device ML inference as x402-gated MCP server.",
+  "resource": "https://api.octomil.com/v1/infer",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "ml",
+    "on-device",
+    "mcp"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

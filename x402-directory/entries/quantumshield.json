@@ -1,0 +1,22 @@
+{
+  "id": "quantumshield",
+  "name": "QuantumShield",
+  "provider": "QuantumShield",
+  "homepage": "https://quantumshield.xyz",
+  "description": "Token risk and honeypot detection.",
+  "resource": "https://api.quantumshield.xyz/v1/check",
+  "method": "GET",
+  "category": "risk-security",
+  "tags": [
+    "token",
+    "risk",
+    "honeypot"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

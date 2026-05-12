@@ -1,0 +1,22 @@
+{
+  "id": "kodo",
+  "name": "Kodo",
+  "provider": "Kodo",
+  "homepage": "https://kodo.ai",
+  "description": "AI creative tools for images, video, and audio.",
+  "resource": "https://api.kodo.ai/v1/create",
+  "method": "POST",
+  "category": "media-generation",
+  "tags": [
+    "creative",
+    "multimodal",
+    "ai"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.05",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

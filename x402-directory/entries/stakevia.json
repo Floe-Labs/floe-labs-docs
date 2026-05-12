@@ -1,0 +1,23 @@
+{
+  "id": "stakevia",
+  "name": "Stakevia",
+  "provider": "Stakevia",
+  "homepage": "https://stakevia.com",
+  "description": "Solana validator scoring and risk assessment.",
+  "resource": "https://api.stakevia.com/v1/validators",
+  "method": "GET",
+  "category": "risk-security",
+  "tags": [
+    "solana",
+    "validators",
+    "staking",
+    "risk"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "1.00",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

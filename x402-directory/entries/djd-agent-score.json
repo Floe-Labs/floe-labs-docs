@@ -1,0 +1,22 @@
+{
+  "id": "djd-agent-score",
+  "name": "DJD Agent Score",
+  "provider": "DJD",
+  "homepage": "https://djd.xyz",
+  "description": "Agent reputation scoring and identity verification.",
+  "resource": "https://api.djd.xyz/v1/score",
+  "method": "GET",
+  "category": "identity-reputation",
+  "tags": [
+    "agent",
+    "score",
+    "identity"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

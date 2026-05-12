@@ -1,0 +1,22 @@
+{
+  "id": "daydreams-router",
+  "name": "Daydreams Router",
+  "provider": "Daydreams",
+  "homepage": "https://daydreams.ai",
+  "description": "x402-enabled LLM inference routing across all major providers.",
+  "resource": "https://api.daydreams.ai/v1/route",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "llm",
+    "routing",
+    "multi-provider"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "firecrawl-search",
+  "name": "Firecrawl Search",
+  "provider": "Firecrawl",
+  "homepage": "https://firecrawl.dev",
+  "description": "Search the web and scrape results to LLM-ready markdown.",
+  "resource": "https://api.firecrawl.dev/v1/x402/search",
+  "method": "POST",
+  "category": "web-search",
+  "tags": [
+    "search",
+    "scraping",
+    "markdown"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

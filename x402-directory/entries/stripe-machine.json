@@ -1,0 +1,22 @@
+{
+  "id": "stripe-machine",
+  "name": "Stripe Machine Payments",
+  "provider": "Stripe",
+  "homepage": "https://stripe.com",
+  "description": "Machine-to-machine payments via x402 on Base USDC.",
+  "resource": "https://machine.stripe.com/payments/x402",
+  "method": "POST",
+  "category": "payments-commerce",
+  "tags": [
+    "stripe",
+    "payments",
+    "machine"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.10",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "preview"
+}

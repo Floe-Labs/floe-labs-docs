@@ -1,0 +1,22 @@
+{
+  "id": "kevros",
+  "name": "Kevros",
+  "provider": "Kevros",
+  "homepage": "https://kevros.xyz",
+  "description": "Smart contract vulnerability scanning.",
+  "resource": "https://api.kevros.xyz/v1/scan",
+  "method": "POST",
+  "category": "risk-security",
+  "tags": [
+    "contracts",
+    "vulnerability",
+    "audit"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.05",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

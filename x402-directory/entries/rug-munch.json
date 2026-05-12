@@ -1,0 +1,23 @@
+{
+  "id": "rug-munch",
+  "name": "Rug Munch Intelligence",
+  "provider": "Rug Munch",
+  "homepage": "https://rugmunch.xyz",
+  "description": "Rug/honeypot risk scanning on Base, Ethereum, Arbitrum, Polygon.",
+  "resource": "https://api.rugmunch.xyz/v1/scan",
+  "method": "GET",
+  "category": "risk-security",
+  "tags": [
+    "rug",
+    "honeypot",
+    "risk",
+    "scanning"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.02",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

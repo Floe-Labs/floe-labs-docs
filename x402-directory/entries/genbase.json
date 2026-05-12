@@ -1,0 +1,22 @@
+{
+  "id": "genbase",
+  "name": "Genbase",
+  "provider": "Genbase",
+  "homepage": "https://genbase.ai",
+  "description": "AI video generation platform.",
+  "resource": "https://api.genbase.ai/v1/video",
+  "method": "POST",
+  "category": "media-generation",
+  "tags": [
+    "video",
+    "generation",
+    "ai"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.10",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "apify",
+  "name": "Apify",
+  "provider": "Apify",
+  "homepage": "https://apify.com",
+  "description": "Web data platform for scraping, crawling, and automation.",
+  "resource": "https://api.apify.com/v2/x402/run",
+  "method": "POST",
+  "category": "web-search",
+  "tags": [
+    "scraping",
+    "automation",
+    "data"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

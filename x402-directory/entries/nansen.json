@@ -1,0 +1,22 @@
+{
+  "id": "nansen",
+  "name": "Nansen",
+  "provider": "Nansen",
+  "homepage": "https://www.nansen.ai",
+  "description": "On-chain intelligence and wallet analytics.",
+  "resource": "https://api.nansen.ai/v1/x402/analytics",
+  "method": "GET",
+  "category": "crypto-data",
+  "tags": [
+    "analytics",
+    "wallets",
+    "onchain"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

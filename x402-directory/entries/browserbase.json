@@ -1,0 +1,22 @@
+{
+  "id": "browserbase",
+  "name": "Browserbase",
+  "provider": "Browserbase",
+  "homepage": "https://browserbase.com",
+  "description": "Headless browser sessions monetized via x402.",
+  "resource": "https://api.browserbase.com/v1/session",
+  "method": "POST",
+  "category": "browser-compute",
+  "tags": [
+    "browser",
+    "headless",
+    "automation"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "minifetch",
+  "name": "Minifetch",
+  "provider": "Minifetch",
+  "homepage": "https://minifetch.dev",
+  "description": "Token-efficient page metadata fetches for LLMs.",
+  "resource": "https://api.minifetch.dev/fetch",
+  "method": "POST",
+  "category": "web-search",
+  "tags": [
+    "metadata",
+    "lightweight",
+    "llm"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

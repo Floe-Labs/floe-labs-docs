@@ -1,0 +1,22 @@
+{
+  "id": "heurist-mesh",
+  "name": "Heurist Mesh",
+  "provider": "Heurist",
+  "homepage": "https://heurist.ai",
+  "description": "Composable crypto skills with MCP + x402.",
+  "resource": "https://api.heurist.ai/v1/mesh",
+  "method": "POST",
+  "category": "agent-tooling",
+  "tags": [
+    "mcp",
+    "skills",
+    "composable"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

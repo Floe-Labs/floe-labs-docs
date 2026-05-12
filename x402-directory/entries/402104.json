@@ -1,0 +1,22 @@
+{
+  "id": "402104",
+  "name": "402104",
+  "provider": "402104",
+  "homepage": "https://402104.xyz",
+  "description": "Expirable paywalled links to private ANS-104 DataItems on Arweave.",
+  "resource": "https://api.402104.xyz/v1/store",
+  "method": "POST",
+  "category": "storage",
+  "tags": [
+    "arweave",
+    "storage",
+    "paywall"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

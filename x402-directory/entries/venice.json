@@ -1,0 +1,22 @@
+{
+  "id": "venice",
+  "name": "Venice",
+  "provider": "Venice",
+  "homepage": "https://venice.ai",
+  "description": "Open-source AI models, uncensored, no data retention.",
+  "resource": "https://api.venice.ai/v1/chat",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "llm",
+    "open-source",
+    "privacy"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "tip-md",
+  "name": "tip.md",
+  "provider": "tip.md",
+  "homepage": "https://tip.md",
+  "description": "Micropayment tipping for content creators.",
+  "resource": "https://api.tip.md/v1/tip",
+  "method": "POST",
+  "category": "payments-commerce",
+  "tags": [
+    "tipping",
+    "micropayments",
+    "creators"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

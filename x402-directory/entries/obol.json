@@ -1,0 +1,22 @@
+{
+  "id": "obol",
+  "name": "Obol",
+  "provider": "Obol",
+  "homepage": "https://obol.dev",
+  "description": "AI code generation that opens GitHub PRs.",
+  "resource": "https://api.obol.dev/v1/codegen",
+  "method": "POST",
+  "category": "agent-tooling",
+  "tags": [
+    "code-gen",
+    "github",
+    "ai"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "5.00",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "arch-ai-tools",
+  "name": "Arch AI Tools",
+  "provider": "Arch AI",
+  "homepage": "https://arch.ai",
+  "description": "Multi-tool MCP server with 53+ tools and x402.",
+  "resource": "https://api.arch.ai/v1/tools",
+  "method": "POST",
+  "category": "agent-tooling",
+  "tags": [
+    "mcp",
+    "tools",
+    "multi-tool"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

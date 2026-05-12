@@ -1,0 +1,23 @@
+{
+  "id": "aws-x402",
+  "name": "AWS x402 Reference",
+  "provider": "AWS",
+  "homepage": "https://aws.amazon.com",
+  "description": "Monetize any HTTP app with x402 and CloudFront/Lambda@Edge.",
+  "resource": "https://docs.aws.amazon.com/x402",
+  "method": "GET",
+  "category": "infra-gateway",
+  "tags": [
+    "aws",
+    "cloudfront",
+    "lambda",
+    "reference"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": false,
+  "status": "preview"
+}

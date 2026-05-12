@@ -1,0 +1,23 @@
+{
+  "id": "laso-finance",
+  "name": "Laso Finance",
+  "provider": "Laso",
+  "homepage": "https://laso.finance",
+  "description": "Prepaid cards, Venmo/PayPal payments on Base USDC.",
+  "resource": "https://api.laso.finance/v1/pay",
+  "method": "POST",
+  "category": "payments-commerce",
+  "tags": [
+    "prepaid",
+    "venmo",
+    "paypal",
+    "fiat"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.50",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

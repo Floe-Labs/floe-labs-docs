@@ -1,0 +1,22 @@
+{
+  "id": "omatrust",
+  "name": "OMATrust",
+  "provider": "OMATrust",
+  "homepage": "https://omatrust.xyz",
+  "description": "On-chain reputation and trust scoring.",
+  "resource": "https://api.omatrust.xyz/v1/trust",
+  "method": "GET",
+  "category": "identity-reputation",
+  "tags": [
+    "trust",
+    "reputation",
+    "onchain"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "latinum",
+  "name": "Latinum",
+  "provider": "Latinum",
+  "homepage": "https://latinum.xyz",
+  "description": "Agent-to-agent payment orchestration.",
+  "resource": "https://api.latinum.xyz/v1/orchestrate",
+  "method": "POST",
+  "category": "agent-tooling",
+  "tags": [
+    "a2a",
+    "payments",
+    "orchestration"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "agent-camo",
+  "name": "Agent Camo",
+  "provider": "Agent Camo",
+  "homepage": "https://agentcamo.com",
+  "description": "Residential proxy sessions, geo-targeted.",
+  "resource": "https://api.agentcamo.com/v1/proxy",
+  "method": "POST",
+  "category": "browser-compute",
+  "tags": [
+    "proxy",
+    "residential",
+    "geo"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

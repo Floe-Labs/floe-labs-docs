@@ -1,0 +1,23 @@
+{
+  "id": "walletiq",
+  "name": "WalletIQ",
+  "provider": "WalletIQ",
+  "homepage": "https://walletiq.xyz",
+  "description": "Wallet profile: age, DeFi usage, risk score across 5+ chains.",
+  "resource": "https://api.walletiq.xyz/v1/profile",
+  "method": "GET",
+  "category": "crypto-data",
+  "tags": [
+    "wallet",
+    "profile",
+    "risk",
+    "defi"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

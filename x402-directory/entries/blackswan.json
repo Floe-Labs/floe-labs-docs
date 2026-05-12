@@ -1,0 +1,22 @@
+{
+  "id": "blackswan",
+  "name": "BlackSwan",
+  "provider": "BlackSwan",
+  "homepage": "https://blackswan.ai",
+  "description": "Black swan event detection and risk alerts.",
+  "resource": "https://api.blackswan.ai/v1/alerts",
+  "method": "GET",
+  "category": "risk-security",
+  "tags": [
+    "risk",
+    "alerts",
+    "black-swan"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

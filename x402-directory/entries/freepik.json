@@ -1,0 +1,22 @@
+{
+  "id": "freepik",
+  "name": "Freepik",
+  "provider": "Freepik",
+  "homepage": "https://www.freepik.com",
+  "description": "Design assets and AI image generation.",
+  "resource": "https://api.freepik.com/v1/x402/generate",
+  "method": "POST",
+  "category": "media-generation",
+  "tags": [
+    "design",
+    "images",
+    "assets"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.02",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}
