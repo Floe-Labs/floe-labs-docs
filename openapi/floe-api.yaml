@@ -4,13 +4,14 @@ info:
   description: |
     Working capital, x402 payments, and agent management for AI agents on Base.
 
-    **Authentication:**
-    - Public endpoints: no auth required
-    - Agent endpoints: `Authorization: Bearer floe_<key>`
-    - Credit endpoints: EIP-191 wallet signature (`X-Wallet-Address`, `X-Signature`, `X-Timestamp`)
-    - Developer dashboard: JWT session cookie
-    - Admin endpoints: `Authorization: Bearer <admin-key>`
-  version: 1.0.0
+    ## Authentication Methods
+
+    - **Public endpoints** — no auth required (marked with `security: []`)
+    - **Agent API key** — `Authorization: Bearer floe_...`
+    - **Wallet signature** — EIP-191 signed message via X-Wallet-Address + X-Signature + X-Timestamp headers
+    - **Developer session** — JWT cookie or `Authorization: Bearer <jwt>`
+    - **Admin API key** — `Authorization: Bearer <admin-key>`
+  version: 1.1.0
   contact:
     name: Floe Labs
     url: https://floelabs.xyz
@@ -20,6 +21,9 @@ servers:
   - url: https://credit-api.floelabs.xyz
     description: Production (Base Mainnet)
 
+security:
+  - agentApiKey: []
+
 tags:
   - name: Public
     description: No authentication required
@@ -27,6 +31,8 @@ tags:
     description: Lending operations (wallet signature auth)
   - name: x402 Proxy
     description: x402 payment proxy (agent API key auth)
+  - name: x402 Estimate
+    description: Cost preflight (agent API key auth)
   - name: Agent
     description: Agent self-service (agent API key auth)
   - name: Developer
@@ -35,18 +41,15 @@ tags:
     description: Operations (admin API key)
 
 paths:
-  # ═══════════════════════════════════════════
-  # PUBLIC
-  # ═══════════════════════════════════════════
-
   /.well-known/openapi.yaml:
     get:
       tags: [Public]
       summary: This OpenAPI spec
       operationId: getOpenApiSpec
+      security: []
       responses:
-        '200':
-          description: OpenAPI 3.0 YAML spec
+        "200":
+          description: OpenAPI 3.0 YAML
           content:
             text/yaml:
               schema:
@@ -57,54 +60,53 @@ paths:
       tags: [Public]
       summary: Health check
       operationId: getHealth
+      security: []
       responses:
-        '200':
+        "200":
           description: Service healthy
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  status: { type: string, enum: [ok, degraded] }
+                  status:
+                    type: string
+                    enum: [ok, degraded]
                   checks:
                     type: object
                     properties:
-                      db: { $ref: '#/components/schemas/CheckResult' }
-                      privy: { $ref: '#/components/schemas/CheckResult' }
-                      envio: { $ref: '#/components/schemas/CheckResult' }
-                  timestamp: { type: string, format: date-time }
+                      db:
+                        $ref: "#/components/schemas/CheckResult"
+                      privy:
+                        $ref: "#/components/schemas/CheckResult"
+                      envio:
+                        $ref: "#/components/schemas/CheckResult"
+                  timestamp:
+                    type: string
+                    format: date-time
 
   /v1/status:
     get:
       tags: [Public]
       summary: Aggregated status (cached 30s)
       operationId: getStatus
+      security: []
       responses:
-        '200':
+        "200":
           description: System status
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  overall: { type: string, enum: [operational, degraded, down] }
-                  oracle:
-                    type: object
-                    properties:
-                      circuitBreaker:
-                        type: object
-                        properties:
-                          isActive: { type: boolean }
-                          reason: { type: integer }
-                  markets: { type: array, items: { $ref: '#/components/schemas/MarketStatus' } }
+                $ref: "#/components/schemas/SystemStatus"
 
   /v1/markets:
     get:
       tags: [Public]
       summary: List lending markets
       operationId: getMarkets
+      security: []
       responses:
-        '200':
+        "200":
           description: Active markets
           content:
             application/json:
@@ -113,36 +115,35 @@ paths:
                 properties:
                   markets:
                     type: array
-                    items: { $ref: '#/components/schemas/Market' }
-
-  # ═══════════════════════════════════════════
-  # CREDIT (wallet signature auth)
-  # ═══════════════════════════════════════════
+                    items:
+                      $ref: "#/components/schemas/Market"
 
   /v1/credit/offers:
     get:
       tags: [Public]
       summary: Browse lend offers
       operationId: getCreditOffers
+      security: []
       parameters:
         - name: marketId
           in: query
-          schema: { type: string }
-          description: bytes32 market ID. Omit to see all markets.
+          schema:
+            type: string
+          description: bytes32 market ID. Omit for all markets.
         - name: minAmount
           in: query
-          schema: { type: string }
-          description: Minimum borrow amount (raw token units)
+          schema:
+            type: string
         - name: maxRateBps
           in: query
-          schema: { type: string }
-          description: Maximum interest rate (basis points)
+          schema:
+            type: string
         - name: maxResults
           in: query
-          schema: { type: string }
-          description: Max results (default 50)
+          schema:
+            type: string
       responses:
-        '200':
+        "200":
           description: Available offers
           content:
             application/json:
@@ -151,62 +152,82 @@ paths:
                 properties:
                   offers:
                     type: array
-                    items: { $ref: '#/components/schemas/LendOffer' }
+                    items:
+                      $ref: "#/components/schemas/LendOffer"
+        "400":
+          description: Invalid marketId or param format
 
   /v1/credit/instant-borrow:
     post:
       tags: [Credit]
-      summary: Build unsigned borrow transactions (auto-select lender)
+      summary: Build unsigned borrow transactions
       operationId: instantBorrow
-      security: [{ walletSignature: [] }]
+      security:
+        - walletAddress: []
+          walletSignature: []
+          walletTimestamp: []
       parameters:
         - name: Idempotency-Key
           in: header
-          schema: { type: string, maxLength: 255 }
+          schema:
+            type: string
+            maxLength: 255
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/InstantBorrowRequest' }
+            schema:
+              $ref: "#/components/schemas/InstantBorrowRequest"
       responses:
-        '200':
+        "200":
           description: Unsigned transactions
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/BorrowResult' }
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '404':
+              schema:
+                $ref: "#/components/schemas/BorrowResult"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
           description: No liquidity
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+        "409":
+          description: Idempotency conflict
 
   /v1/credit/status/{loanId}:
     get:
       tags: [Credit]
       summary: Loan status and health
       operationId: getCreditStatus
-      security: [{ walletSignature: [] }]
+      security:
+        - walletAddress: []
+          walletSignature: []
+          walletTimestamp: []
       parameters:
         - name: loanId
           in: path
           required: true
-          schema: { type: string }
+          schema:
+            type: string
       responses:
-        '200':
+        "200":
           description: Loan status
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/LoanStatus' }
-        '404': { description: Loan not found }
+              schema:
+                $ref: "#/components/schemas/LoanStatus"
+        "404":
+          description: Loan not found
 
   /v1/credit/repay:
     post:
       tags: [Credit]
       summary: Build unsigned repay transaction
       operationId: repayCredit
-      security: [{ walletSignature: [] }]
+      security:
+        - walletAddress: []
+          walletSignature: []
+          walletTimestamp: []
       requestBody:
         required: true
         content:
@@ -215,91 +236,188 @@ paths:
               type: object
               required: [loanId]
               properties:
-                loanId: { type: string }
-                slippageBps: { type: string }
+                loanId:
+                  type: string
+                slippageBps:
+                  type: string
       responses:
-        '200':
-          description: Unsigned repay transaction
+        "200":
+          description: Unsigned repay transactions
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/TransactionResult' }
+              schema:
+                $ref: "#/components/schemas/TransactionResult"
 
   /v1/credit/repay-and-reborrow:
     post:
       tags: [Credit]
       summary: Repay and reborrow atomically
       operationId: repayAndReborrow
-      security: [{ walletSignature: [] }]
+      security:
+        - walletAddress: []
+          walletSignature: []
+          walletTimestamp: []
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/RenewRequest' }
+            schema:
+              $ref: "#/components/schemas/RenewRequest"
       responses:
-        '200':
+        "200":
           description: Repay + reborrow transactions
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/TransactionResult' }
+              schema:
+                $ref: "#/components/schemas/TransactionResult"
 
-  # ═══════════════════════════════════════════
-  # x402 PROXY (agent API key auth)
-  # ═══════════════════════════════════════════
+  /v1/credit/borrow-attempts/{attemptId}:
+    get:
+      tags: [Credit]
+      summary: Recover borrow attempt status
+      operationId: getBorrowAttempt
+      security:
+        - walletAddress: []
+          walletSignature: []
+          walletTimestamp: []
+      parameters:
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Attempt status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BorrowResult"
+        "404":
+          description: Not found
+        "503":
+          description: Service unavailable
+
+  /v1/credit/borrow-attempts/{attemptId}/resume:
+    post:
+      tags: [Credit]
+      summary: Resume stalled borrow attempt
+      operationId: resumeBorrowAttempt
+      security:
+        - walletAddress: []
+          walletSignature: []
+          walletTimestamp: []
+      parameters:
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Resumed transactions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionResult"
+
+  /v1/credit/borrow-attempts/{attemptId}/abandon:
+    post:
+      tags: [Credit]
+      summary: Abandon borrow attempt
+      operationId: abandonBorrowAttempt
+      security:
+        - walletAddress: []
+          walletSignature: []
+          walletTimestamp: []
+      parameters:
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cleanup transactions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransactionResult"
 
   /v1/proxy/check:
     get:
       tags: [Public]
       summary: Check if URL requires x402 payment
       operationId: proxyCheck
+      security: []
       parameters:
         - name: url
           in: query
           required: true
-          schema: { type: string, format: uri }
+          schema:
+            type: string
+            format: uri
       responses:
-        '200':
+        "200":
           description: Payment check result
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/ProxyCheckResult' }
-        '400': { description: Invalid or blocked URL }
+              schema:
+                $ref: "#/components/schemas/ProxyCheckResult"
+        "400":
+          description: Invalid or blocked URL
+        "429":
+          description: Rate limit exceeded
 
   /v1/proxy/fetch:
     post:
       tags: [x402 Proxy]
       summary: Proxy request with automatic x402 payment
       operationId: proxyFetch
-      security: [{ agentApiKey: [] }]
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/ProxyFetchRequest' }
+            schema:
+              $ref: "#/components/schemas/ProxyFetchRequest"
       responses:
-        '200':
+        "200":
           description: Target response (passthrough or paid)
-        '400': { description: Invalid request or blocked URL }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '402':
-          description: Insufficient balance
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request or blocked URL
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "402":
+          description: Insufficient balance or spend limit exceeded
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  error: { type: string, enum: [insufficient_balance, spend_limit_exceeded] }
-                  available: { type: string }
-                  required: { type: string }
-        '403': { description: Agent suspended }
-        '429': { description: Rate limit exceeded }
-        '502': { description: Target unreachable or ambiguous payment }
+                  error:
+                    type: string
+                    enum: [insufficient_balance, spend_limit_exceeded]
+                  available:
+                    type: string
+                  required:
+                    type: string
+        "403":
+          description: Agent suspended or credit frozen
+        "429":
+          description: Rate limit exceeded
+        "502":
+          description: Target unreachable or ambiguous payment
 
   /v1/x402/estimate:
     post:
-      tags: [x402 Proxy]
+      tags: [x402 Estimate]
       summary: Preflight cost estimate with credit reflection
       operationId: estimateX402Cost
-      security: [{ agentApiKey: [] }]
       requestBody:
         required: true
         content:
@@ -308,155 +426,179 @@ paths:
               type: object
               required: [url]
               properties:
-                url: { type: string, format: uri }
-                method: { type: string, default: HEAD }
+                url:
+                  type: string
+                  format: uri
+                method:
+                  type: string
+                  pattern: "^[A-Z]{3,7}$"
       responses:
-        '200':
-          description: Cost estimate
+        "200":
+          description: Cost estimate with reflection
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/CostEstimate' }
-
-  # ═══════════════════════════════════════════
-  # AGENT (agent API key auth)
-  # ═══════════════════════════════════════════
+              schema:
+                $ref: "#/components/schemas/X402Estimate"
+        "429":
+          description: Rate limit exceeded
 
   /v1/agents/pre-register:
     post:
       tags: [Agent]
-      summary: Create Privy wallet (step 1 of registration)
+      summary: Create Privy wallet (step 1)
       operationId: preRegister
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [walletAddress, signature, nonce]
-              properties:
-                walletAddress: { type: string }
-                signature: { type: string }
-                nonce: { type: string }
+              $ref: "#/components/schemas/RegistrationRequest"
       responses:
-        '201':
+        "201":
           description: Wallet created
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  privyWalletAddress: { type: string }
-        '409': { description: Already registered }
+                  privyWalletAddress:
+                    type: string
+        "409":
+          description: Already registered
+        "503":
+          description: Privy not configured
 
   /v1/agents/register:
     post:
       tags: [Agent]
       summary: Verify delegation and activate (step 2)
       operationId: register
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [walletAddress, signature, nonce]
-              properties:
-                walletAddress: { type: string }
-                signature: { type: string }
-                nonce: { type: string }
+              $ref: "#/components/schemas/RegistrationRequest"
       responses:
-        '201':
+        "201":
           description: Agent activated
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  agentId: { type: string }
-                  apiKey: { type: string }
-                  privyWalletAddress: { type: string }
+                  agentId:
+                    type: string
+                  apiKey:
+                    type: string
+                    description: Shown once. Store securely.
+                  privyWalletAddress:
+                    type: string
+                  borrowIntentHash:
+                    type: string
+                  registerTxHash:
+                    type: string
+                  facilityLoanStatus:
+                    type: string
+                    enum: [pending_match]
+        "400":
+          description: Delegation inactive or insufficient
+        "404":
+          description: Call /pre-register first
+        "409":
+          description: Already registered
+        "410":
+          description: Pre-registration expired (>24h)
 
   /v1/agents/balance:
     get:
       tags: [Agent]
-      summary: Current balance and credit facility info
+      summary: Balance and credit facility info
       operationId: getAgentBalance
-      security: [{ agentApiKey: [] }]
       responses:
-        '200':
+        "200":
           description: Balance details
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/AgentBalance' }
+              schema:
+                $ref: "#/components/schemas/AgentBalance"
 
   /v1/agents/credit-remaining:
     get:
       tags: [Agent]
       summary: Credit headroom for decision gates
       operationId: getCreditRemaining
-      security: [{ agentApiKey: [] }]
       responses:
-        '200':
+        "200":
           description: Credit remaining
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/CreditRemaining' }
+              schema:
+                $ref: "#/components/schemas/CreditRemaining"
 
   /v1/agents/loan-state:
     get:
       tags: [Agent]
       summary: Coarse loan state machine
       operationId: getLoanState
-      security: [{ agentApiKey: [] }]
       responses:
-        '200':
-          description: Loan state
+        "200":
+          description: Current state
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  state: { type: string, enum: [idle, borrowing, repaying, at_limit] }
-                  reason: { type: string }
-                  details: { type: object }
+                  state:
+                    type: string
+                    enum: [idle, borrowing, repaying, at_limit]
+                  reason:
+                    type: string
+                  details:
+                    type: object
 
   /v1/agents/transactions:
     get:
       tags: [Agent]
       summary: Paginated payment history
       operationId: getAgentTransactions
-      security: [{ agentApiKey: [] }]
       parameters:
         - name: cursor
           in: query
-          schema: { type: integer }
+          schema:
+            type: integer
         - name: limit
           in: query
-          schema: { type: integer, default: 50, maximum: 100 }
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
       responses:
-        '200':
+        "200":
           description: Transaction list
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/TransactionList' }
+              schema:
+                $ref: "#/components/schemas/TransactionList"
 
   /v1/agents/spend-limit:
     get:
       tags: [Agent]
       summary: Get session spend limit
       operationId: getSpendLimit
-      security: [{ agentApiKey: [] }]
       responses:
-        '200':
+        "200":
           description: Spend limit state
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/SpendLimit' }
+              schema:
+                $ref: "#/components/schemas/SpendLimit"
     put:
       tags: [Agent]
-      summary: Set session spend limit
+      summary: Set session spend limit (resets window)
       operationId: setSpendLimit
-      security: [{ agentApiKey: [] }]
       requestBody:
         required: true
         content:
@@ -465,77 +607,293 @@ paths:
               type: object
               required: [limitRaw]
               properties:
-                limitRaw: { type: string }
+                limitRaw:
+                  type: string
+                  pattern: "^\\d+$"
       responses:
-        '200':
+        "200":
           description: Updated
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/SpendLimit' }
+              schema:
+                $ref: "#/components/schemas/SpendLimit"
     delete:
       tags: [Agent]
       summary: Remove session spend limit
       operationId: deleteSpendLimit
-      security: [{ agentApiKey: [] }]
       responses:
-        '200':
+        "200":
           description: Removed
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  active: { type: boolean, enum: [false] }
+                  active:
+                    type: boolean
+                    enum: [false]
 
-  /v1/agents/close:
-    post:
+  /v1/agents/credit-thresholds:
+    get:
       tags: [Agent]
-      summary: Wind down agent (repay loans, sweep USDC)
-      operationId: closeAgent
-      security: [{ agentApiKey: [] }]
+      summary: List credit threshold subscriptions
+      operationId: getCreditThresholds
       responses:
-        '200':
-          description: Winddown status
+        "200":
+          description: Subscriptions
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  status: { type: string, enum: [closed, winding_down] }
-                  loansRepaid: { type: integer }
-                  loansRemaining: { type: integer }
-
-  # ═══════════════════════════════════════════
-  # ADMIN
-  # ═══════════════════════════════════════════
-
-  /v1/admin/agents:
-    get:
-      tags: [Admin]
-      summary: List all agents with balances
-      operationId: adminListAgents
-      security: [{ adminApiKey: [] }]
+                  subscriptions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CreditThreshold"
+    post:
+      tags: [Agent]
+      summary: Create credit threshold subscription
+      operationId: createCreditThreshold
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [thresholdBps]
+              properties:
+                thresholdBps:
+                  type: integer
+                  minimum: 1
+                  maximum: 10000
+                webhookId:
+                  type: integer
       responses:
-        '200':
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditThreshold"
+        "409":
+          description: Limit reached (max 20)
+
+  /v1/agents/credit-thresholds/{id}:
+    delete:
+      tags: [Agent]
+      summary: Remove credit threshold
+      operationId: deleteCreditThreshold
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deleted:
+                    type: integer
+
+  /v1/agents/close:
+    post:
+      tags: [Agent]
+      summary: Wind down agent
+      operationId: closeAgent
+      responses:
+        "200":
+          description: Winddown status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloseResult"
+
+  /v1/developer/agents:
+    get:
+      tags: [Developer]
+      summary: List managed agents
+      operationId: devListAgents
+      security:
+        - developerSession: []
+      responses:
+        "200":
           description: Agent list
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  agents: { type: array, items: { $ref: '#/components/schemas/AdminAgent' } }
+                  agents:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ManagedAgent"
+    post:
+      tags: [Developer]
+      summary: Create managed agent
+      operationId: devCreateAgent
+      security:
+        - developerSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, borrowLimitRaw, maxRateBps, expirySeconds]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                  pattern: "^[A-Za-z0-9 _-]+$"
+                borrowLimitRaw:
+                  type: string
+                maxRateBps:
+                  type: integer
+                  minimum: 1
+                  maximum: 10000
+                expirySeconds:
+                  type: integer
+                  minimum: 60
+                  maximum: 31536000
+      responses:
+        "201":
+          description: Agent created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManagedAgent"
+        "409":
+          description: Max agents (5) or name conflict
+
+  /v1/developer/agents/{agentId}/keys:
+    post:
+      tags: [Developer]
+      summary: Mint API key for agent
+      operationId: devCreateKey
+      security:
+        - developerSession: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                label:
+                  type: string
+                  maxLength: 100
+                permissions:
+                  type: string
+                  enum: [read, read_write]
+      responses:
+        "201":
+          description: Key created (fullKey shown once)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKey"
+        "409":
+          description: Max 1 active key per agent
+
+  /v1/developer/agents/{agentId}/keys/{keyId}:
+    delete:
+      tags: [Developer]
+      summary: Revoke API key
+      operationId: devRevokeKey
+      security:
+        - developerSession: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  revoked:
+                    type: boolean
+
+  /v1/developer/agents/{agentId}/keys/{keyId}/rotate:
+    post:
+      tags: [Developer]
+      summary: Atomic key rotation (revoke + mint)
+      operationId: devRotateKey
+      security:
+        - developerSession: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: keyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: New key (fullKey shown once)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKey"
+
+  /v1/admin/agents:
+    get:
+      tags: [Admin]
+      summary: List all agents with balances
+      operationId: adminListAgents
+      security:
+        - adminApiKey: []
+      responses:
+        "200":
+          description: Agent list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AdminAgent"
 
   /v1/admin/agents/{id}:
     patch:
       tags: [Admin]
       summary: Suspend or activate agent
       operationId: adminPatchAgent
-      security: [{ adminApiKey: [] }]
+      security:
+        - adminApiKey: []
       parameters:
         - name: id
           in: path
           required: true
-          schema: { type: string }
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -544,25 +902,39 @@ paths:
               type: object
               required: [status]
               properties:
-                status: { type: string, enum: [active, suspended] }
+                status:
+                  type: string
+                  enum: [active, suspended]
       responses:
-        '200':
+        "200":
           description: Updated
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  id: { type: string }
-                  status: { type: string }
+                  id:
+                    type: string
+                  status:
+                    type: string
 
 components:
   securitySchemes:
-    walletSignature:
+    walletAddress:
       type: apiKey
       in: header
       name: X-Wallet-Address
-      description: EIP-191 wallet signature. Also requires X-Signature and X-Timestamp headers.
+      description: Agent wallet address (0x...)
+    walletSignature:
+      type: apiKey
+      in: header
+      name: X-Signature
+      description: EIP-191 signature of "Floe Credit API\nTimestamp:{ts}"
+    walletTimestamp:
+      type: apiKey
+      in: header
+      name: X-Timestamp
+      description: Unix timestamp (within 5 min of server time)
     agentApiKey:
       type: http
       scheme: bearer
@@ -571,200 +943,432 @@ components:
       type: http
       scheme: bearer
       description: Admin API key
+    developerSession:
+      type: http
+      scheme: bearer
+      description: JWT session token (from SIWE auth)
 
   schemas:
     CheckResult:
       type: object
       properties:
-        status: { type: string, enum: [ok, degraded, down] }
+        status:
+          type: string
+          enum: [ok, degraded, down]
 
     Market:
       type: object
       properties:
-        marketId: { type: string }
+        marketId:
+          type: string
         loanToken:
           type: object
           properties:
-            address: { type: string }
-            symbol: { type: string }
-            decimals: { type: integer }
+            address:
+              type: string
+            symbol:
+              type: string
+            decimals:
+              type: integer
         collateralToken:
           type: object
           properties:
-            address: { type: string }
-            symbol: { type: string }
-            decimals: { type: integer }
-        isActive: { type: boolean }
+            address:
+              type: string
+            symbol:
+              type: string
+            decimals:
+              type: integer
+        isActive:
+          type: boolean
 
-    MarketStatus:
+    SystemStatus:
       type: object
       properties:
-        marketId: { type: string }
-        loanToken: { type: string }
-        collateralToken: { type: string }
-        availableLiquidityUsd: { type: string }
-        activeLoanCount: { type: integer }
+        timestamp:
+          type: string
+          format: date-time
+        overall:
+          type: string
+          enum: [operational, degraded, down]
+        indexer:
+          type: object
+          properties:
+            status:
+              type: string
+            lastUpdateTimestamp:
+              type: integer
+              nullable: true
+            lagSeconds:
+              type: integer
+              nullable: true
+        oracle:
+          type: object
+          properties:
+            status:
+              type: string
+            circuitBreaker:
+              type: object
+              properties:
+                isActive:
+                  type: boolean
+                reason:
+                  type: integer
+                reasonText:
+                  type: string
+            prices:
+              type: array
+              items:
+                type: object
+                properties:
+                  symbol:
+                    type: string
+                  priceUsd:
+                    type: string
+                  isStale:
+                    type: boolean
+        markets:
+          type: array
+          items:
+            type: object
+            properties:
+              marketId:
+                type: string
+              loanToken:
+                type: string
+              collateralToken:
+                type: string
+              availableLiquidityUsd:
+                type: string
+              totalTvlUsd:
+                type: string
+              activeLoanCount:
+                type: integer
+        activity:
+          type: object
+          properties:
+            matchesLast24h:
+              type: integer
+            totalMatches:
+              type: integer
+            avgTimeToMatchSeconds:
+              type: number
 
     LendOffer:
       type: object
       properties:
-        lender: { type: string }
-        amount: { type: string }
-        filledAmount: { type: string }
-        minInterestRateBps: { type: string }
-        maxLtvBps: { type: string }
-        minDuration: { type: string }
-        maxDuration: { type: string }
-        expiry: { type: string }
-        marketId: { type: string }
+        lender:
+          type: string
+        amount:
+          type: string
+        filledAmount:
+          type: string
+        minInterestRateBps:
+          type: string
+        maxLtvBps:
+          type: string
+        minDuration:
+          type: string
+        maxDuration:
+          type: string
+        expiry:
+          type: string
+        marketId:
+          type: string
 
     InstantBorrowRequest:
       type: object
       required: [marketId, borrowAmount, collateralAmount, maxInterestRateBps, duration]
       properties:
-        marketId: { type: string }
-        borrowAmount: { type: string }
-        collateralAmount: { type: string }
-        maxInterestRateBps: { type: string }
-        duration: { type: string }
-        minLtvBps: { type: string, default: '8000' }
-        maxLtvBps: { type: string }
-        matcherCommissionBps: { type: string }
+        marketId:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{64}$"
+        borrowAmount:
+          type: string
+        collateralAmount:
+          type: string
+        maxInterestRateBps:
+          type: string
+        duration:
+          type: string
+        minLtvBps:
+          type: string
+          default: "8000"
+        maxLtvBps:
+          type: string
+          default: "8500"
+        matcherCommissionBps:
+          type: string
 
     BorrowResult:
       type: object
       properties:
-        attemptId: { type: string }
-        status: { type: string }
+        attemptId:
+          type: string
+        reused:
+          type: boolean
+        status:
+          type: string
         transactions:
           type: array
-          items: { $ref: '#/components/schemas/UnsignedTransaction' }
+          items:
+            $ref: "#/components/schemas/UnsignedTransaction"
         selectedOffer:
           type: object
-          properties:
-            lender: { type: string }
-            interestRateBps: { type: string }
 
     UnsignedTransaction:
       type: object
       properties:
-        from: { type: string }
-        to: { type: string }
-        data: { type: string }
-        value: { type: string }
+        to:
+          type: string
+        data:
+          type: string
+        value:
+          type: string
 
     LoanStatus:
       type: object
-      properties:
-        loanId: { type: string }
-        borrower: { type: string }
-        lender: { type: string }
-        principal: { type: string }
-        collateralAmount: { type: string }
-        interestRateBps: { type: string }
-        ltvBps: { type: string }
-        liquidationLtvBps: { type: string }
-        startTime: { type: integer }
-        duration: { type: integer }
-        repaid: { type: boolean }
+      description: Loan status from credit SDK
 
     TransactionResult:
       type: object
       properties:
         transactions:
           type: array
-          items: { $ref: '#/components/schemas/UnsignedTransaction' }
+          items:
+            $ref: "#/components/schemas/UnsignedTransaction"
 
     RenewRequest:
       type: object
       required: [loanId]
       properties:
-        loanId: { type: string }
-        newBorrowAmount: { type: string }
-        newCollateralAmount: { type: string }
-        maxInterestRateBps: { type: string }
-        duration: { type: string }
-        repaySlippageBps: { type: string }
+        loanId:
+          type: string
+        newBorrowAmount:
+          type: string
+        newCollateralAmount:
+          type: string
+        maxInterestRateBps:
+          type: string
+        duration:
+          type: string
+        minLtvBps:
+          type: string
+        repaySlippageBps:
+          type: string
 
     ProxyCheckResult:
       type: object
       properties:
-        x402: { type: boolean }
-        status: { type: integer }
-        message: { type: string }
+        x402:
+          type: boolean
+        status:
+          type: integer
+        message:
+          type: string
         payment:
           type: object
           properties:
-            amount: { type: string }
-            asset: { type: string }
-            payTo: { type: string }
-            network: { type: string }
+            amount:
+              type: string
+            asset:
+              type: string
+            payTo:
+              type: string
+            network:
+              type: string
 
     ProxyFetchRequest:
       type: object
       required: [url]
       properties:
-        url: { type: string, format: uri }
-        method: { type: string, default: GET, enum: [GET, POST, PUT, PATCH, DELETE, HEAD] }
-        headers: { type: object, additionalProperties: { type: string } }
-        body: { type: string }
+        url:
+          type: string
+          format: uri
+        method:
+          type: string
+          default: GET
+          enum: [GET, POST, PUT, PATCH, DELETE, HEAD]
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+        body:
+          type: string
 
-    CostEstimate:
+    X402Estimate:
       type: object
       properties:
-        x402: { type: boolean }
-        estimatedCostUsdc: { type: string }
-        paymentRequired:
-          type: object
-          properties:
-            amount: { type: string }
-            asset: { type: string }
-            payTo: { type: string }
-            network: { type: string }
+        maxAmountRequired:
+          type: string
+        asset:
+          type: string
+        payTo:
+          type: string
+        network:
+          type: string
         reflection:
           type: object
           properties:
-            creditAvailable: { type: string }
-            canAfford: { type: boolean }
-            headroomBps: { type: string }
+            creditLimit:
+              type: string
+              nullable: true
+            creditOut:
+              type: string
+            available:
+              type: string
+            headroomToAutoBorrow:
+              type: string
+            utilizationBps:
+              type: number
+
+    RegistrationRequest:
+      type: object
+      required: [walletAddress, signature, nonce]
+      properties:
+        walletAddress:
+          type: string
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        signature:
+          type: string
+        nonce:
+          type: string
+          minLength: 1
 
     AgentBalance:
       type: object
       properties:
-        balance: { type: string }
-        privyWalletBalance: { type: string }
-        privyWalletAddress: { type: string }
-        creditLimit: { type: string }
-        creditUsed: { type: string }
-        creditAvailable: { type: string }
+        status:
+          type: string
+          description: Only present if agent is closed
+        balance:
+          type: string
+        privyWalletAddress:
+          type: string
+        creditLimit:
+          type: string
+        creditUsed:
+          type: string
+        creditAvailable:
+          type: string
         activeLoans:
           type: array
           items:
             type: object
             properties:
-              loanId: { type: string }
-              borrowAmount: { type: string }
-              status: { type: string }
-        delegationActive: { type: boolean }
+              loanId:
+                type: string
+              borrowAmount:
+                type: string
+              status:
+                type: string
+        delegationActive:
+          type: boolean
+        operatorExpiry:
+          type: string
+          nullable: true
+          format: date-time
+        remainingLoans:
+          type: array
+          description: Only present when status=closed
+          items:
+            type: object
+            properties:
+              loanId:
+                type: string
+              principalRaw:
+                type: string
 
     CreditRemaining:
       type: object
       properties:
-        available: { type: string }
-        creditLimit: { type: string }
-        headroomToAutoBorrow: { type: string }
-        utilizationBps: { type: string }
-        sessionSpendLimit: { type: string }
-        sessionSpent: { type: string }
-        sessionSpendRemaining: { type: string }
+        available:
+          type: string
+        creditIn:
+          type: string
+        creditOut:
+          type: string
+        creditLimit:
+          type: string
+          nullable: true
+        headroomToAutoBorrow:
+          type: string
+        utilizationBps:
+          type: number
+        sessionSpendLimit:
+          type: string
+          nullable: true
+        sessionSpent:
+          type: string
+        sessionSpendRemaining:
+          type: string
+          nullable: true
+        asOf:
+          type: string
+          format: date-time
 
     SpendLimit:
       type: object
       properties:
-        active: { type: boolean }
-        limitRaw: { type: string, nullable: true }
-        sessionSpentRaw: { type: string }
-        sessionRemainingRaw: { type: string }
+        active:
+          type: boolean
+        limitRaw:
+          type: string
+          nullable: true
+        sessionStartedAt:
+          type: string
+          format: date-time
+          description: Only present when active=true
+        sessionSpentRaw:
+          type: string
+        sessionRemainingRaw:
+          type: string
+
+    CreditThreshold:
+      type: object
+      properties:
+        id:
+          type: integer
+        thresholdBps:
+          type: integer
+        lastState:
+          type: string
+          nullable: true
+        lastFiredAt:
+          type: string
+          nullable: true
+          format: date-time
+        webhookId:
+          type: integer
+          nullable: true
+
+    CloseResult:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [closed, winding_down]
+        loansRepaid:
+          type: integer
+        loansRemaining:
+          type: integer
+        repayTxHashes:
+          type: array
+          items:
+            type: string
+        transferTxHash:
+          type: string
+        usdcTransferred:
+          type: string
+        remainingLoans:
+          type: array
+          items:
+            type: object
+            properties:
+              loanId:
+                type: string
+              principalRaw:
+                type: string
 
     TransactionList:
       type: object
@@ -774,43 +1378,133 @@ components:
           items:
             type: object
             properties:
-              id: { type: integer }
-              agentId: { type: string }
-              url: { type: string }
-              method: { type: string }
-              status: { type: string }
-              amountUsdc: { type: string }
-              createdAt: { type: string, format: date-time }
-        nextCursor: { type: integer }
-        hasMore: { type: boolean }
+              id:
+                type: integer
+              agentId:
+                type: string
+              targetUrl:
+                type: string
+              method:
+                type: string
+              status:
+                type: string
+                enum: [pending, success, failed]
+              paymentAmountRaw:
+                type: string
+                nullable: true
+              paymentRecipient:
+                type: string
+                nullable: true
+              responseStatusCode:
+                type: integer
+                nullable: true
+              latencyMs:
+                type: integer
+                nullable: true
+              x402TxHash:
+                type: string
+                nullable: true
+              createdAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
+        nextCursor:
+          type: integer
+        hasMore:
+          type: boolean
+
+    ManagedAgent:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        agentWalletAddress:
+          type: string
+        status:
+          type: string
+        delegationActive:
+          type: boolean
+        privyWalletAddress:
+          type: string
+        delegationTxHash:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: integer
+        keyPrefix:
+          type: string
+          description: First 8 chars
+        fullKey:
+          type: string
+          description: Full key (shown once at creation)
+        label:
+          type: string
+          nullable: true
+        permissions:
+          type: string
+          enum: [read, read_write]
+        createdAt:
+          type: string
+          format: date-time
 
     AdminAgent:
       type: object
       properties:
-        id: { type: string }
-        privyWalletAddress: { type: string }
-        status: { type: string }
-        creditLimit: { type: string }
-        creditUsed: { type: string }
-        activeLoanCount: { type: integer }
-        delegationActive: { type: boolean }
-        createdAt: { type: string, format: date-time }
+        id:
+          type: string
+        privyWalletAddress:
+          type: string
+        status:
+          type: string
+        balance:
+          type: string
+        creditLimit:
+          type: string
+          nullable: true
+        creditUsed:
+          type: string
+        activeLoanCount:
+          type: integer
+        delegationActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
 
     Error:
       type: object
       properties:
-        error: { type: string }
-        message: { type: string }
-        details: { type: array, items: { type: string } }
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items: {}
 
   responses:
     BadRequest:
       description: Invalid request
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+          schema:
+            $ref: "#/components/schemas/Error"
     Unauthorized:
       description: Missing or invalid authentication
       content:
         application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+          schema:
+            $ref: "#/components/schemas/Error"
