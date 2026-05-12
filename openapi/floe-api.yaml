@@ -9,7 +9,7 @@ info:
     - **Public endpoints** — no auth required (marked with `security: []`)
     - **Agent API key** — `Authorization: Bearer floe_...`
     - **Wallet signature** — EIP-191 signed message via X-Wallet-Address + X-Signature + X-Timestamp headers
-    - **Developer session** — JWT cookie or `Authorization: Bearer <jwt>`
+    - **Developer session** — `Authorization: Bearer <jwt>` (from SIWE auth flow)
     - **Admin API key** — `Authorization: Bearer <admin-key>`
   version: 1.1.0
   contact:
@@ -129,6 +129,7 @@ paths:
           in: query
           schema:
             type: string
+            pattern: "^0x[a-fA-F0-9]{64}$"
           description: bytes32 market ID. Omit for all markets.
         - name: minAmount
           in: query
@@ -141,7 +142,9 @@ paths:
         - name: maxResults
           in: query
           schema:
-            type: string
+            type: integer
+            minimum: 1
+            maximum: 100
       responses:
         "200":
           description: Available offers
@@ -1128,7 +1131,53 @@ components:
 
     LoanStatus:
       type: object
-      description: Loan status from credit SDK
+      description: Loan status and health metrics
+      properties:
+        loanId:
+          type: string
+        borrower:
+          type: string
+        lender:
+          type: string
+        principal:
+          type: string
+        collateralAmount:
+          type: string
+        interestRateBps:
+          type: string
+        ltvBps:
+          type: string
+        liquidationLtvBps:
+          type: string
+        startTime:
+          type: integer
+        duration:
+          type: integer
+        repaid:
+          type: boolean
+        accruedInterest:
+          type: string
+        totalDebt:
+          type: string
+        currentLtvBps:
+          type: string
+        isHealthy:
+          type: boolean
+        isOverdue:
+          type: boolean
+        earlyRepaymentTerms:
+          type: object
+          properties:
+            gracePeriod:
+              type: string
+            minInterestBps:
+              type: string
+            fullTermInterest:
+              type: string
+            earlyRepaymentPenalty:
+              type: string
+            totalRepaymentIfRepaidNow:
+              type: string
 
     TransactionResult:
       type: object
