@@ -18,6 +18,6 @@
   "asset": "USDC",
   "priceUsd": "0.01",
   "pricingModel": "dynamic",
-  "floeCompatible": true,
+  "floeCompatible": false,
   "status": "preview"
 }

@@ -18,7 +18,7 @@ IPFS, Arweave, and agent memory. All payable with Floe credit on Base.
 
 **Provider:** [402104](https://402104.xyz)
 **Endpoint:** `POST https://api.402104.xyz/v1/store`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Expirable paywalled links to private ANS-104 DataItems on Arweave.
@@ -35,7 +35,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Pinata](https://pinata.cloud)
 **Endpoint:** `POST https://402.pinata.cloud/v1/pin`
-**Price:** $0.10 USDC per call · Base mainnet · x402 v2
+**Price:** $0.10 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > IPFS pin and retrieve, account-free. Dynamic pricing.

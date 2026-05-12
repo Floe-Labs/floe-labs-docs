@@ -89,7 +89,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Soundside](https://soundside.ai)
 **Endpoint:** `POST https://api.soundside.ai/v1/generate`
-**Price:** $0.02 USDC per call · Base mainnet · x402 v2
+**Price:** $0.02 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > 22 image/video/audio/music tools and providers on Base.
@@ -106,7 +106,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Spraay](https://spraay.ai)
 **Endpoint:** `POST https://api.spraay.ai/v1/run`
-**Price:** $0.02 USDC per call · Base mainnet · x402 v2
+**Price:** $0.02 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > AI inference including Replicate-backed image/video/audio.

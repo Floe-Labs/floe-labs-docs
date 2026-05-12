@@ -23,7 +23,7 @@ AI model inference — Claude, GPT, open-source models. All payable with Floe cr
 
 **Provider:** [AiMo](https://aimo.network)
 **Endpoint:** `POST https://api.aimo.network/v1/infer`
-**Price:** $0.005 USDC per call · Base mainnet · x402 v2
+**Price:** $0.005 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Permissionless pay-per-inference network.
@@ -40,7 +40,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [AskClaude](https://askclaude.shop)
 **Endpoint:** `POST https://askclaude.shop/api/ask`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (tiered) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Claude Haiku $0.01, Sonnet $0.03, Opus $0.10 per question. Streaming.
@@ -57,7 +57,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [BlockRun.AI](https://blockrun.ai)
 **Endpoint:** `POST https://api.blockrun.ai/v1/chat`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > ChatGPT, Claude, Google, DeepSeek, xAI — pay-as-you-go on Base.
@@ -74,7 +74,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Daydreams](https://daydreams.ai)
 **Endpoint:** `POST https://api.daydreams.ai/v1/route`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > x402-enabled LLM inference routing across all major providers.
@@ -91,7 +91,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [dTelecom](https://dtelecom.org)
 **Endpoint:** `POST https://api.dtelecom.org/v1/transcribe`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Real-time speech-to-text in 99+ languages.
@@ -108,7 +108,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Ekai Labs](https://ekai.ai)
 **Endpoint:** `POST https://api.ekai.ai/v1/infer`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Universal context layer with pay-per-inference.
@@ -142,7 +142,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Venice](https://venice.ai)
 **Endpoint:** `POST https://api.venice.ai/v1/chat`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Open-source AI models, uncensored, no data retention.

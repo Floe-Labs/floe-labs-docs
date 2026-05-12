@@ -24,7 +24,7 @@ Web search, scraping, and data extraction. All payable with Floe credit on Base.
 
 **Provider:** [Apify](https://apify.com)
 **Endpoint:** `POST https://api.apify.com/v2/x402/run`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Web data platform for scraping, crawling, and automation.

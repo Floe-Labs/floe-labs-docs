@@ -3,7 +3,8 @@
   "$id": "https://docs.floelabs.xyz/schemas/floe-directory-v1.json",
   "title": "Floe x402 Directory Entry",
   "type": "object",
-  "required": ["id", "name", "provider", "description", "resource", "method", "category", "x402Version", "network", "asset", "priceUsd", "floeCompatible", "status"],
+  "required": ["id", "name", "provider", "description", "resource", "method", "category", "x402Version", "network", "asset", "priceUsd", "pricingModel", "floeCompatible", "status"],
+  "additionalProperties": false,
   "properties": {
     "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
     "name": { "type": "string" },
@@ -23,7 +24,7 @@
     "x402Version": { "enum": [1, 2] },
     "network": { "type": "string" },
     "asset": { "type": "string" },
-    "priceUsd": { "type": "string" },
+    "priceUsd": { "type": "string", "pattern": "^(0|[1-9]\\d*)(\\.\\d+)?$" },
     "pricingModel": { "enum": ["fixed-per-call", "tiered", "dynamic", "upto"] },
     "floeCompatible": { "type": "boolean" },
     "status": { "enum": ["verified", "unverified", "preview", "deprecated"] }

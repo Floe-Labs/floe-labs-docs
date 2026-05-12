@@ -37,8 +37,8 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [AWS](https://aws.amazon.com)
 **Endpoint:** `GET https://docs.aws.amazon.com/x402`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
-**Floe compatible:** Yes
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
+**Floe compatible:** No
 
 > Monetize any HTTP app with x402 and CloudFront/Lambda@Edge.
 
@@ -54,7 +54,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Cloudflare](https://www.cloudflare.com)
 **Endpoint:** `POST https://x402.cloudflare.com/crawl`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Pay-per-crawl for AI agents accessing web content.

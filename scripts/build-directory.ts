@@ -29,10 +29,37 @@ const CATEGORY_META: Record<string, { title: string; icon: string; description: 
   'agent-tooling': { title: 'Agent Tooling', icon: 'wrench', description: 'MCP servers, workflows, and agent orchestration.' },
 };
 
-// Read all entries
+// Read and validate all entries
 const files = readdirSync(ENTRIES_DIR).filter(f => f.endsWith('.json'));
-const entries: Entry[] = files.map(f => JSON.parse(readFileSync(join(ENTRIES_DIR, f), 'utf-8')));
-console.log(`Read ${entries.length} entries`);
+const validCategories = new Set(Object.keys(CATEGORY_META));
+const entries: Entry[] = [];
+let errors = 0;
+
+for (const f of files) {
+  try {
+    const entry: Entry = JSON.parse(readFileSync(join(ENTRIES_DIR, f), 'utf-8'));
+    if (!entry.id || !entry.name || !entry.resource || !entry.category) {
+      console.error(`  ERROR: ${f} missing required fields (id, name, resource, or category)`);
+      errors++;
+      continue;
+    }
+    if (!validCategories.has(entry.category)) {
+      console.error(`  ERROR: ${f} has unknown category "${entry.category}". Valid: ${[...validCategories].join(', ')}`);
+      errors++;
+      continue;
+    }
+    entries.push(entry);
+  } catch (err) {
+    console.error(`  ERROR: ${f} — ${(err as Error).message}`);
+    errors++;
+  }
+}
+
+if (errors > 0) {
+  console.error(`\n${errors} entry error(s) found. Fix them before generating.`);
+  process.exit(1);
+}
+console.log(`Read ${entries.length} entries (0 errors)`);
 
 // Group by category
 const grouped: Record<string, Entry[]> = {};
@@ -69,7 +96,8 @@ for (const [category, catEntries] of Object.entries(grouped)) {
     if (e.homepage) md += `**Provider:** [${e.provider}](${e.homepage})\n`;
     else md += `**Provider:** ${e.provider}\n`;
     md += `**Endpoint:** \`${e.method} ${e.resource}\`\n`;
-    md += `**Price:** $${e.priceUsd} ${e.asset} per call · Base mainnet · x402 v${e.x402Version}\n`;
+    const pricingSuffix = e.pricingModel === 'dynamic' ? ' (dynamic)' : e.pricingModel === 'tiered' ? ' (tiered)' : '';
+    md += `**Price:** $${e.priceUsd} ${e.asset} per call${pricingSuffix} · Base mainnet · x402 v${e.x402Version}\n`;
     md += `**Floe compatible:** ${e.floeCompatible ? 'Yes' : 'No'}\n\n`;
     md += `> ${e.description}\n\n`;
 
@@ -172,7 +200,6 @@ console.log(`  Generated submit.md`);
 const manifest = {
   schema: 'floe-directory/v1',
   version: '1.0.0',
-  generatedAt: new Date().toISOString(),
   entryCount: entries.length,
   categories: categoryOrder,
   entries: entries.sort((a, b) => a.id.localeCompare(b.id)),

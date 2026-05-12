@@ -39,7 +39,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Fluora](https://fluora.xyz)
 **Endpoint:** `POST https://api.fluora.xyz/v1/workflow`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Agent workflow orchestration with x402 billing.
@@ -56,7 +56,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Heurist](https://heurist.ai)
 **Endpoint:** `POST https://api.heurist.ai/v1/mesh`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Composable crypto skills with MCP + x402.
@@ -73,7 +73,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Latinum](https://latinum.xyz)
 **Endpoint:** `POST https://api.latinum.xyz/v1/orchestrate`
-**Price:** $0.005 USDC per call · Base mainnet · x402 v2
+**Price:** $0.005 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Agent-to-agent payment orchestration.
@@ -107,7 +107,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [MCPay](https://mcpay.xyz)
 **Endpoint:** `POST https://api.mcpay.xyz/v1/pay`
-**Price:** $0.001 USDC per call · Base mainnet · x402 v2
+**Price:** $0.001 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Payment layer for MCP tool servers.

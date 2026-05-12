@@ -35,7 +35,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Browserbase](https://browserbase.com)
 **Endpoint:** `POST https://api.browserbase.com/v1/session`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Headless browser sessions monetized via x402.

@@ -88,7 +88,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Snack Money](https://snackmoney.xyz)
 **Endpoint:** `POST https://api.snackmoney.xyz/v1/tip`
-**Price:** $0.001 USDC per call · Base mainnet · x402 v2
+**Price:** $0.001 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
 > Micropayments on X, Farcaster, and Base apps.

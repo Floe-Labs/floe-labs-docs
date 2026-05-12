@@ -1,7 +1,6 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "generatedAt": "2026-05-11T23:53:10.128Z",
   "entryCount": 76,
   "categories": [
     "web-search",
@@ -281,7 +280,7 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "dynamic",
-      "floeCompatible": true,
+      "floeCompatible": false,
       "status": "preview"
     },
     {
