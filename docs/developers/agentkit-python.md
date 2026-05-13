@@ -74,17 +74,53 @@ tools = get_floe_openai_tools(wallet_provider)
 
 ## CLI: `floe-agent`
 
-Interactive AI-powered DeFi agent with support for OpenAI, Claude, and Ollama.
+Interactive AI-powered DeFi agent with support for OpenAI, Claude, and Ollama, plus per-agent registration tooling.
 
 ```bash
 # Install with CLI extras
 pip install floe-agentkit-actions[cli]
 
-# Run
+# Default: interactive REPL
 floe-agent
+
+# Subcommands
+floe-agent register --name <name>   # Provision an agent + mint a floe_* key
+floe-agent agents                   # List registered agents
+floe-agent use <name>               # Set the active agent
+floe-agent rotate <name>            # Rotate the agent's API key
+floe-agent revoke <name>            # Revoke the agent's API key
+floe-agent open-credit-line --name <name> --deposit <usdc>   # Open the credit line
+floe-agent run --agent <name>       # REPL scoped to a specific agent
 ```
 
-The CLI prompts for wallet provider, AI provider, and RPC URL. Configuration is saved for reuse.
+### Subcommands
+
+| Command | Purpose |
+|---|---|
+| `floe-agent run [--agent <name>]` | Interactive REPL. Default when no subcommand is given. Picks the agent from `--agent`, then `active_agent`, then the single registered agent if there's only one. |
+| `floe-agent register --name <name>` | Provision a Floe agent (server-managed Privy wallet + on-chain delegation) and mint a `floe_*` key. Key is stored in OS keychain and printed once. Flags: `--borrow-limit <usdc>`, `--max-rate-bps <n>`, `--expiry-days <n>`, `--facilitator-url <url>`. |
+| `floe-agent agents` | List registered agents and keychain status for each. |
+| `floe-agent use <name>` | Set the active agent (persisted in `.floe-agent.json`). |
+| `floe-agent rotate <name>` | Atomically rotate the agent's API key — old key revoked + new key minted server-side, keychain entry replaced. |
+| `floe-agent revoke <name>` | Revoke the agent's API key server-side and remove the local keychain entry. |
+| `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Required AFTER `register` before paid `/proxy/fetch` calls can succeed. |
+
+### Setup flow (for `run`)
+
+The REPL prompts for wallet provider, AI provider, and RPC URL. Configuration (wallet type + AI provider + agent registry, **not secrets**) is saved to `.floe-agent.json` and reused on subsequent runs. API keys live in the OS keychain via the [`keyring`](https://pypi.org/project/keyring/) package, or — when no keyring backend is available — in `FLOE_AGENT_KEY_<UPPER_NAME>` environment variables.
+
+### Multi-agent registry
+
+One developer can register up to five agents. Typical flow:
+
+```bash
+floe-agent register --name research --borrow-limit 5000
+floe-agent register --name trading --borrow-limit 25000
+floe-agent agents          # list both
+floe-agent use trading     # mark trading as active
+floe-agent run             # REPL connects as trading agent
+floe-agent run --agent research  # override per session
+```
 
 ### Example Session
 

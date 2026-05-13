@@ -26,7 +26,7 @@ An agent needs $9,500 to call paid APIs. It deposits $10,000 USDC, borrows $9,50
 
 ### Example: x402 facilitator (zero-touch)
 
-An agent calls x402-enabled APIs. The deployer grants `setOperator` delegation to the Floe facilitator once. The agent calls `POST /v1/proxy/fetch` with any URL — the facilitator auto-borrows USDC against the delegated collateral, signs the EIP-3009 payment, and returns the API response. The agent never thinks about money.
+An agent calls x402-enabled APIs. The deployer provisions the agent once via `POST /v1/developer/agents` (dashboard, CLI, or REST) — Floe creates a managed Privy wallet for the agent and submits the on-chain operator delegation server-side. The agent then calls `POST /v1/proxy/fetch` with any URL — the facilitator auto-borrows USDC against the delegated collateral, signs the EIP-3009 payment, and returns the API response. The agent never thinks about money.
 
 ### Example: DeFi agent
 
@@ -81,6 +81,6 @@ Every loan your agent takes and repays builds on-chain credit history. This hist
 ## Next
 
 - **Get started:** [Agent Quickstart](../developers/agent-quickstart.md) — working capital in 5 minutes
-- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 36 actions across TypeScript + Python
+- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 45 actions across TypeScript + Python
 - **x402 proxy:** [x402 Credit Facilitator](../developers/x402-facilitator.md) — zero-touch API payments
 - **Dashboard:** [Developer Dashboard](../developers/developer-dashboard.md) — manage agents via web UI

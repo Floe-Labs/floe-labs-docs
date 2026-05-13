@@ -445,76 +445,6 @@ paths:
         "429":
           description: Rate limit exceeded
 
-  /v1/agents/pre-register:
-    post:
-      tags: [Agent]
-      summary: Create Privy wallet (step 1)
-      operationId: preRegister
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RegistrationRequest"
-      responses:
-        "201":
-          description: Wallet created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  privyWalletAddress:
-                    type: string
-        "409":
-          description: Already registered
-        "503":
-          description: Privy not configured
-
-  /v1/agents/register:
-    post:
-      tags: [Agent]
-      summary: Verify delegation and activate (step 2)
-      operationId: register
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RegistrationRequest"
-      responses:
-        "201":
-          description: Agent activated
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  agentId:
-                    type: string
-                  apiKey:
-                    type: string
-                    description: Shown once. Store securely.
-                  privyWalletAddress:
-                    type: string
-                  borrowIntentHash:
-                    type: string
-                  registerTxHash:
-                    type: string
-                  facilityLoanStatus:
-                    type: string
-                    enum: [pending_match]
-        "400":
-          description: Delegation inactive or insufficient
-        "404":
-          description: Call /pre-register first
-        "409":
-          description: Already registered
-        "410":
-          description: Pre-registration expired (>24h)
-
   /v1/agents/balance:
     get:
       tags: [Agent]
@@ -774,6 +704,100 @@ paths:
         "409":
           description: Max agents (5) or name conflict
 
+  /v1/developer/agents/{agentId}:
+    get:
+      tags: [Developer]
+      summary: Get agent detail
+      operationId: devGetAgent
+      security:
+        - developerSession: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Agent detail with credit usage + recent activity snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agent:
+                    $ref: "#/components/schemas/ManagedAgent"
+                  creditUsed:
+                    type: string
+                  recentTransactionCount24h:
+                    type: integer
+                  sessionSpend:
+                    type: object
+                    properties:
+                      limitRaw:
+                        type: string
+                        nullable: true
+                      startedAtUnix:
+                        type: integer
+                        nullable: true
+        "404":
+          description: Agent not found or not owned by caller
+
+  /v1/developer/agents/{agentId}/close:
+    post:
+      tags: [Developer]
+      summary: Wind an agent down (repay loans, sweep USDC, mark closed)
+      description: |
+        Triggers the wind-down service: repays all active facility loans for
+        the agent via the facilitator, transfers any remaining USDC from the
+        agent's Privy wallet back to the developer, and marks the agent
+        `closed`. Idempotent — calling on an already-closed agent returns
+        `{ status: 'closed', loansRepaid: 0, loansRemaining: 0 }`.
+
+        This is the only path that fully retires an agent. `floe-agent revoke`
+        only revokes the API key; the operator permission, active loans, and
+        on-chain state are untouched.
+      operationId: devCloseAgent
+      security:
+        - developerSession: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Wind-down result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [closed]
+                  loansRepaid:
+                    type: integer
+                  loansRemaining:
+                    type: integer
+                  repayTxHashes:
+                    type: array
+                    items:
+                      type: string
+                  transferTxHash:
+                    type: string
+                    nullable: true
+                  usdcTransferred:
+                    type: string
+                    nullable: true
+        "404":
+          description: Agent not found or not owned by caller
+        "500":
+          description: winddown_failed (inspect detail; the agent stays in its prior state)
+        "503":
+          description: winddown_unavailable (WinddownService not configured)
+
   /v1/developer/agents/{agentId}/keys:
     post:
       tags: [Developer]
@@ -863,6 +887,96 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiKey"
+
+  /v1/developer/agents/{agentId}/open-credit-line:
+    post:
+      tags: [Developer]
+      summary: Open a managed agent's USDC/USDC credit line
+      description: |
+        Server-signs registerBorrowIntent from the agent's managed Privy wallet,
+        creating an in-flight facility_loans row that the existing reconciler
+        + solver advance to status='active' asynchronously. The agent's Privy
+        wallet must hold at least `depositRaw` USDC before this is called.
+
+        USDC/USDC same-token market only. Borrow amount is
+        `depositRaw * maxLtvBps / 10000` (default 95%).
+
+        The response shape returns the in-flight row's id + the on-chain
+        registerTxHash. `borrowIntentHash` is null on initial return — the
+        reconciler fills it in after the receipt confirms and parses
+        LogBorrowerOfferPosted. Once the solver matches the intent against
+        an open lend offer, status flips to 'active' and BalanceService
+        starts including the loan in `creditIn` for paid /proxy/fetch calls.
+      operationId: devOpenCreditLine
+      security:
+        - developerSession: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [depositRaw]
+              properties:
+                depositRaw:
+                  type: string
+                  pattern: "^[1-9]\\d*$"
+                  description: USDC deposit amount, raw 6-decimal units (e.g. "10000000000" = $10K).
+                maxLtvBps:
+                  type: integer
+                  minimum: 1
+                  maximum: 9500
+                  description: Optional LTV cap in bps. Defaults to 9500 (95%).
+                maxRateBps:
+                  type: integer
+                  minimum: 1
+                  maximum: 10000
+                  description: Optional max interest rate ceiling. Defaults to the agent's `maxRateBps`.
+      responses:
+        "201":
+          description: Credit-line opening submitted; awaiting solver match
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  loanId:
+                    type: string
+                    description: Synthetic placeholder `pending:<uuid>` until the on-chain loanId is recorded.
+                  borrowIntentHash:
+                    type: string
+                    nullable: true
+                  approveTxHash:
+                    type: string
+                    nullable: true
+                    description: Null when the Privy wallet's existing allowance was already sufficient.
+                  registerTxHash:
+                    type: string
+                  principalRaw:
+                    type: string
+                  collateralAmountRaw:
+                    type: string
+                  rateBps:
+                    type: integer
+                  status:
+                    type: string
+                    enum: [pending_on_chain]
+        "400":
+          description: invalid input | insufficient_privy_balance | agent_not_managed | invalid_max_ltv | invalid_deposit
+        "404":
+          description: Agent not found or not owned by caller
+        "409":
+          description: agent_not_active | delegation_expired | existing_active_credit_line
+        "502":
+          description: rpc_read_failed | market_not_created | privy_send_failed
+        "503":
+          description: ManagedCreditLineService not initialized (Privy missing)
 
   /v1/admin/agents:
     get:
@@ -1270,19 +1384,6 @@ components:
               type: string
             utilizationBps:
               type: number
-
-    RegistrationRequest:
-      type: object
-      required: [walletAddress, signature, nonce]
-      properties:
-        walletAddress:
-          type: string
-          pattern: "^0x[a-fA-F0-9]{40}$"
-        signature:
-          type: string
-        nonce:
-          type: string
-          minLength: 1
 
     AgentBalance:
       type: object

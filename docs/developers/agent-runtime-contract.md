@@ -6,20 +6,20 @@ icon: file-contract
 
 You are an agent authored against the Floe credit facilitator. You never sign transactions, never see USDC, and never think about intents or loans. You have one environment variable — `FLOE_API_KEY` — and you call `POST /v1/proxy/fetch`. This page is your runtime contract: read it once, then code against it.
 
-Everything on-chain (wallet creation, collateral deposit, `setOperator` delegation) was done by your deployer at setup time via the [Developer Dashboard](developer-dashboard.md). You inherit a ready-to-use API key.
+Wallet provisioning, collateral funding, and operator delegation were all handled by your deployer at setup time via the [Developer Dashboard](developer-dashboard.md) (or the `floe-agent register` CLI) — Floe provisions a managed Privy wallet and submits the on-chain `setOperator` server-side. You inherit a ready-to-use API key.
 
 ## The Invariants
 
 - You never hold a private key.
 - You never handle USDC directly.
-- You never call `setOperator`, `registerBorrowIntent`, `repayLoan`, or any on-chain function.
-- Your deployer did all of the above once, at setup time.
+- You never call `registerBorrowIntent`, `repayLoan`, or any on-chain function.
+- Your deployer ran `POST /v1/developer/agents` (or the CLI/dashboard equivalent) once, at setup time.
 - If your API key is revoked or delegation expires, you get `401` or `403` — **stop and alert your operator**.
 - The facilitator charges your credit line; your deployer is billed.
 
 ## Auth and Identification
 
-Every paid request carries `Authorization: Bearer floe_<hex>`. This is a **`floe_*` agent key**, minted by the facilitator when your deployer completed agent registration. It is **not** a `floe_live_*` developer key — developer keys are for the dashboard and webhook management, and will `401` if sent to `/v1/proxy/fetch`. See [API Keys](api-keys.md) for the full taxonomy.
+Every paid request carries `Authorization: Bearer floe_<hex>`. This is a **`floe_*` agent key**, minted by the facilitator when your deployer provisioned the agent. It is **not** a `floe_live_*` developer key — developer keys are for the dashboard and webhook management, and will `401` if sent to `/v1/proxy/fetch`. See [API Keys](api-keys.md) for the full taxonomy.
 
 ## The Happy Path
 

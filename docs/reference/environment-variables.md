@@ -89,7 +89,7 @@ Your Privy project secret. Scoped to the app ID above.
 The server-signer private key used to sign `setOperator` confirmation messages and EIP-3009 authorizations on behalf of agent Privy wallets. Generate via the Privy dashboard under **Server wallets → Authorization keys**. **Never commit this.**
 
 ### `FACILITATOR_PRIVATE_KEY`
-The private key for the **facilitator EOA** — a purpose-built wallet that submits `matchLoanIntents`, `repayLoan`, and lifecycle transactions on behalf of delegated agents. Without this key set, `/v1/agents/register` returns `503 Agent registration not available — facilitator not configured`.
+The private key for the **facilitator EOA** — a purpose-built wallet that submits `matchLoanIntents`, `repayLoan`, and lifecycle transactions on behalf of delegated agents. Without this key set, `POST /v1/developer/agents` returns `503 agent_creation_unavailable — AgentDelegationService not initialized`.
 
 **Key ↔ address relationship.** The facilitator EOA address is the public half of this private key, derived via `address = keccak256(publicKey)[12:]`. The **address must be published** because every deployer passes it as the `operator` argument to `setOperator` when granting `OperatorPermission`. The **private key must stay secret** because it signs match and repay transactions.
 

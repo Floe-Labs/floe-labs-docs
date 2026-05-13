@@ -8,6 +8,35 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.7.0 — Unified Agent Registration + Managed Credit Line (May 2026)
+
+The legacy single-agent registration path is removed. All agent provisioning now flows through the same dashboard surface that multi-agent uses (`POST /v1/developer/agents`), authenticated by a dashboard session, a `floe_live_*` developer key, or a wallet signature. Provisioning is intentionally decoupled from credit-line opening: a new server-signed endpoint mints the facility loan from the agent's managed Privy wallet (USDC/USDC market).
+
+**Removed (breaking):**
+
+* `POST /v1/agents/pre-register` and `POST /v1/agents/register` — replaced by `POST /v1/developer/agents` (provision) + `POST /v1/developer/agents/:id/keys` (mint).
+* `developers.agentApiKeyHash` legacy fallback in `api_key_auth` middleware — all agents now resolve via the `api_keys` table.
+
+**Added:**
+
+* `POST /v1/developer/agents/:agentId/open-credit-line` — server-signs `registerBorrowIntent` from the agent's managed Privy wallet in the USDC/USDC market. Body: `{ depositRaw, maxLtvBps?, maxRateBps? }`. Default LTV 9500 (95%, the same-token market cap). Returns `{ loanId, registerTxHash, approveTxHash?, principalRaw, status: 'pending_on_chain' }`. The existing `FacilityLoanReconciler` advances the row to `pending_match` once the receipt confirms; the solver matches it asynchronously. Idempotent via the `Idempotency-Key` header. **This is the step that makes a managed agent's `creditIn` non-zero** — without calling it, `/proxy/fetch` returns `insufficient_balance`.
+
+**SDK migration (`floe-agent` v0.4.0 / `floe-agentkit-actions` v0.4.0):**
+
+* New subcommands: `floe-agent register`, `agents`, `use`, `rotate`, `revoke`, `open-credit-line`. Each developer can register up to 5 agents from the CLI.
+* Per-agent API keys now live in the OS keychain (macOS Keychain, Windows Credential Manager, Linux Secret Service) via `@napi-rs/keyring` / `keyring`. Falls back to `FLOE_AGENT_KEY_<NAME>` env vars in headless environments.
+* `grant_credit_delegation` action rewired to the new provisioning flow. The schema gains a required `name`; the `facilitatorAddress` / `collateralToken` / `collateralApproval` fields are removed (the server's Privy wallet handles on-chain delegation and collateral). Return message points users at the new `open_credit_line` step.
+* New `open_credit_line` action — calls `POST /v1/developer/agents/:id/open-credit-line` with wallet-signed auth and prints the resulting `loanId` + tx hashes. Available in both TS and Python SDKs.
+* `revoke_credit_delegation` and `check_credit_delegation` unchanged — still pure on-chain operations against the lending matcher.
+
+**MCP server (`@floelabs/mcp-server`):**
+
+* No code change; remote endpoint and stdio mode already accept per-request Bearer tokens. README + `.env.example` clarify that `floe_*` agent keys are the recommended credential — `floe_live_*` developer keys still work but disable the agent-awareness tools.
+
+**Why this matters:** one registration path, one key model, one explicit "open the credit line" step. Splitting provisioning from credit-line opening makes the lifecycle visible: developers see exactly when their agent gains spendable USDC instead of having it bundled invisibly into registration.
+
+---
+
 ### v1.6.0 — Same-Token Markets, Fiat On-Ramp, Multi-Agent (May 2026)
 
 **Same-Token Markets (Upgrade #13):**
