@@ -23,7 +23,7 @@ AgentKit is Coinbase's open-source framework that gives AI agents on-chain capab
 | **GitHub** | [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions) | [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py) |
 
 > **SDK parity note.** The Python SDK has full parity with TypeScript: 30 Floe actions plus 6 X402 credit-delegation actions plus 9 agent-awareness actions (45 total in both). The high-level credit facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) are available in both SDKs.
-
+>
 > **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
 >
 > **Need working capital for your agent?** See [Agent Working Capital](agent-working-capital.md) for credit facility actions that let agents request, match, and manage fixed-rate loans.
@@ -77,7 +77,7 @@ All write actions auto-approve tokens to the LendingIntentMatcher with a 1% buff
 |--------|-------------|
 | `grant_credit_delegation` | Provision a new Floe agent (managed Privy wallet + server-side delegation) and mint its `floe_*` API key in one call. Takes `name`, `borrowLimit`, `maxRateBps`, `expiryDays`. Prefer the `floe-agent register` CLI for persistent multi-agent setups. |
 | `revoke_credit_delegation` | Revoke an on-chain operator permission from your local wallet (legacy operation). For managed agents, use `floe-agent revoke <name>` or the dashboard. |
-| `check_credit_delegation` | Read `getOperatorPermission` on-chain from your local wallet for the given operator (legacy operation). For managed-agent state, use `GET /v1/developer/agents/:id`. |
+| `check_credit_delegation` | Read `getOperatorPermission` on-chain from your local wallet for the given operator (legacy operation). For managed-agent state, use `GET /v1/developer/agents/{agentId}`. |
 | `x402_fetch` | Fetch any URL through the facilitator proxy — auto-pays 402 responses |
 | `x402_get_balance` | Check credit status: limit, used, available, active loans |
 | `x402_get_transactions` | View payment history with pagination |

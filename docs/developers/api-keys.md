@@ -27,7 +27,7 @@ One developer can own multiple agents (up to 5 per account today). Each agent ha
 4. **REST API** — `POST /v1/developer/agents` to create, then `POST /v1/developer/agents/:id/keys` to mint. See [Credit API → Developer Agents](credit-api.md#developer-agents).
 
 > The CLI's `--borrow-limit` flag is in **USDC** (`10000` = $10K). The REST API's `borrowLimitRaw` field is in **raw 6-decimal units** (`10000` = $0.01, `10000000000` = $10K).
-
+>
 > Each agent has a **one active key** cap. Mint a second key with `POST /v1/developer/agents/:id/keys/:keyId/rotate` — the old key is revoked atomically in the same transaction.
 
 ## Authentication

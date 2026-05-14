@@ -265,7 +265,7 @@ Both calls accept any of three credentials interchangeably: a dashboard session 
 
 ### Wallet signature format
 
-```
+```text
 Floe Credit API
 Timestamp: {unix-seconds}
 ```

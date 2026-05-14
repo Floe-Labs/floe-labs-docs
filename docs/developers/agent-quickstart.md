@@ -108,7 +108,7 @@ This key is for dashboard and webhook management — it's **not** what the agent
 
 ### 3. Create the agent
 
-On the **Agents** page, click **Create Agent** and fill in a name, borrow limit, max rate, and expiry. Floe provisions a managed Privy wallet for the agent and submits the `setOperator` delegation on-chain from that Privy wallet — **you sign nothing on-chain from your developer wallet.** The wizard shows the new `agentWalletAddress` once provisioning is complete.
+On the **Agents** page, click **Create Agent** and fill in a name, borrow limit, max rate, and expiry. Floe provisions a managed Privy wallet for the agent and submits the `setOperator` delegation on-chain from that Privy wallet — **you sign nothing on-chain from your developer wallet.** The wizard shows the new wallet address once provisioning is complete. The API response surfaces this as `privyWalletAddress` (also exposed as `agentWalletAddress` for backward compatibility) — both fields point to the same address, which you'll fund in step 4.
 
 Or skip the dashboard entirely:
 
