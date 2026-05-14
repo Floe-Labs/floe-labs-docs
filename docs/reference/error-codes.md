@@ -37,7 +37,7 @@ These are the errors your agent will see at runtime. This section is a condensed
 | 502 | `Failed to reach target URL` | Network error before `X-PAYMENT` was attached. Safe to retry. |
 | 502 | `upstream_paid_request_failed_ambiguous` | Network error **after** `X-PAYMENT` was sent. **Do not retry immediately** — wait for reconciliation. |
 | 503 | `agent_features_unavailable` | Facilitator booted without Privy credentials configured. |
-| 503 | `agent_wallet_not_configured` | Agent has no Privy wallet — finish registration via `/agents/register`. |
+| 503 | `agent_wallet_not_configured` | Agent has no Privy wallet — provision one via `POST /v1/developer/agents`. |
 
 ---
 
@@ -75,16 +75,19 @@ If a request against `/v1/proxy/fetch` returns `401` despite passing a `floe_liv
 
 ## Agent registration
 
-Endpoints: `POST /v1/agents/pre-register`, `POST /v1/agents/register`
+Endpoints: `POST /v1/developer/agents`, `POST/GET/DELETE /v1/developer/agents/:agentId/keys`, `POST /v1/developer/agents/:agentId/keys/:keyId/rotate`, `POST /v1/developer/agents/:agentId/close`
 
 | Status | `error` | Cause | Fix |
 |---|---|---|---|
-| 400 | `Invalid wallet address` | Non-EVM address in request body | Send a 0x-prefixed EVM address |
-| 400 | `Invalid signature` | Signed message does not match the expected format | Re-sign using the exact message the dashboard shows |
-| 403 | `agent_features_unavailable` | API booted without `PRIVY_APP_ID` / `PRIVY_APP_SECRET` / `PRIVY_AUTHORIZATION_PRIVATE_KEY` | Self-hosters: set all three env vars. Cloud: contact Floe support |
-| 409 | `already_registered` | An agent is already registered for this developer wallet | Revoke and re-register, or reuse the existing agent |
-| 422 | `delegation_not_found` | `/register` called before `setOperator` landed on-chain | Confirm the `setOperator` tx is finalized, then retry |
-| 422 | `delegation_invalid` | On-chain `OperatorPermission` is inactive, expired, or has zero `borrowLimit` | Re-run the delegation with valid values |
+| 400 | `Invalid request` | Body failed Zod validation (`name`, `borrowLimitRaw`, `maxRateBps`, `expirySeconds`) | Inspect the `details` array and fix the offending field |
+| 401 | (auth error) | None of the accepted credentials (session cookie, dev key, wallet signature) were present or valid | Re-authenticate the calling client |
+| 404 | `not_found` | Agent does not exist OR belongs to a different developer (cross-tenant probes return 404, not 403) | Check the agentId; confirm ownership |
+| 409 | `limit_exceeded` | Developer is at the 5-agent cap (or 1-active-key cap on `POST /keys`) | Close an agent first, or rotate the existing key |
+| 409 | `name_conflict` | Another agent owned by the same developer already uses this name | Pick a different name |
+| 502 | `privy_provisioning_failed` | Privy refused to create the Privy wallet | Inspect `detail`; the agent row stays in `pending_delegation` for a retry |
+| 502 | `delegation_failed` | Server-side `setOperator` tx threw | Inspect `detail`; retry once Privy / facilitator are healthy |
+| 503 | `agent_creation_unavailable` | `privyService` or `agentDelegationService` not initialized at boot | Self-hosters: set `PRIVY_APP_ID` / `PRIVY_APP_SECRET` / `PRIVY_AUTHORIZATION_PRIVATE_KEY` and `FACILITATOR_PRIVATE_KEY` |
+| 503 | `winddown_unavailable` | `POST /:id/close` called without `WinddownService` configured AND agent has active loans | Configure the winddown service or close manually via on-chain repay |
 
 ---
 

@@ -65,17 +65,16 @@ Floe queried all available lenders on Base, selected the best rate for your amou
 
 If your agent calls x402-enabled APIs, you don't need to manage USDC manually. Delegate your collateral to the x402 facilitator and it handles everything:
 
-`grant_credit_delegation` is the **AgentKit wrapper** — under the hood it pre-registers a Privy wallet, calls `setOperator` on the `LendingIntentMatcher` contract, approves collateral, and finalizes agent registration, all in one action. If you're integrating directly against the REST API, use the `setOperator` snippet in the [Full Happy Path Example](#full-happy-path-example) below.
+`grant_credit_delegation` is the **AgentKit wrapper** — under the hood it calls `POST /v1/developer/agents` (which provisions a managed Privy wallet and submits the on-chain `setOperator` delegation server-side) followed by `POST /v1/developer/agents/:id/keys` to mint the agent's runtime API key. If you're scripting from outside an AgentKit session, prefer the CLI: `floe-agent register --name <name>`.
 
 ```typescript
-// One-time setup: delegate USDC collateral (AgentKit wrapper)
+// One-time setup: provision a Floe credit agent.
 await agentkit.invoke("grant_credit_delegation", {
-  facilitator_url: "https://credit-api.floelabs.xyz",
-  facilitator_address: "0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1", // Base mainnet
-  borrow_limit: "10000",                // $10,000 max credit
-  max_rate_bps: 1500,                   // cap at 15% APR
-  expiry_days: 90,                      // delegation TTL
-  collateralToken: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // USDC
+  name: "my-agent",                     // unique label per developer
+  facilitatorUrl: "https://credit-api.floelabs.xyz",
+  borrowLimit: "10000",                 // $10,000 max credit (USDC)
+  maxRateBps: "1500",                   // cap at 15% APR
+  expiryDays: "90",                     // delegation TTL
 });
 
 // Now call any x402 API — payment is automatic
@@ -107,54 +106,57 @@ From the **Keys** page, create a key:
 
 This key is for dashboard and webhook management — it's **not** what the agent uses at runtime.
 
-### 3. Run the agent wizard
+### 3. Create the agent
 
-On the **Agents** page, walk through: **Create Wallet > Deposit & Delegate > Activate Agent**. Step 1 provisions a payment wallet and returns `privyWalletAddress`.
+On the **Agents** page, click **Create Agent** and fill in a name, borrow limit, max rate, and expiry. Floe provisions a managed Privy wallet for the agent and submits the `setOperator` delegation on-chain from that Privy wallet — **you sign nothing on-chain from your developer wallet.** The wizard shows the new wallet address once provisioning is complete. The API response surfaces this as `privyWalletAddress` (also exposed as `agentWalletAddress` for backward compatibility) — both fields point to the same address, which you'll fund in step 4.
+
+Or skip the dashboard entirely:
+
+```bash
+# TypeScript SDK
+npx floe-agent register --name my-agent --borrow-limit 10000
+
+# Python SDK
+floe-agent register --name my-agent --borrow-limit 10000
+```
+
+The CLI signs a wallet auth message (no on-chain tx), calls the same `POST /v1/developer/agents` endpoint, mints the runtime API key, and stores it in your OS keychain.
 
 ### 4. Fund the agent wallet
 
-Send USDC to the returned `privyWalletAddress`. You can:
+Send USDC to the agent's `privyWalletAddress`. You can:
 - Transfer USDC from your own wallet, OR
 - **Buy USDC directly from the dashboard** — click "Fund Wallet" and complete the Coinbase checkout (credit card, debit card, or bank transfer). USDC lands directly in the agent's wallet on Base.
 
 **Takeaway:** this USDC deposit is the collateral backing every future `/proxy/fetch` charge. No ETH or gas tokens needed.
 
-### 5. Sign `setOperator` on-chain
+### 5. Open the credit line
 
-The wizard shows the payment wallet address. Grant the facilitator permission to borrow on your behalf:
+Provisioning gave the agent a `creditLimit` but no facility loan yet. Open it now so the agent has spendable USDC:
 
-```ts
-import { useWriteContract } from 'wagmi';
+```bash
+# CLI
+npx floe-agent open-credit-line --name my-agent --deposit 10000
+# (or: floe-agent open-credit-line --name my-agent --deposit 10000  for Python)
 
-const FACILITATOR_EOA = '0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1';
-
-writeContract({
-  address: LENDING_INTENT_MATCHER_ADDRESS,
-  abi: lendingIntentMatcherAbi,
-  functionName: 'setOperator',
-  args: [
-    FACILITATOR_EOA,
-    {
-      borrowLimit: 10_000_000000n,      // $10,000 USDC (6 decimals)
-      maxRateBps: 1500n,                // cap at 15% APR
-      expiry: BigInt(Math.floor(Date.now() / 1000) + 90 * 24 * 3600),
-      onBehalfOfRestriction: privyWalletAddress,
-    },
-  ],
-});
+# REST
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/<agentId>/open-credit-line" \
+  -H "Authorization: Bearer floe_live_YOUR_DEV_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "depositRaw": "10000000000" }'
 ```
 
-This is the **only** on-chain transaction the deployer ever signs. After this, the facilitator manages everything within those bounds.
+Floe server-signs the borrow intent from the agent's Privy wallet (USDC/USDC market, 95% LTV by default). The solver matches it asynchronously and `creditIn` becomes non-zero a few seconds later — at that point your agent's `/proxy/fetch` calls start succeeding.
 
-### 6. Activate the agent
+### 6. Reveal the agent's API key
 
-Click **Complete Registration**. The dashboard verifies the on-chain delegation and reveals the agent's runtime API key:
+In the dashboard, click **Reveal API Key** on the agent card. The key is shown **once**:
 
 ```json
-{ "apiKey": "floe_3c9f8e1a2b..." }
+{ "key": "floe_3c9f8e1a2b...", "id": 7, "keyPrefix": "3c9f8e1a..." }
 ```
 
-Copy it now — it won't be shown again. This is `FLOE_API_KEY`.
+Copy it now — it won't be shown again. This is `FLOE_API_KEY`. If you used the CLI, the key was printed during `register` and is already in your OS keychain.
 
 ### 7. Agent code — TypeScript
 
@@ -234,5 +236,5 @@ One env var, one function, full payment abstraction. See [Agent Runtime Contract
 - **[API Keys](api-keys.md)** — Generate keys for programmatic access
 - **[x402 Credit Facilitator](x402-facilitator.md)** — Zero-touch API payments
 - **[Credit REST API](credit-api.md)** — HTTP endpoints for any language
-- **[AgentKit Integration](agentkit.md)** — Full action reference (36 actions, TypeScript + Python)
+- **[AgentKit Integration](agentkit.md)** — Full action reference (45 actions, TypeScript + Python)
 - **[Agent Working Capital](agent-working-capital.md)** — Deep dive into credit design and supported markets

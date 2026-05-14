@@ -40,7 +40,7 @@ A programmatic `create_onramp_link` tool is on the roadmap.
 
 ## Offramp `Preview`
 
-Local payouts in 100+ countries are in design-partner preview. [Join the waitlist](https://floelabs.xyz/offramp).
+Local payouts in 100+ countries are in design-partner preview. Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) to apply.
 
 ## Related
 

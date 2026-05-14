@@ -122,40 +122,56 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 ## CLI: `floe-agent`
 
-Interactive conversational agent for testing all 45 actions (30 lending + 6 x402 + 9 agent-awareness) without writing any framework code.
+Interactive conversational agent + per-agent registration tooling. The `run` subcommand drives all 45 actions (30 lending + 6 x402 + 9 agent-awareness) through an LLM; the other subcommands manage Floe agents and their API keys.
 
-### Run directly
-
-```bash
-cd agentkit-actions
-npm run build
-npx tsx src/cli/bin.ts
-```
-
-### Or install globally
+### Install
 
 ```bash
-npm run build
-npm link
-floe-agent
+npm install -g floe-agent     # or: npm run build && npm link
 ```
 
-### Setup flow
+### Subcommands
 
-The CLI prompts for:
+| Command | Purpose |
+|---|---|
+| `floe-agent run [--agent <name>]` | Interactive REPL. Default when no subcommand is given. Uses `--agent`, then `activeAgent`, then a single registered agent. |
+| `floe-agent register --name <name>` | Provision a new Floe agent (server-managed Privy wallet + on-chain delegation) and mint a `floe_*` key. The key is stored in your OS keychain and printed once. Optional: `--borrow-limit <usdc>`, `--max-rate-bps <n>`, `--expiry-days <n>`, `--facilitator-url <url>`. |
+| `floe-agent agents` | List registered agents and whether each has its API key in the keychain. |
+| `floe-agent use <name>` | Set the active agent (persisted in `.floe-agent.json`). |
+| `floe-agent rotate <name>` | Atomically rotate the agent's API key — old key revoked + new key minted in one transaction. New key replaces the keychain entry. |
+| `floe-agent revoke <name>` | Revoke the agent's API key server-side and remove the local keychain entry. |
+| `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Required AFTER `register` before paid `/proxy/fetch` calls can succeed. |
+
+### Setup flow (for `run`)
+
+The REPL prompts for:
 
 1. **Wallet provider** — Private Key (direct) or CDP Wallet (MPC managed)
 2. **AI provider** — OpenAI (GPT-4o), Anthropic (Claude), or Ollama (local)
 3. **RPC URL** — Custom Base Mainnet RPC (recommended for reliability)
 
-Configuration is saved to `.floe-agent.json` and reused on subsequent runs. API keys are never cached.
+Configuration is saved to `.floe-agent.json` (wallet type + AI provider + agent registry, **not secrets**). API keys live in the OS keychain (macOS Keychain / Windows Credential Manager / Linux Secret Service) or, when no keyring backend is available, in `FLOE_AGENT_KEY_<UPPER_NAME>` environment variables.
 
-### CLI Commands
+### Multi-agent registry
+
+One developer can register multiple agents (up to 5 per developer). Each gets its own scoped key. Typical flow:
+
+```bash
+floe-agent register --name research --borrow-limit 5000
+floe-agent register --name trading --borrow-limit 25000
+floe-agent agents          # list both
+floe-agent use trading     # mark trading as active
+floe-agent run             # REPL connects as trading agent
+floe-agent run --agent research  # override per session
+```
+
+### In-REPL commands
 
 | Command | Description |
 |---------|-------------|
 | `help` | Show available commands |
 | `wallet` | Display current wallet address |
+| `agents` | Show registered agents and the active one |
 | `config` | Show current configuration |
 | `save` | Save current config to `.floe-agent.json` |
 | `clear` | Clear conversation history |

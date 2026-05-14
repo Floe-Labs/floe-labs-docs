@@ -45,7 +45,7 @@ Collateral auto-returns in the same transaction as repayment.
 
 | Market | LTV ceiling | Notes |
 |---|---|---|
-| USDC / USDC (same-token) | 95% | No price-volatility risk. Primary working-capital market. |
+| USDC / USDC (same-token) | up to 99.5% | No price-volatility risk. Primary working-capital market. |
 | WETH → USDC | 75% | Volatile-collateral market |
 | cbBTC → USDC | 75% | Volatile-collateral market |
 

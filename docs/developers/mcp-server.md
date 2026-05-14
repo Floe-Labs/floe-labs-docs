@@ -19,7 +19,7 @@ Connect any AI agent to Floe's lending protocol using the [Model Context Protoco
 | | MCP Server | Credit REST API | AgentKit |
 |---|-----------|-----------------|----------|
 | **Best for** | AI agents (Claude, GPT, LangChain) | Any HTTP client, custom bots | Coinbase AgentKit agents |
-| **Auth** | `floe_live_*` API key | Wallet signature or API key | Agent's own wallet |
+| **Auth** | `floe_*` agent key | Wallet signature or `floe_live_*` developer key | Agent's own wallet |
 | **Signing** | Returns unsigned txs | Returns unsigned txs | Signs automatically |
 | **Language** | Any (MCP protocol) | Any (HTTP) | TypeScript / Python |
 | **Setup** | 1 line of config | Direct HTTP calls | npm/pip install |
@@ -30,13 +30,15 @@ When building AI agents that need to discover and use Floe tools dynamically, ch
 
 ## Quick Start
 
-### Get an API Key
+### Get an Agent Key
 
-1. Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
-2. Connect your wallet
-3. Create an API key — you'll receive a `floe_live_...` key
+Each MCP session is scoped to **one Floe agent**. Provision an agent and its `floe_*` key in one of three ways:
 
-See [API Keys](api-keys.md) for key management and security best practices.
+1. **Dashboard** — visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), connect your wallet, click **Create Agent**, copy the `floe_*` key shown at the end of the wizard (revealed once).
+2. **TypeScript CLI** — `npx floe-agent register --name my-agent --borrow-limit 10000`. The key is stored in your OS keychain and printed once.
+3. **Python CLI** — `floe-agent register --name my-agent --borrow-limit 10000`. Same behavior as the TypeScript CLI.
+
+A developer can own multiple agents — see [Multiple Agents](#multiple-agents) below to run several MCP sessions side by side. For key management and security best practices, see [API Keys](api-keys.md).
 
 ### Option 1: Remote Endpoint (recommended)
 
@@ -50,7 +52,7 @@ Point your MCP client to the hosted endpoint. No installation needed.
     "floe": {
       "url": "https://mcp.floelabs.xyz/mcp",
       "headers": {
-        "Authorization": "Bearer floe_live_YOUR_API_KEY"
+        "Authorization": "Bearer floe_YOUR_AGENT_KEY"
       }
     }
   }
@@ -65,7 +67,7 @@ Point your MCP client to the hosted endpoint. No installation needed.
     "floe": {
       "url": "https://mcp.floelabs.xyz/mcp",
       "headers": {
-        "Authorization": "Bearer floe_live_YOUR_API_KEY"
+        "Authorization": "Bearer floe_YOUR_AGENT_KEY"
       }
     }
   }
@@ -77,7 +79,7 @@ Point your MCP client to the hosted endpoint. No installation needed.
 Run the server locally. It proxies requests to the Floe API — no local database or RPC setup needed. You still need to provide your `FLOE_API_KEY`.
 
 ```bash
-FLOE_API_KEY=floe_live_YOUR_KEY npx @floelabs/mcp-server --stdio
+FLOE_API_KEY=floe_YOUR_AGENT_KEY npx @floelabs/mcp-server --stdio
 ```
 
 **Claude Desktop config for local stdio:**
@@ -89,7 +91,7 @@ FLOE_API_KEY=floe_live_YOUR_KEY npx @floelabs/mcp-server --stdio
       "command": "npx",
       "args": ["@floelabs/mcp-server", "--stdio"],
       "env": {
-        "FLOE_API_KEY": "floe_live_YOUR_API_KEY"
+        "FLOE_API_KEY": "floe_YOUR_AGENT_KEY"
       }
     }
   }
@@ -107,12 +109,33 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 const client = new Client({ name: "my-defi-agent" });
 await client.connect(new StreamableHTTPClientTransport(
   new URL("https://mcp.floelabs.xyz/mcp"),
-  { requestInit: { headers: { "Authorization": "Bearer floe_live_..." } } }
+  { requestInit: { headers: { "Authorization": "Bearer floe_..." } } }
 ));
 
 const markets = await client.callTool("get_markets", {});
 console.log(markets);
 ```
+
+### Multiple Agents
+
+One Floe developer can own up to five agents. To run several MCP sessions side by side — for example, a research bot and a trading bot with separate credit lines — provision each agent with its own `floe_*` key and configure one MCP entry per agent:
+
+```json
+{
+  "mcpServers": {
+    "floe-research": {
+      "url": "https://mcp.floelabs.xyz/mcp",
+      "headers": { "Authorization": "Bearer floe_RESEARCH_AGENT_KEY" }
+    },
+    "floe-trading": {
+      "url": "https://mcp.floelabs.xyz/mcp",
+      "headers": { "Authorization": "Bearer floe_TRADING_AGENT_KEY" }
+    }
+  }
+}
+```
+
+Each session is scoped to one agent — credit lines, spend limits, and webhook subscriptions stay isolated. Spend caps set in one session don't affect the other.
 
 ---
 
@@ -352,7 +375,7 @@ from langchain_mcp_adapters import MultiServerMCPClient
 async with MultiServerMCPClient({
     "floe": {
         "url": "https://mcp.floelabs.xyz/mcp",
-        "headers": {"Authorization": "Bearer floe_live_..."}
+        "headers": {"Authorization": "Bearer floe_..."}
     }
 }) as client:
     tools = client.get_tools()
@@ -370,7 +393,7 @@ from crewai_tools import MCPServerAdapter
 
 floe = MCPServerAdapter(
     server_url="https://mcp.floelabs.xyz/mcp",
-    headers={"Authorization": "Bearer floe_live_..."}
+    headers={"Authorization": "Bearer floe_..."}
 )
 
 agent = Agent(
@@ -389,7 +412,7 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 const client = new Client({ name: "my-agent" });
 await client.connect(new StreamableHTTPClientTransport(
   new URL("https://mcp.floelabs.xyz/mcp"),
-  { requestInit: { headers: { "Authorization": "Bearer floe_live_..." } } }
+  { requestInit: { headers: { "Authorization": "Bearer floe_..." } } }
 ));
 
 // List tools
@@ -407,7 +430,7 @@ const markets = JSON.parse(result.content[0].text);
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `FLOE_API_KEY` | Yes | — | Your API key (`floe_live_...`). Get one at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) |
+| `FLOE_API_KEY` | Yes | — | Your `floe_*` agent key. Mint one in the dashboard or via `floe-agent register`. A `floe_live_*` developer key also works but disables agent-awareness tools. |
 | `FLOE_API_BASE_URL` | No | `https://credit-api.floelabs.xyz` | API endpoint (only change for self-hosting) |
 | `MCP_PORT` | No | `3100` | HTTP server port (non-stdio mode only) |
 

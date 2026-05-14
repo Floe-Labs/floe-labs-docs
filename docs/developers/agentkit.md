@@ -17,18 +17,18 @@ AgentKit is Coinbase's open-source framework that gives AI agents on-chain capab
 | **Package** | `floe-agent` | `floe-agentkit-actions` |
 | **Install** | `npm install floe-agent` | `pip install floe-agentkit-actions` |
 | **Runtime** | Node.js 18+ | Python 3.10+ |
-| **Actions exposed** | **36** (30 Floe + 6 X402) | **36** (30 Floe + 6 X402) — full parity as of April 2026 |
+| **Actions exposed** | **45** (30 Floe + 6 X402 credit-delegation + 9 agent-awareness) | **45** (30 Floe + 6 X402 credit-delegation + 9 agent-awareness) — full parity |
 | **AI Frameworks** | Vercel AI SDK, LangChain, MCP Server, OpenAI Agents SDK | LangChain, OpenAI Function Calling |
 | **CLI** | `floe-agent` (via npx) | `floe-agent` (via pip) |
 | **GitHub** | [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions) | [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py) |
 
-> **SDK parity note.** As of April 2026, the Python SDK has full parity with TypeScript: 30 Floe actions plus 6 X402 actions (36 total in both). The high-level credit facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) are now available in both SDKs.
-
+> **SDK parity note.** The Python SDK has full parity with TypeScript: 30 Floe actions plus 6 X402 credit-delegation actions plus 9 agent-awareness actions (45 total in both). The high-level credit facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) are available in both SDKs.
+>
 > **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
 >
 > **Need working capital for your agent?** See [Agent Working Capital](agent-working-capital.md) for credit facility actions that let agents request, match, and manage fixed-rate loans.
 
-## Actions Reference (TypeScript — 36 total)
+## Actions Reference (TypeScript — 45 total)
 
 The full list below reflects the **TypeScript SDK** surface. Where an action is Python-available too, it's marked. See the [Python SDK page](agentkit-python.md) for the Python-only list.
 
@@ -75,9 +75,9 @@ All write actions auto-approve tokens to the LendingIntentMatcher with a 1% buff
 
 | Action | Description |
 |--------|-------------|
-| `grant_credit_delegation` | One-time setup: delegate collateral to a facilitator for automatic x402 payments |
-| `revoke_credit_delegation` | Revoke delegation — triggers wind-down (loans repaid, collateral returned) |
-| `check_credit_delegation` | Check delegation status: borrowed vs limit, rate cap, expiry |
+| `grant_credit_delegation` | Provision a new Floe agent (managed Privy wallet + server-side delegation) and mint its `floe_*` API key in one call. Takes `name`, `borrowLimit`, `maxRateBps`, `expiryDays`. Prefer the `floe-agent register` CLI for persistent multi-agent setups. |
+| `revoke_credit_delegation` | Revoke an on-chain operator permission from your local wallet (legacy operation). For managed agents, use `floe-agent revoke <name>` or the dashboard. |
+| `check_credit_delegation` | Read `getOperatorPermission` on-chain from your local wallet for the given operator (legacy operation). For managed-agent state, use `GET /v1/developer/agents/{agentId}`. |
 | `x402_fetch` | Fetch any URL through the facilitator proxy — auto-pays 402 responses |
 | `x402_get_balance` | Check credit status: limit, used, available, active loans |
 | `x402_get_transactions` | View payment history with pagination |

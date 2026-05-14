@@ -67,12 +67,13 @@ Your agent has USDC. Spend it however you want — API calls, compute, on-chain 
 Delegate credit to the Floe facilitator once. Then your agent calls `POST /v1/proxy/fetch` with any URL — Floe auto-borrows, signs the payment, returns the API response. The agent never sees USDC, never signs a transaction, never pays gas.
 
 ```typescript
-// One-time setup
+// One-time setup — provisions a managed Floe credit agent.
 await agent.run("grant_credit_delegation", {
-  facilitator_address: "0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1",
-  borrow_limit: "10000",
-  max_rate_bps: 1500,
-  expiry_days: 90,
+  name: "my-agent",
+  facilitatorUrl: "https://credit-api.floelabs.xyz",
+  borrowLimit: "10000",
+  maxRateBps: "1500",
+  expiryDays: "90",
 });
 
 // Every call after — zero transactions, zero gas

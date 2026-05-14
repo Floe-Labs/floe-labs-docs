@@ -26,10 +26,11 @@ This is **only** for developers using the dashboard. Agents authenticate with th
 
 Create and manage up to **5 agents per developer**. Each agent has its own credit line, delegation, and API key.
 
-1. **Create Agent** — Name it, set a borrow limit, rate cap, and delegation expiry. The dashboard provisions a Privy wallet and returns the agent's wallet address.
+1. **Create Agent** — Name it, set a borrow limit, rate cap, and delegation expiry. The dashboard provisions a managed Privy wallet for the agent and submits the on-chain `setOperator` delegation **from that Privy wallet** server-side — you sign nothing on-chain from your own wallet.
 2. **Fund Agent** — Send USDC to the agent's wallet, or **buy USDC directly via Coinbase** (credit card or bank transfer) using the "Fund Wallet" button. No crypto bridges needed.
-3. **Delegate** — Call `setOperator()` on `LendingIntentMatcher` from your wallet to authorize the facilitator to borrow on the agent's behalf.
-4. **Activate** — Click **Complete Registration**. The dashboard verifies the on-chain delegation and mints the agent's runtime API key (revealed once — copy it immediately).
+3. **Mint API Key** — Once the agent shows `active`, click **Reveal API Key** to mint the agent's `floe_*` runtime key. It is shown once — copy it immediately. To rotate, click **Rotate** (revokes the old key and mints a new one atomically).
+
+The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx floe-agent register --name <name>` (TypeScript) / `floe-agent register --name <name>` (Python). See [agentkit-typescript](agentkit-typescript.md#cli-floe-agent) / [agentkit-python](agentkit-python.md#cli-floe-agent).
 
 Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `closed`), USDC balance (live), credit limit, delegation expiry, and active loans.
 
@@ -70,7 +71,7 @@ The dashboard monitors your agents and fires alerts when:
 | Alert | Trigger | What to do |
 |---|---|---|
 | **Credit utilization warning** | Borrowed principal exceeds 80% of credit limit | Top up collateral or repay before API calls fail with `insufficient_balance` |
-| **Delegation expiry** | Operator delegation expires within 7 days (warning) or 24 hours (urgent) | Re-delegate via `setOperator` or the dashboard |
+| **Delegation expiry** | Operator delegation expires within 7 days (warning) or 24 hours (urgent) | Close the agent via `POST /v1/developer/agents/:agentId/close` (or the dashboard's **Close** button) and register a fresh one — re-running `floe-agent register` with the same name returns `409 name_conflict` since the original agent still exists. |
 
 Alerts are delivered via webhooks and shown in the dashboard.
 

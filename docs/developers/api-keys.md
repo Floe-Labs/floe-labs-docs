@@ -8,14 +8,27 @@ Floe uses API keys to authenticate requests to the developer platform. There are
 
 ## Key Types
 
-| Prefix | Name | Created Via | Used For |
-|--------|------|-------------|----------|
-| `floe_live_*` | Developer key | Dashboard `/keys` page or `POST /v1/developer/keys` | Credit API developer endpoints, webhook management |
-| `floe_*` | Agent key | Agent setup wizard (Step 3) | x402 proxy, agent balance, agent transactions |
+| Prefix | Name | Scope | Created Via | Used For |
+|--------|------|-------|-------------|----------|
+| `floe_live_*` | Developer key | Whole developer account | Dashboard **API Keys** page or `POST /v1/developer/keys` | Credit API developer endpoints, agent management, webhook management |
+| `floe_*` | Agent key | One specific agent | Agent setup wizard, `POST /v1/developer/agents/:id/keys`, or `floe-agent register --name <name>` | x402 proxy, agent balance, agent-awareness endpoints, MCP server |
 
-**Developer keys** are for your backend services — monitoring loan health, managing webhooks, and calling developer-scoped endpoints on the [Credit API](credit-api.md).
+**Developer keys** are for your backend services — monitoring loan health, managing webhooks, registering new agents, and calling developer-scoped endpoints on the [Credit API](credit-api.md). One key per environment is typical.
 
-**Agent keys** are for x402 agents that need to make paid API calls through the facilitator proxy. You create these during the agent registration flow. See [x402 Credit Facilitator](x402-facilitator.md) for details.
+**Agent keys** identify one specific agent. Every agent registered under a developer gets its own `floe_*` key with a one-active-key cap (rotate to issue a new one). Agent keys are required for the agent-awareness endpoints (`credit-remaining`, `loan-state`, `spend-limit`, etc.) and for [MCP server](mcp-server.md) sessions scoped to a single agent.
+
+### Agent Keys
+
+One developer can own multiple agents (up to 5 per account today). Each agent has its own scoped key. There are four ways to mint one:
+
+1. **Dashboard wizard** — visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), create an agent, copy the `floe_*` key shown on the final step. It is revealed once.
+2. **TypeScript CLI** — `npx floe-agent register --name my-agent --borrow-limit 10000`. The key is stored in your OS keychain and surfaced once in stdout.
+3. **Python CLI** — `floe-agent register --name my-agent --borrow-limit 10000`. Same behavior as the TypeScript CLI.
+4. **REST API** — `POST /v1/developer/agents` to create, then `POST /v1/developer/agents/:id/keys` to mint. See [Credit API → Developer Agents](credit-api.md#developer-agents).
+
+> The CLI's `--borrow-limit` flag is in **USDC** (`10000` = $10K). The REST API's `borrowLimitRaw` field is in **raw 6-decimal units** (`10000` = $0.01, `10000000000` = $10K).
+>
+> Each agent has a **one active key** cap. Mint a second key with `POST /v1/developer/agents/:id/keys/:keyId/rotate` — the old key is revoked atomically in the same transaction.
 
 ## Authentication
 

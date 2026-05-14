@@ -959,60 +959,230 @@ curl "https://credit-api.floelabs.xyz/v1/developer/profile" \
 
 ---
 
-## Agent Endpoints
+## Developer Agents
 
-These endpoints manage the lifecycle of x402 credit-backed agents. All require authentication.
+One developer account can own multiple agents (up to 5). Each agent has its own managed Privy wallet, its own credit line, and its own `floe_*` API key. These endpoints provision and manage agents and their keys.
 
-### POST /v1/agents/pre-register
+All `/v1/developer/agents*` endpoints accept any of three credentials interchangeably — pick whichever fits your client:
 
-Create a custodial payment wallet for your agent. This is the first step before granting on-chain delegation.
+- **Dashboard session cookie** — set by `/v1/developer/auth/verify` after wallet sign-in. Used by the web dashboard.
+- **Developer key** — `Authorization: Bearer floe_live_<base62>`. Convenient for backend services.
+- **Wallet signature** — `X-Wallet-Address` + `X-Signature` + `X-Timestamp` headers, signing the message `"Floe Credit API\nTimestamp: <unix>"`. Used by the agentkit SDKs (no developer key needed).
+
+### POST /v1/developer/agents
+
+Provision a new managed agent. Floe creates a Privy wallet for the agent, delegates the facilitator on-chain server-side, and returns the agent record. Mint an API key in a second call (see below).
 
 ```bash
-curl -X POST "https://credit-api.floelabs.xyz/v1/agents/pre-register" \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY" \
   -H "Content-Type: application/json" \
-  -H "X-Wallet-Address: 0xYourWallet" \
-  -H "X-Signature: 0xYourSig" \
-  -H "X-Timestamp: 1711814400" \
   -d '{
-    "collateralToken": "0x4200000000000000000000000000000000000006",
-    "borrowLimit": "10000000000",
-    "maxRateBps": "1500"
+    "name": "alpha",
+    "borrowLimitRaw": "10000000000",
+    "maxRateBps": 1500,
+    "expirySeconds": 7776000
   }'
 ```
 
-**Response:**
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | Unique-per-developer label. 1–64 chars, alphanumeric / space / `_` / `-`. |
+| `borrowLimitRaw` | string | Yes | Credit ceiling in raw USDC (6 decimals). `"10000000000"` = $10K. |
+| `maxRateBps` | number | Yes | Maximum interest rate in bps, 1–10000. |
+| `expirySeconds` | number | Yes | Delegation lifetime in seconds, 60–31536000. |
+
+**Response (201):**
 
 ```json
 {
-  "paymentWalletAddress": "0xCustodialWallet...",
-  "facilitatorAddress": "0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1",
-  "status": "pending_delegation"
+  "agentId": 42,
+  "status": "active",
+  "privyWalletAddress": "0xPrivyWallet...",
+  "delegationTxHash": "0xabc..."
 }
 ```
 
-### POST /v1/agents/register
+Returns `409 limit_exceeded` if the developer is already at the 5-agent cap, `409 name_conflict` for a duplicate name, or `503 agent_creation_unavailable` if Privy or the delegation service is not configured.
 
-Complete registration after granting on-chain delegation. The facilitator verifies your delegation transaction and activates your account.
+### GET /v1/developer/agents
+
+List the developer's agents.
 
 ```bash
-curl -X POST "https://credit-api.floelabs.xyz/v1/agents/register" \
-  -H "Content-Type: application/json" \
-  -H "X-Wallet-Address: 0xYourWallet" \
-  -H "X-Signature: 0xYourSig" \
-  -H "X-Timestamp: 1711814400" \
-  -d '{ "delegationTxHash": "0xabc..." }'
+curl "https://credit-api.floelabs.xyz/v1/developer/agents" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
 ```
 
 **Response:**
 
 ```json
 {
-  "status": "active",
-  "apiKey": "floe_YOUR_API_KEY",
-  "creditLimit": "10000000000",
-  "paymentWalletAddress": "0xCustodialWallet..."
+  "agents": [
+    {
+      "id": 42,
+      "name": "alpha",
+      "status": "active",
+      "mode": "managed",
+      "agentWalletAddress": "0x...",
+      "privyWalletAddress": "0x...",
+      "creditLimit": "10000000000",
+      "maxRateBps": 1500,
+      "delegationActive": true,
+      "operatorExpiry": "1717180800",
+      "createdAt": "2026-05-13T12:00:00.000Z"
+    }
+  ]
 }
 ```
+
+### GET /v1/developer/agents/:agentId
+
+Per-agent detail with credit utilization and recent activity.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/agents/42" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "agent": {
+    "id": 42,
+    "name": "alpha",
+    "status": "active",
+    "mode": "managed",
+    "agentWalletAddress": "0x...",
+    "privyWalletAddress": "0x...",
+    "creditLimit": "10000000000",
+    "maxRateBps": 1500,
+    "delegationActive": true,
+    "operatorExpiry": "1717180800",
+    "sessionSpendLimitRaw": null,
+    "createdAt": "2026-05-13T12:00:00.000Z"
+  },
+  "creditUsed": "3200000000",
+  "recentTransactionCount24h": 17,
+  "sessionSpend": { "limitRaw": null, "startedAtUnix": null }
+}
+```
+
+> The `keyPrefix` field on list/mint responses is returned with three literal trailing dots (e.g. `"keyPrefix": "a1b2c3d4..."`). The dots are part of the value, not a truncation in this documentation.
+
+Returns `404` if the agent does not exist OR belongs to another developer (cross-tenant probes can't distinguish the two).
+
+### POST /v1/developer/agents/:agentId/close
+
+Wind down an agent — repay all facility loans, sweep residual USDC. Requires `WinddownService` to be configured; otherwise returns `503` when active loans exist.
+
+### POST /v1/developer/agents/:agentId/keys
+
+Mint an API key for an agent. **The full key is shown once** in the response; only its prefix is persisted server-side.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/42/keys" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "label": "production", "permissions": "read_write" }'
+```
+
+**Response (201):**
+
+```json
+{
+  "key": "floe_a1b2c3d4...",
+  "id": 7,
+  "keyPrefix": "a1b2c3d4...",
+  "label": "production",
+  "permissions": "read_write",
+  "createdAt": "2026-05-13T12:00:00.000Z"
+}
+```
+
+Returns `409 limit_exceeded` if the agent already has an active key — revoke or rotate it first.
+
+### GET /v1/developer/agents/:agentId/keys
+
+List keys for an agent (prefixes only; the full key is never returned after creation).
+
+### DELETE /v1/developer/agents/:agentId/keys/:keyId
+
+Revoke a specific key. Requests using the revoked key fail with `401` immediately.
+
+### POST /v1/developer/agents/:agentId/keys/:keyId/rotate
+
+Atomically revoke `keyId` and mint a new key for the same agent. Response shape is identical to `POST /keys`. Use this to rotate an active key without a window where neither key works.
+
+### POST /v1/developer/agents/:agentId/open-credit-line
+
+Open the agent's USDC/USDC credit line. Provisioning (`POST /v1/developer/agents`) creates a Privy wallet and delegates the facilitator on-chain, but **does not** open a credit line — the agent has `creditLimit` but `creditIn = 0` until you call this endpoint with a USDC deposit.
+
+The agent's Privy wallet must already hold at least `depositRaw` USDC. Fund it via the dashboard's Coinbase on-ramp (credit card / bank transfer) or by transferring USDC on-chain.
+
+Floe server-signs the borrow intent **from the agent's Privy wallet** — no on-chain transaction is sent from the developer's local wallet. The borrow intent is posted asynchronously; the existing reconciler advances the row to `pending_match` once the receipt confirms, and the solver matches it against an open lend offer. Spendable credit (`creditIn`) becomes non-zero once status flips to `active` (usually a few seconds).
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/42/open-credit-line" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "depositRaw": "10000000000",
+    "maxLtvBps": 9500
+  }'
+```
+
+**Request body:**
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `depositRaw` | string | Yes | USDC deposit amount, raw 6-decimal units. `"10000000000"` = $10K. The Privy wallet's USDC balance must be ≥ this value. |
+| `maxLtvBps` | number | No | LTV cap in bps (1–9500). Default `9500` (95%, the USDC/USDC market cap). Borrow amount = `depositRaw * maxLtvBps / 10000`. |
+| `maxRateBps` | number | No | Maximum interest rate the agent will accept (1–10000 bps). Defaults to the agent's `maxRateBps` from provisioning. |
+
+**Response (201):**
+
+```json
+{
+  "loanId": "pending:f8e3...",
+  "borrowIntentHash": null,
+  "approveTxHash": "0xabc...",
+  "registerTxHash": "0xdef...",
+  "principalRaw": "9500000000",
+  "collateralAmountRaw": "10000000000",
+  "rateBps": 1500,
+  "status": "pending_on_chain"
+}
+```
+
+- `borrowIntentHash` is `null` on initial return — the reconciler fills it in after parsing `LogBorrowerOfferPosted` from the receipt.
+- `approveTxHash` is `null` if the Privy wallet's existing allowance to the matcher was already ≥ `depositRaw` (no approve tx needed).
+
+**Error codes:**
+
+| Status | `error` | Cause |
+|---|---|---|
+| 400 | `insufficient_privy_balance` | Privy wallet holds less USDC than `depositRaw`. Fund it first. |
+| 400 | `agent_not_managed` | Caller passed a legacy (`mode='legacy'`) agentId. |
+| 400 | `invalid_deposit` / `invalid_max_ltv` / `invalid_max_rate` | Input bounds violated. |
+| 404 | `not_found` | Agent doesn't exist or belongs to another developer. |
+| 409 | `agent_not_active` | Agent status is not `active`, or `delegationActive=false`. |
+| 409 | `delegation_expired` | `operatorExpiry` is in the past. Re-provision before opening. |
+| 409 | `existing_active_credit_line` | A non-terminal `facility_loans` row already exists for this agent. Wait for it to settle or fail. |
+| 502 | `privy_send_failed` | Privy's server-side signer returned `success=false`. Inspect `detail`. |
+| 502 | `rpc_read_failed` / `market_not_created` | RPC or matcher state issue. |
+| 503 | `service_unavailable` | `ManagedCreditLineService` not initialized (Privy not configured). |
+
+> The endpoint accepts an optional `Idempotency-Key` header (Stripe-style). With it, repeated calls within the idempotency window return the same row instead of double-borrowing.
+
+---
+
+## Agent Endpoints
+
+These endpoints are called by an agent (using its `floe_*` key) to manage itself.
 
 ### GET /v1/agents/balance
 
@@ -1099,7 +1269,7 @@ curl "https://credit-api.floelabs.xyz/v1/agents/credit-remaining" \
 |---|---|
 | 200 | OK |
 | 401 | Invalid API key |
-| 404 | `no_credit_limit` — agent hasn't completed `/v1/agents/register` |
+| 404 | `no_credit_limit` — agent has no credit line yet. Provision via `POST /v1/developer/agents`. |
 
 ### GET /v1/agents/loan-state
 

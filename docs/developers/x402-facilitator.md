@@ -13,30 +13,47 @@ Pay for any x402-enabled API with Floe credit. No pre-funding, no wallet managem
 ## How It Works
 
 ```
-Agent has ETH/cbBTC collateral
+Developer signs the auth header (off-chain)
     │
-    ├── 1. Grant the facilitator an OperatorPermission (one-time, on-chain)
-    │      → Your EOA calls setOperator(facilitator, { borrowLimit, maxRateBps,
-    │        expiry, onBehalfOfRestriction }) on the LendingIntentMatcher
-    │      → Facilitator is now scoped to borrow USDC against your collateral
-    │        up to borrowLimit, at rates ≤ maxRateBps, until expiry
+    ├── 1. Provision a Floe credit agent (one-time)
+    │      → POST /v1/developer/agents creates a managed Privy wallet
+    │      → Floe (the server) sends setOperator on-chain FROM that Privy
+    │        wallet, scoping the facilitator to borrow against the agent's
+    │        collateral up to borrowLimit, at rates ≤ maxRateBps, until expiry
+    │      → POST /v1/developer/agents/:id/keys mints the agent's runtime
+    │        `floe_*` API key (shown once)
     │
-    ├── 2. Call x402 APIs through the facilitator
-    │      → Facilitator auto-borrows USDC on-demand against your collateral
-    │      → Signs EIP-3009 transferWithAuthorization for each 402 response
-    │      → You get the API response; your credit is debited
+    ├── 2. Fund the agent's Privy wallet with USDC
+    │      → Direct on-chain transfer, or buy via the dashboard's Coinbase
+    │        on-ramp (credit card / bank). No bridge needed.
     │
-    └── 3. When done, revoke the operator permission
-           → Facilitator winds down: repays all outstanding loans,
-             returns collateral, transfers remaining USDC to your wallet
+    ├── 3. Open the credit line
+    │      → POST /v1/developer/agents/:id/open-credit-line {depositRaw}
+    │        (or `floe-agent open-credit-line --name <name> --deposit <usdc>`)
+    │      → Floe server-signs registerBorrowIntent FROM the Privy wallet,
+    │        posting a borrow intent against an open lender intent
+    │      → Solver matches asynchronously; facility_loans row goes
+    │        pending_on_chain → pending_match → active (a few seconds)
+    │      → Borrowed USDC lands in the Privy wallet; creditIn now > 0
+    │
+    ├── 4. Call x402 APIs through the facilitator
+    │      → Facilitator signs EIP-3009 transferWithAuthorization from the
+    │        Privy wallet for each 402 response
+    │      → The agent receives the API response; its credit is debited
+    │
+    └── 5. When done, wind the agent down
+           → POST /v1/developer/agents/:id/close
+           → Facilitator repays outstanding loans, returns collateral,
+             transfers remaining USDC back to the developer
 ```
 
-The **operator pattern** is the abstraction boundary: you grant a scoped on-chain permission once, and the facilitator handles everything else. You never sign intents, never manage loans, never touch EIP-3009. Your agent never thinks about money infrastructure — it just calls `fetch()` and the facilitator does the rest.
+The **managed-agent pattern** is the abstraction boundary: you provision a Floe credit agent once, and the facilitator handles everything else on-chain. The developer's local wallet only signs API auth headers — Floe constructs and submits the on-chain operator delegation server-side from the agent's Privy wallet. The agent at runtime never signs intents, never manages loans, never touches EIP-3009. It just calls `fetch()` and the facilitator does the rest.
 
-The on-chain primitives are:
-- **`setOperator(operator, OperatorPermission)`** — grants scoped delegation
-- **`revokeOperator(operator)`** — immediate revocation
-- **`getOperatorPermission(agent, operator)`** — view current permission state
+The on-chain primitives the facilitator relies on (all submitted server-side from the agent's Privy wallet):
+
+- **`setOperator(operator, OperatorPermission)`** — Floe submits this at provisioning time to grant the facilitator scoped delegation.
+- **`revokeOperator(operator)`** — submitted on agent close (or directly by the Privy wallet on any other revocation path).
+- **`getOperatorPermission(agent, operator)`** — read by the facilitator before every borrow match to re-validate the constraints below.
 
 The `OperatorPermission` struct (enforced by the `LendingIntentMatcher` contract at every match):
 
@@ -47,7 +64,7 @@ struct OperatorPermission {
     uint256 borrowed;                // running total of outstanding debt
     uint256 maxRateBps;              // ceiling on borrow rate
     uint256 expiry;                  // timestamp when permission expires
-    address onBehalfOfRestriction;   // if set, operator must route USDC here
+    address onBehalfOfRestriction;   // server sets this to the agent's Privy wallet
 }
 ```
 
@@ -119,7 +136,23 @@ The facilitator made a paid upstream call and did not receive a confirmable sett
 
 ## Quick Start
 
-### With AgentKit (recommended)
+### With AgentKit CLI (recommended)
+
+The simplest way to register an agent and get an API key:
+
+```bash
+# TypeScript SDK
+npx floe-agent register --name my-agent --borrow-limit 10000
+
+# Python SDK
+floe-agent register --name my-agent --borrow-limit 10000
+```
+
+The CLI signs a wallet auth message, calls `POST /v1/developer/agents` to provision a managed Privy wallet (with server-side `setOperator` delegation), mints a `floe_*` key via `POST /v1/developer/agents/:id/keys`, and stores the key in your OS keychain. The key is printed once.
+
+### With AgentKit action (in-conversation)
+
+If you want an LLM to register an agent during a chat session, the `grant_credit_delegation` action wraps the same two API calls:
 
 ```typescript
 import { x402ActionProvider } from "floe-agent";
@@ -131,16 +164,14 @@ const agentkit = await AgentKit.from({
   ],
 });
 
-// One action: creates wallet, sets delegation, approves collateral, registers
 const result = await agentkit.invoke("grant_credit_delegation", {
-  facilitatorAddress: "0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1",  // Floe-hosted facilitator EOA on Base mainnet
+  name: "my-agent",
   facilitatorUrl: "https://credit-api.floelabs.xyz",
-  borrowLimit: "10000",         // $10K max credit
-  maxRateBps: "1500",           // 15% max interest rate
-  expiryDays: "90",             // 90-day delegation
-  collateralToken: "0x4200000000000000000000000000000000000006", // WETH
+  borrowLimit: "10000",   // $10K max credit
+  maxRateBps: "1500",     // 15% max interest rate
+  expiryDays: "90",       // 90-day delegation
 });
-// → result.apiKey, result.creditLimit, result.privyWalletAddress
+// → result includes the API key (stored in-memory for the session)
 
 // Now fetch any x402 API
 const data = await agentkit.invoke("x402_fetch", {
@@ -148,42 +179,49 @@ const data = await agentkit.invoke("x402_fetch", {
 });
 ```
 
+The action prints the key once and stores it in-memory for the rest of the session. For persistence, prefer the CLI above.
+
 ### With curl
 
-The two-step registration flow (see [Registration](#registration) below for the full protocol):
-
 ```bash
-# Step 1: Pre-register — creates your custodial Privy payment wallet
-# The nonce can be any unique string; messages are signed per-registration.
-NONCE="$(date +%s)-$(openssl rand -hex 8)"
-MESSAGE="Register with Floe Facilitator
-Nonce: $NONCE"
-SIGNATURE=$(cast wallet sign "$MESSAGE" --private-key $YOUR_AGENT_PRIVKEY)
+# Step 1: Provision a managed agent. The server signs setOperator on-chain
+# from the agent's Privy wallet — your local wallet only signs auth headers.
+TIMESTAMP=$(date +%s)
+MESSAGE="Floe Credit API
+Timestamp: $TIMESTAMP"
+SIGNATURE=$(cast wallet sign "$MESSAGE" --private-key $YOUR_DEVELOPER_PRIVKEY)
 
-curl -X POST https://credit-api.floelabs.xyz/v1/agents/pre-register \
+AGENT=$(curl -sS -X POST https://credit-api.floelabs.xyz/v1/developer/agents \
   -H "Content-Type: application/json" \
-  -d "{\"walletAddress\": \"$YOUR_AGENT_ADDRESS\", \"signature\": \"$SIGNATURE\", \"nonce\": \"$NONCE\"}"
-# → { "privyWalletAddress": "0x..." }
+  -H "X-Wallet-Address: $YOUR_DEVELOPER_ADDRESS" \
+  -H "X-Signature: $SIGNATURE" \
+  -H "X-Timestamp: $TIMESTAMP" \
+  -d '{
+    "name": "my-agent",
+    "borrowLimitRaw": "10000000000",
+    "maxRateBps": 1500,
+    "expirySeconds": 7776000
+  }')
+AGENT_ID=$(echo "$AGENT" | jq -r .agentId)
 
-# Step 2: Call setOperator on-chain to grant the facilitator delegation.
-# Use the returned privyWalletAddress as the onBehalfOfRestriction.
-# (See the "Granting delegation on-chain" section below for the exact tx.)
+# Step 2: Mint an API key for the new agent. Re-sign auth headers — the
+# 5-minute window may have rolled over.
+TIMESTAMP=$(date +%s)
+MESSAGE="Floe Credit API
+Timestamp: $TIMESTAMP"
+SIGNATURE=$(cast wallet sign "$MESSAGE" --private-key $YOUR_DEVELOPER_PRIVKEY)
 
-# Step 3: Complete registration — facilitator verifies the on-chain
-# operator permission exists and returns your API key
-NONCE2="$(date +%s)-$(openssl rand -hex 8)"
-MESSAGE2="Register with Floe Facilitator
-Nonce: $NONCE2"
-SIGNATURE2=$(cast wallet sign "$MESSAGE2" --private-key $YOUR_AGENT_PRIVKEY)
-
-curl -X POST https://credit-api.floelabs.xyz/v1/agents/register \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/keys" \
   -H "Content-Type: application/json" \
-  -d "{\"walletAddress\": \"$YOUR_AGENT_ADDRESS\", \"signature\": \"$SIGNATURE2\", \"nonce\": \"$NONCE2\"}"
-# → { "apiKey": "floe_...", "privyWalletAddress": "0x...", "creditLimit": "10000000000" }
+  -H "X-Wallet-Address: $YOUR_DEVELOPER_ADDRESS" \
+  -H "X-Signature: $SIGNATURE" \
+  -H "X-Timestamp: $TIMESTAMP" \
+  -d '{ "label": "production" }'
+# → { "key": "floe_...", "id": 7, "keyPrefix": "...", ... }
 
-# Step 4: Start making paid API calls with your returned API key
+# Step 3: Start making paid API calls with the returned agent key
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
-  -H "Authorization: Bearer floe_YOUR_API_KEY" \
+  -H "Authorization: Bearer floe_YOUR_AGENT_KEY" \
   -H "Content-Type: application/json" \
   -d '{ "url": "https://api.example.com/data", "method": "GET" }'
 ```
@@ -218,57 +256,35 @@ print(resp.json())  # Response from the target API
 
 ## Registration
 
-Registration is a three-step process:
+Registration is a two-step API call, both authenticated with a wallet signature:
 
-1. **Pre-register** (`POST /agents/pre-register`) — creates your custodial Privy payment wallet. Request body: `{ walletAddress, signature, nonce }` where `signature` is an EIP-191 signature of the message `Register with Floe Facilitator\nNonce: {nonce}`. Nonces are one-time-use and enforced across facilitator restarts via a persistent SQLite table.
-2. **Grant operator delegation on-chain** — your EOA calls `setOperator` on the `LendingIntentMatcher` contract (`0x17946cD3e180f82e632805e5549EC913330Bb175`) with the facilitator's operator address and the `OperatorPermission` struct. Use the `privyWalletAddress` returned from step 1 as the `onBehalfOfRestriction` — this binds the facilitator's borrowing to settle USDC into *your* custodial wallet, not an attacker-controlled address.
-3. **Complete registration** (`POST /agents/register`) — facilitator reads `getOperatorPermission(agent, facilitator)` on-chain to verify the delegation is active, then activates your account and returns your API key. Request body has the same shape as pre-register (`walletAddress`, `signature`, `nonce`) with a fresh nonce.
+1. **Create the agent** (`POST /v1/developer/agents`) — Floe provisions a managed Privy wallet for the agent, then issues the on-chain `setOperator` delegation **from that Privy wallet** to the facilitator. You don't send any on-chain transactions from your local wallet. Body: `{ name, borrowLimitRaw, maxRateBps, expirySeconds }`. Returns `{ agentId, status, privyWalletAddress, delegationTxHash }`.
+2. **Mint an API key** (`POST /v1/developer/agents/:agentId/keys`) — issues a `floe_*` key scoped to that agent. Optional body `{ label, permissions }`. The full key is returned **once**; only its prefix is persisted server-side. Each agent has a one-active-key cap — use `POST /keys/:keyId/rotate` to swap atomically.
 
-With AgentKit, the `grant_credit_delegation` action handles all three steps behind one call — it pre-registers, signs the EIP-191 messages, sends the on-chain `setOperator` transaction (and a collateral approval), then completes registration. Your agent never sees the underlying protocol.
+Both calls accept any of three credentials interchangeably: a dashboard session cookie, a `floe_live_*` developer key, or a wallet-signature header set (`X-Wallet-Address` + `X-Signature` + `X-Timestamp`). The agentkit SDKs use the signature path so users don't need to obtain a developer key first.
 
-### EIP-191 signature format
+### Wallet signature format
 
-```
-Register with Floe Facilitator
-Nonce: {your-unique-nonce}
-```
-
-Signed with your agent's EOA private key via `personal_sign` / EIP-191. The facilitator verifies the recovered signer matches the `walletAddress` in the request body. Nonces are rejected on reuse (replay protection) and expire after 24 hours.
-
-### Granting delegation on-chain
-
-Between pre-register and register, you must send the on-chain transaction that creates the `OperatorPermission`. Using `ethers`:
-
-```typescript
-import { ethers } from "ethers";
-
-const matcher = new ethers.Contract(
-  "0x17946cD3e180f82e632805e5549EC913330Bb175",
-  ["function setOperator(address operator, uint256 borrowLimit, uint256 maxRateBps, uint256 expiry, address onBehalfOfRestriction) external"],
-  agentSigner
-);
-
-const FACILITATOR_OPERATOR = "0x..."; // from the facilitator operator
-const privyWallet = "0x..."; // from the pre-register response
-
-await matcher.setOperator(
-  FACILITATOR_OPERATOR,
-  ethers.parseUnits("10000", 6),          // borrowLimit in raw USDC units (6 decimals): 10k USDC
-  1500,                                    // maxRateBps: 15%
-  Math.floor(Date.now() / 1000) + 90 * 86400, // expiry: 90 days
-  privyWallet,                             // onBehalfOfRestriction: YOUR Privy wallet
-);
+```text
+Floe Credit API
+Timestamp: {unix-seconds}
 ```
 
-You'll also need to approve the matcher to pull your collateral token (WETH or cbBTC). See the AgentKit `grant_credit_delegation` source or the [`credit-api`](credit-api.md) reference for the full sequence.
+Signed with the developer's wallet via `personal_sign` / EIP-191. The middleware verifies the recovered signer matches `X-Wallet-Address` and rejects timestamps more than ±5 minutes from server time. EOA (ECDSA), deployed ERC-1271 smart wallets, and undeployed ERC-6492-wrapped smart wallets are all accepted.
+
+### Managed Privy wallets
+
+Each agent owns its own server-managed Privy wallet. The Privy wallet is the on-chain identity that holds collateral, takes facility loans, and pays merchants via the facilitator. The developer's wallet is only used to authenticate management calls — it never signs settlement or `setOperator` transactions.
+
+This replaces the older two-step "pre-register → sign setOperator → register" dance. There is no `onBehalfOfRestriction` to set: the Privy wallet *is* the borrowing identity.
 
 ## AgentKit Actions
 
 | Action | Type | Description |
 |--------|------|-------------|
-| `grant_credit_delegation` | Setup | One-time: creates wallet, sets operator delegation, approves collateral, registers |
-| `revoke_credit_delegation` | Teardown | Revokes delegation — triggers wind-down (loans repaid, collateral returned) |
-| `check_credit_delegation` | Read | Check delegation status: borrowed vs limit, rate cap, expiry |
+| `grant_credit_delegation` | Setup | One-shot: provisions a managed Privy wallet, delegates the facilitator server-side, mints an API key. Takes `name`, `borrowLimit`, `maxRateBps`, `expiryDays`. Prefer the `floe-agent register` CLI for persistent multi-agent setups. |
+| `revoke_credit_delegation` | Teardown | Calls `revokeOperator` on-chain to revoke a facilitator delegation from your local wallet (legacy on-chain operation; not used for managed agents created via `grant_credit_delegation`). |
+| `check_credit_delegation` | Read | Reads `getOperatorPermission` on-chain from your local wallet for the given operator (legacy on-chain operation). |
 | `x402_fetch` | Proxy | Fetch any URL — auto-pays if 402, passthrough if free |
 | `x402_get_balance` | Read | Credit status: limit, used, available, active loans |
 | `x402_get_transactions` | Read | Payment history with pagination |
@@ -288,49 +304,7 @@ curl https://credit-api.floelabs.xyz/health
 # → { "status": "ok" }
 ```
 
-#### POST /v1/agents/pre-register
-
-Step 1 of registration. Creates your custodial Privy payment wallet and returns its address.
-
-```json
-{
-  "walletAddress": "0xYourAgentEOA",
-  "signature": "0x...",
-  "nonce": "unique-string-per-registration"
-}
-```
-
-Signature: EIP-191 signed message `Register with Floe Facilitator\nNonce: {nonce}`. Nonces are single-use (replay-protected in SQLite, 24h TTL).
-
-Response:
-```json
-{ "privyWalletAddress": "0x..." }
-```
-
-Errors: `400` invalid request, `401` signature verification failed, `409` agent already registered (idempotent retry returns the existing Privy wallet via a GET, not this POST), `429` nonce reused — body:
-
-```json
-{ "error": "nonce_reused", "detail": "Nonce has already been consumed" }
-```
-
-**Note**: this is distinct from the global `rate_limit_exceeded` 429 on `/v1/proxy/fetch`. Switch on the `error` field, not the status code. `nonce_reused` is not retryable with the same nonce — call `/v1/agents/pre-register` again to mint a fresh one.
-
-#### POST /v1/agents/register
-
-Step 3 of registration (step 2 is your on-chain `setOperator` call — not an HTTP endpoint). Verifies the on-chain operator permission, activates your account, and returns your API key.
-
-Same request shape as `/v1/agents/pre-register` (EIP-191 signed, fresh nonce required).
-
-Response:
-```json
-{
-  "apiKey": "floe_...",
-  "privyWalletAddress": "0x...",
-  "creditLimit": "10000000000"
-}
-```
-
-Errors: `400` invalid request, `401` signature failed, `403` on-chain operator permission not found or not yet confirmed, `409` already registered.
+For agent registration endpoints (`POST /v1/developer/agents`, `POST /v1/developer/agents/:id/keys`, list/revoke/rotate/close), see [Credit API → Developer Agents](credit-api.md#developer-agents).
 
 #### GET /v1/proxy/check
 
@@ -439,28 +413,31 @@ You never manage loans directly. The facilitator handles the entire lifecycle.
 
 ### OperatorPermission parameters
 
-When granting delegation via `setOperator`, you provide these five fields. All are enforced on-chain by the `LendingIntentMatcher` contract at every borrow match — the facilitator cannot exceed any of them.
+For **managed agents** (created via `POST /v1/developer/agents` or the CLI), Floe constructs and submits `setOperator` server-side from the agent's Privy wallet — you never set these parameters directly. The values you choose at provisioning time map to the on-chain fields as follows:
 
-| Parameter | Type | Description |
+| Provisioning input | On-chain field | Notes |
 |---|---|---|
-| `operator` | `address` | The facilitator's operator EOA (provided by the facilitator) |
-| `borrowLimit` | `uint256` | Max cumulative principal the facilitator may have outstanding (raw USDC units, 6 decimals) |
-| `maxRateBps` | `uint256` | Interest rate ceiling in basis points (e.g. `1500` = 15% APR). Match reverts if a lend intent offers a higher rate. |
-| `expiry` | `uint256` | Unix timestamp after which the permission is invalid. Match reverts after this time. |
-| `onBehalfOfRestriction` | `address` | If non-zero, operator-initiated borrow intents must route the USDC to exactly this address. **Set this to your Privy wallet** (returned from pre-register) to bind facilitator borrowing to your custodial wallet. |
+| `borrowLimitRaw` (`POST /v1/developer/agents`) / `--borrow-limit` (CLI) | `borrowLimit` (uint256) | Raw USDC, 6 decimals. CLI flag is in USDC for convenience. |
+| `maxRateBps` | `maxRateBps` (uint256) | Interest rate ceiling in basis points (e.g. `1500` = 15% APR). |
+| `expirySeconds` / `--expiry-days` | `expiry` (uint256) | Server adds `expirySeconds` to `now` before submitting. |
+| _(server-managed)_ | `operator` (address) | The facilitator's operator EOA. |
+| _(server-managed)_ | `onBehalfOfRestriction` (address) | Set to the agent's own Privy wallet by the server. There is nothing for the caller to pass here. |
 
-> **Critical:** If `onBehalfOfRestriction` is set to the wrong address, the facilitator's borrowed USDC routes to that address instead of your wallet. Always use the `privyWalletAddress` returned from pre-registration.
-
-Additionally, you must **approve the collateral token** (WETH or cbBTC) for the matcher contract so the facilitator can pull collateral at match time. The AgentKit `grant_credit_delegation` action handles this with an unlimited approval by default (`args.collateralApproval` can override with a bounded amount for users who want tighter exposure control).
+All five fields are enforced on-chain by the `LendingIntentMatcher` contract at every borrow match — the facilitator cannot exceed any of them. Because the Privy wallet IS the on-chain borrowing identity, there is no separate `onBehalfOfRestriction` for the caller to manage.
 
 ### Revoking delegation
 
-Call `revokeOperator(operator)` on the matcher to immediately flip `approved` to `false`. The facilitator can no longer register new borrow intents, and any in-flight intents fail match-time revalidation. Your existing active loans remain callable for repay/rollover by the facilitator (intentional — protects against agent-side griefing that would trap an operator mid-loan).
+To wind an agent down, use:
 
-Alternatively, `POST /agents/close` triggers a full wind-down: the facilitator repays all outstanding loans, transfers any remaining USDC from your Privy wallet to your agent address, and closes the account.
+- **REST**: `POST /v1/developer/agents/:agentId/close` — server triggers a full wind-down: repays all outstanding facility loans, transfers any remaining USDC from the agent's Privy wallet back to the developer, and marks the agent `closed`. This is the **only** path that actually retires the operator permission and frees up the agent slot.
+- **On-chain** (advanced): the legacy `revokeOperator(operator)` action remains available for callers that hold an EOA-issued operator permission outside the managed flow.
+
+> `floe-agent revoke <name>` is **not** a wind-down. It only revokes the agent's API key (server-side + local keychain entry) — the on-chain operator permission, active loans, and the Privy wallet's USDC balance are untouched. Use it to rotate credentials, not to retire an agent.
+
+The facilitator can no longer register new borrow intents once the operator permission is revoked, and any in-flight intents fail match-time revalidation. Existing active loans remain callable for repay/rollover by the facilitator (intentional — protects against agent-side griefing that would trap an operator mid-loan).
 
 ### What Happens If Collateral Drops
 
-The facilitator monitors your collateral-to-debt ratio. If it drops too low, new spending is paused until the price recovers or you add collateral. Active loans are unaffected — they continue to maturity and can be rolled over.
+The facilitator monitors the agent's collateral-to-debt ratio. If it drops too low, new spending is paused until the price recovers or the agent receives more collateral. Active loans are unaffected — they continue to maturity and can be rolled over.
 
-If you want to stop entirely, call `revoke_credit_delegation` or `POST /v1/agents/close`. The facilitator repays loans, your collateral returns, and remaining USDC is transferred to your wallet.
+To stop entirely, call `POST /v1/developer/agents/:agentId/close`. The facilitator repays loans, the agent's collateral returns, and remaining USDC is transferred to the developer.
