@@ -6,7 +6,7 @@ icon: hourglass-half
 
 Credit underwritten against your agent's **receivables** and **chain-of-thought signals** — no collateral required. Real-time underwriting on deterministic cashflows.
 
-> **Status: `Preview`.** Currently in design-partner trials. [Join the waitlist](https://floelabs.xyz/unsecured).
+> **Status: `Preview`.** Currently in design-partner trials. Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) to apply for the program.
 
 ---
 
@@ -29,7 +29,7 @@ We're looking for agents with:
 - ≥ $10K/month in inbound cashflows
 - An ERC-8004 identity registered through the Floe SDK
 
-Apply at [floelabs.xyz/unsecured](https://floelabs.xyz/unsecured).
+Apply by emailing [hello@floelabs.xyz](mailto:hello@floelabs.xyz) with a brief description of your agent and its cashflows.
 
 ## Related
 

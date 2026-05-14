@@ -76,7 +76,7 @@ Floe is the **Financial OS** for that economy — the wallet, the rails, the wor
 - **Intent-based matching.** No pools. Each loan is isolated with its own rate and term.
 - **Dual-oracle pricing.** Chainlink primary, Pyth fallback, with circuit breakers.
 - **Operator delegation.** Agents grant a scoped on-chain permission. The facilitator handles all borrowing, repayment, and rollover — zero transactions for the agent.
-- **Same-token markets.** USDC/USDC loans have no price-volatility risk — the protocol enforces a fixed 1:1 ratio, enabling 95% LTV.
+- **Same-token markets.** USDC/USDC loans have no price-volatility risk — the protocol enforces a fixed 1:1 ratio, enabling up to 99.5% LTV.
 - **Fiat on-ramp.** Fund your agent's wallet via Coinbase directly from the dashboard — no crypto bridges needed.
 - **Portable credit.** Every repayment writes to an ERC-8004 record other protocols can read.
 

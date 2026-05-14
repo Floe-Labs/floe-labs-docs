@@ -31,4 +31,4 @@ A `@elizaos/plugin-floe` package will provide:
 - One-call borrow / x402 / repay actions wired into character behaviors
 - Built-in spend-limit + credit-threshold middleware
 
-[Join the waitlist](https://floelabs.xyz/elizaos) for early access.
+Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) for early access.
