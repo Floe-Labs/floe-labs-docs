@@ -32,7 +32,8 @@ These are the errors your agent will see at runtime. This section is a condensed
 | 403 | `account_closed` | Deployer wound the agent down. Do not retry. |
 | 403 | `credit_frozen` | Health monitoring froze spending. Operator must top up. |
 | 403 | `credit_line_expired` | Rollover failed. Operator must re-delegate. |
-| 429 | `rate_limit_exceeded` | 30 req/min token bucket. Body has `retry_after_seconds`. |
+| 409 | `request_in_flight` | Concurrent retry of the same `Idempotency-Key` is still running. Body has the `idempotency_key`. Wait briefly and retry, or use a fresh key. |
+| 429 | `rate_limit_exceeded` | Rate limit tripped. Body has `reason` (`agent_proxy_limit` \| `ip_rate_limit` \| `global_rate_limit`), `retry_after_seconds`, `limit_per_minute`, `remaining`. |
 | 500 | `Payment signing failed` | Privy or EIP-3009 signing error. Retry with backoff. |
 | 502 | `Failed to reach target URL` | Network error before `X-PAYMENT` was attached. Safe to retry. |
 | 502 | `upstream_paid_request_failed_ambiguous` | Network error **after** `X-PAYMENT` was sent. **Do not retry immediately** — wait for reconciliation. |
