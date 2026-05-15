@@ -4,13 +4,14 @@ icon: key-skeleton
 
 # Self-custody (advanced)
 
-> **Most agent developers should not be on this page.** Floe's default flow provisions a non-custodial wallet for you (the developer) and a separate non-custodial wallet for each agent — both Privy-backed, neither requiring you to manage a private key, neither requiring you to pay gas. The agent authenticates with a `floe_…` runtime API key and nothing else. If that sounds right for you, go to the [Quickstart](../getting-started/quickstart.md) and ignore this page.
+> **Most agent developers should not be on this page.** Floe's default flow gives you a top-up balance and a `floe_…` API key — your agent calls `fetch()`, money is deducted, you never touch a wallet, key, or token. If that sounds right for you, go to the [Quickstart](../getting-started/quickstart.md) and ignore this page.
 
 This page is for the small set of teams who need to:
 
-- Hold the agent's signing key in their own infrastructure (HSM, KMS, MPC).
+- Hold their own collateral signing key in their own infrastructure (HSM, KMS, MPC).
 - Run a non-Privy custody stack (Fireblocks, Safe, in-house).
 - Integrate Floe into an existing wallet provider that already signs on the user's behalf.
+- Operate in a region where the card on-ramp isn't yet supported.
 
 If none of those apply, the rest of this page will only add complexity.
 
@@ -18,16 +19,17 @@ If none of those apply, the rest of this page will only add complexity.
 
 ## What changes
 
-| | Managed (default) | Self-custody |
+| | Default flow | Self-custody |
 | --- | --- | --- |
-| Wallet | Privy, provisioned by Floe per agent | Yours — supply a wallet provider |
-| Auth | `Authorization: Bearer floe_…` | `Authorization: Bearer floe_…` **plus** sign every facilitator setup tx yourself |
-| `setOperator` delegation | Floe submits it server-side from the agent's Privy wallet | You submit it from your wallet to the facilitator EOA — see [x402 Credit Facilitator](x402-facilitator.md) |
+| Agent wallet | Custodial Privy, operated by Floe | Yours — supply a wallet provider |
+| Developer wallet | Non-custodial Privy (you own; we manage UX) | Yours — bring your own key |
+| Auth | `floe_…` API key | API key **plus** sign every facilitator setup transaction yourself |
+| `setOperator` delegation | Floe submits it server-side from the agent's wallet | You submit it from your wallet — see [x402 Credit Facilitator](x402-facilitator.md) |
 | Gas | Floe pays | You pay |
-| Funding | Card / Apple Pay via dashboard | You move USDC to your own wallet by whatever means you already use |
-| Failure modes | Centralized on Floe's infra | Distributed — you own key custody, gas funding, and `setOperator` lifecycle |
+| Funding | Card / Apple Pay / bank transfer via dashboard | You move USDC to your own wallet by whatever means you already use |
+| Failure modes | Floe handles | You handle key custody, gas funding, and `setOperator` lifecycle |
 
-The runtime API (`x402_fetch`, `instant_borrow`, `repay_loan`, the credit-awareness endpoints) is identical in both modes. The difference is only in who holds the signing key.
+The runtime API (`fetch`, balance, transactions, agent-awareness reads) is identical in both modes. The difference is only in who holds the signing key.
 
 ---
 
@@ -93,9 +95,9 @@ A self-custody agent pays its own gas in ETH on Base. Keep a few cents of ETH in
 
 ## When this is the wrong path
 
-If you're tempted to self-custody because of a specific worry, check first whether it applies to the provisioned-wallet flow:
+If you're tempted to self-custody because of a specific worry, check first whether it applies to the default flow:
 
-- "I want to control the keys" → The provisioned wallets are already non-custodial. Privy holds shard custody, not Floe; you can export the underlying private key at any time and migrate off the dashboard. The on-chain `OperatorPermission` is revocable and rate-capped, so even the facilitator can't move funds outside its scoped permissions.
-- "I want to use Sepolia / a local devnet" → Self-custody is the right answer here; the provisioned-wallet flow is mainnet-only.
-- "I'm building a non-x402 product" → Most of Floe still works in the provisioned-wallet flow (lending, intents, repayment). Only consider self-custody if you specifically need to hold your own collateral signing key.
-- "I'm in a region Coinbase doesn't support for fiat on-ramp" → Self-custody lets you bring USDC from wherever you already have it. That's a legitimate reason.
+- "I want to own my keys" → Your developer wallet is already non-custodial — Privy holds shard custody, not Floe, and you can export the underlying private key any time. The agent's wallet is custodial because agents are software, not people; the on-chain `OperatorPermission` (revocable, rate-capped) constrains what Floe can do with it on your behalf.
+- "I want to use Sepolia / a local devnet" → Self-custody is the right answer here; the default flow is mainnet-only.
+- "I'm building a non-x402 product" → Most of Floe still works in the default flow (lending, intents, repayment). Only consider self-custody if you specifically need to hold your own collateral signing key.
+- "I'm in a region the card on-ramp doesn't support" → Self-custody lets you bring USDC from wherever you already have it. That's a legitimate reason. Also email [support@floelabs.xyz](mailto:support@floelabs.xyz) — we have manual on-ramp options for several regions.

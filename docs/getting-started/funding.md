@@ -4,84 +4,76 @@ icon: credit-card
 
 # Funding
 
-The fastest way to give yourself or your agent working capital is to pay with a card. No exchange account, no bridge, no gas token.
+The fastest way to give your agent spending money is to pay with a card. No exchange account, no crypto, no setup.
 
 ---
 
-## Two wallets, both provisioned for you
+## Top up from the dashboard
 
-When you first sign in to the dashboard, Floe provisions a **non-custodial wallet for you** (the developer). You own it, but you never see a private key — sign-in is by email or social, with Privy doing the wallet plumbing under the hood. This is where your fiat on-ramp purchases arrive.
+1. Sign in at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz).
+2. Pick your agent and click **Top up**.
+3. Choose a method: **Card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds.
 
-When you register an agent, Floe provisions a **second non-custodial wallet** for that agent. The agent's wallet is what holds the deposited collateral and pays merchants over x402.
-
-You can fund **either** wallet directly from the dashboard.
-
----
-
-## The dashboard flow (recommended)
-
-1. Open [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in.
-2. Click **Fund**. The dashboard asks whether you want USDC to land in your developer wallet (so you can split it across multiple agents later) or directly in one of your agents' wallets (one-and-done).
-3. Choose a method: **Card, Apple Pay, Google Pay, or bank transfer**. Coinbase processes the purchase; the USDC arrives in the chosen wallet typically within 30 seconds.
-
-That's it. The dashboard shows the new balance, and the agent (or you) can immediately call `instant_borrow` or `x402_fetch`.
+That's it. Your agent's balance updates and it can immediately call paid APIs.
 
 ### How much should I fund?
 
-| Use case | Suggested first deposit |
+| Use case | Suggested first top-up |
 | --- | --- |
-| Smoke-test the quickstart | **$10** |
-| One agent paying for a handful of x402 calls per day | $25–$100 |
-| Production agent with steady traffic | Size for ~7 days of expected spend, then top up via webhook |
+| Try the quickstart | **$10** |
+| One agent making a handful of API calls per day | $25–$100 |
+| Production agent with steady traffic | Roughly seven days of expected spend, then auto-recharge |
 
-There is no hard minimum on-chain, but the dashboard's card flow has a Coinbase-imposed floor of around $5. Bank transfers are higher-minimum but lower-fee.
+There's no hard minimum, but card payments have a Coinbase-imposed floor around $5.
 
 ---
 
-## When a funding attempt fails
+## Auto-recharge and low-balance alerts
 
-The most common failures all come from Coinbase's on-ramp, not Floe:
+For production, don't manually babysit balances. In your agent's dashboard settings:
+
+- **Auto-recharge**: "When balance falls below $10, charge my card for $50." Set once, forget.
+- **Low-balance webhook**: Floe POSTs to a URL of your choice when the balance crosses a threshold you set, so you can page a human or trigger a programmatic top-up.
+
+---
+
+## When a top-up fails
+
+Almost all top-up failures come from the card processor, not Floe:
 
 | Symptom | Cause | What to do |
 | --- | --- | --- |
-| Card declined | Issuer flags crypto purchase | Try a different card, or contact your issuer. Apple Pay sometimes succeeds where a raw card declines. |
-| "Region not supported" | Coinbase doesn't yet serve your country | Use the [on-chain top-up path](#topping-up-on-chain-advanced) below. |
-| Order stuck in "processing" | Coinbase compliance review | Wait up to 24 hours, then check the dashboard. The amount is not debited until the transfer succeeds. |
-| Funded but agent still shows $0 | Block-explorer view lagged the dashboard | Refresh after ~60s; if still wrong, contact `support@floelabs.xyz` with the agent ID. |
+| Card declined | Issuer flags the transaction | Try a different card. Apple Pay sometimes succeeds where a raw card declines. |
+| "Region not supported" | The card processor doesn't serve your country yet | Email [support@floelabs.xyz](mailto:support@floelabs.xyz) — we have manual options for several regions. |
+| Stuck in "processing" | Compliance review | Wait up to 24 hours. The amount isn't debited until the top-up completes. |
+| Funded but balance still $0 | Dashboard view lagged | Refresh after ~60 seconds; if still wrong, contact support with the agent ID. |
 
-If a funding flow leaves you stuck, the agent itself is unharmed — you can always close it with `floe-agent close --name <name>` (or the dashboard) and any USDC returned to the developer wallet.
-
----
-
-## Topping up on-chain (advanced)
-
-Already have USDC on Base in an external wallet (MetaMask, Coinbase Wallet, hardware wallet)? You can transfer it directly to either Floe-provisioned wallet's address. **Most users should not do this** — the dashboard flow is faster, lower-fee, and avoids any chance of sending to the wrong chain.
-
-If you still want to:
-
-1. In the dashboard, open the developer or agent wallet detail page and copy its **deposit address**. The page tells you which network it's on.
-2. Send USDC on **Base** (not Ethereum mainnet, not Polygon, not Optimism). The dashboard shows the balance once the transfer confirms.
-
-> ⚠️ **Never send tokens other than USDC** to these addresses, and never send from a chain other than Base. Both are unrecoverable. If you're not 100% sure your source supports Base, use the card flow instead.
+If a top-up gets stuck, the agent itself is unharmed — you can always close it, and any cleared funds return to you.
 
 ---
 
-## Withdrawing funds
+## Withdrawing
 
-Closing an agent with `floe-agent close --name <name>` (or the dashboard's **Close agent** button) automatically:
+When you close an agent in the dashboard, any remaining balance is returned to your developer account. From there you can:
 
-1. Repays any outstanding facility loans.
-2. Returns deposited collateral.
-3. Transfers any remaining USDC from the agent's wallet back to your developer wallet.
+- **Withdraw to your bank** (supported regions): off-ramp through the dashboard, lands as fiat in your bank within 1–3 business days.
+- **Move it to another agent**: skip the off-ramp and the on-ramp; the dashboard transfers internally.
 
-You don't have to drain the wallet manually. The wind-down happens server-side.
+---
 
-To cash out from your developer wallet, the dashboard's **Withdraw** action lets you send USDC to any external address on Base, or convert to fiat through Coinbase's off-ramp if you're in a supported region.
+## Two wallets, both handled for you
+
+You don't need to know this to use Floe, but here's the plumbing if you're curious:
+
+- When you sign up, we provision a **developer wallet** for you. It's non-custodial Privy — you own it, you can export the keys, but you don't have to manage them. Your card-funded balance lives here.
+- When you create an agent, we provision a **custodial wallet** for that agent. We operate it on your behalf, scoped by an on-chain permission you can revoke any time. This is where the agent's spending balance lives and where x402 payments are signed from.
+
+Both are USDC-denominated under the hood, on Base. The dashboard and SDK always show you dollars.
 
 ---
 
 ## See also
 
-- [Quickstart](quickstart.md) — register and fund an agent in five minutes
-- [Agent wallet](../components/wallet.md) — how the managed wallet works under the hood
-- [Fiat on/off-ramp](../components/onramp.md) — full on-ramp component reference
+- [Quickstart](quickstart.md) — create and fund an agent in five minutes
+- [Receiving payments](../agents/credit-for-agents.md) — accept x402 from other agents
+- [Advanced: how Floe works](core-concepts.md) — what's actually happening on-chain
