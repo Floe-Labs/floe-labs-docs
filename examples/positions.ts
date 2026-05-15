@@ -1,5 +1,10 @@
 /**
- * Floe Credit API — Portfolio inspection (FLO-530).
+ * Floe Credit API — Portfolio inspection (FLO-530, SELF-CUSTODY).
+ *
+ * ⚠️  This example uses a raw PRIVATE_KEY for wallet-signature auth. The
+ *     managed-wallet flow (recommended for nearly all agents) authenticates
+ *     with a `floe_…` runtime key instead — no key custody on your side. See
+ *     docs/getting-started/quickstart.md and docs/developers/self-custody.md.
  *
  * Walks an agent through reading its credit portfolio via
  * GET /v1/positions/:wallet:

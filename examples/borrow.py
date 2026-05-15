@@ -1,5 +1,13 @@
 """
-Floe Credit API — Borrow USDC with ETH collateral on Base.
+Floe Credit API — Borrow USDC with ETH collateral on Base (SELF-CUSTODY).
+
+⚠️ This is the self-custody example, which signs every on-chain action from
+   your own PRIVATE_KEY. Most agent developers should NOT use this path —
+   the managed-wallet flow handles signing, gas, and key custody server-side
+   and is exposed through a one-line `floe-agent register` + `floe_…` API
+   key. See docs/getting-started/quickstart.md and
+   docs/developers/self-custody.md for when this advanced flow is the right
+   choice.
 
 Demonstrates the full FLO-529 production flow:
   - Idempotency-Key on POST /v1/credit/instant-borrow (retry-safe)

@@ -124,11 +124,11 @@ The CLI signs a wallet auth message (no on-chain tx), calls the same `POST /v1/d
 
 ### 4. Fund the agent wallet
 
-Send USDC to the agent's `privyWalletAddress`. You can:
-- Transfer USDC from your own wallet, OR
-- **Buy USDC directly from the dashboard** — click "Fund Wallet" and complete the Coinbase checkout (credit card, debit card, or bank transfer). USDC lands directly in the agent's wallet on Base.
+The recommended path is the dashboard's **Fund** button — pay with card, Apple Pay, Google Pay, or bank transfer. USDC lands in the agent's wallet on Base within seconds. No ETH, no gas tokens, no bridge.
 
-**Takeaway:** this USDC deposit is the collateral backing every future `/proxy/fetch` charge. No ETH or gas tokens needed.
+Advanced (only if you already hold USDC on Base): you can also transfer USDC directly from your own wallet to the agent's deposit address shown in the dashboard. Make sure you're on **Base** — sending from any other chain is unrecoverable. Full details: [Funding the agent](../getting-started/funding.md).
+
+**Takeaway:** this USDC is the collateral backing every future `/proxy/fetch` charge. No ETH or gas tokens needed.
 
 ### 5. Open the credit line
 

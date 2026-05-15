@@ -6,6 +6,19 @@ icon: chart-network
 
 All Floe smart contracts deployed on supported networks.
 
+## Which network should I use?
+
+If you are building an agent, you almost certainly want **Base Mainnet**. Floe's managed-wallet flow, fiat on-ramp, and full x402 merchant directory are mainnet-only — Base Sepolia is a development sandbox without these conveniences.
+
+| You are… | Use | Why |
+| --- | --- | --- |
+| Building an agent that will call real x402 APIs | **Base Mainnet** | Real USDC, real merchants, fiat on-ramp, managed wallets. This is the default for the CLI and dashboard. |
+| Smoke-testing protocol mechanics without spending money | Base Sepolia | Free testnet USDC, but no x402 merchant directory and no fiat funding. Only useful if you are building against the protocol contracts directly. |
+
+The `floe-agent register` CLI and the dashboard both default to **Base Mainnet**. You have to explicitly pass `--network base-sepolia` to opt in to the testnet. If you are not sure which one you want, you want mainnet.
+
+> Treat Sepolia as a code path you only reach by typing its name. Funding an agent there will not let it call the public x402 merchants you read about in the docs.
+
 ## Base Mainnet (Production)
 
 | Parameter    | Value                                |

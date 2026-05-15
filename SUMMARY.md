@@ -5,6 +5,7 @@
 ## Getting Started
 
 * [Quickstart (5 minutes)](docs/getting-started/quickstart.md)
+* [Funding the agent](docs/getting-started/funding.md)
 * [Core Concepts](docs/getting-started/core-concepts.md)
 * [Quick Start (Humans)](docs/getting-started/quick-start.md)
 
@@ -87,6 +88,7 @@
 
 ## Advanced
 
+* [Self-custody (advanced)](docs/developers/self-custody.md)
 * [Flash Loans](docs/developers/flash-loans.md)
 * [Run a Solver Bot](docs/developers/run-solver-bot.md)
 * [Run a Liquidation Bot](docs/developers/run-liquidation-bot.md)

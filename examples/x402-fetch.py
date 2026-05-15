@@ -36,7 +36,6 @@ balance_resp.raise_for_status()
 balance = balance_resp.json()
 print(f"   Ledger balance: {int(balance['balance']) / 1e6:.2f} USDC")
 print(f"   Wallet balance: {int(balance['privyWalletBalance']) / 1e6:.2f} USDC")
-print(f"   Wallet address: {balance['privyWalletAddress']}")
 print()
 
 # ── 2. Check if the target URL requires payment ──
@@ -65,7 +64,7 @@ if resp.status_code == 402:
     print(f"   Insufficient balance!")
     print(f"   Available: {int(err['available']) / 1e6:.2f} USDC")
     print(f"   Required:  {int(err['required']) / 1e6:.4f} USDC")
-    print(f"   Send USDC to {balance['privyWalletAddress']} to top up.")
+    print(f"   Top up at https://dev-dashboard.floelabs.xyz (card / Apple Pay / bank).")
     sys.exit(1)
 
 if resp.status_code != 200:
