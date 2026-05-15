@@ -10,6 +10,29 @@ Pay for any x402-enabled API with Floe credit. No pre-funding, no wallet managem
 
 **Works with 13,000+ existing x402 APIs** on Base — no per-service integration needed.
 
+## Protocol versions
+
+The facilitator speaks both **x402 v1** and **x402 v2**. Version is negotiated per request by inspecting the 402 response your target API returned — you do not select a version yourself.
+
+| Aspect | v1 | v2 |
+|---|---|---|
+| `PAYMENT-REQUIRED` header value | base64 of a single `PaymentRequirement`, or an array of them | base64 of a `{ x402Version: 2, accepts: [...], resource?, error?, extensions? }` envelope |
+| Amount field name (on the wire) | `maxAmountRequired` | `amount` |
+| Network identifier | short name (`"base"`) or CAIP-2 (`"eip155:8453"`) | CAIP-2 only (`"eip155:8453"`) |
+| Outbound payment header | `X-PAYMENT` | `PAYMENT-SIGNATURE` |
+| Settlement response header | `X-PAYMENT-RESPONSE` (free-form value) | `PAYMENT-RESPONSE` (base64 of `SettlementResponse`) |
+| EIP-3009 typed data | identical | identical |
+
+What this means for you:
+
+- If your target API is a `@x402/hono` (v2) server, the facilitator parses its envelope, picks the Base + USDC offer from `accepts`, and writes a v2 `PAYMENT-SIGNATURE` request.
+- If your target API still emits a v1 bare requirement, the facilitator handles that path with `X-PAYMENT` exactly as before.
+- The `GET /v1/proxy/check` probe surfaces the negotiated version as an `x402Version` field in its JSON response so you can sanity-check upstream behavior.
+
+The facilitator only accepts offers with `scheme: "exact"` on Base mainnet (`network: "base"` or `"eip155:8453"`) paid in USDC. Other schemes and networks are filtered out before payment is attempted.
+
+Spec references: [x402 v2 specification](https://github.com/x402-foundation/x402/blob/main/specs/x402-specification-v2.md), [v2 HTTP transport](https://github.com/x402-foundation/x402/blob/main/specs/transports-v2/http.md), [CDP migration guide](https://docs.cdp.coinbase.com/x402/migration-guide).
+
 ## How It Works
 
 ```
@@ -313,6 +336,24 @@ Check if a URL requires x402 payment (unauthenticated probe).
 ```bash
 curl "https://credit-api.floelabs.xyz/v1/proxy/check?url=https://api.example.com/data"
 ```
+
+On a 402 response with a parseable `PAYMENT-REQUIRED` header, the body is:
+
+```json
+{
+  "x402": true,
+  "status": 402,
+  "x402Version": 2,
+  "payment": {
+    "amount": "10000",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "payTo": "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+    "network": "eip155:8453"
+  }
+}
+```
+
+`x402Version` is `1` or `2` depending on which envelope shape the merchant returned. If the header can't be parsed, the response is `502` with `code` set to one of `invalid_base64`, `invalid_json`, or `no_compatible_requirement` so you can tell whether the upstream is misformatting the header or offering a payment scheme/network Floe doesn't support.
 
 ### Authenticated (Bearer token)
 

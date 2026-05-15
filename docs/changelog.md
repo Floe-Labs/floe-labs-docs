@@ -8,6 +8,27 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.7.1 — x402 v2 Wire Protocol Support (May 2026)
+
+The facilitator now negotiates between **x402 v1 and x402 v2** per request based on what the merchant returns. Previously, only the v1 bare-requirement envelope was understood, which caused parse failures against modern `@x402/hono` and other v2-compliant servers — and which made the v2 entries already published in the [Floe x402 directory](../../x402-directory/directory.json) unreachable in practice.
+
+**What changed:**
+
+* `parsePaymentRequired` now accepts either a v1 bare `PaymentRequirement` (single or array) or a v2 `{ x402Version, accepts, resource, error, extensions }` envelope, and normalizes the renamed `amount` field back to the internal `maxAmountRequired` shape.
+* On the outbound side, the signed payment header is written as `PAYMENT-SIGNATURE` when the merchant advertised v2, or `X-PAYMENT` for v1 — picked automatically per request.
+* The settlement response header (`PAYMENT-RESPONSE` in v2, `X-PAYMENT-RESPONSE` in v1) is base64-decoded when it carries a v2 `SettlementResponse`; the `transaction` field becomes the recorded tx hash. v1 strings still pass through unchanged.
+* `GET /v1/proxy/check` surfaces the negotiated `x402Version` and, on parse failure, a typed `code` (`invalid_base64` / `invalid_json` / `no_compatible_requirement`) so misformatted upstreams are diagnosable without a redeploy.
+
+**What didn't change:**
+
+* EIP-3009 `TransferWithAuthorization` typed data and signing — identical between v1 and v2.
+* Reservation lifecycle (RC-12), idempotency keys, rate limits, agent registration, and credit-line opening flows.
+* The supported asset (USDC) and network (Base mainnet); CAIP-2 `"eip155:8453"` and the short name `"base"` are both still accepted.
+
+**Why this matters:** developers running v2 merchants no longer hit "Failed to parse PAYMENT-REQUIRED header" against Floe, and the directory's v2 entries (Firecrawl, Exa, Soundside, Freepik, and the rest) now negotiate correctly. Spec refs: [x402-specification-v2.md](https://github.com/x402-foundation/x402/blob/main/specs/x402-specification-v2.md), [transports-v2/http.md](https://github.com/x402-foundation/x402/blob/main/specs/transports-v2/http.md), [CDP migration guide](https://docs.cdp.coinbase.com/x402/migration-guide).
+
+---
+
 ### v1.7.0 — Unified Agent Registration + Managed Credit Line (May 2026)
 
 The legacy single-agent registration path is removed. All agent provisioning now flows through the same dashboard surface that multi-agent uses (`POST /v1/developer/agents`), authenticated by a dashboard session, a `floe_live_*` developer key, or a wallet signature. Provisioning is intentionally decoupled from credit-line opening: a new server-signed endpoint mints the facility loan from the agent's managed Privy wallet (USDC/USDC market).
