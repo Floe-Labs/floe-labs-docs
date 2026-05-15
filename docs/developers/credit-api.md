@@ -209,24 +209,36 @@ curl "https://credit-api.floelabs.xyz/v1/health"
 
 All endpoints below require authentication. The endpoints above are public.
 
-The API supports two authentication methods: **wallet signatures** (EIP-191) and **API keys**.
+Two distinct contexts call this API, and they use different credentials. Pick the row that matches what you're doing:
+
+| Context | Endpoints | Accepted credentials |
+|---|---|---|
+| **Developer / management** — humans and tooling that provision and manage agents, mint keys, open credit lines, review history | `POST /v1/developer/agents`, `/keys`, `/open-credit-line`, list / rotate / revoke / close, plus everything under `/credit/*`, `/positions/*`, `/borrow`, `/repay` | Any one of: a `floe_live_*` developer key, a wallet-signature header set (`X-Wallet-Address` + `X-Signature` + `X-Timestamp`), or a dashboard session cookie — pick whichever fits your stack |
+| **Agent runtime** — the agent process itself, calling out for paid data | `/proxy/fetch`, `/proxy/check`, `/x402/estimate`, `/agents/balance`, `/agents/transactions`, `/agents/close`, credit-threshold / spend-limit endpoints | The agent's `floe_*` runtime key, sent as `Authorization: Bearer floe_…` |
+
+The two key prefixes are not interchangeable: a `floe_live_*` developer key sent to `/proxy/fetch` will 401, and a `floe_*` agent key sent to a management endpoint will 401. See [API Keys](api-keys.md) for the canonical table and the rationale.
 
 ### API Key Authentication
 
-If you prefer not to sign every request, you can authenticate with a developer API key. Generate keys through the [Developer Dashboard](developer-dashboard.md) at `dev-dashboard.floelabs.xyz` or via the developer endpoints below.
-
-API keys use the `Authorization: Bearer` header:
+API keys use the `Authorization: Bearer` header. Generate developer keys through the [Developer Dashboard](developer-dashboard.md) at `dev-dashboard.floelabs.xyz` or via the developer endpoints below; agent keys are minted by `POST /v1/developer/agents/:id/keys`.
 
 ```bash
+# Developer key — management endpoints
 curl "https://credit-api.floelabs.xyz/v1/credit/status/42" \
   -H "Authorization: Bearer floe_live_abc123..."
+
+# Agent key — runtime endpoints
+curl -X POST "https://credit-api.floelabs.xyz/v1/proxy/fetch" \
+  -H "Authorization: Bearer floe_xyz789..." \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://api.example.com/data", "method": "GET" }'
 ```
 
 Keys are scoped to the wallet that created them. All actions performed with an API key are attributed to the owning wallet. See [API Keys](api-keys.md) for key management, rotation, and security best practices.
 
 ### Wallet Signature Authentication (EIP-191)
 
-The API also supports **EIP-191 / EIP-1271 signed message** authentication. No API keys, no registration. Any wallet can authenticate.
+For the **developer / management** endpoints above, you can also authenticate with an **EIP-191 / EIP-1271 signed message** instead of a `floe_live_*` key. This is the same credential class — the agentkit SDKs use the signature path so users don't have to obtain a developer key first — and it lets any wallet authenticate without an explicit registration step. It does **not** unlock the agent runtime endpoints; those still require an agent's `floe_*` key.
 
 ### How It Works
 

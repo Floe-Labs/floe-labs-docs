@@ -293,8 +293,9 @@ In your consumer's `package.json`:
 
 ```bash
 npm run build && npm pack
-# In consumer:
-npm install ../agentkit-actions/floe-agent-0.3.0.tgz
+# In consumer — substitute the actual tarball name printed by `npm pack`
+# (it tracks the package.json `version` field; today that's 0.4.0):
+npm install ../agentkit-actions/floe-agent-0.4.0.tgz
 ```
 
 ## Agent Awareness Actions (v0.3.0+)

@@ -206,9 +206,12 @@ The action prints the key once and stores it in-memory for the rest of the sessi
 
 ### With curl
 
+The flow uses two different credentials. Steps 1 and 2 are **management** calls authenticated by the developer's wallet signature (or, equivalently, a `floe_live_*` developer key — pick whichever fits your stack). Step 3 is an **agent runtime** call authenticated by the `floe_*` key minted in step 2. See the auth table in [Credit API → Authentication](credit-api.md#authentication) for the full breakdown.
+
 ```bash
 # Step 1: Provision a managed agent. The server signs setOperator on-chain
 # from the agent's Privy wallet — your local wallet only signs auth headers.
+# Auth: wallet signature (or floe_live_* developer key as Bearer).
 TIMESTAMP=$(date +%s)
 MESSAGE="Floe Credit API
 Timestamp: $TIMESTAMP"
@@ -242,7 +245,9 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/keys
   -d '{ "label": "production" }'
 # → { "key": "floe_...", "id": 7, "keyPrefix": "...", ... }
 
-# Step 3: Start making paid API calls with the returned agent key
+# Step 3: Start making paid API calls with the returned agent key.
+# Auth switches here: from now on the developer credential is no longer
+# used — runtime calls go out as Bearer floe_<agent-key>.
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer floe_YOUR_AGENT_KEY" \
   -H "Content-Type: application/json" \
@@ -260,12 +265,12 @@ provider = x402_action_provider(X402Config(
 # Register with AgentKit — 6 x402 actions available
 ```
 
-Or use the REST API directly:
+Or use the REST API directly. `API_KEY` here is the agent's `floe_*` runtime key (not the `floe_live_*` developer key):
 
 ```python
 import requests
 
-API_KEY = "floe_YOUR_API_KEY"
+API_KEY = "floe_YOUR_AGENT_KEY"  # the floe_* runtime key minted in Step 2
 BASE = "https://credit-api.floelabs.xyz"
 headers = { "Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json" }
 
