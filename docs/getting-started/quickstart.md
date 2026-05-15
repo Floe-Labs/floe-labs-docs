@@ -4,15 +4,24 @@ icon: rocket
 
 # Quickstart (5 minutes)
 
-Wire the full Floe loop end-to-end: register an agent, fund it with a card, deposit working capital, pay an x402 API. No private keys, no chain IDs, no gas. The same script runs in TypeScript or Python.
+Wire the full Floe loop end-to-end: sign up, fund with a card, register an agent, borrow working capital, pay an x402 API. No private keys, no seed phrases, no chain IDs, no gas — for you *or* the agent. The same script runs in TypeScript or Python.
+
+> **What you do not need:** MetaMask, Coinbase Wallet, a seed phrase, ETH for gas, an RPC URL, a chain ID, or a hex private key in your `.env`. Floe provisions a non-custodial wallet for you when you sign up, and a separate non-custodial wallet for each agent when you register one. Both are Privy-backed; you control them, but you don't manage keys.
 
 > Prefer to clone and run? Use [`floe-examples/financial-os-loop`](https://github.com/Floe-Labs/floe-examples/tree/main/financial-os-loop) — it's the canonical version of this guide.
 
 ---
 
-## 1. Register an agent and get a runtime key
+## 1. Sign up and fund — your developer wallet is provisioned for you
 
-The CLI provisions a managed wallet for your agent server-side, sets up the on-chain delegation, and prints a runtime API key once.
+1. Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with email or social. Floe provisions a **non-custodial wallet for you** under the hood — you own it, but you never see a private key.
+2. Click **Buy USDC** and pay with card, Apple Pay, Google Pay, or bank transfer. USDC lands in your developer wallet on Base within seconds. No bridge, no exchange account, no gas token.
+
+Minimum to get going: **$10**. Full details in [Funding the agent](funding.md).
+
+## 2. Register an agent and get a runtime key
+
+This provisions a **second** non-custodial wallet — owned by your agent — and prints a runtime API key once.
 
 {% tabs %}
 {% tab title="TypeScript" %}
@@ -28,36 +37,30 @@ floe-agent register --name my-agent --borrow-limit 10000
 {% endtab %}
 {% endtabs %}
 
-The command prints a key beginning with `floe_…`. Save it as `FLOE_AGENT_API_KEY`. The agent's wallet is custodied by Floe — you never see or manage its private key.
-
-> Want a UI instead? Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), connect a wallet, and click **Create agent**. The dashboard mints the same `floe_…` key.
+The CLI prints a key starting with `floe_…`. Save it as `FLOE_AGENT_API_KEY`. From here on, that key is the *only* credential your agent needs.
 
 **Network:** the CLI defaults to **Base Mainnet** (production). Pass `--network base-sepolia` only if you want a testnet sandbox. See [Networks](../../developers/networks.md#which-network-should-i-use).
 
-## 2. Install the SDK
+> You can also do this in the dashboard — pick **Create agent** and the same wallet provisioning + key minting happens through the UI.
+
+## 3. Install the SDK
 
 {% tabs %}
 {% tab title="TypeScript" %}
 ```bash
-npm install floe-agent @coinbase/agentkit
+npm install floe-agent
 ```
 {% endtab %}
 {% tab title="Python" %}
 ```bash
-pip install floe-agentkit-actions coinbase-agentkit
+pip install floe-agentkit-actions
 ```
 {% endtab %}
 {% endtabs %}
 
-## 3. Fund the agent
-
-Fund the agent's wallet with a card, Apple Pay, Google Pay, or bank transfer from the [dashboard](https://dev-dashboard.floelabs.xyz). USDC arrives in seconds. No bridge, no gas token, no exchange account needed.
-
-Minimum to get going: **$10**. See [Funding the agent](funding.md) for details and failure recovery.
-
 ## 4. Run the loop
 
-The runtime key authenticates every call. There is no wallet client, no RPC URL, no `PRIVATE_KEY` in your `.env`.
+The runtime key authenticates every call. No wallet client, no RPC URL, no `PRIVATE_KEY` anywhere.
 
 {% tabs %}
 {% tab title="TypeScript" %}
@@ -114,8 +117,9 @@ agent.repay_loan(loan_id=loan["loan_id"])
 
 ### What was abstracted
 
+- **Two wallets, both provisioned for you.** Your developer wallet (which holds the USDC you bought with a card) and the agent's wallet (which holds the working-capital deposit and pays merchants) are both non-custodial Privy wallets — you own them, but you never manage keys.
 - **Market selection.** `instant_borrow` defaults to the USDC/USDC market because collateral and loan token are both USDC. To borrow against WETH or cbBTC, pass `marketId` explicitly — see [Active Markets](../../developers/networks.md#active-markets).
-- **Signing.** `x402_fetch` constructs and signs the EIP-3009 payment authorization from the agent's managed wallet. Your code never imports `viem` or handles a private key.
+- **Signing.** `x402_fetch` constructs and signs the EIP-3009 payment authorization from the agent's wallet, server-side. Your code never imports `viem` or web3.py and never touches a key.
 - **Gas.** The facilitator pays gas for on-chain settlement. Agents only spend USDC.
 
 ### Tuning the LTV (optional)
@@ -139,4 +143,4 @@ The 99% ceiling is **only safe for short-duration USDC/USDC loans.** At 12% APR 
 - Pick a framework: [AgentKit](../frameworks/agentkit.md), [LangChain](../frameworks/langchain.md), [CrewAI](../frameworks/crewai.md), [Claude/MCP](../frameworks/claude-mcp.md), [HTTP](../frameworks/http.md)
 - Explore the components in depth: [Wallet](../components/wallet.md), [Secured credit](../components/secured-credit.md), [x402](../components/x402.md)
 - Reference: [Credit REST API](../developers/credit-api.md), [MCP Server](../developers/mcp-server.md), [Webhooks](../developers/webhooks.md)
-- Running your own keys? See [Self-custody (advanced)](../developers/self-custody.md).
+- Running your own keys (HSM/KMS, existing wallet stack)? See [Self-custody (advanced)](../developers/self-custody.md).

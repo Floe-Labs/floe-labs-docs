@@ -4,7 +4,7 @@ icon: key-skeleton
 
 # Self-custody (advanced)
 
-> **Most agent developers should not be on this page.** Floe's default flow uses a managed wallet provisioned per agent and a `floe_…` runtime API key — you don't manage a private key, you don't pay gas, and you don't need to know that this page exists. See [Quickstart](../getting-started/quickstart.md).
+> **Most agent developers should not be on this page.** Floe's default flow provisions a non-custodial wallet for you (the developer) and a separate non-custodial wallet for each agent — both Privy-backed, neither requiring you to manage a private key, neither requiring you to pay gas. The agent authenticates with a `floe_…` runtime API key and nothing else. If that sounds right for you, go to the [Quickstart](../getting-started/quickstart.md) and ignore this page.
 
 This page is for the small set of teams who need to:
 
@@ -93,8 +93,9 @@ A self-custody agent pays its own gas in ETH on Base. Keep a few cents of ETH in
 
 ## When this is the wrong path
 
-If you're tempted to self-custody because of a specific worry, check first whether it applies to managed wallets:
+If you're tempted to self-custody because of a specific worry, check first whether it applies to the provisioned-wallet flow:
 
-- "I want to control the keys" → managed Privy wallets are non-custodial from Floe's perspective (Privy holds shard custody, not Floe), and the on-chain `OperatorPermission` is revocable and rate-capped.
-- "I want to use Sepolia / a local devnet" → self-custody is the right answer here; the managed flow is mainnet-only.
-- "I'm building a non-x402 product" → most of Floe still works in the managed flow (lending, intents, repayment). Only consider self-custody if you specifically need to hold your own collateral signing key.
+- "I want to control the keys" → The provisioned wallets are already non-custodial. Privy holds shard custody, not Floe; you can export the underlying private key at any time and migrate off the dashboard. The on-chain `OperatorPermission` is revocable and rate-capped, so even the facilitator can't move funds outside its scoped permissions.
+- "I want to use Sepolia / a local devnet" → Self-custody is the right answer here; the provisioned-wallet flow is mainnet-only.
+- "I'm building a non-x402 product" → Most of Floe still works in the provisioned-wallet flow (lending, intents, repayment). Only consider self-custody if you specifically need to hold your own collateral signing key.
+- "I'm in a region Coinbase doesn't support for fiat on-ramp" → Self-custody lets you bring USDC from wherever you already have it. That's a legitimate reason.

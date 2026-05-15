@@ -2,20 +2,29 @@
 icon: credit-card
 ---
 
-# Funding the agent
+# Funding
 
-The fastest way to give your agent working capital is to pay with a card. No exchange account, no bridge, no gas token.
+The fastest way to give yourself or your agent working capital is to pay with a card. No exchange account, no bridge, no gas token.
+
+---
+
+## Two wallets, both provisioned for you
+
+When you first sign in to the dashboard, Floe provisions a **non-custodial wallet for you** (the developer). You own it, but you never see a private key — sign-in is by email or social, with Privy doing the wallet plumbing under the hood. This is where your fiat on-ramp purchases arrive.
+
+When you register an agent, Floe provisions a **second non-custodial wallet** for that agent. The agent's wallet is what holds the deposited collateral and pays merchants over x402.
+
+You can fund **either** wallet directly from the dashboard.
 
 ---
 
 ## The dashboard flow (recommended)
 
 1. Open [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in.
-2. Pick your agent from the list (or create one if you haven't yet — see [Quickstart](quickstart.md)).
-3. Click **Fund** on the agent's row.
-4. Choose a method: **Card, Apple Pay, Google Pay, or bank transfer**. Coinbase processes the purchase; the USDC arrives in the agent's wallet typically within 30 seconds.
+2. Click **Fund**. The dashboard asks whether you want USDC to land in your developer wallet (so you can split it across multiple agents later) or directly in one of your agents' wallets (one-and-done).
+3. Choose a method: **Card, Apple Pay, Google Pay, or bank transfer**. Coinbase processes the purchase; the USDC arrives in the chosen wallet typically within 30 seconds.
 
-That's it. The dashboard shows the new balance, and the agent can immediately call `instant_borrow` or `x402_fetch`.
+That's it. The dashboard shows the new balance, and the agent (or you) can immediately call `instant_borrow` or `x402_fetch`.
 
 ### How much should I fund?
 
@@ -46,14 +55,14 @@ If a funding flow leaves you stuck, the agent itself is unharmed — you can alw
 
 ## Topping up on-chain (advanced)
 
-If you already hold USDC on Base and would rather not go through the on-ramp, you can transfer it directly to the agent's wallet address. **Most users should not do this** — the dashboard flow is faster, lower-fee, and avoids any chance of sending to the wrong chain.
+Already have USDC on Base in an external wallet (MetaMask, Coinbase Wallet, hardware wallet)? You can transfer it directly to either Floe-provisioned wallet's address. **Most users should not do this** — the dashboard flow is faster, lower-fee, and avoids any chance of sending to the wrong chain.
 
 If you still want to:
 
-1. In the dashboard, open the agent's detail page and copy its **deposit address**. The page reminds you which network it's on.
-2. Send USDC on **Base** (not Ethereum mainnet, not Polygon). The dashboard shows the balance once the transfer confirms.
+1. In the dashboard, open the developer or agent wallet detail page and copy its **deposit address**. The page tells you which network it's on.
+2. Send USDC on **Base** (not Ethereum mainnet, not Polygon, not Optimism). The dashboard shows the balance once the transfer confirms.
 
-> ⚠️ **Never send tokens other than USDC** to this address, and never send from a chain other than Base. Both are unrecoverable. If you're not 100% sure your source supports Base, use the card flow instead.
+> ⚠️ **Never send tokens other than USDC** to these addresses, and never send from a chain other than Base. Both are unrecoverable. If you're not 100% sure your source supports Base, use the card flow instead.
 
 ---
 
@@ -63,9 +72,11 @@ Closing an agent with `floe-agent close --name <name>` (or the dashboard's **Clo
 
 1. Repays any outstanding facility loans.
 2. Returns deposited collateral.
-3. Transfers any remaining USDC back to your developer wallet (the one you used to register the agent).
+3. Transfers any remaining USDC from the agent's wallet back to your developer wallet.
 
 You don't have to drain the wallet manually. The wind-down happens server-side.
+
+To cash out from your developer wallet, the dashboard's **Withdraw** action lets you send USDC to any external address on Base, or convert to fiat through Coinbase's off-ramp if you're in a supported region.
 
 ---
 
