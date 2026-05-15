@@ -353,7 +353,15 @@ On a 402 response with a parseable `PAYMENT-REQUIRED` header, the body is:
 }
 ```
 
-`x402Version` is `1` or `2` depending on which envelope shape the merchant returned. If the header can't be parsed, the response is `502` with `code` set to one of `invalid_base64`, `invalid_json`, or `no_compatible_requirement` so you can tell whether the upstream is misformatting the header or offering a payment scheme/network Floe doesn't support.
+`x402Version` is `1` or `2` depending on which envelope shape the merchant returned. If the header can't be parsed, the response is `502` with `code` set to one of:
+
+| `code` | What it means |
+|---|---|
+| `invalid_base64` | The `PAYMENT-REQUIRED` header value is not valid base64 — the merchant's encoding is broken. |
+| `invalid_json` | Decoded, but the bytes aren't JSON. |
+| `unsupported_version` | An `accepts`-wrapped envelope tagged `x402Version: 3+`, or a `v2` envelope contradicting itself with `x402Version: 1`. Floe currently implements v1 and v2. |
+| `schema_validation_failed` | The merchant offered Base + `scheme: "exact"` + USDC, but a required field (e.g. `payTo`, integer `amount`) was malformed. Tell the merchant — the offer is targetable but wrong. |
+| `no_compatible_requirement` | The merchant returned valid offers, but none were Base + `scheme: "exact"`. Floe can't pay this provider; try a different one. |
 
 ### Authenticated (Bearer token)
 
