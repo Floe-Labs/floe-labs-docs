@@ -329,6 +329,21 @@ Proxy a request. Handles x402 payments automatically.
 }
 ```
 
+**Request headers**
+
+| Header | Required | Purpose |
+|--------|----------|---------|
+| `Authorization: Bearer floe_…` | yes | Agent API key |
+| `Content-Type: application/json` | yes | — |
+| `Idempotency-Key: <opaque>` | no | Stripe-style retry-safe key (≤255 chars). Same key + same agent within 10 min replays the cached response instead of paying again. See [Idempotency](#idempotency) below. |
+
+**Response headers (success)**
+
+| Header | Always set | Purpose |
+|--------|------------|---------|
+| `X-Floe-Cost-USDC` | on 2xx paid responses | Raw USDC units (6-decimal integer string) actually charged for this call. Set by the facilitator after a successful x402 settlement; absent on free passthrough responses. |
+| `X-Floe-Idempotent-Replay: true` | on replays only | Indicates the response body is a cached replay of a prior request with the same `Idempotency-Key`. Absent on the first attempt and on requests without a key. |
+
 | Status | Meaning |
 |--------|---------|
 | 200 | Success — response from target |
@@ -336,6 +351,7 @@ Proxy a request. Handles x402 payments automatically.
 | 401 | Invalid API key |
 | 402 | Insufficient credit |
 | 403 | Account frozen or closed |
+| 409 | `Idempotency-Key` is currently in-flight on another request — see [Idempotency](#idempotency) |
 | 429 | Rate limit exceeded — see body shape below |
 | 502 | Target unreachable, or paid-request failure (see [Reservation Lifecycle](#reservation-lifecycle-rc-12)) |
 
@@ -344,12 +360,45 @@ A `429` response body looks like:
 ```json
 {
   "error": "rate_limit_exceeded",
-  "limit": 30,
-  "retry_after_seconds": 7
+  "reason": "agent_proxy_limit",
+  "retry_after_seconds": 7,
+  "limit_per_minute": 30,
+  "remaining": 0
 }
 ```
 
-The rate limit is 30 requests/minute per agent, enforced by a token bucket (`RC12_RATE_LIMIT_PER_MINUTE` env var, default `30`). The `retry_after_seconds` field tells the agent when the next token will be available.
+`reason` distinguishes the three rate-limit sources so an agent can decide whether to wait, slow down, or fall back to a free path:
+
+| `reason` | Source | Agent action |
+|----------|--------|--------------|
+| `agent_proxy_limit` | Per-agent token bucket (default 30/min, `RC12_RATE_LIMIT_PER_MINUTE`). The standard `/proxy/fetch` ceiling. | Wait `retry_after_seconds`; safe to retry. |
+| `ip_rate_limit` | Per-IP sliding window (covers `/proxy/check` and `/x402/estimate`). | Wait, or check if the IP is shared with other callers. |
+| `global_rate_limit` | Server-wide protection on the `/v1/*` surface. | Wait longer — may indicate platform overload. |
+
+`limit_per_minute` echoes the per-bucket cap; `remaining` is the number of tokens left in the current window (always `0` on rejection).
+
+### Idempotency
+
+`POST /v1/proxy/fetch` accepts a Stripe-style `Idempotency-Key` request header to make retries safe across network failures. Without it, a retry after a transient 502 or socket error can trigger a second upstream payment.
+
+**Rules**
+
+1. Send `Idempotency-Key: <opaque-key>` (any string up to 255 chars — typically a UUIDv4) along with your `Authorization` header.
+2. Within a 10-minute window, **the same key from the same agent** replays the original response byte-for-byte (status + headers + body) plus `X-Floe-Idempotent-Replay: true`.
+3. If a previous request with that key is still **in flight**, a concurrent retry receives `409 Conflict` with `{ "error": "request_in_flight", "idempotency_key": "<key>" }`. Wait and retry, or generate a fresh key.
+4. Requests **without** the header skip idempotency entirely (backward-compatible).
+5. Keys are scoped per-agent — two agents may share a key without colliding.
+6. Replays do **not** consume rate-limit tokens and do **not** trigger a second upstream call.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer floe_YOUR_AGENT_KEY" \
+  -H "Content-Type: application/json" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -d '{ "url": "https://api.example.com/data", "method": "GET" }'
+```
+
+Stripe's contract applies: the response body is cached regardless of status (2xx, 4xx, 5xx), so a retry against the same key returns the same answer — generate a **new key** for a logically new attempt.
 
 #### GET /v1/agents/balance
 

@@ -30,6 +30,9 @@ const res = await fetch('https://credit-api.floelabs.xyz/v1/proxy/fetch', {
   headers: {
     'Authorization': `Bearer ${process.env.FLOE_API_KEY}`,
     'Content-Type': 'application/json',
+    // Recommended: send a fresh UUID per logical attempt so 502/timeout
+    // retries replay the original response instead of paying twice.
+    'Idempotency-Key': crypto.randomUUID(),
   },
   body: JSON.stringify({
     url: 'https://api.some-x402-service.com/premium/analyze',
@@ -38,10 +41,30 @@ const res = await fetch('https://credit-api.floelabs.xyz/v1/proxy/fetch', {
     body: JSON.stringify({ prompt: 'hello' }),
   }),
 });
-if (res.ok) return await res.json();
+if (res.ok) {
+  const costUsdc = res.headers.get('X-Floe-Cost-USDC'); // raw 6-decimal USDC string
+  return { data: await res.json(), costUsdc };
+}
 ```
 
 If the target URL returns `402 Payment Required`, the facilitator signs the EIP-3009 authorization out of your deployer's delegated credit line, retries, and streams back the merchant's 2xx response. You never see the 402. You only see success or one of the error codes below.
+
+## Request and Response Headers
+
+**Request**
+
+| Header | Required | Purpose |
+|---|---|---|
+| `Authorization: Bearer floe_<hex>` | yes | Your agent API key |
+| `Content-Type: application/json` | yes | — |
+| `Idempotency-Key: <opaque>` | **recommended** | Stripe-style retry key, ≤255 chars (typically a UUIDv4). Same key + same agent within 10 minutes replays the cached response — including its status, headers, and body — instead of running a second payment. Without this header, a retry after a network failure can double-charge you. See [x402 Facilitator → Idempotency](x402-facilitator.md#idempotency). |
+
+**Response**
+
+| Header | When | Purpose |
+|---|---|---|
+| `X-Floe-Cost-USDC` | 2xx after a paid call | Raw USDC units (6-decimal integer string) charged for this request. Absent on free passthrough responses; consume it to budget, attribute, or surface cost upstream. |
+| `X-Floe-Idempotent-Replay: true` | only on replays | The body you received is a cached replay of a prior request with the same `Idempotency-Key`. No new payment occurred. |
 
 ## Error Handling Matrix
 
@@ -55,7 +78,8 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 | 403 | `account_closed` | Deployer wound the agent down | **No** | Exit; do not retry |
 | 403 | `credit_frozen` | Health monitoring froze spending (low collateral health) | **No** | Alert operator — they must top up collateral or wait for auto-unfreeze |
 | 403 | `credit_line_expired` | Rollover failed (no liquidity on rollover) | **No** | Alert operator |
-| 429 | `rate_limit_exceeded` | 30 req/min token bucket tripped; body includes `retry_after_seconds` | **Yes, after backoff** | Sleep `retry_after_seconds`, then retry the same request |
+| 409 | `request_in_flight` | Concurrent retry of the same `Idempotency-Key` is still running. Body includes the `idempotency_key`. | **Wait** | Wait briefly (seconds) and retry the same key; or generate a fresh key for a new attempt |
+| 429 | `rate_limit_exceeded` | Token bucket / sliding window / global limit tripped; body includes `reason`, `retry_after_seconds`, `limit_per_minute`, `remaining` | **Yes, after backoff** | Sleep `retry_after_seconds`, then retry. Branch on `reason` (`agent_proxy_limit` / `ip_rate_limit` / `global_rate_limit`) to decide whether to slow down or fall back to a free path |
 | 500 | `Payment signing failed` / `Reservation persistence failed` | Internal facilitator error | **Yes, with backoff** | Exponential backoff with jitter, max 3 attempts |
 | 502 | `Failed to reach target URL` | Request never reached the merchant (DNS, TCP, timeout) | **Yes** | Retry if transient |
 | 502 | `upstream_paid_request_failed_ambiguous` | Network error after `X-PAYMENT` was sent — the merchant may have already claimed the authorization on-chain. Body includes `reservation: { nonce, validBefore }` | **DO NOT retry immediately** | The reservation is parked in `pending_settlement`. Reconciliation typically finalizes within 15-90 seconds. Poll `GET /v1/agents/balance` every 10 seconds until `pendingSettlements` drops to zero (or at least below the stuck amount), then retry. Prefer a different provider on retry. |
