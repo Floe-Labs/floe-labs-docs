@@ -10,11 +10,11 @@ Wire the full Floe loop end-to-end: register an agent, fund the wallet, borrow a
 
 ---
 
-## 1. Get an API key
+## 1. Get an agent runtime key
 
 1. Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
 2. Connect your wallet
-3. Create an API key (`floe_live_...`)
+3. Provision an **agent** and copy its runtime key — it starts with `floe_…` (note: this is **not** the same as a `floe_live_…` developer key. The `floe_live_…` key is for managing your dashboard / minting agents; the `floe_…` key is what the agent itself uses at runtime to call `/proxy/fetch` and the rest of the credit API. See [API Keys](../developers/api-keys.md) for the distinction.)
 
 ## 2. Install the SDK
 
@@ -51,7 +51,7 @@ const walletProvider = new ViemWalletProvider(walletClient);
 
 const agentkit = await AgentKit.from({
   walletProvider,
-  actionProviders: [floeActionProvider({ facilitatorApiKey: process.env.FLOE_API_KEY })],
+  actionProviders: [floeActionProvider({ facilitatorApiKey: process.env.FLOE_AGENT_API_KEY })],
 });
 
 // 1. Borrow against on-chain collateral
@@ -90,7 +90,7 @@ wallet_provider = EvmWalletProvider.from_private_key(
     rpc_url=os.environ["BASE_RPC_URL"],
     network_id="base-mainnet",
 )
-provider = floe_action_provider(facilitator_api_key=os.environ["FLOE_API_KEY"])
+provider = floe_action_provider(facilitator_api_key=os.environ["FLOE_AGENT_API_KEY"])
 agentkit = AgentKit(AgentKitConfig(
     wallet_provider=wallet_provider,
     action_providers=[provider],
