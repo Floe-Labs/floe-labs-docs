@@ -27,7 +27,7 @@ Every environment variable the Floe Credit API (`apps/api`) reads at startup or 
 | `FACILITATOR_PRIVATE_KEY` | **Agents** | Server | Private key for the facilitator EOA — required for agent registration and all on-chain matching |
 | `ENVIO_ADMIN_SECRET` | — | Server | Envio admin secret for deep queries |
 | `LENDING_INTENT_MATCHER` | — | Server | Matcher contract (defaults to Base mainnet) |
-| `PRICE_ORACLE_ADDRESS` | — | Server | PriceOracle contract — **must override for testnet** |
+| `PRICE_ORACLE_ADDRESS` | — | Server | PriceOracle contract (defaults to Base mainnet) |
 | `USDC_ADDRESS` | — | Server | USDC contract (defaults to Base mainnet native USDC) |
 | `WETH_ADDRESS` | — | Server | WETH contract (defaults to Base mainnet) |
 | `X402_VALID_BEFORE_SECONDS` | — | Server | EIP-3009 `validBefore` offset (default 90) |
@@ -126,19 +126,17 @@ Base chain RPC endpoint. Used for:
 **Default:** `https://mainnet.base.org` (rate-limited; use Alchemy / Infura / QuickNode for production)
 
 ### `PRICE_ORACLE_ADDRESS`
-**Override on testnet.** The fail-closed circuit breaker cache reads this contract's state. If left at the Base mainnet default (`0xEA058a06b54dce078567f9aa4dBBE82a100210Cc`) on Base Sepolia or any other chain, every paid request will be blocked with `circuit_breaker_stale` because the contract does not exist at that address.
+The fail-closed circuit-breaker cache reads this contract's state. Defaults to the Base mainnet PriceOracle; Floe only runs on Base mainnet.
 
 - **Base mainnet:** `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` (default)
-- **Base Sepolia:** `0x71020b939b1f0988b2d93c2d930fea5b370203a5`
 
 ### `LENDING_INTENT_MATCHER`
 The core `LendingIntentMatcherUpgradeable` proxy address.
 
 - **Base mainnet:** `0x17946cD3e180f82e632805e5549EC913330Bb175`
-- **Base Sepolia:** `0xF351eDF229ded7E2e2b23E44c70e9964CbA91B2E`
 
 ### `USDC_ADDRESS` / `WETH_ADDRESS`
-Token addresses used by the matcher. Defaults target Base mainnet. Override for testnets.
+Token addresses used by the matcher. Defaults target Base mainnet.
 
 ---
 
@@ -239,9 +237,9 @@ PORT=3001
 # Fail-fasts are bypassed in dev — insecure defaults are used with a warning
 # DATABASE_URL=                   # falls back to ./data/floe-api.db
 
-RPC_URL=https://base-sepolia.g.alchemy.com/v2/<key>
-LENDING_INTENT_MATCHER=0xF351eDF229ded7E2e2b23E44c70e9964CbA91B2E
-PRICE_ORACLE_ADDRESS=0x71020b939b1f0988b2d93c2d930fea5b370203a5
+RPC_URL=https://base-mainnet.g.alchemy.com/v2/<key>
+LENDING_INTENT_MATCHER=0x17946cD3e180f82e632805e5549EC913330Bb175
+PRICE_ORACLE_ADDRESS=0xEA058a06b54dce078567f9aa4dBBE82a100210Cc
 
 ENVIO_HTTP_ENDPOINT=http://localhost:8090/v1/graphql
 

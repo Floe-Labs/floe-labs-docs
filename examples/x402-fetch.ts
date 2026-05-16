@@ -30,8 +30,7 @@ console.log("1. Checking balance...");
 const balanceResp = await fetch(`${BASE}/agents/balance`, { headers });
 const balance = (await balanceResp.json()) as any;
 console.log(`   Ledger balance: ${(Number(balance.balance) / 1e6).toFixed(2)} USDC`);
-console.log(`   Wallet balance: ${(Number(balance.privyWalletBalance) / 1e6).toFixed(2)} USDC`);
-console.log(`   Wallet address: ${balance.privyWalletAddress}\n`);
+console.log(`   Wallet balance: ${(Number(balance.privyWalletBalance) / 1e6).toFixed(2)} USDC\n`);
 
 // ── 2. Check if the target URL requires payment ──
 console.log(`2. Checking ${TARGET_URL}...`);
@@ -60,7 +59,7 @@ if (resp.status === 402) {
   console.log("   Insufficient balance!");
   console.log(`   Available: ${(Number(err.available) / 1e6).toFixed(2)} USDC`);
   console.log(`   Required:  ${(Number(err.required) / 1e6).toFixed(4)} USDC`);
-  console.log(`   Send USDC to ${balance.privyWalletAddress} to top up.`);
+  console.log(`   Top up at https://dev-dashboard.floelabs.xyz (card / Apple Pay / bank).`);
   process.exit(1);
 }
 

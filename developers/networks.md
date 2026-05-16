@@ -4,7 +4,7 @@ icon: chart-network
 
 # Contract Addresses
 
-All Floe smart contracts deployed on supported networks.
+Floe runs on **Base Mainnet**. That's the only supported network — there is no testnet, sandbox, or staging environment. Every reference to a chain or address in this repo means Base Mainnet.
 
 ## Base Mainnet (Production)
 
@@ -85,27 +85,6 @@ const BASE_MAINNET_CONFIG = {
 
 ***
 
-## Base Sepolia (Testnet)
-
-| Parameter    | Value                                                |
-| ------------ | ---------------------------------------------------- |
-| Network Name | Base Sepolia                                         |
-| Chain ID     | 84532                                                |
-| Currency     | ETH                                                  |
-| RPC URL      | `https://sepolia.base.org`                           |
-| Explorer     | [sepolia.basescan.org](https://sepolia.basescan.org) |
-
-### Core Contracts
-
-| Contract             | Address                                      |
-| -------------------- | -------------------------------------------- |
-| LendingIntentMatcher | `0xF351eDF229ded7E2e2b23E44c70e9964CbA91B2E` |
-| PriceOracle          | `0x71020b939b1f0988b2d93c2d930fea5b370203a5` |
-
-> ⚠️ Testnet contracts may differ from mainnet. Use for development only.
-
-***
-
 ## Adding Base to Your Wallet
 
 ### MetaMask / Rainbow / Other Wallets
@@ -129,7 +108,6 @@ Or visit [chainlist.org](https://chainlist.org/?search=base) for one-click add.
 | Network      | URL                        |
 | ------------ | -------------------------- |
 | Base Mainnet | `https://mainnet.base.org` |
-| Base Sepolia | `https://sepolia.base.org` |
 
 ### Recommended Providers
 

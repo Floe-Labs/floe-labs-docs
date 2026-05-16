@@ -206,22 +206,20 @@ The action prints the key once and stores it in-memory for the rest of the sessi
 
 ### With curl
 
-The flow uses two different credentials. Steps 1 and 2 are **management** calls authenticated by the developer's wallet signature (or, equivalently, a `floe_live_*` developer key — pick whichever fits your stack). Step 3 is an **agent runtime** call authenticated by the `floe_*` key minted in step 2. See the auth table in [Credit API → Authentication](credit-api.md#authentication) for the full breakdown.
+The flow uses two different credentials:
+
+1. A **developer key** (`floe_live_*`) for management calls — provisioning an agent and minting its runtime key. You get a developer key from the [Developer Dashboard](developer-dashboard.md) (**API Keys** page). This is the simplest path and what we recommend for backend services.
+2. An **agent key** (`floe_*`) for the runtime call — paid API requests through `/proxy/fetch`. Minted by the management call above.
 
 ```bash
-# Step 1: Provision a managed agent. The server signs setOperator on-chain
-# from the agent's Privy wallet — your local wallet only signs auth headers.
-# Auth: wallet signature (or floe_live_* developer key as Bearer).
-TIMESTAMP=$(date +%s)
-MESSAGE="Floe Credit API
-Timestamp: $TIMESTAMP"
-SIGNATURE=$(cast wallet sign "$MESSAGE" --private-key $YOUR_DEVELOPER_PRIVKEY)
+# Set FLOE_LIVE_KEY to the floe_live_* developer key you created from the
+# dashboard's API Keys page. Treat it like any other secret credential.
+export FLOE_LIVE_KEY="floe_live_…"
 
+# Step 1: Provision a managed agent. Auth: floe_live_* developer key.
 AGENT=$(curl -sS -X POST https://credit-api.floelabs.xyz/v1/developer/agents \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
-  -H "X-Wallet-Address: $YOUR_DEVELOPER_ADDRESS" \
-  -H "X-Signature: $SIGNATURE" \
-  -H "X-Timestamp: $TIMESTAMP" \
   -d '{
     "name": "my-agent",
     "borrowLimitRaw": "10000000000",
@@ -230,29 +228,43 @@ AGENT=$(curl -sS -X POST https://credit-api.floelabs.xyz/v1/developer/agents \
   }')
 AGENT_ID=$(echo "$AGENT" | jq -r .agentId)
 
-# Step 2: Mint an API key for the new agent. Re-sign auth headers — the
-# 5-minute window may have rolled over.
-TIMESTAMP=$(date +%s)
-MESSAGE="Floe Credit API
-Timestamp: $TIMESTAMP"
-SIGNATURE=$(cast wallet sign "$MESSAGE" --private-key $YOUR_DEVELOPER_PRIVKEY)
-
+# Step 2: Mint a runtime key for the agent.
 curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/keys" \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
-  -H "X-Wallet-Address: $YOUR_DEVELOPER_ADDRESS" \
-  -H "X-Signature: $SIGNATURE" \
-  -H "X-Timestamp: $TIMESTAMP" \
   -d '{ "label": "production" }'
 # → { "key": "floe_...", "id": 7, "keyPrefix": "...", ... }
 
-# Step 3: Start making paid API calls with the returned agent key.
-# Auth switches here: from now on the developer credential is no longer
-# used — runtime calls go out as Bearer floe_<agent-key>.
+# Step 3: Make paid API calls with the returned agent key.
+# Runtime calls authenticate as the agent, not the developer.
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer floe_YOUR_AGENT_KEY" \
   -H "Content-Type: application/json" \
   -d '{ "url": "https://api.example.com/data", "method": "GET" }'
 ```
+
+<details>
+<summary><strong>Alternative: wallet-signature auth (no developer key needed)</strong></summary>
+
+If you don't want to mint a developer key first, every management endpoint also accepts a wallet signature on each request. This is the path the agentkit CLIs use. It requires you to sign an EIP-191 message with your wallet's private key — for backend scripting that usually means `cast wallet sign` (Foundry) or an equivalent.
+
+```bash
+TIMESTAMP=$(date +%s)
+MESSAGE="Floe Credit API
+Timestamp: $TIMESTAMP"
+SIGNATURE=$(cast wallet sign "$MESSAGE" --private-key $YOUR_DEVELOPER_PRIVKEY)
+
+curl -sS -X POST https://credit-api.floelabs.xyz/v1/developer/agents \
+  -H "Content-Type: application/json" \
+  -H "X-Wallet-Address: $YOUR_DEVELOPER_ADDRESS" \
+  -H "X-Signature: $SIGNATURE" \
+  -H "X-Timestamp: $TIMESTAMP" \
+  -d '{ "name": "my-agent", "borrowLimitRaw": "10000000000", "maxRateBps": 1500, "expirySeconds": 7776000 }'
+```
+
+Signatures are valid for ±5 minutes, so a long-running backend has to re-sign per request. The developer-key path above is simpler unless you're already managing wallet signing.
+
+</details>
 
 ### With Python
 

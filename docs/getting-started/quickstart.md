@@ -4,130 +4,95 @@ icon: rocket
 
 # Quickstart (5 minutes)
 
-Wire the full Floe loop end-to-end: register an agent, fund the wallet, borrow against collateral, pay an x402 API, and repay. The same script runs in TypeScript or Python.
-
-> Prefer to clone and run? Use [`floe-examples/financial-os-loop`](https://github.com/Floe-Labs/floe-examples/tree/main/financial-os-loop) — it's the canonical version of this guide.
+Give your AI agent a prepaid balance, then let it pay for any x402 API. That's the whole product. No wallets to install, no keys to manage, no tokens to buy, no gas to pay.
 
 ---
 
-## 1. Get an agent runtime key
+## 1. Create an agent
 
-1. Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz)
-2. Connect your wallet
-3. Provision an **agent** and copy its runtime key — it starts with `floe_…` (note: this is **not** the same as a `floe_live_…` developer key. The `floe_live_…` key is for managing your dashboard / minting agents; the `floe_…` key is what the agent itself uses at runtime to call `/proxy/fetch` and the rest of the credit API. See [API Keys](../developers/api-keys.md) for the distinction.)
+Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once.
 
-## 2. Install the SDK
+That's it. No "connect wallet" step. We provision everything your agent needs in the background.
 
-{% tabs %}
-{% tab title="TypeScript" %}
-```bash
-npm install floe-agent @coinbase/agentkit viem
-```
-{% endtab %}
-{% tab title="Python" %}
-```bash
-pip install floe-agentkit-actions coinbase-agentkit
-```
-{% endtab %}
-{% endtabs %}
+## 2. Fund it
 
-## 3. Run the loop
+In the dashboard, click **Fund Wallet** on the agent and pay with **card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds.
+
+Suggested first amount: **$10**. That's enough to test the loop and call a few hundred x402 APIs at typical $0.001–$0.05 prices.
+
+## 3. Call any API
+
+Install the SDK and call `fetch`. If the API is x402-gated, payment happens automatically; if it's free, the request passes through. Either way, your agent's balance updates.
 
 {% tabs %}
-{% tab title="TypeScript" %}
-```typescript
-import { AgentKit, ViemWalletProvider } from "@coinbase/agentkit";
-import { floeActionProvider } from "floe-agent";
-import { createWalletClient, http } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
-import { base } from "viem/chains";
-
-const walletClient = createWalletClient({
-  account: privateKeyToAccount(process.env.PRIVATE_KEY as `0x${string}`),
-  chain: base,
-  transport: http(process.env.BASE_RPC_URL),
-});
-const walletProvider = new ViemWalletProvider(walletClient);
-
-const agentkit = await AgentKit.from({
-  walletProvider,
-  actionProviders: [floeActionProvider({ facilitatorApiKey: process.env.FLOE_AGENT_API_KEY })],
-});
-
-// 1. Borrow against on-chain collateral
-const loan = await agentkit.run("instant_borrow", {
-  borrowAmount: "5000000",      // 5 USDC
-  collateralAmount: "6000000",  // 6 USDC
-  maxInterestRateBps: "1200",
-  duration: "604800",
-});
-
-// 2. Pay any x402 API through the Floe facilitator
-await agentkit.run("x402_fetch", {
-  url: "https://api.example.com/premium",
-  method: "GET",
-});
-
-// 3. Repay — collateral auto-returns in the same tx
-await agentkit.run("repay_loan", { loanId: loan.loanId });
-
-// 4. Register a credit-utilization webhook for the next loan
-await agentkit.run("register_credit_threshold", {
-  utilizationBps: "8000",
-  webhookUrl: "https://example.com/floe-webhook",
-});
-```
-{% endtab %}
 {% tab title="Python" %}
+```bash
+pip install floe-agentkit-actions
+```
+
 ```python
-from coinbase_agentkit import AgentKit, AgentKitConfig
-from coinbase_agentkit.wallet_providers import EvmWalletProvider
-from floe_agentkit_actions import floe_action_provider
 import os
+from floe_agentkit_actions import FloeAgent
 
-wallet_provider = EvmWalletProvider.from_private_key(
-    private_key=os.environ["PRIVATE_KEY"],
-    rpc_url=os.environ["BASE_RPC_URL"],
-    network_id="base-mainnet",
-)
-provider = floe_action_provider(facilitator_api_key=os.environ["FLOE_AGENT_API_KEY"])
-agentkit = AgentKit(AgentKitConfig(
-    wallet_provider=wallet_provider,
-    action_providers=[provider],
-))
+agent = FloeAgent(api_key=os.environ["FLOE_API_KEY"])
 
-# 1. Borrow against on-chain collateral
-loan = provider.instant_borrow(wallet_provider, {
-    "borrow_amount": "5000000",
-    "collateral_amount": "6000000",
-    "max_interest_rate_bps": "1200",
-    "duration": "604800",
-})
+# Pay for an API. The price (if any) is debited from your balance.
+result = agent.fetch("https://api.example.com/premium")
+print(result.body)
+print(f"Spent ${result.cost:.4f} on this call.")
 
-# 2. Pay any x402 API through the Floe facilitator
-provider.x402_fetch(wallet_provider, {
-    "url": "https://api.example.com/premium",
-    "method": "GET",
-})
+# Check what you have left.
+print(f"Balance: ${agent.balance():.2f}")
+```
+{% endtab %}
+{% tab title="TypeScript" %}
+```bash
+npm install floe-agent
+```
 
-# 3. Repay — collateral auto-returns in the same tx
-provider.repay_loan(wallet_provider, {"loan_id": loan["loan_id"]})
+```typescript
+import { FloeAgent } from "floe-agent";
 
-# 4. Register a credit-utilization webhook for the next loan
-provider.register_credit_threshold(wallet_provider, {
-    "utilization_bps": "8000",
-    "webhook_url": "https://example.com/floe-webhook",
-})
+const agent = new FloeAgent({ apiKey: process.env.FLOE_API_KEY! });
+
+// Pay for an API. The price (if any) is debited from your balance.
+const result = await agent.fetch("https://api.example.com/premium");
+console.log(result.body);
+console.log(`Spent $${result.cost.toFixed(4)} on this call.`);
+
+// Check what you have left.
+console.log(`Balance: $${(await agent.balance()).toFixed(2)}`);
 ```
 {% endtab %}
 {% endtabs %}
 
-## 4. Don't have USDC yet?
+That's the entire happy path. No `instant_borrow`, no `marketId`, no LTV, no signing, no `viem`, no `web3.py`, no `PRIVATE_KEY`, no RPC URL, no gas token.
 
-Fund your agent's wallet with fiat directly from the [Floe dashboard](https://dev-dashboard.floelabs.xyz) — credit card, bank transfer, Apple Pay, or Google Pay via Coinbase. See [Fiat on/off-ramp](../components/onramp.md).
+## 4. Topping up automatically
+
+Production agents shouldn't sleep on a low balance. Two options:
+
+- **Webhook**: in the dashboard, set a low-balance threshold (e.g., "alert when below $5"). Floe POSTs to your webhook URL so you can top up programmatically or page a human.
+- **Auto-recharge**: connect a card and set "auto-recharge $50 when balance falls below $10". Floe handles the rest.
+
+Both are in the dashboard under your agent's settings.
 
 ## 5. What's next
 
-- Pick a framework: [AgentKit](../frameworks/agentkit.md), [LangChain](../frameworks/langchain.md), [CrewAI](../frameworks/crewai.md), [Claude/MCP](../frameworks/claude-mcp.md), [HTTP](../frameworks/http.md)
-- Explore the components in depth: [Wallet](../components/wallet.md), [Secured credit](../components/secured-credit.md), [x402](../components/x402.md)
-- Reference: [Credit REST API](../developers/credit-api.md), [MCP Server](../developers/mcp-server.md), [Webhooks](../developers/webhooks.md)
+- [How my agent gets paid](../agents/credit-for-agents.md) — the same mechanics in reverse: receive x402 payments from other agents
+- [Frameworks](../frameworks/agentkit.md) — drop FloeAgent into LangChain, CrewAI, Claude Desktop / MCP, OpenAI Agents SDK
+- [Advanced: how Floe works under the hood](core-concepts.md) — the crypto plumbing (working-capital loans, USDC settlement, x402 facilitator) you didn't have to learn to ship
+- [Self-custody](../developers/self-custody.md) — for teams that need to hold their own signing keys
+
+---
+
+## A note on what's happening behind the curtain
+
+You didn't need to know any of this to use the product, but if you're curious:
+
+- The dollars you topped up are USDC on Base (a low-fee Ethereum L2). We bridge the on-ramp for you.
+- Each agent has its own custodial wallet that we operate on your behalf. The on-chain identity, signing, and gas are all server-side.
+- Your card-funded developer wallet is non-custodial — you own it and can export the keys if you ever want to, but you don't have to. The agent's wallet is custodial because agents are software, not people, and the protocol's permissioning model (operator delegations, borrow limits, max rates) constrains what we can do with it on your behalf.
+- API pricing is set by the API provider per the [x402 spec](https://github.com/x402-foundation/x402). You see the resolved dollar amount; the bytes-on-the-wire amount lives in raw 6-decimal USDC integer strings.
+
+If you never read the paragraph above, your agent still works.
