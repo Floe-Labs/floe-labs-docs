@@ -4,23 +4,7 @@ icon: chart-network
 
 # Contract Addresses
 
-All Floe smart contracts deployed on supported networks.
-
-## Which network should I use?
-
-If you are building an agent, you almost certainly want **Base Mainnet**. A few production-only conveniences — the fiat on-ramp and the public x402 merchant directory — are mainnet-only, so for any agent that needs to pay real x402 APIs against real revenue, mainnet is the only option.
-
-**Base Sepolia** is a development sandbox: the same registration, managed-wallet, and protocol-contract flows run there against testnet USDC, so you can exercise the SDK and the CLI without spending money. What you give up on Sepolia is the fiat on-ramp (you need to use a public Sepolia USDC faucet instead) and the public merchant directory (so any 402 endpoint you call has to be one you stand up yourself).
-
-| You are… | Use | Why |
-| --- | --- | --- |
-| Building an agent that will call real public x402 APIs | **Base Mainnet** | Real USDC, real merchants, fiat on-ramp, full managed-wallet experience. This is the default for the CLI and dashboard. |
-| Exercising the SDK / registration / managed-wallet flows without spending money | Base Sepolia | Free testnet USDC, testnet-deployed protocol contracts, same `floe-agent` CLI surface. No fiat funding and no public merchant directory. |
-| Building against the protocol contracts directly (solver bots, liquidation bots, contract integrations) | Either | Both networks expose the full contract surface. Sepolia is the safer place to iterate. |
-
-The `floe-agent register` CLI and the dashboard both target **Base Mainnet** by default. The Sepolia path is currently exposed only through the lower-level SDK (`FloeActionProvider({ matcherAddress: BASE_SEPOLIA_MATCHER, … })` / `network_id="base-sepolia"` on a self-custody wallet provider) — there isn't yet a `--network` flag on the CLI. If you are not sure which one you want, you want mainnet.
-
-> Treat Sepolia as a code path you only reach by deliberately configuring it. A mainnet agent will not be able to call public Sepolia merchants, and vice versa.
+Floe runs on **Base Mainnet**. That's the only supported network — there is no testnet, sandbox, or staging environment. Every reference to a chain or address in this repo means Base Mainnet.
 
 ## Base Mainnet (Production)
 
@@ -101,27 +85,6 @@ const BASE_MAINNET_CONFIG = {
 
 ***
 
-## Base Sepolia (Testnet)
-
-| Parameter    | Value                                                |
-| ------------ | ---------------------------------------------------- |
-| Network Name | Base Sepolia                                         |
-| Chain ID     | 84532                                                |
-| Currency     | ETH                                                  |
-| RPC URL      | `https://sepolia.base.org`                           |
-| Explorer     | [sepolia.basescan.org](https://sepolia.basescan.org) |
-
-### Core Contracts
-
-| Contract             | Address                                      |
-| -------------------- | -------------------------------------------- |
-| LendingIntentMatcher | `0xF351eDF229ded7E2e2b23E44c70e9964CbA91B2E` |
-| PriceOracle          | `0x71020b939b1f0988b2d93c2d930fea5b370203a5` |
-
-> ⚠️ Testnet contracts may differ from mainnet. Use for development only.
-
-***
-
 ## Adding Base to Your Wallet
 
 ### MetaMask / Rainbow / Other Wallets
@@ -145,7 +108,6 @@ Or visit [chainlist.org](https://chainlist.org/?search=base) for one-click add.
 | Network      | URL                        |
 | ------------ | -------------------------- |
 | Base Mainnet | `https://mainnet.base.org` |
-| Base Sepolia | `https://sepolia.base.org` |
 
 ### Recommended Providers
 

@@ -242,18 +242,6 @@ Oracle prices cannot be manipulated within a single transaction:
 * Pyth requires signed price updates
 * No on-chain DEX dependency
 
-## Testnet Considerations
-
-On testnet (Base Sepolia):
-
-* Pyth prices become stale after \~3 hours
-* Manual price updates may be required:
-
-```bash
-# Update Pyth prices on testnet
-PRIVATE_KEY="..." pnpm tsx scripts/update-pyth-prices-v2.ts
-```
-
 ## Next Steps
 
 * [Security](security.md)
