@@ -64,7 +64,7 @@ if resp.status_code == 402:
     print(f"   Insufficient balance!")
     print(f"   Available: {int(err['available']) / 1e6:.2f} USDC")
     print(f"   Required:  {int(err['required']) / 1e6:.4f} USDC")
-    print(f"   Top up at https://dev-dashboard.floelabs.xyz (card / Apple Pay / bank).")
+    print("   Top up at https://dev-dashboard.floelabs.xyz (card / Apple Pay / bank).")
     sys.exit(1)
 
 if resp.status_code != 200:

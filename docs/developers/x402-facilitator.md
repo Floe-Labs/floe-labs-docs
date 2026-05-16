@@ -208,10 +208,14 @@ The action prints the key once and stores it in-memory for the rest of the sessi
 
 The flow uses two different credentials:
 
-1. A **developer key** (`floe_live_*`) for management calls — provisioning an agent and minting its runtime key. You get a developer key from the [dashboard](https://dev-dashboard.floelabs.xyz) (**API Keys** page). This is the simplest path and what we recommend for backend services.
+1. A **developer key** (`floe_live_*`) for management calls — provisioning an agent and minting its runtime key. You get a developer key from the [Developer Dashboard](developer-dashboard.md) (**API Keys** page). This is the simplest path and what we recommend for backend services.
 2. An **agent key** (`floe_*`) for the runtime call — paid API requests through `/proxy/fetch`. Minted by the management call above.
 
 ```bash
+# Set FLOE_LIVE_KEY to the floe_live_* developer key you created from the
+# dashboard's API Keys page. Treat it like any other secret credential.
+export FLOE_LIVE_KEY="floe_live_…"
+
 # Step 1: Provision a managed agent. Auth: floe_live_* developer key.
 AGENT=$(curl -sS -X POST https://credit-api.floelabs.xyz/v1/developer/agents \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \

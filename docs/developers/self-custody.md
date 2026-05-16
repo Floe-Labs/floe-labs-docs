@@ -52,7 +52,9 @@ const walletProvider = new ViemWalletProvider(walletClient);
 
 const agentkit = await AgentKit.from({
   walletProvider,
-  actionProviders: [floeActionProvider({ apiKey: process.env.FLOE_AGENT_API_KEY })],
+  actionProviders: [
+    floeActionProvider({ facilitatorApiKey: process.env.FLOE_AGENT_API_KEY }),
+  ],
 });
 ```
 
@@ -71,7 +73,7 @@ wallet_provider = EvmWalletProvider.from_private_key(
     rpc_url=os.environ.get("BASE_RPC_URL", "https://mainnet.base.org"),
     network_id="base-mainnet",
 )
-provider = floe_action_provider(api_key=os.environ["FLOE_AGENT_API_KEY"])
+provider = floe_action_provider(facilitator_api_key=os.environ["FLOE_AGENT_API_KEY"])
 agentkit = AgentKit(AgentKitConfig(
     wallet_provider=wallet_provider,
     action_providers=[provider],
@@ -88,7 +90,7 @@ A self-custody agent pays its own gas in ETH on Base. Keep a few cents of ETH in
 
 ## Migration paths
 
-- **Managed → self-custody**: close the managed agent (`floe-agent close --name <name>`) and re-register from your own wallet using the AgentKit action `grant_credit_delegation`. USDC is returned to your developer wallet before close.
+- **Managed → self-custody**: close the managed agent from the dashboard's **Close agent** button (or `POST /v1/developer/agents/:agentId/close` — see [Credit API](credit-api.md#post-v1-developer-agents-agentid-close)), then re-register from your own wallet using the AgentKit action `grant_credit_delegation`. USDC is returned to your developer wallet before close.
 - **Self-custody → managed**: revoke the operator permission from your wallet, then run `floe-agent register --name <name>`. The new managed Privy wallet starts empty — fund it via the dashboard.
 
 ---

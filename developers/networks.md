@@ -8,12 +8,15 @@ All Floe smart contracts deployed on supported networks.
 
 ## Which network should I use?
 
-If you are building an agent, you almost certainly want **Base Mainnet**. Floe's managed-wallet flow, fiat on-ramp, and full x402 merchant directory are mainnet-only — Base Sepolia is a development sandbox without these conveniences.
+If you are building an agent, you almost certainly want **Base Mainnet**. A few production-only conveniences — the fiat on-ramp and the public x402 merchant directory — are mainnet-only, so for any agent that needs to pay real x402 APIs against real revenue, mainnet is the only option.
+
+**Base Sepolia** is a development sandbox: the same registration, managed-wallet, and protocol-contract flows run there against testnet USDC, so you can exercise the SDK and the CLI without spending money. What you give up on Sepolia is the fiat on-ramp (you need to use a public Sepolia USDC faucet instead) and the public merchant directory (so any 402 endpoint you call has to be one you stand up yourself).
 
 | You are… | Use | Why |
 | --- | --- | --- |
-| Building an agent that will call real x402 APIs | **Base Mainnet** | Real USDC, real merchants, fiat on-ramp, managed wallets. This is the default for the CLI and dashboard. |
-| Smoke-testing protocol mechanics without spending money | Base Sepolia | Free testnet USDC, but no x402 merchant directory and no fiat funding. Only useful if you are building against the protocol contracts directly. |
+| Building an agent that will call real public x402 APIs | **Base Mainnet** | Real USDC, real merchants, fiat on-ramp, full managed-wallet experience. This is the default for the CLI and dashboard. |
+| Exercising the SDK / registration / managed-wallet flows without spending money | Base Sepolia | Free testnet USDC, testnet-deployed protocol contracts, same `floe-agent` CLI surface. No fiat funding and no public merchant directory. |
+| Building against the protocol contracts directly (solver bots, liquidation bots, contract integrations) | Either | Both networks expose the full contract surface. Sepolia is the safer place to iterate. |
 
 The `floe-agent register` CLI and the dashboard both default to **Base Mainnet**. You have to explicitly pass `--network base-sepolia` to opt in to the testnet. If you are not sure which one you want, you want mainnet.
 
