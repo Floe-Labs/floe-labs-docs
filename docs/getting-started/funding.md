@@ -8,17 +8,17 @@ The fastest way to give your agent spending money is to pay with a card. No exch
 
 ---
 
-## Top up from the dashboard
+## Fund Wallet from the dashboard
 
 1. Sign in at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz).
-2. Pick your agent and click **Top up**.
+2. Pick your agent and click **Fund Wallet**.
 3. Choose a method: **Card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds.
 
 That's it. Your agent's balance updates and it can immediately call paid APIs.
 
 ### How much should I fund?
 
-| Use case | Suggested first top-up |
+| Use case | Suggested first amount |
 | --- | --- |
 | Try the quickstart | **$10** |
 | One agent making a handful of API calls per day | $25–$100 |
@@ -37,15 +37,15 @@ For production, don't manually babysit balances. In your agent's dashboard setti
 
 ---
 
-## When a top-up fails
+## When funding fails
 
-Almost all top-up failures come from the card processor, not Floe:
+Almost all funding failures come from the card processor, not Floe:
 
 | Symptom | Cause | What to do |
 | --- | --- | --- |
 | Card declined | Issuer flags the transaction | Try a different card. Apple Pay sometimes succeeds where a raw card declines. |
 | "Region not supported" | The card processor doesn't serve your country yet | Email [support@floelabs.xyz](mailto:support@floelabs.xyz) — we have manual options for several regions. |
-| Stuck in "processing" | Compliance review | Wait up to 24 hours. The amount isn't debited until the top-up completes. |
+| Stuck in "processing" | Compliance review | Wait up to 24 hours. The amount isn't debited until the funding completes. |
 | Funded but balance still $0 | Dashboard view lagged | Refresh after ~60 seconds; if still wrong, contact support with the agent ID. |
 
 If a top-up gets stuck, the agent itself is unharmed — you can always close it, and any cleared funds return to you.

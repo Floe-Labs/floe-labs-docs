@@ -53,7 +53,7 @@ const walletProvider = new ViemWalletProvider(walletClient);
 const agentkit = await AgentKit.from({
   walletProvider,
   actionProviders: [
-    floeActionProvider({ facilitatorApiKey: process.env.FLOE_AGENT_API_KEY }),
+    floeActionProvider({ facilitatorApiKey: process.env.FLOE_API_KEY }),
   ],
 });
 ```
@@ -73,7 +73,7 @@ wallet_provider = EvmWalletProvider.from_private_key(
     rpc_url=os.environ.get("BASE_RPC_URL", "https://mainnet.base.org"),
     network_id="base-mainnet",
 )
-provider = floe_action_provider(facilitator_api_key=os.environ["FLOE_AGENT_API_KEY"])
+provider = floe_action_provider(facilitator_api_key=os.environ["FLOE_API_KEY"])
 agentkit = AgentKit(AgentKitConfig(
     wallet_provider=wallet_provider,
     action_providers=[provider],

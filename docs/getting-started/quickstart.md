@@ -14,11 +14,11 @@ Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in 
 
 That's it. No "connect wallet" step. We provision everything your agent needs in the background.
 
-## 2. Top it up
+## 2. Fund it
 
-In the dashboard, click **Top up** on the agent and pay with **card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds.
+In the dashboard, click **Fund Wallet** on the agent and pay with **card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds.
 
-Suggested first top-up: **$10**. That's enough to test the loop and call a few hundred x402 APIs at typical $0.001–$0.05 prices.
+Suggested first amount: **$10**. That's enough to test the loop and call a few hundred x402 APIs at typical $0.001–$0.05 prices.
 
 ## 3. Call any API
 
@@ -34,7 +34,7 @@ pip install floe-agentkit-actions
 import os
 from floe_agentkit_actions import FloeAgent
 
-agent = FloeAgent(api_key=os.environ["FLOE_AGENT_API_KEY"])
+agent = FloeAgent(api_key=os.environ["FLOE_API_KEY"])
 
 # Pay for an API. The price (if any) is debited from your balance.
 result = agent.fetch("https://api.example.com/premium")
@@ -53,7 +53,7 @@ npm install floe-agent
 ```typescript
 import { FloeAgent } from "floe-agent";
 
-const agent = new FloeAgent({ apiKey: process.env.FLOE_AGENT_API_KEY! });
+const agent = new FloeAgent({ apiKey: process.env.FLOE_API_KEY! });
 
 // Pay for an API. The price (if any) is debited from your balance.
 const result = await agent.fetch("https://api.example.com/premium");

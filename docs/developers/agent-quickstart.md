@@ -124,7 +124,7 @@ The CLI signs a wallet auth message (no on-chain tx), calls the same `POST /v1/d
 
 ### 4. Fund the agent wallet
 
-The recommended path is the dashboard's **Fund** button — pay with card, Apple Pay, Google Pay, or bank transfer. USDC lands in the agent's wallet on Base within seconds. No ETH, no gas tokens, no bridge.
+The recommended path is the dashboard's **Fund Wallet** button — pay with card, Apple Pay, Google Pay, or bank transfer. USDC lands in the agent's wallet on Base within seconds. No ETH, no gas tokens, no bridge.
 
 Advanced (only if you already hold USDC on Base): you can also transfer USDC directly from your own wallet to the agent's deposit address shown in the dashboard. Make sure you're on **Base** — sending from any other chain is unrecoverable. Full details: [Funding the agent](../getting-started/funding.md).
 

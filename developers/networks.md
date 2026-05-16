@@ -18,9 +18,9 @@ If you are building an agent, you almost certainly want **Base Mainnet**. A few 
 | Exercising the SDK / registration / managed-wallet flows without spending money | Base Sepolia | Free testnet USDC, testnet-deployed protocol contracts, same `floe-agent` CLI surface. No fiat funding and no public merchant directory. |
 | Building against the protocol contracts directly (solver bots, liquidation bots, contract integrations) | Either | Both networks expose the full contract surface. Sepolia is the safer place to iterate. |
 
-The `floe-agent register` CLI and the dashboard both default to **Base Mainnet**. You have to explicitly pass `--network base-sepolia` to opt in to the testnet. If you are not sure which one you want, you want mainnet.
+The `floe-agent register` CLI and the dashboard both target **Base Mainnet** by default. The Sepolia path is currently exposed only through the lower-level SDK (`FloeActionProvider({ matcherAddress: BASE_SEPOLIA_MATCHER, … })` / `network_id="base-sepolia"` on a self-custody wallet provider) — there isn't yet a `--network` flag on the CLI. If you are not sure which one you want, you want mainnet.
 
-> Treat Sepolia as a code path you only reach by typing its name. Funding an agent there will not let it call the public x402 merchants you read about in the docs.
+> Treat Sepolia as a code path you only reach by deliberately configuring it. A mainnet agent will not be able to call public Sepolia merchants, and vice versa.
 
 ## Base Mainnet (Production)
 
