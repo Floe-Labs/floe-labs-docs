@@ -2,9 +2,13 @@
 icon: hand-wave
 ---
 
-# Floe — The Financial OS for AI Agents
+# Floe — Credit and payments for AI agent developers
 
-**Wallet, fiat on/off-ramp, working capital, x402 payments, and portable credit.** One SDK. Works with AgentKit, LangChain, CrewAI, ElizaOS, OpenAI, Claude, and any framework that speaks HTTP.
+**No crypto required.** x402 credit lines, fiat funding, programmable spend controls. Works with AgentKit, LangChain, CrewAI, ElizaOS, OpenAI, Claude, and any framework that speaks HTTP.
+
+1. **Sign up with email + a funding source.** Card, Apple Pay, Google Pay, or bank transfer. Floe provisions your wallets in the background — no MetaMask, no seed phrase, no gas token.
+2. **Floe issues an x402 credit line to your agent's wallet.** Set spending controls — per-call cap, daily limit, allowed destinations.
+3. **Your agent pays vendors per-call; you get real-time visibility.** Every call is a typed receipt: target URL, amount, status, time. Reconcile, alert, or revoke from the dashboard.
 
 ---
 
