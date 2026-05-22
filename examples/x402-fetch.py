@@ -98,10 +98,12 @@ if resp.status_code == 502:
                 time.sleep(2)
                 continue
             if not reservation_resp.ok:
-                raise RuntimeError(
-                    f"reservation lookup failed ({reservation_resp.status_code}): "
-                    f"{reservation_resp.text[:200]}"
+                print(
+                    f"   Reservation lookup failed ({reservation_resp.status_code}): "
+                    f"{reservation_resp.text[:200]}",
+                    file=sys.stderr,
                 )
+                sys.exit(1)
             r = reservation_resp.json()
             if r.get("terminal"):
                 tx = f" (tx {r['txHash']})" if r.get("txHash") else ""
