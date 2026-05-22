@@ -244,4 +244,3 @@ Lets agents reason about their own credit before committing capital. Answers the
 * [Contract Addresses](../../developers/networks.md)
 * [Agent Quickstart](developers/agent-quickstart.md)
 * [GitHub](https://github.com/Floe-Labs)
-* [Discord](https://discord.gg/floelabs)

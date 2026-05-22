@@ -1,7 +1,7 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "entryCount": 76,
+  "entryCount": 74,
   "categories": [
     "web-search",
     "social-news",
@@ -1233,29 +1233,6 @@
       "status": "verified"
     },
     {
-      "id": "otto-ai",
-      "name": "Otto AI Agent Swarm",
-      "provider": "Otto AI",
-      "homepage": "https://otto.ai",
-      "description": "Crypto news and alpha signals from agent swarm.",
-      "resource": "https://api.otto.ai/v1/alpha",
-      "method": "GET",
-      "category": "social-news",
-      "tags": [
-        "crypto",
-        "news",
-        "alpha",
-        "signals"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
       "id": "pinata",
       "name": "Pinata",
       "provider": "Pinata",
@@ -1386,28 +1363,6 @@
       "asset": "USDC",
       "priceUsd": "0.005",
       "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "snack-money",
-      "name": "Snack Money",
-      "provider": "Snack Money",
-      "homepage": "https://snackmoney.xyz",
-      "description": "Micropayments on X, Farcaster, and Base apps.",
-      "resource": "https://api.snackmoney.xyz/v1/tip",
-      "method": "POST",
-      "category": "social-news",
-      "tags": [
-        "micropayments",
-        "tipping",
-        "social"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.001",
-      "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
     },

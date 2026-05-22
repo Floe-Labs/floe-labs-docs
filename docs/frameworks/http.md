@@ -35,7 +35,7 @@ The response includes one or more **unsigned transactions** — sign locally and
 Proxy any URL through the Floe facilitator:
 
 ```bash
-curl -X POST https://x402.floelabs.xyz/proxy/fetch \
+curl -X POST https://credit-api.floelabs.xyz/proxy/fetch \
   -H "Authorization: Bearer floe_live_..." \
   -H "Content-Type: application/json" \
   -d '{

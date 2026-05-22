@@ -21,7 +21,7 @@ if not API_KEY:
     print("Set FLOE_API_KEY=floe_... environment variable")
     sys.exit(1)
 
-BASE = "https://x402.floelabs.xyz"
+BASE = "https://credit-api.floelabs.xyz"
 TARGET_URL = os.environ.get("TARGET_URL", "https://some-x402-api.com/data")
 
 headers = {

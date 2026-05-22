@@ -4,12 +4,12 @@ icon: compass
 
 # x402 API Directory
 
-**76 x402 APIs** you can call with Floe credit. Every endpoint listed here accepts USDC on Base and works with `x402_fetch` or `/v1/proxy/fetch`.
+**74 x402 APIs** you can call with Floe credit. Every endpoint listed here accepts USDC on Base and works with `x402_fetch` or `/v1/proxy/fetch`.
 
 | Category | APIs | Highlights |
 |----------|------|------------|
 | [Web Search & Scraping](web-search.md) | 9 | Apify, Bloomfilter, Exa... |
-| [Social & News](social-news.md) | 5 | Gloria AI, Neynar, Otto AI... |
+| [Social & News](social-news.md) | 3 | Gloria AI, Neynar, Postera... |
 | [Crypto Data & Analytics](crypto-data.md) | 14 | AdEx, Alchemy, CoinGecko... |
 | [Risk & Security](risk-security.md) | 6 | Augur, BlackSwan, Kevros... |
 | [LLM Inference](llm-inference.md) | 8 | AiMo, AskClaude, BlockRun.AI... |
