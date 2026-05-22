@@ -348,7 +348,9 @@ For agent registration endpoints (`POST /v1/developer/agents`, `POST /v1/develop
 
 #### GET /v1/proxy/check
 
-Check if a URL requires x402 payment (unauthenticated probe).
+Check if a URL requires x402 payment (unauthenticated probe). Sends a live GET request to the target — returns cost info only if the server responds with HTTP 402 and a valid `PAYMENT-REQUIRED` header.
+
+**Limitation:** Some x402 APIs only return 402 on POST requests or behind authentication. For these, the probe will return `x402: false` even though the endpoint does charge. The `estimate_x402_cost` AgentKit action has the same behavior — it probes live, there is no static pricing catalog.
 
 ```bash
 curl "https://credit-api.floelabs.xyz/v1/proxy/check?url=https://api.example.com/data"
