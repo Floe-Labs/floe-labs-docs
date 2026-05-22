@@ -50,8 +50,6 @@
 * [x402 API Directory](docs/x402-directory/README.md)
   * [Web Search & Scraping](docs/x402-directory/web-search.md)
   * [Social & News](docs/x402-directory/social-news.md)
-  * [Crypto Data & Analytics](docs/x402-directory/crypto-data.md)
-  * [Risk & Security](docs/x402-directory/risk-security.md)
   * [LLM Inference](docs/x402-directory/llm-inference.md)
   * [Media Generation](docs/x402-directory/media-generation.md)
   * [Browser & Compute](docs/x402-directory/browser-compute.md)

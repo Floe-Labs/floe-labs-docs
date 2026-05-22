@@ -4,34 +4,16 @@ icon: server
 
 # Infrastructure & Gateways
 
-RPC, CDN, and infrastructure APIs. All payable with Floe credit on Base.
+Cloud infrastructure and gateway APIs. All payable with Floe credit on Base.
 
 | API | Provider | Price | Method | Status |
 |-----|----------|-------|--------|--------|
-| Alchemy | Alchemy | $0.001 | POST | Verified |
 | AWS x402 Reference | AWS | $0.01 | GET | Preview |
 | Cloudflare Pay-per-Crawl | Cloudflare | $0.01 | POST | Preview |
 | Kurier | Horizen Labs | $0.10 | POST | Verified |
 | SocioLogic | SocioLogic | $0.001 | GET | Verified |
 
 ---
-
-## Alchemy
-
-**Provider:** [Alchemy](https://www.alchemy.com)
-**Endpoint:** `POST https://api.alchemy.com/v1/x402/rpc`
-**Price:** $0.001 USDC per call · Base mainnet · x402 v2
-**Floe compatible:** Yes
-
-> RPC and web3 APIs via x402.
-
-```bash
-# Call through Floe
-curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
-  -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://api.alchemy.com/v1/x402/rpc", "method": "POST"}'
-```
 
 ## AWS x402 Reference
 

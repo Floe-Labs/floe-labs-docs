@@ -10,7 +10,6 @@ Gift cards, merchant payments, fiat rails. All payable with Floe credit on Base.
 |-----|----------|-------|--------|--------|
 | AEON | AEON | $0.10 | POST | Verified |
 | Bitrefill | Bitrefill | $1.00 | POST | Verified |
-| Grove | Grove | $0.001 | POST | Verified |
 | Laso Finance | Laso | $0.50 | POST | Verified |
 | Stripe Machine Payments | Stripe | $0.10 | POST | Preview |
 | tip.md | tip.md | $0.01 | POST | Verified |
@@ -49,23 +48,6 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://api.bitrefill.com/v1/x402/purchase", "method": "POST"}'
-```
-
-## Grove
-
-**Provider:** [Grove](https://grove.city)
-**Endpoint:** `POST https://api.grove.city/v1/relay`
-**Price:** $0.001 USDC per call · Base mainnet · x402 v2
-**Floe compatible:** Yes
-
-> Decentralized RPC gateway with x402 billing.
-
-```bash
-# Call through Floe
-curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
-  -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://api.grove.city/v1/relay", "method": "POST"}'
 ```
 
 ## Laso Finance

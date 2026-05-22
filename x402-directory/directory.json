@@ -1,12 +1,10 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "entryCount": 74,
+  "entryCount": 49,
   "categories": [
     "web-search",
     "social-news",
-    "crypto-data",
-    "risk-security",
     "llm-inference",
     "media-generation",
     "browser-compute",
@@ -22,7 +20,7 @@
       "name": "402104",
       "provider": "402104",
       "homepage": "https://402104.xyz",
-      "description": "Expirable paywalled links to private ANS-104 DataItems on Arweave.",
+      "description": "Expirable paywalled links to private files.",
       "resource": "https://api.402104.xyz/v1/store",
       "method": "POST",
       "category": "storage",
@@ -36,28 +34,6 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "adex-aura",
-      "name": "AdEx AURA",
-      "provider": "AdEx",
-      "homepage": "https://adex.network",
-      "description": "Portfolio, DeFi positions, and yield strategies.",
-      "resource": "https://api.adex.network/v1/aura",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "portfolio",
-        "defi",
-        "yield"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -124,50 +100,6 @@
       "asset": "USDC",
       "priceUsd": "0.005",
       "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "alchemy",
-      "name": "Alchemy",
-      "provider": "Alchemy",
-      "homepage": "https://www.alchemy.com",
-      "description": "RPC and web3 APIs via x402.",
-      "resource": "https://api.alchemy.com/v1/x402/rpc",
-      "method": "POST",
-      "category": "infra-gateway",
-      "tags": [
-        "rpc",
-        "web3",
-        "infrastructure"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.001",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "alchemy-rpc",
-      "name": "Alchemy RPC",
-      "provider": "Alchemy",
-      "homepage": "https://www.alchemy.com",
-      "description": "Enhanced RPC and web3 APIs with x402 billing.",
-      "resource": "https://api.alchemy.com/v2/x402",
-      "method": "POST",
-      "category": "crypto-data",
-      "tags": [
-        "rpc",
-        "web3",
-        "enhanced"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.001",
-      "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -239,28 +171,6 @@
       "status": "verified"
     },
     {
-      "id": "augur",
-      "name": "Augur",
-      "provider": "Augur",
-      "homepage": "https://augur.net",
-      "description": "Base contract admission control.",
-      "resource": "https://api.augur.net/v1/verify",
-      "method": "POST",
-      "category": "risk-security",
-      "tags": [
-        "verification",
-        "admission",
-        "contracts"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.10",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
       "id": "aws-x402",
       "name": "AWS x402 Reference",
       "provider": "AWS",
@@ -302,28 +212,6 @@
       "asset": "USDC",
       "priceUsd": "1.00",
       "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "blackswan",
-      "name": "BlackSwan",
-      "provider": "BlackSwan",
-      "homepage": "https://blackswan.ai",
-      "description": "Black swan event detection and risk alerts.",
-      "resource": "https://api.blackswan.ai/v1/alerts",
-      "method": "GET",
-      "category": "risk-security",
-      "tags": [
-        "risk",
-        "alerts",
-        "black-swan"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.01",
-      "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -417,50 +305,6 @@
       "status": "preview"
     },
     {
-      "id": "coingecko",
-      "name": "CoinGecko",
-      "provider": "CoinGecko",
-      "homepage": "https://www.coingecko.com",
-      "description": "Crypto price and market data via x402.",
-      "resource": "https://api.coingecko.com/api/v3/x402/coins",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "prices",
-        "markets",
-        "tokens"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.001",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "dapplooker",
-      "name": "DappLooker AI",
-      "provider": "DappLooker",
-      "homepage": "https://dapplooker.com",
-      "description": "Unified on-chain and market intelligence.",
-      "resource": "https://api.dapplooker.com/v1/x402/query",
-      "method": "POST",
-      "category": "crypto-data",
-      "tags": [
-        "analytics",
-        "queries",
-        "dashboards"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
       "id": "daydreams-router",
       "name": "Daydreams Router",
       "provider": "Daydreams",
@@ -479,29 +323,6 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "diamondclaws",
-      "name": "DiamondClaws",
-      "provider": "DiamondClaws",
-      "homepage": "https://diamondclaws.xyz",
-      "description": "DeFi yield and protocol risk across 17K pools, 7K protocols.",
-      "resource": "https://api.diamondclaws.xyz/v1/yields",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "yield",
-        "defi",
-        "risk",
-        "protocols"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.002",
-      "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -546,28 +367,6 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "einstein-ai",
-      "name": "Einstein AI",
-      "provider": "Einstein AI",
-      "homepage": "https://einstein.ai",
-      "description": "Whale tracking, MEV, and smart-money signals.",
-      "resource": "https://api.einstein.ai/v1/whales",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "whales",
-        "mev",
-        "smart-money"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.01",
-      "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -726,72 +525,6 @@
       "status": "verified"
     },
     {
-      "id": "grove",
-      "name": "Grove",
-      "provider": "Grove",
-      "homepage": "https://grove.city",
-      "description": "Decentralized RPC gateway with x402 billing.",
-      "resource": "https://api.grove.city/v1/relay",
-      "method": "POST",
-      "category": "payments-commerce",
-      "tags": [
-        "rpc",
-        "gateway",
-        "decentralized"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.001",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "heurist-mesh",
-      "name": "Heurist Mesh",
-      "provider": "Heurist",
-      "homepage": "https://heurist.ai",
-      "description": "Composable crypto skills with MCP + x402.",
-      "resource": "https://api.heurist.ai/v1/mesh",
-      "method": "POST",
-      "category": "agent-tooling",
-      "tags": [
-        "mcp",
-        "skills",
-        "composable"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.01",
-      "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "heurist-research",
-      "name": "Heurist Deep Research",
-      "provider": "Heurist",
-      "homepage": "https://heurist.ai",
-      "description": "AI research platform for crypto and DeFi analysis.",
-      "resource": "https://api.heurist.ai/v1/research",
-      "method": "POST",
-      "category": "crypto-data",
-      "tags": [
-        "research",
-        "ai",
-        "defi"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.05",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
       "id": "hyperbrowser",
       "name": "Hyperbrowser",
       "provider": "Hyperbrowser",
@@ -826,50 +559,6 @@
         "image",
         "generation",
         "ai"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.05",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "invybot",
-      "name": "invy.bot",
-      "provider": "invy.bot",
-      "homepage": "https://invy.bot",
-      "description": "Wallet token holdings across Ethereum and Solana.",
-      "resource": "https://api.invy.bot/v1/holdings",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "wallet",
-        "holdings",
-        "multichain"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.002",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "kevros",
-      "name": "Kevros",
-      "provider": "Kevros",
-      "homepage": "https://kevros.xyz",
-      "description": "Smart contract vulnerability scanning.",
-      "resource": "https://api.kevros.xyz/v1/scan",
-      "method": "POST",
-      "category": "risk-security",
-      "tags": [
-        "contracts",
-        "vulnerability",
-        "audit"
       ],
       "x402Version": 2,
       "network": "eip155:8453",
@@ -1013,28 +702,6 @@
       "status": "verified"
     },
     {
-      "id": "messari",
-      "name": "Messari",
-      "provider": "Messari",
-      "homepage": "https://messari.io",
-      "description": "Crypto intelligence APIs — research, metrics, profiles.",
-      "resource": "https://api.messari.io/x402/assets",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "research",
-        "metrics",
-        "intelligence"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
       "id": "minifetch",
       "name": "Minifetch",
       "provider": "Minifetch",
@@ -1052,50 +719,6 @@
       "network": "eip155:8453",
       "asset": "USDC",
       "priceUsd": "0.001",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "mycelia-signal",
-      "name": "Mycelia Signal",
-      "provider": "Mycelia",
-      "homepage": "https://mycelia.xyz",
-      "description": "Ed25519-signed price oracle — 7 feeds incl BTC, ETH, SOL.",
-      "resource": "https://api.mycelia.xyz/v1/price",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "oracle",
-        "prices",
-        "signed"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.001",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "nansen",
-      "name": "Nansen",
-      "provider": "Nansen",
-      "homepage": "https://www.nansen.ai",
-      "description": "On-chain intelligence and wallet analytics.",
-      "resource": "https://api.nansen.ai/v1/x402/analytics",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "analytics",
-        "wallets",
-        "onchain"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.01",
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
@@ -1167,28 +790,6 @@
       "status": "verified"
     },
     {
-      "id": "omatrust",
-      "name": "OMATrust",
-      "provider": "OMATrust",
-      "homepage": "https://omatrust.xyz",
-      "description": "On-chain reputation and trust scoring.",
-      "resource": "https://api.omatrust.xyz/v1/trust",
-      "method": "GET",
-      "category": "identity-reputation",
-      "tags": [
-        "trust",
-        "reputation",
-        "onchain"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
       "id": "oobe",
       "name": "OOBE",
       "provider": "OOBE",
@@ -1211,33 +812,11 @@
       "status": "verified"
     },
     {
-      "id": "ordiscan",
-      "name": "Ordiscan",
-      "provider": "Ordiscan",
-      "homepage": "https://ordiscan.com",
-      "description": "Bitcoin Ordinals API and inscriptions, no API key.",
-      "resource": "https://api.ordiscan.com/v1/inscriptions",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "bitcoin",
-        "ordinals",
-        "inscriptions"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.001",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
       "id": "pinata",
       "name": "Pinata",
       "provider": "Pinata",
       "homepage": "https://pinata.cloud",
-      "description": "IPFS pin and retrieve, account-free. Dynamic pricing.",
+      "description": "File pinning and retrieval, account-free. Dynamic pricing.",
       "resource": "https://402.pinata.cloud/v1/pin",
       "method": "POST",
       "category": "storage",
@@ -1277,28 +856,6 @@
       "status": "verified"
     },
     {
-      "id": "quantumshield",
-      "name": "QuantumShield",
-      "provider": "QuantumShield",
-      "homepage": "https://quantumshield.xyz",
-      "description": "Token risk and honeypot detection.",
-      "resource": "https://api.quantumshield.xyz/v1/check",
-      "method": "GET",
-      "category": "risk-security",
-      "tags": [
-        "token",
-        "risk",
-        "honeypot"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.01",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
       "id": "robtex",
       "name": "Robtex",
       "provider": "Robtex",
@@ -1317,51 +874,6 @@
       "network": "eip155:8453",
       "asset": "USDC",
       "priceUsd": "0.001",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "rug-munch",
-      "name": "Rug Munch Intelligence",
-      "provider": "Rug Munch",
-      "homepage": "https://rugmunch.xyz",
-      "description": "Rug/honeypot risk scanning on Base, Ethereum, Arbitrum, Polygon.",
-      "resource": "https://api.rugmunch.xyz/v1/scan",
-      "method": "GET",
-      "category": "risk-security",
-      "tags": [
-        "rug",
-        "honeypot",
-        "risk",
-        "scanning"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.02",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "slamai",
-      "name": "SLAMai",
-      "provider": "SLAMai",
-      "homepage": "https://slamai.xyz",
-      "description": "Smart-money intelligence on Base and Ethereum.",
-      "resource": "https://api.slamai.xyz/v1/signals",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "smart-money",
-        "signals",
-        "base"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
@@ -1434,29 +946,6 @@
       "status": "verified"
     },
     {
-      "id": "stakevia",
-      "name": "Stakevia",
-      "provider": "Stakevia",
-      "homepage": "https://stakevia.com",
-      "description": "Solana validator scoring and risk assessment.",
-      "resource": "https://api.stakevia.com/v1/validators",
-      "method": "GET",
-      "category": "risk-security",
-      "tags": [
-        "solana",
-        "validators",
-        "staking",
-        "risk"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "1.00",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
       "id": "stripe-machine",
       "name": "Stripe Machine Payments",
       "provider": "Stripe",
@@ -1523,28 +1012,6 @@
       "status": "verified"
     },
     {
-      "id": "tweazy",
-      "name": "Tweazy",
-      "provider": "Tweazy",
-      "homepage": "https://tweazy.xyz",
-      "description": "On-chain tweet reads with MCP and CDP smart wallets.",
-      "resource": "https://api.tweazy.xyz/v1/read",
-      "method": "GET",
-      "category": "web-search",
-      "tags": [
-        "twitter",
-        "onchain",
-        "mcp"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.001",
-      "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
       "id": "twit-sh",
       "name": "twit.sh",
       "provider": "twit.sh",
@@ -1585,29 +1052,6 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "walletiq",
-      "name": "WalletIQ",
-      "provider": "WalletIQ",
-      "homepage": "https://walletiq.xyz",
-      "description": "Wallet profile: age, DeFi usage, risk score across 5+ chains.",
-      "resource": "https://api.walletiq.xyz/v1/profile",
-      "method": "GET",
-      "category": "crypto-data",
-      "tags": [
-        "wallet",
-        "profile",
-        "risk",
-        "defi"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
     },

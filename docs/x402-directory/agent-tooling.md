@@ -10,7 +10,6 @@ MCP servers, workflows, and agent orchestration. All payable with Floe credit on
 |-----|----------|-------|--------|--------|
 | Arch AI Tools | Arch AI | $0.01 | POST | Verified |
 | Fluora | Fluora | $0.01 | POST | Verified |
-| Heurist Mesh | Heurist | $0.01 | POST | Verified |
 | Latinum | Latinum | $0.005 | POST | Verified |
 | Locus | Locus | $0.005 | GET | Verified |
 | MCPay | MCPay | $0.001 | POST | Verified |
@@ -50,23 +49,6 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://api.fluora.xyz/v1/workflow", "method": "POST"}'
-```
-
-## Heurist Mesh
-
-**Provider:** [Heurist](https://heurist.ai)
-**Endpoint:** `POST https://api.heurist.ai/v1/mesh`
-**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
-**Floe compatible:** Yes
-
-> Composable crypto skills with MCP + x402.
-
-```bash
-# Call through Floe
-curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
-  -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://api.heurist.ai/v1/mesh", "method": "POST"}'
 ```
 
 ## Latinum
