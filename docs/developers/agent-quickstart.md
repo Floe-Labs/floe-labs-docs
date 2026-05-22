@@ -160,6 +160,40 @@ Copy it now — it won't be shown again. This is `FLOE_API_KEY`. If you used the
 
 ### 7. Agent code — TypeScript
 
+The SDK (`floe-agent` on npm) wraps the entire flow — retries, 429 backoff, and 502-ambiguous settlement polling — in one line:
+
+```ts
+import { FloeAgent, FloeAgentError } from 'floe-agent';
+
+const agent = new FloeAgent({ apiKey: process.env.FLOE_API_KEY! });
+
+try {
+  const res = await agent.fetch({
+    url: 'https://api.example.com/premium/analyze',
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: 'hi' }),
+  });
+  console.log(res.body);
+} catch (e) {
+  // 502 ambiguous: payment may have gone through; never retry the call.
+  // Pull the nonce off the parsed body and await reconciliation.
+  // (Python equivalent: `e.detail["reservation"]["nonce"]` — Python's
+  // FloeAgentError.detail has always carried parsed JSON; TS gained `body`
+  // in FLO-567 to preserve back-compat on `detail: string`.)
+  if (e instanceof FloeAgentError && e.code === 'upstream_paid_request_failed_ambiguous') {
+    const nonce = (e.body as { reservation: { nonce: string } }).reservation.nonce;
+    const final = await agent.awaitSettlement(nonce);
+    console.log('resolved as', final.state); // settled | payment_rejected | expired_unsettled
+  } else {
+    throw e;
+  }
+}
+```
+
+<details>
+<summary>Without the SDK (raw HTTP reference)</summary>
+
 ```ts
 const FLOE = 'https://credit-api.floelabs.xyz/v1/proxy/fetch';
 
@@ -186,7 +220,21 @@ async function paidFetch(url: string, body: unknown) {
   if (res.status === 502) {
     const b = await res.json();
     if (b.error === 'upstream_paid_request_failed_ambiguous') {
-      throw new Error('ambiguous payment; wait for reconciliation');
+      // DO NOT retry — the upstream may already have charged. Poll the
+      // per-reservation endpoint until the state goes terminal.
+      const nonce = b.reservation.nonce;
+      for (let i = 0; i < 450; i++) { // ~15 min @ 2s
+        const r = await fetch(
+          `https://credit-api.floelabs.xyz/v1/agents/reservations/${encodeURIComponent(nonce)}`,
+          { headers: { Authorization: `Bearer ${process.env.FLOE_API_KEY}` } },
+        ).then(r => r.json());
+        if (r.terminal) {
+          if (r.state !== 'settled') throw new Error(`payment ${r.state}`);
+          return r;
+        }
+        await new Promise(s => setTimeout(s, 2000));
+      }
+      throw new Error('settlement timeout');
     }
   }
   if (!res.ok) throw new Error(`floe ${res.status}`);
@@ -196,7 +244,40 @@ async function paidFetch(url: string, body: unknown) {
 const data = await paidFetch('https://api.example.com/premium/analyze', { prompt: 'hi' });
 ```
 
+</details>
+
 ### 8. Agent code — Python
+
+The SDK (`floe-agentkit-actions` on PyPI) handles retries, backoff, and 502-ambiguous settlement polling for you:
+
+```python
+import os
+from floe_agentkit_actions import FloeAgent, FloeAgentError
+
+agent = FloeAgent(api_key=os.environ["FLOE_API_KEY"])
+
+try:
+    res = agent.fetch(
+        url="https://api.example.com/premium/analyze",
+        method="POST",
+        headers={"Content-Type": "application/json"},
+        body='{"prompt": "hi"}',
+    )
+    print(res.body)
+except FloeAgentError as e:
+    # 502 ambiguous: payment may have gone through; never retry the call.
+    # (TS equivalent: `err.body.reservation.nonce` — TS exposes parsed JSON
+    # on `err.body` to keep `err.detail: string` back-compat.)
+    if e.code == "upstream_paid_request_failed_ambiguous":
+        nonce = e.detail["reservation"]["nonce"]  # parsed JSON
+        final = agent.await_settlement(nonce)
+        print("resolved as", final.state)  # settled | payment_rejected | expired_unsettled
+    else:
+        raise
+```
+
+<details>
+<summary>Without the SDK (raw HTTP reference)</summary>
 
 ```python
 import os, time, httpx
@@ -221,14 +302,30 @@ def paid_fetch(url: str, body: dict) -> dict:
     if res.status_code == 502:
         b = res.json()
         if b.get("error") == "upstream_paid_request_failed_ambiguous":
-            raise RuntimeError("ambiguous payment; wait for reconciliation")
+            # DO NOT retry — the upstream may already have charged. Poll
+            # /v1/agents/reservations/{nonce} until terminal.
+            nonce = b["reservation"]["nonce"]
+            with httpx.Client(timeout=60) as c:
+                for _ in range(450):  # ~15 min @ 2s
+                    r = c.get(
+                        f"https://credit-api.floelabs.xyz/v1/agents/reservations/{nonce}",
+                        headers={"Authorization": f"Bearer {os.environ['FLOE_API_KEY']}"},
+                    ).json()
+                    if r["terminal"]:
+                        if r["state"] != "settled":
+                            raise RuntimeError(f"payment {r['state']}")
+                        return r
+                    time.sleep(2)
+            raise RuntimeError("settlement timeout")
     res.raise_for_status()
     return res.json()
 
 data = paid_fetch("https://api.example.com/premium/analyze", {"prompt": "hi"})
 ```
 
-One env var, one function, full payment abstraction. See [Agent Runtime Contract](agent-runtime-contract.md) for the complete error matrix.
+</details>
+
+One env var, one function, full payment abstraction. See [Agent Runtime Contract](agent-runtime-contract.md) for the complete error matrix and the [error-codes guide](../reference/error-codes.md#awaiting-an-ambiguous-payment) for the full settlement-polling pattern.
 
 ## Next Steps
 

@@ -1209,13 +1209,59 @@ curl "https://credit-api.floelabs.xyz/v1/agents/balance" \
 
 ```json
 {
+  "balance": "4000000000",
+  "spendableRaw": "4000000000",
+  "creditAvailableRaw": "6000000000",
+  "walletUsdcRaw": "150000000",
+  "pendingSettlementsRaw": "0",
+  "heldUnspentRaw": "0",
   "creditLimit": "10000000000",
-  "creditUsed": "3200000000",
-  "creditAvailable": "6800000000",
-  "activeLoans": [{ "loanId": "42", "principalRaw": "5000000000" }],
-  "delegationActive": true
+  "creditUsed": "4000000000",
+  "creditAvailable": "6000000000",
+  "privyWalletAddress": "0x…",
+  "activeLoans": [{ "loanId": "42", "borrowAmount": "5000000000", "status": "active" }],
+  "delegationActive": true,
+  "operatorExpiry": 1779473412
 }
 ```
+
+**Field guide** — `spendableRaw` and `creditAvailableRaw` are two *different* numbers and confusing them is a common bug:
+
+| Field | What it means |
+| --- | --- |
+| `spendableRaw` | USDC the agent can pay with **right now** (= drawn facility credit − in-flight payments − held budgets). This is what the x402 proxy gates on. |
+| `creditAvailableRaw` | Operator-delegation **headroom** — how much *more* the agent could borrow from its credit line. Non-zero here does **not** mean spendable: an agent with a $100 delegation but no facility loan opened yet has `spendableRaw: 0`. |
+| `walletUsdcRaw` | On-chain USDC balance of the Privy custodial wallet. May be `null` if the facilitator couldn't read it. |
+| `pendingSettlementsRaw` | Sum of in-flight payments awaiting reconciliation. Drains as reservations move to terminal state; see [`/v1/agents/reservations/:nonce`](#get-v1agentsreservationsnonce). |
+
+The legacy `balance` / `creditAvailable` / `creditUsed` fields are kept for back-compat. New code should read the explicit `*Raw` names.
+
+### GET /v1/agents/reservations/{nonce}
+
+Look up a single reservation by its nonce — typically the nonce returned in the `reservation.nonce` field of a `502 upstream_paid_request_failed_ambiguous` response from the proxy. Used by the SDK's `awaitSettlement` / `await_settlement` helpers to poll until a `pending_settlement` reaches a terminal state.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/agents/reservations/$NONCE" \
+  -H "Authorization: Bearer floe_YOUR_API_KEY"
+```
+
+**Response (200):**
+
+```json
+{
+  "nonce": "…",
+  "state": "settled",
+  "terminal": true,
+  "paymentAmountRaw": "10000",
+  "txHash": "0x…",
+  "validBefore": 1779473412,
+  "reservedAt": "2026-05-22T18:10:11.575Z",
+  "sentAt": "2026-05-22T18:10:12.014Z",
+  "settledAt": "2026-05-22T18:10:14.802Z"
+}
+```
+
+`state` is one of `reserved | sent | pending_settlement | settled | expired_unsettled | payment_rejected`. `terminal` is `true` for the last three. Returns `404` if the nonce doesn't exist or isn't owned by the caller (no cross-tenant enumeration).
 
 ### GET /v1/agents/transactions
 

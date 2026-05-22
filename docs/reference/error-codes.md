@@ -36,9 +36,47 @@ These are the errors your agent will see at runtime. This section is a condensed
 | 429 | `rate_limit_exceeded` | Rate limit tripped. Body has `reason` (`agent_proxy_limit` \| `ip_rate_limit` \| `global_rate_limit`), `retry_after_seconds`, `limit_per_minute`, `remaining`. |
 | 500 | `Payment signing failed` | Privy or EIP-3009 signing error. Retry with backoff. |
 | 502 | `Failed to reach target URL` | Network error before `X-PAYMENT` was attached. Safe to retry. |
-| 502 | `upstream_paid_request_failed_ambiguous` | Network error **after** `X-PAYMENT` was sent. **Do not retry immediately** — wait for reconciliation. |
+| 502 | `upstream_paid_request_failed_ambiguous` | Network error **after** `X-PAYMENT` was sent. **Do not retry** — call `awaitSettlement(nonce)` / `await_settlement(nonce)`. The body carries `reservation.nonce`; see [Awaiting an ambiguous payment](#awaiting-an-ambiguous-payment). |
 | 503 | `agent_features_unavailable` | Facilitator booted without Privy credentials configured. |
 | 503 | `agent_wallet_not_configured` | Agent has no Privy wallet — provision one via `POST /v1/developer/agents`. |
+
+### Awaiting an ambiguous payment
+
+When `/v1/proxy/fetch` returns `502 upstream_paid_request_failed_ambiguous`, the payment header **was already sent upstream** — the merchant may or may not have actually charged. The reservation is parked in `pending_settlement` and reconciliation flips it to `settled`, `payment_rejected`, or `expired_unsettled` once on-chain state is known.
+
+**Never retry an ambiguous call** — that may double-charge. Instead, take the nonce out of the 502 body and await settlement:
+
+```ts
+// TypeScript
+try {
+  await agent.fetch("https://api.example.com/paid");
+} catch (e) {
+  if (e instanceof FloeAgentError && e.code === "upstream_paid_request_failed_ambiguous") {
+    // `body` is the parsed JSON response (added in FLO-567); `detail` stays
+    // the raw body string for back-compat with pre-FLO-567 callers.
+    const nonce = (e.body as { reservation: { nonce: string } }).reservation.nonce;
+    const final = await agent.awaitSettlement(nonce, { intervalMs: 2_000, timeoutMs: 15 * 60_000 });
+    // final.state ∈ { "settled", "payment_rejected", "expired_unsettled" }
+  } else {
+    throw e;
+  }
+}
+```
+
+```python
+# Python
+try:
+    agent.fetch(url="https://api.example.com/paid")
+except FloeAgentError as e:
+    if e.code == "upstream_paid_request_failed_ambiguous":
+        nonce = e.detail["reservation"]["nonce"]
+        final = agent.await_settlement(nonce, interval_seconds=2.0, timeout_seconds=900.0)
+        # final.state ∈ { "settled", "payment_rejected", "expired_unsettled" }
+    else:
+        raise
+```
+
+Under the hood, the helpers poll `GET /v1/agents/reservations/{nonce}` (documented in [credit-api.md](../developers/credit-api.md#get-v1agentsreservationsnonce)) until `terminal: true`. AgentKit exposes the same flow as the `x402_await_settlement` action so an LLM can react to a 502 directly.
 
 ---
 
