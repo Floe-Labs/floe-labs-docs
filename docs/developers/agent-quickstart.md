@@ -224,10 +224,19 @@ async function paidFetch(url: string, body: unknown) {
       // per-reservation endpoint until the state goes terminal.
       const nonce = b.reservation.nonce;
       for (let i = 0; i < 450; i++) { // ~15 min @ 2s
-        const r = await fetch(
+        const resv = await fetch(
           `https://credit-api.floelabs.xyz/v1/agents/reservations/${encodeURIComponent(nonce)}`,
-          { headers: { Authorization: `Bearer ${process.env.FLOE_API_KEY}` } },
-        ).then(r => r.json());
+          {
+            headers: { Authorization: `Bearer ${process.env.FLOE_API_KEY}` },
+            signal: AbortSignal.timeout(10_000),
+          },
+        );
+        if (resv.status === 404) {
+          await new Promise(s => setTimeout(s, 2000));
+          continue;
+        }
+        if (!resv.ok) throw new Error(`reservation lookup failed (${resv.status})`);
+        const r = await resv.json();
         if (r.terminal) {
           if (r.state !== 'settled') throw new Error(`payment ${r.state}`);
           return r;
@@ -281,6 +290,7 @@ except FloeAgentError as e:
 
 ```python
 import os, time, httpx
+from urllib.parse import quote
 
 FLOE = "https://credit-api.floelabs.xyz/v1/proxy/fetch"
 
@@ -308,7 +318,7 @@ def paid_fetch(url: str, body: dict) -> dict:
             with httpx.Client(timeout=60) as c:
                 for _ in range(450):  # ~15 min @ 2s
                     r = c.get(
-                        f"https://credit-api.floelabs.xyz/v1/agents/reservations/{nonce}",
+                        f"https://credit-api.floelabs.xyz/v1/agents/reservations/{quote(nonce, safe='')}",
                         headers={"Authorization": f"Bearer {os.environ['FLOE_API_KEY']}"},
                     ).json()
                     if r["terminal"]:

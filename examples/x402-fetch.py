@@ -15,6 +15,8 @@ This script:
 import os
 import sys
 import time
+from urllib.parse import quote
+
 import requests
 
 API_KEY = os.environ.get("FLOE_API_KEY")
@@ -87,9 +89,12 @@ if resp.status_code == 502:
         nonce = err["reservation"]["nonce"]
         print(f"   Ambiguous payment — polling reservation {nonce}...")
         for _ in range(450):  # ~15 min @ 2s
-            r = requests.get(
-                f"{BASE}/agents/reservations/{nonce}", headers=headers,
-            ).json()
+            reservation_resp = requests.get(
+                f"{BASE}/agents/reservations/{quote(nonce, safe='')}",
+                headers=headers,
+                timeout=10,
+            )
+            r = reservation_resp.json()
             if r.get("terminal"):
                 tx = f" (tx {r['txHash']})" if r.get("txHash") else ""
                 print(f"   Reservation {r['state']}{tx}")

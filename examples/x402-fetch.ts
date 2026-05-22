@@ -77,15 +77,21 @@ if (resp.status === 402) {
 }
 
 if (resp.status === 502) {
-  const err = (await resp.json()) as any;
+  const rawErr = await resp.text();
+  let err: any = {};
+  try {
+    err = JSON.parse(rawErr);
+  } catch {}
   if (err.error === "upstream_paid_request_failed_ambiguous") {
     // DO NOT retry — that may double-charge. Poll the per-reservation
     // endpoint until it resolves to settled / payment_rejected / expired_unsettled.
     const nonce = err.reservation.nonce;
     console.log(`   Ambiguous payment — polling reservation ${nonce}...`);
     for (let i = 0; i < 450; i++) {
-      const r = await fetch(`${BASE}/agents/reservations/${encodeURIComponent(nonce)}`, { headers })
-        .then(r => r.json() as Promise<any>);
+      const r = await fetch(`${BASE}/agents/reservations/${encodeURIComponent(nonce)}`, {
+        headers,
+        signal: AbortSignal.timeout(10_000),
+      }).then(r => r.json() as Promise<any>);
       if (r.terminal) {
         console.log(`   Reservation ${r.state}${r.txHash ? ` (tx ${r.txHash})` : ""}`);
         process.exit(r.state === "settled" ? 0 : 1);
@@ -95,6 +101,8 @@ if (resp.status === 502) {
     console.error("   Reservation did not settle within 15 minutes.");
     process.exit(1);
   }
+  console.error(`   Error (${resp.status}): ${rawErr.slice(0, 200)}`);
+  process.exit(1);
 }
 
 if (!resp.ok) {
