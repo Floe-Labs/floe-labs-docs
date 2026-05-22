@@ -18,7 +18,7 @@ Get a key at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz).
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/loans/instant_borrow \
-  -H "Authorization: Bearer floe_live_..." \
+  -H "Authorization: Bearer floe_..." \
   -H "Content-Type: application/json" \
   -d '{
     "borrow_amount": "5000000",
@@ -35,8 +35,8 @@ The response includes one or more **unsigned transactions** — sign locally and
 Proxy any URL through the Floe facilitator:
 
 ```bash
-curl -X POST https://credit-api.floelabs.xyz/proxy/fetch \
-  -H "Authorization: Bearer floe_live_..." \
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer floe_..." \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://api.example.com/premium",
