@@ -8,6 +8,8 @@ Give your agent a balance sheet in under a minute.
 
 For a guided setup experience, use the [Developer Dashboard](developer-dashboard.md) at `dev-dashboard.floelabs.xyz`.
 
+> **$2 free credit (~200 API calls).** Your agent can start paying for APIs today — no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
+
 ## Check Live Offers First
 
 See what lenders are offering right now — no auth, no setup:

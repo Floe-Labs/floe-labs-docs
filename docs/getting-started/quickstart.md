@@ -6,6 +6,8 @@ icon: rocket
 
 Give your AI agent a prepaid balance, then let it pay for any x402 API. That's the whole product. No wallets to install, no keys to manage, no tokens to buy, no gas to pay.
 
+> **$2 free credit (~200 API calls).** Your agent can start paying for APIs today — no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
+
 ---
 
 ## 1. Create an agent
