@@ -4,22 +4,20 @@ icon: compass
 
 # x402 API Directory
 
-**76 x402 APIs** you can call with Floe credit. Every endpoint listed here accepts USDC on Base and works with `x402_fetch` or `/v1/proxy/fetch`.
+**49 x402 APIs** you can call with Floe credit. Every endpoint listed here accepts USDC on Base and works with `x402_fetch` or `/v1/proxy/fetch`.
 
 | Category | APIs | Highlights |
 |----------|------|------------|
-| [Web Search & Scraping](web-search.md) | 9 | Apify, Bloomfilter, Exa... |
-| [Social & News](social-news.md) | 5 | Gloria AI, Neynar, Otto AI... |
-| [Crypto Data & Analytics](crypto-data.md) | 14 | AdEx, Alchemy, CoinGecko... |
-| [Risk & Security](risk-security.md) | 6 | Augur, BlackSwan, Kevros... |
+| [Web Search & Scraping](web-search.md) | 8 | Apify, Bloomfilter, Exa... |
+| [Social & News](social-news.md) | 3 | Gloria AI, Neynar, Postera... |
 | [LLM Inference](llm-inference.md) | 8 | AiMo, AskClaude, BlockRun.AI... |
 | [Media Generation](media-generation.md) | 6 | Freepik, Genbase, Imference... |
 | [Browser & Compute](browser-compute.md) | 3 | Agent Camo, Browserbase, Hyperbrowser... |
 | [Storage](storage.md) | 3 | 402104, Pinata, zkStash... |
-| [Identity & Reputation](identity-reputation.md) | 4 | DJD, OMATrust, OOBE... |
-| [Payments & Commerce](payments-commerce.md) | 6 | AEON, Bitrefill, Grove... |
-| [Infrastructure & Gateways](infra-gateway.md) | 5 | Alchemy, AWS, Cloudflare... |
-| [Agent Tooling](agent-tooling.md) | 7 | Arch AI, Fluora, Heurist... |
+| [Identity & Reputation](identity-reputation.md) | 3 | DJD, OOBE, Trusta.AI... |
+| [Payments & Commerce](payments-commerce.md) | 5 | AEON, Bitrefill, Laso... |
+| [Infrastructure & Gateways](infra-gateway.md) | 4 | AWS, Cloudflare, Horizen Labs... |
+| [Agent Tooling](agent-tooling.md) | 6 | Arch AI, Fluora, Latinum... |
 
 ## Call Any Listed API
 

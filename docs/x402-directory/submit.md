@@ -15,7 +15,7 @@ Want your x402 API listed in the Floe directory? Two ways:
 
 ## Option 2: Contact Us
 
-Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) or message us on [Discord](https://discord.gg/floelabs) with:
+Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) with:
 - API endpoint URL
 - Provider name
 - Pricing (per-call in USDC)

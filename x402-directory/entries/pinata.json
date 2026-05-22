@@ -3,7 +3,7 @@
   "name": "Pinata",
   "provider": "Pinata",
   "homepage": "https://pinata.cloud",
-  "description": "IPFS pin and retrieve, account-free. Dynamic pricing.",
+  "description": "File pinning and retrieval, account-free. Dynamic pricing.",
   "resource": "https://402.pinata.cloud/v1/pin",
   "method": "POST",
   "category": "storage",

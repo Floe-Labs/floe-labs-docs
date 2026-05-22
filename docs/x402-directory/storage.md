@@ -4,7 +4,7 @@ icon: database
 
 # Storage
 
-IPFS, Arweave, and agent memory. All payable with Floe credit on Base.
+File storage and agent memory. All payable with Floe credit on Base.
 
 | API | Provider | Price | Method | Status |
 |-----|----------|-------|--------|--------|
@@ -21,7 +21,7 @@ IPFS, Arweave, and agent memory. All payable with Floe credit on Base.
 **Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
-> Expirable paywalled links to private ANS-104 DataItems on Arweave.
+> Expirable paywalled links to private files.
 
 ```bash
 # Call through Floe
@@ -38,7 +38,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 **Price:** $0.10 USDC per call (dynamic) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
-> IPFS pin and retrieve, account-free. Dynamic pricing.
+> File pinning and retrieval, account-free. Dynamic pricing.
 
 ```bash
 # Call through Floe

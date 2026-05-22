@@ -17,7 +17,7 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const BASE = "https://x402.floelabs.xyz";
+const BASE = "https://credit-api.floelabs.xyz/v1";
 const TARGET_URL = process.env.TARGET_URL || "https://some-x402-api.com/data";
 
 const headers = {

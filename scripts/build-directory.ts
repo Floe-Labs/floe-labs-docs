@@ -17,15 +17,13 @@ interface Entry {
 const CATEGORY_META: Record<string, { title: string; icon: string; description: string }> = {
   'web-search': { title: 'Web Search & Scraping', icon: 'globe', description: 'Web search, scraping, and data extraction.' },
   'social-news': { title: 'Social & News', icon: 'newspaper', description: 'Social media data, news signals, and content.' },
-  'crypto-data': { title: 'Crypto Data & Analytics', icon: 'chart-line', description: 'On-chain analytics, prices, wallet intelligence.' },
-  'risk-security': { title: 'Risk & Security', icon: 'shield', description: 'Token scanning, honeypot detection, risk assessment.' },
   'llm-inference': { title: 'LLM Inference', icon: 'brain', description: 'AI model inference — Claude, GPT, open-source models.' },
   'media-generation': { title: 'Media Generation', icon: 'image', description: 'Image, video, audio, and music generation.' },
   'browser-compute': { title: 'Browser & Compute', icon: 'desktop', description: 'Headless browsers, proxies, and compute.' },
-  'storage': { title: 'Storage', icon: 'database', description: 'IPFS, Arweave, and agent memory.' },
+  'storage': { title: 'Storage', icon: 'database', description: 'File storage and agent memory.' },
   'identity-reputation': { title: 'Identity & Reputation', icon: 'fingerprint', description: 'Attestations, identity, and trust scores.' },
   'payments-commerce': { title: 'Payments & Commerce', icon: 'credit-card', description: 'Gift cards, merchant payments, fiat rails.' },
-  'infra-gateway': { title: 'Infrastructure & Gateways', icon: 'server', description: 'RPC, CDN, and infrastructure APIs.' },
+  'infra-gateway': { title: 'Infrastructure & Gateways', icon: 'server', description: 'Cloud infrastructure and gateway APIs.' },
   'agent-tooling': { title: 'Agent Tooling', icon: 'wrench', description: 'MCP servers, workflows, and agent orchestration.' },
 };
 
@@ -122,7 +120,7 @@ index += `| Category | APIs | Highlights |\n`;
 index += `|----------|------|------------|\n`;
 
 const categoryOrder = [
-  'web-search', 'social-news', 'crypto-data', 'risk-security',
+  'web-search', 'social-news',
   'llm-inference', 'media-generation', 'browser-compute', 'storage',
   'identity-reputation', 'payments-commerce', 'infra-gateway', 'agent-tooling',
 ];
@@ -180,7 +178,7 @@ Want your x402 API listed in the Floe directory? Two ways:
 
 ## Option 2: Contact Us
 
-Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) or message us on [Discord](https://discord.gg/floelabs) with:
+Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) with:
 - API endpoint URL
 - Provider name
 - Pricing (per-call in USDC)
