@@ -88,10 +88,19 @@ if (resp.status === 502) {
     const nonce = err.reservation.nonce;
     console.log(`   Ambiguous payment — polling reservation ${nonce}...`);
     for (let i = 0; i < 450; i++) {
-      const r = await fetch(`${BASE}/agents/reservations/${encodeURIComponent(nonce)}`, {
+      const resv = await fetch(`${BASE}/agents/reservations/${encodeURIComponent(nonce)}`, {
         headers,
         signal: AbortSignal.timeout(10_000),
-      }).then(r => r.json() as Promise<any>);
+      });
+      if (resv.status === 404) {
+        await new Promise(s => setTimeout(s, 2000));
+        continue;
+      }
+      if (!resv.ok) {
+        const body = (await resv.text()).slice(0, 200);
+        throw new Error(`reservation lookup failed (${resv.status}): ${body}`);
+      }
+      const r = (await resv.json()) as any;
       if (r.terminal) {
         console.log(`   Reservation ${r.state}${r.txHash ? ` (tx ${r.txHash})` : ""}`);
         process.exit(r.state === "settled" ? 0 : 1);
