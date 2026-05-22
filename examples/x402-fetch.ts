@@ -98,7 +98,8 @@ if (resp.status === 502) {
       }
       if (!resv.ok) {
         const body = (await resv.text()).slice(0, 200);
-        throw new Error(`reservation lookup failed (${resv.status}): ${body}`);
+        console.error(`   Reservation lookup failed (${resv.status}): ${body}`);
+        process.exit(1);
       }
       const r = (await resv.json()) as any;
       if (r.terminal) {
