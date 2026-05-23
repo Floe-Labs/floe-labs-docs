@@ -26,11 +26,24 @@ const headers = {
 };
 
 // ── 1. Check balance ──
+//
+// `spendableRaw` is what the proxy will let you actually pay with.
+// `creditAvailableRaw` is borrowing headroom (NOT spendable on its own —
+// the facility loan has to be drawn first). `walletUsdcRaw` is the
+// on-chain USDC sitting in the Privy wallet. Reading `creditAvailableRaw`
+// and assuming it's spendable is the most common /balance mistake.
 console.log("1. Checking balance...");
 const balanceResp = await fetch(`${BASE}/agents/balance`, { headers });
 const balance = (await balanceResp.json()) as any;
-console.log(`   Ledger balance: ${(Number(balance.balance) / 1e6).toFixed(2)} USDC`);
-console.log(`   Wallet balance: ${(Number(balance.privyWalletBalance) / 1e6).toFixed(2)} USDC\n`);
+const spendable = balance.spendableRaw ?? balance.balance ?? "0";
+const headroom = balance.creditAvailableRaw ?? balance.creditAvailable ?? "0";
+const walletUsdc = balance.walletUsdcRaw;
+console.log(`   Spendable now:       ${(Number(spendable) / 1e6).toFixed(2)} USDC`);
+console.log(`   Borrowing headroom:  ${(Number(headroom) / 1e6).toFixed(2)} USDC`);
+if (walletUsdc != null) {
+  console.log(`   Wallet USDC (chain): ${(Number(walletUsdc) / 1e6).toFixed(2)} USDC`);
+}
+console.log();
 
 // ── 2. Check if the target URL requires payment ──
 console.log(`2. Checking ${TARGET_URL}...`);
@@ -63,6 +76,45 @@ if (resp.status === 402) {
   process.exit(1);
 }
 
+if (resp.status === 502) {
+  const rawErr = await resp.text();
+  let err: any = {};
+  try {
+    err = JSON.parse(rawErr);
+  } catch {}
+  if (err.error === "upstream_paid_request_failed_ambiguous") {
+    // DO NOT retry — that may double-charge. Poll the per-reservation
+    // endpoint until it resolves to settled / payment_rejected / expired_unsettled.
+    const nonce = err.reservation.nonce;
+    console.log(`   Ambiguous payment — polling reservation ${nonce}...`);
+    for (let i = 0; i < 450; i++) {
+      const resv = await fetch(`${BASE}/agents/reservations/${encodeURIComponent(nonce)}`, {
+        headers,
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (resv.status === 404) {
+        await new Promise(s => setTimeout(s, 2000));
+        continue;
+      }
+      if (!resv.ok) {
+        const body = (await resv.text()).slice(0, 200);
+        console.error(`   Reservation lookup failed (${resv.status}): ${body}`);
+        process.exit(1);
+      }
+      const r = (await resv.json()) as any;
+      if (r.terminal) {
+        console.log(`   Reservation ${r.state}${r.txHash ? ` (tx ${r.txHash})` : ""}`);
+        process.exit(r.state === "settled" ? 0 : 1);
+      }
+      await new Promise(s => setTimeout(s, 2000));
+    }
+    console.error("   Reservation did not settle within 15 minutes.");
+    process.exit(1);
+  }
+  console.error(`   Error (${resp.status}): ${rawErr.slice(0, 200)}`);
+  process.exit(1);
+}
+
 if (!resp.ok) {
   console.error(`   Error (${resp.status}): ${(await resp.text()).slice(0, 200)}`);
   process.exit(1);
@@ -76,4 +128,5 @@ console.log(`   Response: ${body.slice(0, 500)}\n`);
 console.log("4. Updated balance:");
 const updatedResp = await fetch(`${BASE}/agents/balance`, { headers });
 const updated = (await updatedResp.json()) as any;
-console.log(`   Ledger balance: ${(Number(updated.balance) / 1e6).toFixed(2)} USDC`);
+const updatedSpendable = updated.spendableRaw ?? updated.balance ?? "0";
+console.log(`   Spendable now: ${(Number(updatedSpendable) / 1e6).toFixed(2)} USDC`);

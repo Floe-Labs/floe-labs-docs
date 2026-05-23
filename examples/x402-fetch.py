@@ -14,6 +14,9 @@ This script:
 
 import os
 import sys
+import time
+from urllib.parse import quote
+
 import requests
 
 API_KEY = os.environ.get("FLOE_API_KEY")
@@ -30,12 +33,23 @@ headers = {
 }
 
 # ── 1. Check balance ──
+#
+# spendableRaw = what the proxy will let you pay with right now.
+# creditAvailableRaw = borrowing headroom (NOT spendable on its own).
+# walletUsdcRaw = on-chain USDC in the Privy custodial wallet.
+# Reading creditAvailableRaw and assuming it's spendable is the most
+# common /balance mistake.
 print("1. Checking balance...")
 balance_resp = requests.get(f"{BASE}/agents/balance", headers=headers)
 balance_resp.raise_for_status()
 balance = balance_resp.json()
-print(f"   Ledger balance: {int(balance['balance']) / 1e6:.2f} USDC")
-print(f"   Wallet balance: {int(balance['privyWalletBalance']) / 1e6:.2f} USDC")
+spendable = int(balance.get("spendableRaw") or balance.get("balance") or "0")
+headroom = int(balance.get("creditAvailableRaw") or balance.get("creditAvailable") or "0")
+wallet_usdc = balance.get("walletUsdcRaw")
+print(f"   Spendable now:       {spendable / 1e6:.2f} USDC")
+print(f"   Borrowing headroom:  {headroom / 1e6:.2f} USDC")
+if wallet_usdc is not None:
+    print(f"   Wallet USDC (chain): {int(wallet_usdc) / 1e6:.2f} USDC")
 print()
 
 # ── 2. Check if the target URL requires payment ──
@@ -67,6 +81,38 @@ if resp.status_code == 402:
     print("   Top up at https://dev-dashboard.floelabs.xyz (card / Apple Pay / bank).")
     sys.exit(1)
 
+if resp.status_code == 502:
+    err = resp.json()
+    if err.get("error") == "upstream_paid_request_failed_ambiguous":
+        # DO NOT retry — the upstream may already have charged. Poll the
+        # per-reservation endpoint until terminal.
+        nonce = err["reservation"]["nonce"]
+        print(f"   Ambiguous payment — polling reservation {nonce}...")
+        for _ in range(450):  # ~15 min @ 2s
+            reservation_resp = requests.get(
+                f"{BASE}/agents/reservations/{quote(nonce, safe='')}",
+                headers=headers,
+                timeout=10,
+            )
+            if reservation_resp.status_code == 404:
+                time.sleep(2)
+                continue
+            if not reservation_resp.ok:
+                print(
+                    f"   Reservation lookup failed ({reservation_resp.status_code}): "
+                    f"{reservation_resp.text[:200]}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            r = reservation_resp.json()
+            if r.get("terminal"):
+                tx = f" (tx {r['txHash']})" if r.get("txHash") else ""
+                print(f"   Reservation {r['state']}{tx}")
+                sys.exit(0 if r["state"] == "settled" else 1)
+            time.sleep(2)
+        print("   Reservation did not settle within 15 minutes.")
+        sys.exit(1)
+
 if resp.status_code != 200:
     print(f"   Error ({resp.status_code}): {resp.text[:200]}")
     sys.exit(1)
@@ -79,4 +125,5 @@ print()
 print("4. Updated balance:")
 balance_resp = requests.get(f"{BASE}/agents/balance", headers=headers)
 balance = balance_resp.json()
-print(f"   Ledger balance: {int(balance['balance']) / 1e6:.2f} USDC")
+updated_spendable = int(balance.get("spendableRaw") or balance.get("balance") or "0")
+print(f"   Spendable now: {updated_spendable / 1e6:.2f} USDC")
