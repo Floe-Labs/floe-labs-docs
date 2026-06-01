@@ -402,7 +402,10 @@ Proxy a request. Handles x402 payments automatically.
 | Header | Always set | Purpose |
 |--------|------------|---------|
 | `X-Floe-Cost-USDC` | on 2xx paid responses | Raw USDC units (6-decimal integer string) actually charged for this call. Set by the facilitator after a successful x402 settlement; absent on free passthrough responses. |
+| `X-Floe-Payment-Amount` | on 2xx paid responses | Human-readable decimal USDC amount (e.g. `0.005000`), derived from `X-Floe-Cost-USDC` (raw units ÷ 10⁶). Intended for display only. |
 | `X-Floe-Idempotent-Replay: true` | on replays only | Indicates the response body is a cached replay of a prior request with the same `Idempotency-Key`. Absent on the first attempt and on requests without a key. |
+
+> **Note on upstream headers:** The proxy forwards most response headers from the upstream API. Some providers (e.g. Venice) include their own balance headers like `X-Balance-Remaining`. These reflect the **facilitator's balance with that provider**, not your agent's Floe credit. Always use `X-Floe-Cost-USDC` or `GET /v1/agents/balance` for your agent's actual spend and credit state.
 
 | Status | Meaning |
 |--------|---------|

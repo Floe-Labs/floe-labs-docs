@@ -4,20 +4,21 @@ icon: compass
 
 # x402 API Directory
 
-**49 x402 APIs** you can call with Floe credit. Every endpoint listed here accepts USDC on Base and works with `x402_fetch` or `/v1/proxy/fetch`.
+**Verified x402 APIs** you can call with Floe credit. Every endpoint listed here accepts USDC on Base and works with `x402_fetch` or `/v1/proxy/fetch`.
 
-| Category | APIs | Highlights |
-|----------|------|------------|
-| [Web Search & Scraping](web-search.md) | 8 | Apify, Bloomfilter, Exa... |
-| [Social & News](social-news.md) | 3 | Gloria AI, Neynar, Postera... |
-| [LLM Inference](llm-inference.md) | 8 | AiMo, AskClaude, BlockRun.AI... |
-| [Media Generation](media-generation.md) | 6 | Freepik, Genbase, Imference... |
-| [Browser & Compute](browser-compute.md) | 3 | Agent Camo, Browserbase, Hyperbrowser... |
-| [Storage](storage.md) | 3 | 402104, Pinata, zkStash... |
-| [Identity & Reputation](identity-reputation.md) | 3 | DJD, OOBE, Trusta.AI... |
-| [Payments & Commerce](payments-commerce.md) | 5 | AEON, Bitrefill, Laso... |
-| [Infrastructure & Gateways](infra-gateway.md) | 4 | AWS, Cloudflare, Horizen Labs... |
-| [Agent Tooling](agent-tooling.md) | 6 | Arch AI, Fluora, Latinum... |
+## Floe Verified Services
+
+Services with endpoints in the [Floe dashboard](https://dev-dashboard.floelabs.xyz/vendors), plus upcoming integrations marked "coming soon."
+
+| Category | Services |
+|----------|----------|
+| [Compute](compute.md) | Venice AI — chat completions, embeddings |
+| [Voice](voice.md) | Venice AI — TTS, transcription · Twilio (coming soon) · Deepgram (coming soon) |
+| [Image](image.md) | Venice AI — image generation |
+| [Text](text.md) | Firecrawl |
+| [Search](search.md) | Exa, Parallel AI, Tavily Search |
+| [Browser](browser.md) | Hyperbrowser, Browserbase, Anchor Browser |
+| [Agent Tools](agent-tools-verified.md) | AgentMail, Pinata Cloud, PostalForm |
 
 ## Call Any Listed API
 
@@ -34,9 +35,9 @@ Or with AgentKit:
 await agentkit.run("x402_fetch", { url: "https://api.firecrawl.dev/v1/x402/search", method: "POST" });
 ```
 
-## Browse the Full Ecosystem
+## Broader x402 Ecosystem
 
-This directory is a curated subset verified to work with Floe credit. The broader x402 ecosystem has **46,000+ indexed endpoints** across multiple registries:
+The directory above is Floe-verified. The broader x402 ecosystem has **46,000+ indexed endpoints** across multiple registries:
 
 | Directory | What it is | Link |
 |-----------|-----------|------|
