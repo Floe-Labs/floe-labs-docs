@@ -9,6 +9,7 @@ Web search APIs — payable with Floe credit on Base.
 | Service | Endpoints | Price | Status |
 |---------|-----------|-------|--------|
 | Exa | Search, Contents | $0.007 / search, $0.001 / page | Verified |
+| Parallel AI | Search, Extract, Deep Research | $0.01–$0.30 / call | Verified |
 | Tavily Search | Search | $0.004 / search | Verified |
 
 ---
@@ -39,6 +40,48 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://api.exa.ai/contents", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"urls\":[\"https://example.com\"],\"text\":true}"}'
+```
+
+## Parallel AI — Search
+
+**Endpoint:** `POST https://parallelmpp.dev/api/search`
+**Price:** $0.01 USDC per search · Base mainnet · x402 v2
+
+> AI web research — "one-shot" (comprehensive) or "fast" mode with structured results.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://parallelmpp.dev/api/search", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"query\":\"AI agent payments 2026\",\"mode\":\"one-shot\"}"}'
+```
+
+## Parallel AI — Extract
+
+**Endpoint:** `POST https://parallelmpp.dev/api/extract`
+**Price:** $0.01 USDC per URL · Base mainnet · x402 v2
+
+> Extract structured data from one or more URLs with an optional objective.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://parallelmpp.dev/api/extract", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"urls\":[\"https://example.com\"],\"objective\":\"Extract key facts\"}"}'
+```
+
+## Parallel AI — Deep Research Task
+
+**Endpoint:** `POST https://parallelmpp.dev/api/task`
+**Price:** $0.30 USDC per task · Base mainnet · x402 v2
+
+> Async deep research — returns a run_id. Poll `GET /api/task/<run_id>` for results (free, no x402).
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://parallelmpp.dev/api/task", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"input\":\"HVAC market overview USA\",\"processor\":\"ultra\"}"}'
 ```
 
 ---
