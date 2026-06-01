@@ -53,6 +53,8 @@
   * [Image](docs/x402-directory/image.md)
   * [Text](docs/x402-directory/text.md)
   * [Search](docs/x402-directory/search.md)
+  * [Browser](docs/x402-directory/browser.md)
+  * [Agent Tools](docs/x402-directory/agent-tools-verified.md)
   * [Submit an API](docs/x402-directory/submit.md)
 * [MCP Server](docs/developers/mcp-server.md)
 * [Webhooks](docs/developers/webhooks.md)
