@@ -15,7 +15,7 @@ Services with endpoints in the [Floe dashboard](https://dev-dashboard.floelabs.x
 | [Compute](compute.md) | Venice AI — chat completions, embeddings |
 | [Voice](voice.md) | Venice AI — TTS, transcription · Twilio (coming soon) · Deepgram (coming soon) |
 | [Image](image.md) | Venice AI — image generation |
-| [Text](text.md) | Firecrawl, Jina Reader |
+| [Text](text.md) | Firecrawl (search + scrape), Jina Reader |
 | [Search](search.md) | Exa, Tavily Search |
 
 ## Call Any Listed API
