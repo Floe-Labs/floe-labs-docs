@@ -16,7 +16,7 @@ Services with validated endpoints in the [Floe dashboard](https://dev-dashboard.
 | [Voice](voice.md) | Venice AI — TTS, transcription · Twilio (coming soon) · Deepgram (coming soon) |
 | [Image](image.md) | Venice AI — image generation |
 | [Text](text.md) | Firecrawl, Jina Reader |
-| [Search](search.md) | Tavily Search |
+| [Search](search.md) | Exa, Tavily Search |
 
 ## Call Any Listed API
 
