@@ -17,7 +17,7 @@ Text-to-speech, transcription, and voice APIs — payable with Floe credit on Ba
 ## Venice AI — Text to Speech
 
 **Endpoint:** `POST https://api.venice.ai/api/v1/audio/speech`
-**Price:** metered per character · Base mainnet · x402
+**Price:** metered per character · Base mainnet · x402 v2
 
 > Generate natural speech audio from text across multiple voices.
 
@@ -31,7 +31,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ## Venice AI — Transcription
 
 **Endpoint:** `POST https://api.venice.ai/api/v1/audio/transcriptions`
-**Price:** metered per minute · Base mainnet · x402
+**Price:** metered per minute · Base mainnet · x402 v2
 
 > Transcribe speech to text with Whisper-class models.
 

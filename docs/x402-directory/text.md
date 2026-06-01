@@ -16,7 +16,7 @@ Web scraping and text extraction APIs — payable with Floe credit on Base.
 ## Firecrawl
 
 **Endpoint:** `POST https://api.firecrawl.dev/v1/x402/scrape`
-**Price:** $0.010 USDC per page · Base mainnet · x402
+**Price:** $0.010 USDC per page · Base mainnet · x402 v2
 
 > Render and extract structured content from any URL.
 
@@ -30,7 +30,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ## Jina Reader
 
 **Endpoint:** `GET https://r.jina.ai/https://example.com`
-**Price:** $0.001 USDC per page · Base mainnet · x402
+**Price:** $0.001 USDC per page · Base mainnet · x402 v2
 
 > Clean markdown from any web page in one call.
 

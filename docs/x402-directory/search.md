@@ -46,7 +46,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ## Tavily Search
 
 **Endpoint:** `POST https://api.tavily.com/search`
-**Price:** $0.004 USDC per search · Base mainnet · x402
+**Price:** $0.004 USDC per search · Base mainnet · x402 v2
 
 > Real-time web search results tuned for LLMs.
 

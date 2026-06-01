@@ -15,7 +15,7 @@ Image generation APIs — payable with Floe credit on Base.
 ## Venice AI — Image Generation
 
 **Endpoint:** `POST https://api.venice.ai/api/v1/image/generate`
-**Price:** metered per image · Base mainnet · x402
+**Price:** metered per image · Base mainnet · x402 v2
 
 > Text-to-image across photorealistic, stylized, and uncensored models.
 

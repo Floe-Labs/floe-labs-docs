@@ -15,7 +15,7 @@ LLM inference and embeddings — payable with Floe credit on Base.
 ## Venice AI — Chat Completions
 
 **Endpoint:** `POST https://api.venice.ai/api/v1/chat/completions`
-**Price:** metered per token · Base mainnet · x402
+**Price:** metered per token · Base mainnet · x402 v2
 
 > OpenAI-compatible chat across 100+ text & reasoning models, with tool use and streaming.
 
@@ -29,7 +29,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ## Venice AI — Embeddings
 
 **Endpoint:** `POST https://api.venice.ai/api/v1/embeddings`
-**Price:** metered per token · Base mainnet · x402
+**Price:** metered per token · Base mainnet · x402 v2
 
 > Vector embeddings for retrieval, clustering, and semantic search.
 
