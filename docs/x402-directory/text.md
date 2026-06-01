@@ -6,9 +6,10 @@ icon: file-text
 
 Web scraping and text extraction APIs — payable with Floe credit on Base.
 
-| Service | Endpoints | Price | Status |
-|---------|-----------|-------|--------|
-| Firecrawl | Search, Scrape | metered | Verified |
+| Service | Endpoint | Price | Status |
+|---------|----------|-------|--------|
+| Firecrawl | Search | metered | Verified |
+| Firecrawl | Scrape | $0.010 / page | Verified |
 
 ---
 
