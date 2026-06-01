@@ -10,7 +10,7 @@ Web search APIs — payable with Floe credit on Base.
 |---------|-----------|-------|--------|
 | Exa | Search, Contents | $0.007 / search, $0.001 / page | Verified |
 | Parallel AI | Search, Extract, Deep Research | $0.01–$0.30 / call | Verified |
-| Tavily Search | Search | $0.004 / search | Verified |
+| Tavily Search | Search | $0.01 / search | Verified |
 
 ---
 
@@ -88,14 +88,15 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 ## Tavily Search
 
-**Endpoint:** `POST https://api.tavily.com/search`
-**Price:** $0.004 USDC per search · Base mainnet · x402 v2
+**Endpoint:** `POST https://x402.tavily.com/search`
+**Price:** $0.01 USDC per search (advanced depth) · Base mainnet · x402 v2
+**Pricing API:** `GET https://x402.tavily.com/.well-known/pricing`
 
-> Real-time web search results tuned for LLMs.
+> Advanced web search with ranked results, snippets, source URLs, and optional generated answers. Always uses advanced search depth.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://api.tavily.com/search", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"query\":\"latest x402 protocol updates\",\"max_results\":3}"}'
+  -d '{"url": "https://x402.tavily.com/search", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"query\":\"latest developments in AI agent frameworks\",\"max_results\":5}"}'
 ```
