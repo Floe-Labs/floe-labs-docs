@@ -8,7 +8,7 @@ icon: compass
 
 ## Floe Verified Services
 
-Services with validated endpoints in the [Floe dashboard](https://dev-dashboard.floelabs.xyz/vendors).
+Verified services have validated endpoints in the [Floe dashboard](https://dev-dashboard.floelabs.xyz/vendors). Coming-soon entries are confirmed but not yet live.
 
 | Category | Services |
 |----------|----------|
