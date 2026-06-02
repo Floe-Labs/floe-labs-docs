@@ -8,6 +8,46 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.8.0 — Spend Controls, Vendor Marketplace, Welcome Credit (June 2026)
+
+**Spend Controls (FLO-577)**
+
+Programmable budgets for agent wallets. Cap spending per vendor, per API hostname, per task, or across your whole team — with rolling or calendar-based time windows.
+
+* **Vendor policies** — cap spend per payee wallet address (e.g. "$20/day to Venice AI")
+* **API policies** — cap spend per hostname or domain suffix (e.g. "$50/week to *.openai.com")
+* **Task policies** — budget per `X-Floe-Task-Id` header
+* **Team policies** — caps that roll up across all agent wallets owned by a developer
+* **Time-bound windows** — `effectiveFrom` / `effectiveUntil` for scheduled budgets
+* API: `POST/PATCH/DELETE /v1/agents/policies` (agent key) and `/v1/developer/policies` (team)
+* Dashboard: per-agent policies section + team policies in settings
+
+→ [Spend Controls docs](developers/spend-controls.md)
+
+**Vendor Marketplace**
+
+Curated directory of verified x402 API endpoints callable with Floe credit. 27 endpoints across 7 categories.
+
+* **Categories**: Compute, Voice, Image, Text, Search, Browser, Agent Tools
+* **Services**: Venice AI (9 endpoints), Exa (2), Firecrawl (2), Tavily (1), Parallel AI (3), Hyperbrowser (2), Browserbase (1), Anchor Browser (1), dTelecom STT (1), AgentMail (2), Pinata Cloud (1), PostalForm (2)
+* Dashboard: Vendor Marketplace page with category filters, detail pages with code examples (cURL, TypeScript, Python)
+
+→ [x402 API Directory](../x402-directory/README.md)
+
+**Welcome Credit**
+
+New developer's first agent wallet receives $2 USDC from treasury. Strict Privy policy blocks outbound transfers until $1.90 is spent via x402 — then policy swaps to standard. Feature-flagged via `WELCOME_CREDIT_ENABLED`.
+
+**Other changes**
+
+* **Agent Wallets rename** — "Agents" → "Agent Wallets" throughout the dashboard for clarity
+* **Session persistence** — sliding cookie refresh (active users no longer logged out at 7 days), global 401 interceptor with re-auth prompt, error UI on agents page
+* **`X-Floe-Payment-Amount` header** — human-readable decimal USDC amount on every paid response (e.g. `0.005000`), alongside existing `X-Floe-Cost-USDC` raw units
+* **`GET /v1/developer/balances`** — developer wallet balance, agent wallets balance, and available API credits in one call
+* **MCP security fix** — CORS restricted to localhost origins (was `*`), shared-key fallback rejects untrusted cross-origin requests
+
+---
+
 ### v1.7.1 — x402 v2 Wire Protocol Support (May 2026)
 
 The facilitator now negotiates between **x402 v1 and x402 v2** per request based on what the merchant returns. Previously, only the v1 bare-requirement envelope was understood, which caused parse failures against modern `@x402/hono` and other v2-compliant servers — and which made the v2 entries already published in the [Floe x402 directory](../../x402-directory/directory.json) unreachable in practice.

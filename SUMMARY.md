@@ -58,6 +58,7 @@
 * [MCP Server](docs/developers/mcp-server.md)
 * [Webhooks](docs/developers/webhooks.md)
 * [Agent Working Capital](docs/developers/agent-working-capital.md)
+* [Spend Controls](docs/developers/spend-controls.md)
 * [Agent Awareness](docs/developers/agent-awareness.md)
 
 ## API Reference
