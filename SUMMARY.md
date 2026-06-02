@@ -5,9 +5,8 @@
 ## Getting Started
 
 * [Quickstart (5 minutes)](docs/getting-started/quickstart.md)
-* [Funding the agent](docs/getting-started/funding.md)
+* [Funding your agent](docs/getting-started/funding.md)
 * [Core Concepts](docs/getting-started/core-concepts.md)
-* [Quick Start (Humans)](docs/getting-started/quick-start.md)
 
 ## Components
 

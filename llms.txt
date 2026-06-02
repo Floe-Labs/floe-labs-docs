@@ -6,18 +6,74 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 
 ## Start here
 
-- [Introduction](https://floe-labs.gitbook.io/docs/): What Floe is and where to start by audience
-- [How Floe Works (Core Concepts)](https://floe-labs.gitbook.io/docs/getting-started/core-concepts): Intents, isolated loans, matching, LTV, oracles
+- [Introduction](https://floe-labs.gitbook.io/docs/): What Floe is and where to start by audience — ask: "How do I get started as an agent developer?"
+- [How Floe Works (Core Concepts)](https://floe-labs.gitbook.io/docs/getting-started/core-concepts): Intents, isolated loans, matching, LTV, oracles — ask: "What happens when my agent borrows?"
 
 ## Quick starts
 
+- [Quick Start (Agents)](https://floe-labs.gitbook.io/docs/agents/quickstart-agents): Install SDK / connect MCP / first action call — ask: "What's the fastest way to make my first x402 call?"
 - [Quick Start (Humans)](https://floe-labs.gitbook.io/docs/getting-started/quick-start): Borrow / lend in 5 minutes via web app
-- [Quick Start (Agents)](https://floe-labs.gitbook.io/docs/agents/quickstart-agents): Install SDK / connect MCP / first action call
 
 ## For agent operators
 
-- [Bank Account → First API Call](https://floe-labs.gitbook.io/docs/agents/fiat-to-x402): Fund with a bank account or card, get a USDC credit line, call any x402 API — no crypto experience needed
+- [Bank Account → First API Call](https://floe-labs.gitbook.io/docs/agents/fiat-to-x402): Fund with a bank account or card, get a USDC credit line, call any x402 API — no crypto experience needed — ask: "How do I fund my agent with a credit card?"
 - [Credit for Agents](https://floe-labs.gitbook.io/docs/agents/credit-for-agents): Why agents pre-fund today, why that's broken, how Floe replaces it with secured working capital
+
+## For developers
+
+- [Integrate with Your Framework](https://floe-labs.gitbook.io/docs/frameworks/agentkit): AgentKit, LangChain, Vercel AI, CrewAI, ElizaOS, OpenAI, Claude/MCP, plain HTTP — ask: "Show me the integration code for LangChain"
+- [Developer Dashboard](https://floe-labs.gitbook.io/docs/developers/developer-dashboard): Create agent wallets, mint API keys, manage spend controls
+- [Agent Awareness](https://floe-labs.gitbook.io/docs/developers/agent-awareness): Decision-loop primitives — credit-remaining, loan-state, spend-limit, credit-thresholds, x402-estimate — ask: "How does my agent check its balance before a call?"
+- [x402 Credit Facilitator](https://floe-labs.gitbook.io/docs/developers/x402-facilitator): Zero-tx API payments via operator delegation — ask: "How does the payment proxy work?"
+- [Credit REST API](https://floe-labs.gitbook.io/docs/developers/credit-api): HTTP endpoints for any language
+- [Agent Runtime Contract](https://floe-labs.gitbook.io/docs/developers/agent-runtime-contract): Error matrix + retry rules — ask: "What do I do when I get a 402 insufficient_balance?"
+- [Webhooks](https://floe-labs.gitbook.io/docs/developers/webhooks): Push notifications for credit events (credit.warning, credit.at_limit, credit.recovered)
+- [MCP Server](https://floe-labs.gitbook.io/docs/developers/mcp-server): Hosted MCP endpoint, 36 tools
+
+## x402 API Directory — verified services callable with Floe credit
+
+All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them through `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` with your Floe API key.
+
+### Compute
+- [Venice AI — Chat Completions](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-ai-chat-completions): `POST https://api.venice.ai/api/v1/chat/completions` · metered/tokens
+- [Venice AI — Responses](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-ai-chat-completions): `POST https://api.venice.ai/api/v1/responses` · metered/tokens
+- [Venice AI — Embeddings](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-ai-embeddings): `POST https://api.venice.ai/api/v1/embeddings` · metered/tokens
+
+### Voice
+- [Venice AI — Text to Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#venice-ai-text-to-speech): `POST https://api.venice.ai/api/v1/audio/speech` · metered/chars
+- [Venice AI — Transcription](https://floe-labs.gitbook.io/docs/x402-directory/voice#venice-ai-transcription): `POST https://api.venice.ai/api/v1/audio/transcriptions` · metered/min
+- [dTelecom — STT Session](https://floe-labs.gitbook.io/docs/x402-directory/voice): `POST https://x402.dtelecom.org/v1/stt/session` · $0.025/req
+
+### Image
+- [Venice AI — Image Generation](https://floe-labs.gitbook.io/docs/x402-directory/image#venice-ai-image-generation): `POST https://api.venice.ai/api/v1/image/generate` · metered/image
+- [Venice AI — Image Upscale](https://floe-labs.gitbook.io/docs/x402-directory/image): `POST https://api.venice.ai/api/v1/image/upscale` · metered/image
+- [Venice AI — Image Edit](https://floe-labs.gitbook.io/docs/x402-directory/image): `POST https://api.venice.ai/api/v1/image/edit` · metered/image
+- [Venice AI — Background Removal](https://floe-labs.gitbook.io/docs/x402-directory/image): `POST https://api.venice.ai/api/v1/image/background-remove` · metered/image
+
+### Text
+- [Firecrawl — Search](https://floe-labs.gitbook.io/docs/x402-directory/text#firecrawl-search): `POST https://api.firecrawl.dev/v2/x402/search` · metered
+- [Firecrawl — Scrape](https://floe-labs.gitbook.io/docs/x402-directory/text#firecrawl-scrape): `POST https://api.firecrawl.dev/v1/scrape` · $0.010/page
+
+### Search
+- [Exa — Search](https://floe-labs.gitbook.io/docs/x402-directory/search#exa-search): `POST https://api.exa.ai/search` · $0.007/search
+- [Exa — Contents](https://floe-labs.gitbook.io/docs/x402-directory/search#exa-contents): `POST https://api.exa.ai/contents` · $0.001/page
+- [Parallel AI — Search](https://floe-labs.gitbook.io/docs/x402-directory/search#parallel-ai-search): `POST https://parallelmpp.dev/api/search` · $0.01/call
+- [Parallel AI — Extract](https://floe-labs.gitbook.io/docs/x402-directory/search#parallel-ai-extract): `POST https://parallelmpp.dev/api/extract` · $0.01/URL
+- [Parallel AI — Deep Research](https://floe-labs.gitbook.io/docs/x402-directory/search#parallel-ai-deep-research-task): `POST https://parallelmpp.dev/api/task` · $0.30/task (async)
+- [Tavily — Search](https://floe-labs.gitbook.io/docs/x402-directory/search#tavily-search): `POST https://x402.tavily.com/search` · $0.01/search
+
+### Browser
+- [Hyperbrowser — Fetch](https://floe-labs.gitbook.io/docs/x402-directory/browser#hyperbrowser-fetch): `POST https://api.hyperbrowser.ai/x402/web/fetch` · $0.001/page
+- [Hyperbrowser — Search](https://floe-labs.gitbook.io/docs/x402-directory/browser#hyperbrowser-search): `POST https://api.hyperbrowser.ai/x402/web/search` · $0.005/query
+- [Browserbase — Session](https://floe-labs.gitbook.io/docs/x402-directory/browser#browserbase-browser-session): `POST https://x402.browserbase.com/v1/sessions` · $0.01–$0.12/session
+- [Anchor Browser — Session](https://floe-labs.gitbook.io/docs/x402-directory/browser#anchor-browser-browser-session): `POST https://api.anchorbrowser.io/v1/sessions` · $0.50/session
+
+### Agent Tools
+- [AgentMail — Send](https://floe-labs.gitbook.io/docs/x402-directory/agent-tools-verified#agentmail-send-email): `POST https://x402.api.agentmail.to/v1/send` · metered
+- [AgentMail — Inbox](https://floe-labs.gitbook.io/docs/x402-directory/agent-tools-verified#agentmail-read-inbox): `POST https://x402.api.agentmail.to/v1/inbox` · metered
+- [Pinata — Content](https://floe-labs.gitbook.io/docs/x402-directory/agent-tools-verified#pinata-cloud-access-content): `GET https://<gateway>.mypinata.cloud/x402/cid/<cid>` · creator-set
+- [PostalForm — Validate](https://floe-labs.gitbook.io/docs/x402-directory/agent-tools-verified#postalform-validate-order): `POST https://postalform.com/api/machine/orders/validate` · metered
+- [PostalForm — Create](https://floe-labs.gitbook.io/docs/x402-directory/agent-tools-verified#postalform-create-order): `POST https://postalform.com/api/machine/orders` · metered
 
 ## For users (lend / borrow today)
 
@@ -25,37 +81,19 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 - [How to Borrow](https://floe-labs.gitbook.io/docs/user/borrow): Borrow USDC/USDT against WETH/cbBTC
 - [Risk & Liquidations](https://floe-labs.gitbook.io/docs/user/risk-liquidations): LTV zones, oracles, circuit breaker
 - [Credit Scores](https://floe-labs.gitbook.io/docs/user/credit-scores): Onchain credit via Cred Protocol
-- [LendrBot](https://floe-labs.gitbook.io/docs/user/lendr-ai): AI assistant in-app and on Telegram / X
-
-## For developers
-
-- [AgentKit Integration](https://floe-labs.gitbook.io/docs/developers/agentkit): 45 actions across TypeScript + Python SDKs
-- [TypeScript SDK](https://floe-labs.gitbook.io/docs/developers/agentkit-typescript)
-- [Python SDK](https://floe-labs.gitbook.io/docs/developers/agentkit-python)
-- [MCP Server](https://floe-labs.gitbook.io/docs/developers/mcp-server): Hosted MCP endpoint, 36 tools
-- [Agent Awareness](https://floe-labs.gitbook.io/docs/developers/agent-awareness): Decision-loop primitives — credit-remaining, loan-state, spend-limit, credit-thresholds, x402-estimate
-- [x402 Credit Facilitator](https://floe-labs.gitbook.io/docs/developers/x402-facilitator): Zero-tx API payments via operator delegation
-- [x402 API Directory](https://floe-labs.gitbook.io/docs/x402-directory): 60 verified x402 APIs callable with Floe credit — web search, crypto data, LLM inference, media generation, and more
-- [Credit REST API](https://floe-labs.gitbook.io/docs/developers/credit-api): HTTP endpoints for any language
-- [Agent Runtime Contract](https://floe-labs.gitbook.io/docs/developers/agent-runtime-contract): Error matrix + retry rules
-- [Webhooks](https://floe-labs.gitbook.io/docs/developers/webhooks): Push notifications for loan + credit events (credit.warning, credit.at_limit, credit.recovered)
-- [Agent Working Capital](https://floe-labs.gitbook.io/docs/developers/agent-working-capital): Credit facility actions
-- [Run a Solver Bot](https://floe-labs.gitbook.io/docs/developers/run-solver-bot): Earn matcher commissions
-- [Run a Liquidation Bot](https://floe-labs.gitbook.io/docs/developers/run-liquidation-bot): Earn liquidation bonus
 
 ## Protocol internals
 
 - [Architecture](https://floe-labs.gitbook.io/docs/protocol/architecture): Contracts, flows, data layer
 - [Intent Auto-Matching](https://floe-labs.gitbook.io/docs/protocol/orderbook-matching): Matching rules and solver economics
 - [Oracles & Circuit Breaker](https://floe-labs.gitbook.io/docs/protocol/oracles-conditions): Chainlink + Pyth + auto-pause conditions
-- [Flash Loans](https://floe-labs.gitbook.io/docs/developers/flash-loans): Raw + arb flows
 - [Security](https://floe-labs.gitbook.io/docs/protocol/security): Audits, bug bounty, isolation guarantees
 
 ## Reference
 
 - [Contract Addresses](https://floe-labs.gitbook.io/docs/developers/networks): Base mainnet
 - [Error Codes](https://floe-labs.gitbook.io/docs/reference/error-codes): Full error reference
-- [Environment Variables](https://floe-labs.gitbook.io/docs/reference/environment-variables): Self-hosting config
+- [OpenAPI Spec](https://credit-api.floelabs.xyz/.well-known/openapi.yaml): Machine-readable API specification
 - [FAQ](https://floe-labs.gitbook.io/docs/faq/general)
 - [Glossary](https://floe-labs.gitbook.io/docs/glossary)
 - [Changelog](https://floe-labs.gitbook.io/docs/changelog)
@@ -71,14 +109,14 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 - **Credit model**: Secured, fixed rate, fixed term. USDC/USDC has no price-volatility liquidation risk.
 - **Gas**: Sponsored by Floe for agents using the x402 facilitator
 - **Fiat on-ramp**: Buy USDC via Coinbase (credit card / bank transfer) from the Developer Dashboard
-- **Multi-agent**: Up to 5 agents per developer, each with independent credit line
+- **Multi-agent**: Up to 5 agent wallets per developer, each with independent credit line
 - **AgentKit actions**: 45 total (30 Floe + 6 x402 + 9 agent-awareness)
 - **MCP tools**: 36 (12 read + 9 write + 3 analysis + 3 utility + 9 agent-awareness)
-- **Agent-awareness primitives**: get_credit_remaining, get_loan_state, {get,set,clear}_spend_limit, {list,register,delete}_credit_threshold, estimate_x402_cost
+- **x402 verified services**: 27 endpoints across 7 categories (compute, voice, image, text, search, browser, agent-tools)
 - **npm**: `floe-agent` (v0.3.0), `@floelabs/mcp-server` (v0.2.0)
 - **PyPI**: `floe-agentkit-actions` (v0.3.0)
 - **MCP endpoint**: https://mcp.floelabs.xyz/mcp
-- **Distribution**: AgentKit, MCP, Vercel AI SDK, LangChain, CrewAI, ElizaOS, Crossmint GOAT, Virtuals ACP
+- **x402 proxy**: `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` — pays any x402 API from your credit line
 
 ## Querying these docs
 
