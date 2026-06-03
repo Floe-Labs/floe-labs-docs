@@ -75,7 +75,7 @@ The **x402 proxy accepts only an agent key.** A developer key or wallet signatur
 }
 ```
 
-If you see that, mint an agent key (dashboard agent wizard, or `POST /v1/developer/agents/:id/keys`) and use it as the Bearer token for `/v1/proxy/*`.
+If you see that, mint an agent key (dashboard agent wizard, or `POST /v1/developer/agents/:agentId/keys`) and use it as the Bearer token for `/v1/proxy/*`.
 
 ## Creating Keys
 
