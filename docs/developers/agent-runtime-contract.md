@@ -73,7 +73,8 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 | 200 | — | Success — the merchant paid and replied | — | Consume the body |
 | 400 | `blocked_destination` | SSRF guard blocked the target URL | **No** | Fix the URL; do not retry |
 | 400 | `Invalid request` | Your request body failed schema validation | **No** | Fix the request |
-| 401 | `Missing or invalid Authorization header` | API key missing or wrong type | **No** | Alert operator — key is broken or a `floe_live_*` dev key was sent |
+| 401 | `wrong_credential_type` | A non-agent credential (e.g. a `floe_live_*` dev key, dashboard session, or wallet signature) was sent — valid on other `/v1` endpoints but not `/v1/proxy/*` | **No** | Mint a `floe_*` agent key and send it as the Bearer token |
+| 401 | `Missing or invalid Authorization header` | No credential at all, or a malformed one | **No** | Alert operator — the agent key is missing or broken |
 | 402 | `insufficient_balance` | Credit line exhausted; body includes `available` and `required` | **Wait** | Back off; poll `GET /v1/agents/balance`. Retry only once `available >= required` |
 | 403 | `account_closed` | Deployer wound the agent down | **No** | Exit; do not retry |
 | 403 | `credit_frozen` | Health monitoring froze spending (low collateral health) | **No** | Alert operator — they must top up collateral or wait for auto-unfreeze |
