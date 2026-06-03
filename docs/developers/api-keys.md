@@ -56,6 +56,27 @@ response = requests.get(
 )
 ```
 
+## Which Credential Goes Where
+
+Floe has two authentication systems. Sending the wrong one is the most common onboarding snag — a credential can be perfectly valid yet rejected because it's the wrong *type* for that endpoint.
+
+| Credential | How you send it | Works on |
+|---|---|---|
+| **Agent key** `floe_*` | `Authorization: Bearer floe_...` | x402 proxy (`/v1/proxy/*`), agent balance, agent-awareness endpoints, [MCP server](mcp-server.md) |
+| **Developer key** `floe_live_*` | `Authorization: Bearer floe_live_...` | [Credit API](credit-api.md) developer endpoints, agent management, webhooks |
+| **Wallet signature** | `X-Wallet-Address` + `X-Signature` + `X-Timestamp` headers (SIWE-style) | Credit API endpoints that act on your own wallet |
+
+The **x402 proxy accepts only an agent key.** A developer key or wallet signature authenticates successfully but is rejected by the proxy with:
+
+```json
+{
+  "error": "wrong_credential_type",
+  "message": "The x402 proxy requires an agent API key (floe_...). You authenticated with a developer key (floe_live_...) or wallet signature, which work on the Credit REST API but not this endpoint."
+}
+```
+
+If you see that, mint an agent key (dashboard agent wizard, or `POST /v1/developer/agents/:id/keys`) and use it as the Bearer token for `/v1/proxy/*`.
+
 ## Creating Keys
 
 ### Via the Dashboard
