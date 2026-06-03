@@ -27,7 +27,8 @@ These are the errors your agent will see at runtime. This section is a condensed
 | Status | `error` | Summary |
 |---|---|---|
 | 400 | `blocked_destination` | SSRF guard blocked the target URL. Do not retry. |
-| 401 | `Missing or invalid Authorization header` | API key missing, wrong format, or a `floe_live_*` dev key was sent. |
+| 401 | `wrong_credential_type` | A non-agent credential (e.g. a `floe_live_*` dev key, dashboard session, or wallet signature) was sent. Use a `floe_*` agent key. |
+| 401 | `Missing or invalid Authorization header` | No credential at all, or a malformed one. |
 | 402 | `insufficient_balance` | Credit line exhausted. Body has `available` and `required`. |
 | 403 | `account_closed` | Deployer wound the agent down. Do not retry. |
 | 403 | `credit_frozen` | Health monitoring froze spending. Operator must top up. |
@@ -108,7 +109,7 @@ Endpoints: `POST/GET/DELETE /v1/developer/keys`
 
 ### Key prefix confusion
 
-If a request against `/v1/proxy/fetch` returns `401` despite passing a `floe_live_*` key: **that is intentional**. `/proxy/fetch` only accepts `floe_*` (agent) keys. Use a `floe_*` key minted via the Agent Setup wizard — see [API Keys](../developers/api-keys.md) for the full taxonomy.
+If a request against `/v1/proxy/fetch` returns `401 wrong_credential_type` despite passing a `floe_live_*` key: **that is intentional**. `/proxy/fetch` only accepts `floe_*` (agent) keys. Use a `floe_*` key minted via the Agent Setup wizard — see [API Keys](../developers/api-keys.md) for the full taxonomy.
 
 ---
 
