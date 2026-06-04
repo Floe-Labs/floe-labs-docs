@@ -1225,16 +1225,21 @@ curl "https://credit-api.floelabs.xyz/v1/agents/balance" \
 }
 ```
 
+> **Every numeric field is a raw 6-decimal USDC string — divide by 1,000,000 for dollars.** `"4000000000"` is **4,000 USDC**, *not* $4 billion. This is the single most common integration bug; see [Token Decimals](#token-decimals).
+
 **Field guide** — `spendableRaw` and `creditAvailableRaw` are two *different* numbers and confusing them is a common bug:
 
-| Field | What it means |
-| --- | --- |
-| `spendableRaw` | USDC the agent can pay with **right now** (= drawn facility credit − in-flight payments − held budgets). This is what the x402 proxy gates on. |
-| `creditAvailableRaw` | Operator-delegation **headroom** — how much *more* the agent could borrow from its credit line. Non-zero here does **not** mean spendable: an agent with a $100 delegation but no facility loan opened yet has `spendableRaw: 0`. |
-| `walletUsdcRaw` | On-chain USDC balance of the Privy custodial wallet. May be `null` if the facilitator couldn't read it. |
-| `pendingSettlementsRaw` | Sum of in-flight payments awaiting reconciliation. Drains as reservations move to terminal state; see [`/v1/agents/reservations/:nonce`](#get-v1agentsreservationsnonce). |
+| Field | Units | What it means |
+| --- | --- | --- |
+| `spendableRaw` | raw USDC | USDC the agent can pay with **right now** (= drawn facility credit − in-flight payments − held budgets). This is what the x402 proxy gates on. |
+| `creditAvailableRaw` | raw USDC | Operator-delegation **headroom** — how much *more* the agent could borrow from its credit line. Non-zero here does **not** mean spendable: an agent with a $100 delegation but no facility loan opened yet has `spendableRaw: 0`. |
+| `creditLimit` | raw USDC | The on-chain operator-delegation ceiling (the most the agent can ever borrow). |
+| `creditUsed` | raw USDC | Drawn-and-spent against the limit (= `creditLimit − creditAvailableRaw`). |
+| `walletUsdcRaw` | raw USDC | On-chain USDC balance of the Privy custodial wallet. May be `null` if the facilitator couldn't read it. |
+| `pendingSettlementsRaw` | raw USDC | Sum of in-flight payments awaiting reconciliation. Drains as reservations move to terminal state; see [`/v1/agents/reservations/:nonce`](#get-v1agentsreservationsnonce). |
+| `heldUnspentRaw` | raw USDC | Pre-borrow holds fenced for specific tasks — already subtracted from `spendableRaw`, surfaced separately so the math reconciles. |
 
-The legacy `balance` / `creditAvailable` / `creditUsed` fields are kept for back-compat. New code should read the explicit `*Raw` names.
+`activeLoans[].borrowAmount` is also raw USDC. The legacy `balance` / `creditAvailable` / `creditUsed` fields are raw-USDC aliases kept for back-compat — new code should read the explicit `*Raw` names.
 
 ### GET /v1/agents/reservations/{nonce}
 
