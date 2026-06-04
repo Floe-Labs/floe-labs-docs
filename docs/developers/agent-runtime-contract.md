@@ -69,7 +69,7 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 
 ## Context-Aware Spend Advisory
 
-When enabled by your operator, every paid 2xx response carries an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — the always-present credit-line backstop, plus any session, per-task, or per-vendor caps your operator set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`.
+When enabled by your operator, paid 2xx responses carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, or per-vendor caps your operator set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
 
 ```jsonc
 // X-Floe-Budget-Advisory (parsed)
