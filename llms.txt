@@ -12,7 +12,6 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 ## Quick starts
 
 - [Quick Start (Agents)](https://floe-labs.gitbook.io/docs/agents/quickstart-agents): Install SDK / connect MCP / first action call — ask: "What's the fastest way to make my first x402 call?"
-- [Quick Start (Humans)](https://floe-labs.gitbook.io/docs/getting-started/quick-start): Borrow / lend in 5 minutes via web app
 
 ## For agent operators
 
@@ -75,13 +74,6 @@ All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them th
 - [Pinata — Content](https://floe-labs.gitbook.io/docs/x402-directory/agent-tools-verified#pinata-cloud-access-content): `GET https://<gateway>.mypinata.cloud/x402/cid/<cid>` · creator-set
 - [PostalForm — Validate](https://floe-labs.gitbook.io/docs/x402-directory/agent-tools-verified#postalform-validate-order): `POST https://postalform.com/api/machine/orders/validate` · metered
 - [PostalForm — Create](https://floe-labs.gitbook.io/docs/x402-directory/agent-tools-verified#postalform-create-order): `POST https://postalform.com/api/machine/orders` · metered
-
-## For users (lend / borrow today)
-
-- [How to Lend](https://floe-labs.gitbook.io/docs/user/lend): Earn yield on USDC/USDT
-- [How to Borrow](https://floe-labs.gitbook.io/docs/user/borrow): Borrow USDC/USDT against WETH/cbBTC
-- [Risk & Liquidations](https://floe-labs.gitbook.io/docs/user/risk-liquidations): LTV zones, oracles, circuit breaker
-- [Credit Scores](https://floe-labs.gitbook.io/docs/user/credit-scores): Onchain credit via Cred Protocol
 
 ## Protocol internals
 

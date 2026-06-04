@@ -54,5 +54,4 @@ Gas is free on all markets — Floe sponsors transaction costs.
 ## Related
 
 - [Agent Working Capital developer guide](../developers/agent-working-capital.md)
-- [Risk & Liquidations](../user/risk-liquidations.md)
 - [Unsecured working capital](./unsecured-credit.md)

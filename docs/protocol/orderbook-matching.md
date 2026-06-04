@@ -386,4 +386,3 @@ Time T12: Tx included (reverts - intent expired)
 
 * [Oracles & Circuit Breaker](oracles-conditions.md)
 * [Security](security.md)
-* [Run a Solver Bot](../developers/run-solver-bot.md)

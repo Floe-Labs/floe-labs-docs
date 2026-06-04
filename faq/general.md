@@ -239,34 +239,7 @@ Audit information is available in the [Security](../docs/protocol/security.md) d
 
 ### Can I lose money?
 
-**Borrowers**: You can lose your collateral if liquidated **Lenders**: You can experience bad debt if collateral becomes worthless very quickly
-
-See [Risk & Liquidation](../docs/user/risk-liquidations.md).
-
-***
-
-## Lendr AI
-
-### What is Lendr?
-
-Lendr is an AI assistant that helps you interact with Floe using natural language. Instead of filling forms, just tell Lendr what you want.
-
-### What can Lendr do?
-
-* Create borrow/lend intents
-* Check loan health
-* Add collateral
-* Repay loans
-* Explain protocol concepts
-* Answer questions
-
-### Is Lendr safe?
-
-Yes:
-
-* Lendr cannot access your private keys
-* Every transaction requires your wallet signature
-* Lendr only reads public blockchain data
+On the USDC/USDC working-capital market (the primary product) there is no price risk — the collateral and loan are the same asset, so a position can only fall behind through interest accrual or going overdue. Keep the line repaid or topped up and you keep your deposit.
 
 ***
 
@@ -294,7 +267,6 @@ Yes, if you manually match with a counterparty through the UI. But automated sol
 
 ### Where can I get support?
 
-* **In-app**: Ask Lendr AI
 * **X/Twitter**: [@FloeLabs](https://twitter.com/FloeLabs)
 * **Email**: hello@floelabs.xyz
 
@@ -316,13 +288,9 @@ Share your ideas in Discord or tag us on X. We love hearing from users.
 
 Yes, for **solvent loans** (where collateral value exceeds debt). Liquidators can partially liquidate — repaying a portion of the debt and receiving proportional collateral. This reduces your position size rather than closing it entirely. **Underwater loans** (where collateral value is less than debt) must be fully liquidated.
 
-### Is LendrBot available on Telegram?
-
-Yes. LendrBot is now available on Telegram for chatting about your positions, creating intents, and getting help. Search for **LendrBot** on Telegram or visit [t.me/LendrBot](https://t.me/LendrBot).
-
 ### What markets are available?
 
-Floe has 4 active markets: **USDC/WETH**, **USDC/cbBTC**, **USDT/WETH**, and **USDT/cbBTC**.
+The primary market is **USDC/USDC** — deposit USDC, borrow up to 95% as working capital with no price risk (hardcoded 1:1 oracle). Volatile-collateral markets (**USDC/WETH**, **USDC/cbBTC**) are also available at lower LTV.
 
 ### Is Floe tracked on DefiLlama?
 

@@ -14,9 +14,8 @@ README.md               ← Landing page (rendered as the GitBook homepage)
 llms.txt                ← Structured index for LLM agents reading the docs
 docs/
   agents/               ← Agent operator guides (credit-for-agents, quickstart, fiat-to-x402)
-  getting-started/      ← Human quick start + core concepts
-  user/                 ← Lend, borrow, risk, credit scores, LendrBot
-  developers/           ← SDK, API, dashboard, webhooks, x402, MCP, flash loans, bots
+  getting-started/      ← Quickstart + core concepts
+  developers/           ← SDK, API, dashboard, webhooks, x402, MCP, flash loans
   protocol/             ← Architecture, matching, oracles, security
   reference/            ← Error codes, env vars
   glossary.md

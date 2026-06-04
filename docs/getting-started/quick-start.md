@@ -120,12 +120,10 @@ Go to **Loans** to:
 
 ## Need Help?
 
-* **Lendr AI**: Click the chat icon for instant help
 * **Docs**: You're here!
 
 ## Next Steps
 
-* [Borrow Guide](../user/borrow.md)
-* [Lend Guide](../user/lend.md)
-* [Understanding Risk](../user/risk-liquidations.md)
-* [Using Lendr AI](../user/lendr-ai.md)
+* [Credit for Agents](../agents/credit-for-agents.md)
+* [Agent Working Capital](../developers/agent-working-capital.md)
+* [Core Concepts](core-concepts.md)
