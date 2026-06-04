@@ -34,11 +34,6 @@
 
 * [Agent Operators — From Bank Account to First API Call](docs/agents/fiat-to-x402.md)
 * [Agent Operators — Credit for Agents](docs/agents/credit-for-agents.md)
-* [Lenders — How to Lend](docs/user/lend.md)
-* [Borrowers — How to Borrow](docs/user/borrow.md)
-* [Risk & Liquidations](docs/user/risk-liquidations.md)
-* [Credit Scores](docs/user/credit-scores.md)
-* [Using LendrBot AI](docs/user/lendr-ai.md)
 
 ## Developers
 
@@ -85,5 +80,3 @@
 
 * [Self-custody (advanced)](docs/developers/self-custody.md)
 * [Flash Loans](docs/developers/flash-loans.md)
-* [Run a Solver Bot](docs/developers/run-solver-bot.md)
-* [Run a Liquidation Bot](docs/developers/run-liquidation-bot.md)

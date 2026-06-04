@@ -53,7 +53,7 @@ Matching can be manual (browse the order book in-app) or automatic (solver bots)
 3. Submit match transactions onchain
 4. Earn a commission (set by intent creators, typically 0.1-2%)
 
-Solving is permissionless. Anyone can run a matcher — see [Run a Solver Bot](../developers/run-solver-bot.md).
+Matching runs automatically — agents never touch it.
 
 ---
 
@@ -176,17 +176,15 @@ Floe surfaces onchain credit scores via [Cred Protocol](https://cred.xyz) on the
 - **AgentKit** — TypeScript + Python SDKs with 45 actions
 - **MCP server** — same actions exposed to any Claude/OpenAI/Cursor-compatible agent
 - **Credit REST API** — HTTP endpoints for any language
-- **LendrBot** — natural-language assistant for humans
 
 ---
 
-## 13. LendrBot & agent interfaces
+## 13. Agent interfaces
 
-- **LendrBot** — natural-language assistant for humans. "Borrow 5000 USDC for 30 days at max 6% APR."
 - **MCP server** — same actions exposed to any Claude/OpenAI/Cursor-compatible agent.
 - **AgentKit** — TS + Python SDKs with 45 actions.
 
-→ [LendrBot](../user/lendr-ai.md) · [MCP Server](../developers/mcp-server.md) · [AgentKit](../developers/agentkit.md)
+→ [MCP Server](../developers/mcp-server.md) · [AgentKit](../developers/agentkit.md)
 
 ---
 
@@ -228,6 +226,5 @@ New markets are added by governance and have their own default rate, default LTV
 ## Next
 
 - [Credit for Agents](../agents/credit-for-agents.md) — secured working capital for AI agents
-- [How to Borrow](../user/borrow.md) — step-by-step
-- [How to Lend](../user/lend.md) — earn yield as a lender
+- [Agent Working Capital](../developers/agent-working-capital.md) — deposit, borrow, repay via the API
 - [Architecture](../protocol/architecture.md) — contracts and flow
