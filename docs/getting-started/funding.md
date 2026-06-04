@@ -4,7 +4,26 @@ icon: credit-card
 
 # Funding
 
-The fastest way to give your agent spending money is to pay with a card. No exchange account, no crypto, no setup.
+The fastest way to give your agent spending money is to pay with a card. No exchange account, no setup.
+
+---
+
+## Starting with free credit
+
+New agents get **$2 in free credit** to try paid APIs — no card needed.
+
+One thing to know up front, because it trips people up: that credit isn't a prepaid balance you draw down directly. It's a small working-capital line. The **first time your agent makes a _paid_ call, Floe opens the line for you automatically** — no dashboard click, no signature. That first call comes back as `auto_borrow_in_progress` (retry in a few seconds); it then settles normally, and every call after is instant.
+
+So if the dashboard shows credit available but says it "can't be spent directly yet," that's expected — **just make your first paid call and it activates itself.** Free endpoints don't trigger activation, because there's nothing to pay; only a real paid (x402) call does.
+
+Two numbers you'll see, and they're not the same:
+
+| Field | What it means |
+| --- | --- |
+| **Credit available** (`creditAvailableRaw`) | Your ceiling — the most the agent can draw. The $2 shows up here first. |
+| **Spendable** (`spendableRaw`) | What the agent can pay with **right now**. It's `0` until that first paid call opens the line, then it tracks your remaining credit. This is what the proxy checks. |
+
+→ Full field breakdown in the [Credit REST API → balance](../developers/credit-api.md#get-v1agentsbalance).
 
 ---
 
@@ -33,7 +52,7 @@ There's no hard minimum, but card payments have a Coinbase-imposed floor around 
 For production, don't manually babysit balances. In your agent's dashboard settings:
 
 - **Auto-recharge**: "When balance falls below $10, charge my card for $50." Set once, forget.
-- **Low-balance webhook**: Floe POSTs to a URL of your choice when the balance crosses a threshold you set, so you can page a human or trigger a programmatic top-up.
+- **Low-balance webhook**: subscribe with `POST /v1/agents/credit-thresholds` (a utilization threshold in basis points). Floe POSTs `credit.warning` / `credit.at_limit` to your webhook when the agent crosses it, so it can self-manage — page a human or trigger a programmatic top-up. See [Webhooks](../developers/webhooks.md).
 
 ---
 
