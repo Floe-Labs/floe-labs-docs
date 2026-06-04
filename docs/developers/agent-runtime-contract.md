@@ -64,7 +64,46 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 | Header | When | Purpose |
 |---|---|---|
 | `X-Floe-Cost-USDC` | 2xx after a paid call | Raw USDC units (6-decimal integer string) charged for this request. Absent on free passthrough responses; consume it to budget, attribute, or surface cost upstream. |
+| `X-Floe-Budget-Advisory` | 2xx after a paid call (when enabled) | JSON describing how close you are to your tightest active spend cap. Use it to downgrade models or change path *before* you hit a hard `402`. See [Context-Aware Spend Advisory](#context-aware-spend-advisory). Off by default. |
 | `X-Floe-Idempotent-Replay: true` | only on replays | The body you received is a cached replay of a prior request with the same `Idempotency-Key`. No new payment occurred. |
+
+## Context-Aware Spend Advisory
+
+When enabled by your operator, paid 2xx responses carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, or per-vendor caps your operator has set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
+
+```jsonc
+// X-Floe-Budget-Advisory (parsed)
+{
+  "near_limit": true,                 // omitted if no threshold configured; otherwise true OR false
+  "tightest": {
+    "scope": "vendor",                // credit_line | session | task | api | vendor
+    "match": "api.openai.com",         // value depends on scope; e.g. "0xpayee…" (vendor), "task-id" (task), or null
+    "used_bps": 8500,                 // 0–10000; 8500 = 85% of this cap used
+    "remaining_raw": "150000",        // raw USDC (6-decimal) left on this cap
+    "window_kind": "rolling",         // once | rolling | session | credit_line | null
+    "window_resets_at": "2026-06-04T00:00:00.000Z" // rolling windows only
+  }
+}
+```
+
+How to use it:
+
+```ts
+const adv = res.headers.get('X-Floe-Budget-Advisory');
+if (adv) {
+  const { tightest, near_limit } = JSON.parse(adv);
+  // Apply your own % if no threshold is configured, or trust near_limit if it is.
+  if (near_limit ?? tightest.used_bps >= 8000) {
+    useCheaperModel(); // or alert your operator, or slow down
+  }
+}
+```
+
+Notes:
+- **Always raw + optional flag.** `used_bps` and `remaining_raw` are always present, so you can apply any threshold yourself. `near_limit` appears only when your operator configured an alert threshold.
+- **Floe caps only.** This reflects spend Floe tracks against Floe caps. If your LLM calls run outside Floe, combine this with your own cost accounting — it is not your total budget.
+- **Advisory, not enforcement.** Ignoring it doesn't break anything; the existing `402 insufficient_balance` / policy hard-stop is still the backstop.
+- **`window_resets_at`** tells you when a rolling cap refills, so you can choose to wait instead of downgrade. `once`/`session` caps don't auto-refill.
 
 ## Error Handling Matrix
 
