@@ -69,15 +69,15 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 
 ## Context-Aware Spend Advisory
 
-When enabled by your operator, paid 2xx responses carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, or per-vendor caps your operator set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
+When enabled by your operator, paid 2xx responses carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, or per-vendor caps your operator has set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
 
 ```jsonc
 // X-Floe-Budget-Advisory (parsed)
 {
-  "near_limit": true,                 // present only when a threshold is configured
+  "near_limit": true,                 // omitted if no threshold configured; otherwise true OR false
   "tightest": {
     "scope": "vendor",                // credit_line | session | task | api | vendor
-    "match": "0xpayee… | api.openai.com | task-id | null",
+    "match": "api.openai.com",         // value depends on scope; e.g. "0xpayee…" (vendor), "task-id" (task), or null
     "used_bps": 8500,                 // 0–10000; 8500 = 85% of this cap used
     "remaining_raw": "150000",        // raw USDC (6-decimal) left on this cap
     "window_kind": "rolling",         // once | rolling | session | credit_line | null
