@@ -1,86 +1,61 @@
-# Credit for Agents
+# How Agents Pay With Floe
 
-Financial independence is the precursor to agent autonomy. Long-running agents can't do anything meaningful without their own fundable balance sheet. Floe gives them one.
+Agents need to pay for things — APIs, compute, data — without a human in the loop and without touching crypto. Floe gives every agent a funded balance and one endpoint to spend it through, with hard, server-side spend controls.
 
-**3,000+ secured working capital lines issued. Zero defaults or losses.** Fixed rates. No price-volatility risk. Gas-free — Floe sponsors all transaction costs.
-
----
-
-## How it works
-
-Your agent deposits USDC and borrows up to 95% back as working capital. Same token in, same token out — no crypto trading, no price risk. When the agent repays, the deposit returns automatically.
-
-For agents that already hold ETH or BTC: Floe also supports WETH and cbBTC collateral for USDC loans.
-
-> **Don't have USDC?** Fund your agent with a bank account or card directly from the [Floe dashboard](https://dev-dashboard.floelabs.xyz) — no crypto exchange needed. See [Bank Account → First API Call](fiat-to-x402.md).
-
-→ [Quick Start (Agents)](quickstart-agents.md)
+Gas-free — Floe sponsors all transaction costs.
 
 ---
 
-## Two ways to use Floe
+## How it works (live today)
 
-### Example: Working capital line
+1. **Create an agent** in the [dashboard](https://dev-dashboard.floelabs.xyz). Floe provisions a custodial wallet — no seed phrase, no MetaMask.
+2. **Fund it** with a card, Apple Pay, Google Pay, or bank transfer. Fiat converts to USDC on Base behind the scenes. Or send USDC from any wallet.
+3. **Set spend controls** — per call, per day, per session, per vendor, or across your whole agent team.
+4. **Pay any x402 API** through `POST /v1/proxy/fetch`. The facilitator signs and settles from your prepaid balance; the agent only sees the response.
 
-An agent needs $9,500 to call paid APIs. It deposits $10,000 USDC, borrows $9,500 (95% LTV), spends it, and repays when done. Deposit returns automatically. No price monitoring. No liquidation risk.
+The agent never touches crypto, never signs a transaction, never pays gas.
 
-### Example: x402 facilitator (zero-touch)
+→ [Quickstart](../getting-started/quickstart.md) · [Bank Account → First API Call](fiat-to-x402.md)
 
-An agent calls x402-enabled APIs. The deployer provisions the agent once via `POST /v1/developer/agents` (dashboard, CLI, or REST) — Floe creates a managed Privy wallet for the agent and submits the on-chain operator delegation server-side. The agent then calls `POST /v1/proxy/fetch` with any URL — the facilitator auto-borrows USDC against the delegated collateral, signs the EIP-3009 payment, and returns the API response. The agent never thinks about money.
+---
 
-### Example: DeFi agent
+## Example: x402 facilitator (zero-touch)
 
-A yield optimizer needs $5,000 USDC. It posts 2 WETH as collateral, borrows USDC at a fixed rate for 30 days, executes the strategy, and repays. Collateral returns on repayment.
+An agent calls x402-enabled APIs. The deployer provisions the agent once via `POST /v1/developer/agents` (dashboard, CLI, or REST) — Floe creates a managed Privy wallet for the agent. The agent then calls `POST /v1/proxy/fetch` with any URL — the facilitator pays from the agent's prepaid balance, signs the EIP-3009 payment, and returns the API response. The agent never thinks about money.
 
 ---
 
 ## What it costs
 
-| Parameter | Value |
+| Item | Cost |
 |---|---|
-| Advance | Up to 95% of USDC deposit (USDC/USDC market) |
-| Rate | Fixed — set at match time, never changes |
-| Term | 1–365 days |
-| Collateral | USDC (primary), WETH, or cbBTC |
-| Gas | $0 — Floe sponsors all gas for agents using the facilitator |
-| Funding | Buy USDC from the [dashboard](../developers/developer-dashboard.md) via Coinbase (credit card or bank transfer) |
+| Fiat → USDC | Coinbase fees (typically ~1.5%) |
+| x402 API calls | Whatever the API charges (deducted from your balance) |
+| Gas | $0 — Floe sponsors all transaction costs |
+| Funding | Buy USDC from the [dashboard](../developers/developer-dashboard.md) via Coinbase (card or bank transfer) |
 
 ---
 
-## Why USDC collateral?
+## Advanced (in development): on-chain working capital
 
-Most DeFi lending requires volatile crypto as collateral (ETH, BTC). That means managing liquidation risk, monitoring prices, and over-collateralizing significantly.
+> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral — and any associated rate — is **not generally available**. The section below describes the intended self-custody, on-chain surface. The live way to give an agent money is the prepaid balance above.
 
-Floe's USDC/USDC market eliminates all of that:
+The planned model: an agent deposits USDC and borrows up to 95% back as working capital in the same-token USDC/USDC market — same token in, same token out, so no price-volatility risk. Volatile-collateral markets (WETH/USDC, cbBTC/USDC at 70% LTV) would let agents that already hold ETH or BTC borrow USDC at a fixed rate and term.
 
-- **No liquidation risk from price movements** — collateral and loan are the same asset
-- **95% LTV** — deposit $10K, get $9.5K (vs. 30-70% on volatile collateral)
-- **No token swaps needed** — if you have USDC, you're ready
-- **Fiat on-ramp built in** — buy USDC from the [dashboard](../developers/developer-dashboard.md) with a credit card or bank transfer
+Design intent:
 
----
+- **No liquidation risk from price movements** in the USDC/USDC market — collateral and loan are the same asset.
+- **No token swaps** — if you have USDC, you're ready.
+- **Custody by audited smart contracts**, not by Floe, on the self-custody path.
+- **Fixed rate, fixed term** — set at match time.
 
-## Building credit history
-
-Every loan your agent takes and repays builds on-chain credit history. This history will unlock:
-
-- **Higher LTV** (up to 150% for qualified agents — underwritten by receivables)
-- **Lower rates** from lenders who can verify repayment track record
-- **Larger credit lines** as the agent proves reliability
-
----
-
-## What Floe will not do
-
-- **Custody your agent's funds.** Collateral is held by audited smart contracts, not by Floe.
-- **Liquidate without cause.** For USDC/USDC loans, the only path to liquidation is unpaid interest — no price-driven liquidations.
-- **Change your rate mid-term.** Fixed rate, fixed term, always.
+Repayment history would feed the [Credit & trust bureau](../components/credit-bureau.md) as a portable on-chain signal.
 
 ---
 
 ## Next
 
-- **Get started:** [Agent Quickstart](../developers/agent-quickstart.md) — working capital in 5 minutes
-- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 45 actions across TypeScript + Python
+- **Get started:** [Quickstart](../getting-started/quickstart.md) — first paid API call in 5 minutes
+- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 47 actions across TypeScript + Python
 - **x402 proxy:** [x402 Credit Facilitator](../developers/x402-facilitator.md) — zero-touch API payments
 - **Dashboard:** [Developer Dashboard](../developers/developer-dashboard.md) — manage agents via web UI

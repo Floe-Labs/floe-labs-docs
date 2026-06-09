@@ -2,9 +2,11 @@
 icon: vault
 ---
 
-# Agent Working Capital
+# Agent Working Capital (on-chain) `In development`
 
-Floe provides AI agents with instant credit lines — deposit USDC, borrow up to 95%, spend on anything, repay when ready.
+> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral — and any associated rate — is **not generally available**. This is Floe's Advanced / self-custody on-chain surface. The live way to give an agent money is the [walletless prepaid balance](../getting-started/quickstart.md). The design below describes the in-development credit path.
+
+The intended model: an agent deposits USDC and borrows up to 95% back — spend on anything, repay when ready.
 
 ## How It Works
 
@@ -107,7 +109,7 @@ const agentkit = await AgentKit.from({
 });
 ```
 
-All credit facility actions are available alongside the other 36 Floe actions.
+All credit-facility actions are available alongside the rest of the SDK's 47 actions.
 
 ## Routing Working Capital
 

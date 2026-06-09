@@ -6,9 +6,11 @@ icon: sitemap
 
 A deep dive into Floe's technical architecture and design decisions.
 
+> This is the **on-chain protocol layer** beneath Floe's walletless spend product. You don't need it to fund an agent and pay for x402 APIs — see the [Quickstart](../getting-started/quickstart.md). The on-chain working-capital credit path is **in development**.
+
 ## Overview
 
-Floe is an **intent-based peer-to-peer lending protocol** built on Base. Rather than using liquidity pools, Floe matches individual lender and borrower intents directly.
+Underneath the spend product, Floe runs an **intent-based peer-to-peer lending protocol** on Base. Rather than using liquidity pools, it matches individual lender and borrower intents directly.
 
 ## Design Philosophy
 

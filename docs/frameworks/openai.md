@@ -28,7 +28,7 @@ Your OpenAI agent now has access to all 36 Floe MCP tools.
 The native adapter will:
 
 - Provide a one-line `import { getOpenAIAgentTools } from "floe-agent"`
-- Auto-bind the same 45 actions as the AgentKit provider
+- Auto-bind the same 47 actions as the AgentKit provider
 - Stream agent-awareness state alongside tool calls
 
 Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) for early access.

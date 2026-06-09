@@ -2,11 +2,11 @@
 icon: hourglass-half
 ---
 
-# 04 · Unsecured working capital `Preview`
+# 04 · Unsecured working capital `In development`
 
-Credit underwritten against your agent's **receivables** and **chain-of-thought signals** — no collateral required. Real-time underwriting on deterministic cashflows.
+Credit underwritten against an agent's **receivables** and **cashflow signals** — no collateral required.
 
-> **Status: `Preview`.** Currently in design-partner trials. Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) to apply for the program.
+> **Status: in development / roadmap.** This is **not available today**, not in Preview, and has no live rate. The page below describes the intended design. Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) if you'd like to be considered for an early design-partner conversation.
 
 ---
 

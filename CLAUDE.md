@@ -35,19 +35,19 @@ examples/               ← Runnable code snippets (TS + Python) linked from doc
 - **Relative links between docs** use Markdown-style `[text](../path/to/file.md)`. GitBook resolves these. Anchor links use `#heading-slug`.
 - **Code examples** should be in both TypeScript and Python where applicable (parity is a product requirement). Runnable examples go in `examples/`.
 - **Contract addresses and market data** are canonical in `developers/networks.md`. All other pages should link there, not duplicate addresses inline.
-- **Action counts**: 45 total (30 Floe lending + 6 x402 credit-delegation + 9 agent-awareness). MCP tools: 36. Keep these consistent across changelog, llms.txt, agentkit.md, and quickstart pages.
+- **Action counts**: 47 SDK actions today (30 Floe + 17 x402: delegation, x402 payment, agent-awareness); MCP tools: 36. Next release adds 5 merchant-allowlist actions/tools (→ 52 SDK / 41 MCP). Keep consistent across changelog, llms.txt, agentkit.md, and quickstart pages.
 
 ## Product context for writing
 
-Floe's primary product is the **USDC/USDC same-token market** — agents deposit USDC, borrow up to 95% as working capital. No price risk, no liquidation from market movements, no crypto complexity needed. This should be the lead example in all quickstarts and guides.
+Floe's primary product is the **spend layer**: walletless onboarding (no crypto), fiat funding, and one x402 proxy endpoint to pay any vendor API from a prepaid balance — governed by programmable spend controls. Lead every quickstart and guide with this.
 
-Volatile collateral markets (WETH/USDC, cbBTC/USDC) exist but are secondary — mention them as "also available" not as the default path.
+The **on-chain working-capital credit path** (deposit USDC, borrow up to 95% in the USDC/USDC same-token market; WETH/USDC and cbBTC/USDC at 70%) is **in development / roadmap** — never describe it as GA or Preview-available, and never quote a live rate. Demote it into a clearly-labeled Advanced / on-chain / self-custody section. Active markets: USDC/USDC, WETH/USDC, cbBTC/USDC (no USDT markets).
 
-**Key proof points** (use in marketing-adjacent copy): 3,000+ secured working capital lines issued, zero defaults or losses, 100M+ x402 machine payments since May 2025.
+**Do not** reintroduce removed claims: "3,000+ lines", "zero defaults", LendrBot/Lendr, or the dead `app.floelabs.xyz` URL (live app = `dev-dashboard.floelabs.xyz`). No marketing superlatives. Vendor reach = "2,000+ vendor API services".
 
 **Tone**: Developer-first, concise, no jargon gatekeeping. Write for a Python developer building their first AI agent, not for a DeFi native. "Deposit" not "post collateral." "Credit line" not "overcollateralized loan." "Working capital" not "borrowed USDC."
 
-**The thesis** (for "why this matters" sections): Financial independence is the precursor to agent autonomy. Agents don't have FICO — but they have something better: deterministic cashflows and chain-of-thought. Floe is the credit bureau and capital rail for AI agents.
+**The thesis** (for "why this matters" sections): Agents need to pay for things — APIs, compute, data — without a human in the loop and without touching crypto. Floe is the spend layer that makes that safe: walletless funding, one proxy endpoint, programmable server-side spend controls.
 
 ## Related repositories
 

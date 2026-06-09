@@ -1,6 +1,6 @@
 # From Bank Account to First API Call
 
-Fund your agent with a bank account or card. Get a USDC credit line. Call any x402 API. Five steps, no crypto experience needed.
+Fund your agent with a bank account or card. Call any x402 API. No crypto experience needed.
 
 ---
 
@@ -9,10 +9,9 @@ Fund your agent with a bank account or card. Get a USDC credit line. Call any x4
 ```
 Bank account / card
   → Buy USDC via Coinbase (in the Floe dashboard)
-  → USDC lands on Base
-  → Deposit to Floe → 95% credit line
-  → Agent calls x402 APIs — Floe handles payment automatically
-  → Repay when done → deposit returns
+  → USDC lands in your agent's prepaid balance on Base
+  → Agent calls x402 APIs — Floe pays from the balance automatically
+  → Top up when the balance runs low
 ```
 
 Your agent never touches crypto directly. Floe handles all blockchain transactions — gas-free.
@@ -21,62 +20,32 @@ Your agent never touches crypto directly. Floe handles all blockchain transactio
 
 ## Step 1 — Sign in to the dashboard
 
-Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and connect any EVM wallet (MetaMask, Coinbase Wallet, Rainbow, WalletConnect).
+Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with email, Google, or a wallet. Create an agent — Floe provisions a custodial wallet for it. No seed phrase, no MetaMask.
 
 ---
 
 ## Step 2 — Fund with fiat
 
-Click **Buy USDC** in the dashboard. Coinbase processes the purchase — credit card, debit card, or bank transfer. USDC arrives on Base in your wallet within minutes.
+Click **Fund Wallet** in the dashboard. Coinbase processes the purchase — credit card, debit card, Apple Pay, Google Pay, or bank transfer. USDC arrives in your agent's balance on Base within minutes.
 
 No crypto exchange account needed. No bridging. No gas tokens.
 
 ---
 
-## Step 3 — Get a credit line
+## Step 3 — Set spend controls
 
-Your agent deposits USDC and borrows up to 95% back as working capital.
+Cap what the agent can spend before it makes its first call — per call, per day, per session, per vendor, or across your whole agent team. The cap is enforced server-side by Floe, so a confused or runaway agent can't exceed it.
 
-**Via the SDK (one call):**
-
-```typescript
-import { floeActionProvider } from "floe-agent";
-
-// Deposit $10,000 USDC → get $9,500 credit line
-await agent.run("instant_borrow", {
-  marketId: "USDC/USDC",
-  borrowAmount: "9500000000",       // $9,500 (6 decimals)
-  collateralAmount: "10000000000",  // $10,000 deposit
-  maxInterestRateBps: "800",        // 8% APR max
-  duration: "2592000",              // 30 days
-});
-```
-
-**Via the dashboard:** The agent setup wizard walks through deposit + delegation in three steps.
+→ [Spend Controls](../developers/spend-controls.md)
 
 ---
 
 ## Step 4 — Call any x402 API
 
-### Option A: Direct credit line
-
-Your agent has USDC. Spend it however you want — API calls, compute, on-chain operations.
-
-### Option B: x402 facilitator (zero-touch)
-
-Delegate credit to the Floe facilitator once. Then your agent calls `POST /v1/proxy/fetch` with any URL — Floe auto-borrows, signs the payment, returns the API response. The agent never sees USDC, never signs a transaction, never pays gas.
+Your agent calls `POST /v1/proxy/fetch` with any URL. Floe pays from the prepaid balance, signs the payment, and returns the API response. The agent never sees USDC, never signs a transaction, never pays gas.
 
 ```typescript
-// One-time setup — provisions a managed Floe credit agent.
-await agent.run("grant_credit_delegation", {
-  name: "my-agent",
-  facilitatorUrl: "https://credit-api.floelabs.xyz",
-  borrowLimit: "10000",
-  maxRateBps: "1500",
-  expiryDays: "90",
-});
-
-// Every call after — zero transactions, zero gas
+// Every call — zero transactions, zero gas
 await agent.run("x402_fetch", {
   url: "https://api.example.com/premium/data",
 });
@@ -84,16 +53,9 @@ await agent.run("x402_fetch", {
 
 ---
 
-## Step 5 — Repay
+## Step 5 — Top up
 
-When your agent is done, repay the credit line. The deposit returns automatically.
-
-```typescript
-await agent.run("repay_credit", { loanId: "42" });
-// → Deposit returned to wallet
-```
-
-Or let the Floe facilitator handle rollover automatically — it renews the credit line before expiry so your agent never stops.
+When the balance runs low, top up from the dashboard or set auto-recharge (e.g. "add $50 when balance falls below $10"). You can also wire a webhook to be notified before the agent runs dry.
 
 ---
 
@@ -102,8 +64,7 @@ Or let the Floe facilitator handle rollover automatically — it renews the cred
 | Item | Cost |
 |---|---|
 | Fiat → USDC | Coinbase fees (typically ~1.5%) |
-| Credit line | Fixed interest rate (set at match time, typically 5–10% APR) |
-| x402 API calls | Whatever the API charges (deducted from credit balance) |
+| x402 API calls | Whatever the API charges (deducted from your balance) |
 | Gas | **Free** — Floe sponsors all blockchain transactions |
 
 ---
@@ -113,20 +74,23 @@ Or let the Floe facilitator handle rollover automatically — it renews the cred
 **Do I need ETH for gas?**
 No. Floe sponsors all gas for agents using the facilitator.
 
-**What if my agent runs out of credit?**
-The facilitator returns `402 insufficient_balance` with the available and required amounts. Top up your deposit or increase the credit line.
+**What if my agent runs out of money?**
+The facilitator returns `402 insufficient_balance` with the available and required amounts. Top up the balance from the dashboard.
 
-**Can I withdraw my deposit anytime?**
-After repaying the loan, your full deposit returns automatically. You can also withdraw excess collateral anytime the loan is healthy.
+**Can I withdraw my balance?**
+Yes — the USDC is your agent's. Manage it from the dashboard.
 
-**Is there liquidation risk?**
-For the USDC/USDC market: no price-driven liquidation (same token in and out). The only path to liquidation is unpaid interest past the grace period.
+---
+
+## Advanced (in development)
+
+Borrowing USDC working capital against on-chain collateral (instead of pre-funding the balance) is **in development** and not generally available. See [Working capital (on-chain)](../components/secured-credit.md).
 
 ---
 
 ## Next
 
-- [Quick Start (Agents)](quickstart-agents.md) — technical setup in 5 minutes
-- [Credit for Agents](credit-for-agents.md) — full overview
+- [Quickstart](../getting-started/quickstart.md) — first paid API call in 5 minutes
+- [How Agents Pay With Floe](credit-for-agents.md) — full overview
 - [x402 Credit Facilitator](../developers/x402-facilitator.md) — facilitator API reference
 - [Developer Dashboard](../developers/developer-dashboard.md) — manage agents, keys, webhooks

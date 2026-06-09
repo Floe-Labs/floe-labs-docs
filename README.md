@@ -2,9 +2,9 @@
 icon: hand-wave
 ---
 
-# Floe — Credit and payments for AI agent developers
+# Floe — The spend layer for AI agents
 
-**No crypto required.** x402 credit lines, fiat funding, programmable spend controls. Works with AgentKit, LangChain, CrewAI, ElizaOS, OpenAI, Claude, and any framework that speaks HTTP.
+**No crypto required.** Fund an agent with a card, then let it pay for any x402 API through one proxy endpoint — governed by programmable spend controls. Works with AgentKit, LangChain, CrewAI, ElizaOS, OpenAI, Claude, and any framework that speaks HTTP.
 
 ---
 
@@ -22,11 +22,11 @@ Buy USDC with a card, Apple Pay, Google Pay, or bank transfer — directly in th
 
 → [Funding guide](docs/getting-started/funding.md)
 
-### 3. Open a credit line
+### 3. Set spend controls
 
-One click (or one API call). Floe issues a USDC credit line against your deposit — up to 95% LTV, fixed rate, no price risk.
+Cap what your agent can spend — per call, per day, per vendor, or across your whole team. Enforced server-side by Floe, so a runaway loop can't blow your budget.
 
-→ [How credit works](docs/agents/credit-for-agents.md)
+→ [Spend Controls](docs/developers/spend-controls.md)
 
 ### 4. Make paid API calls
 
@@ -39,7 +39,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "https://api.exa.ai/search", "method": "POST", "body": "{\"query\":\"hello world\"}"}'
 ```
 
-→ [x402 Facilitator docs](docs/developers/x402-facilitator.md) · [Vendor Marketplace](docs/x402-directory/README.md) (27 verified endpoints)
+→ [x402 Facilitator docs](docs/developers/x402-facilitator.md) · [Vendor Marketplace](docs/x402-directory/README.md) (2,000+ vendor API services)
 
 ---
 
@@ -99,31 +99,34 @@ Also supported: [CrewAI](docs/frameworks/crewai.md) · [ElizaOS](docs/frameworks
 
 | # | Component | What it does | Status |
 |---|---|---|---|
-| 01 | **[Agent Wallet](docs/components/wallet.md)** | Non-custodial wallet with programmable spend limits and allowed-destination permissions. | `GA` |
+| 01 | **[Agent Wallet](docs/components/wallet.md)** | Custodial-by-default wallet (Floe-provisioned, no seed phrase) with programmable spend limits and allowed-destination permissions. Self-custody optional. | `GA` |
 | 02 | **[Fiat on/off-ramp](docs/components/onramp.md)** | USDC in via cards, bank, Apple Pay, Google Pay. Local payouts in 100+ countries. | Onramp `GA` · Offramp `Preview` |
-| 03 | **[Secured working capital](docs/components/secured-credit.md)** | Instant credit against on-chain collateral. One API call to borrow. 3,000+ lines · zero defaults. | `GA` |
-| 04 | **[Unsecured working capital](docs/components/unsecured-credit.md)** | Credit underwritten against agent receivables and chain-of-thought signals. | `Preview` |
-| 05 | **[x402 payment facilitator](docs/components/x402.md)** | One proxy endpoint to pay any x402 API. ~50ms signing. | `GA` |
-| 06 | **[Credit & trust bureau](docs/components/credit-bureau.md)** | Every repayment writes to a portable on-chain credit record. | Reader `Beta` · Writer `Preview` |
+| 03 | **[x402 payment facilitator](docs/components/x402.md)** | One proxy endpoint to pay any x402 API from your prepaid balance. | `GA` |
+| 04 | **[Spend controls](docs/developers/spend-controls.md)** | Programmable, context-aware budgets — per call, day, session, vendor, agent team. Enforced server-side. | `GA` |
+| 05 | **[Credit & trust bureau](docs/components/credit-bureau.md)** | Repayment and spend history as a portable on-chain signal. | Reader `Beta` |
+| 06 | **[Working capital (on-chain)](docs/components/secured-credit.md)** | Borrow USDC against on-chain collateral. Advanced / self-custody path. | `In development` |
+| 07 | **[Unsecured working capital](docs/components/unsecured-credit.md)** | Credit underwritten against agent receivables and cashflow signals. | `In development` |
 
 ---
 
 ## Why this matters
 
-Financial independence is the precursor to agent autonomy. Long-running agents can't do anything meaningful without their own fundable balance sheet.
+Agents need to pay for things — APIs, compute, data — without a human in the loop and without touching crypto. Floe is the spend layer that makes that safe:
 
-- **100M+** machine payments via x402 since May 2025
-- **3,000+** secured working capital lines issued through Floe
-- **Zero** defaults or losses
-- **27** verified x402 API endpoints across 7 categories
+- **Walletless onboarding** — no seed phrase, no gas, no tokens to buy
+- **One proxy endpoint** to pay any of **2,000+** vendor API services reachable via x402
+- **Programmable spend controls** — per call, per day, per session, per vendor, per agent team — enforced server-side
+- **Spend analytics** and multi-agent key management in the dashboard
 
 ---
 
-## What's underneath
+## Advanced: the on-chain layer
+
+Underneath the walletless product is an on-chain protocol. These surfaces are for teams running their own keys (self-custody); the working-capital credit path is **in development**.
 
 - **Intent-based matching.** No pools. Each loan is isolated with its own rate and term.
 - **Same-token markets.** USDC/USDC loans have no price risk — up to 95% LTV.
-- **Operator delegation.** Zero transactions for the agent. Floe handles borrowing, repayment, and rollover.
+- **Operator delegation.** Scoped, revocable permission so Floe can act within on-chain bounds.
 - **Dual-oracle pricing.** Chainlink primary, Pyth fallback, with circuit breakers.
 
 [Architecture](docs/protocol/architecture.md) | [Security](docs/protocol/security.md) | [Contract Addresses](developers/networks.md)

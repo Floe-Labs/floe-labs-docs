@@ -1,20 +1,18 @@
 # Table of contents
 
-* [Floe — The Financial OS for AI Agents](README.md)
+* [Floe — The spend layer for AI agents](README.md)
 
 ## Getting Started
 
 * [Quickstart (5 minutes)](docs/getting-started/quickstart.md)
 * [Funding your agent](docs/getting-started/funding.md)
-* [Core Concepts](docs/getting-started/core-concepts.md)
 
 ## Components
 
 * [Agent Wallet](docs/components/wallet.md)
 * [Fiat on/off-ramp](docs/components/onramp.md)
-* [Secured working capital](docs/components/secured-credit.md)
-* [Unsecured working capital](docs/components/unsecured-credit.md)
 * [x402 payment facilitator](docs/components/x402.md)
+* [Spend Controls](docs/developers/spend-controls.md)
 * [Credit & trust bureau](docs/components/credit-bureau.md)
 
 ## Frameworks
@@ -33,14 +31,16 @@
 ## Guides
 
 * [Agent Operators — From Bank Account to First API Call](docs/agents/fiat-to-x402.md)
-* [Agent Operators — Credit for Agents](docs/agents/credit-for-agents.md)
+* [Agent Operators — How Agents Pay With Floe](docs/agents/credit-for-agents.md)
 
 ## Developers
 
 * [Developer Dashboard](docs/developers/developer-dashboard.md)
 * [API Keys](docs/developers/api-keys.md)
 * [Agent Runtime Contract](docs/developers/agent-runtime-contract.md)
-* [x402 Credit Facilitator](docs/developers/x402-facilitator.md)
+* [Spend Controls](docs/developers/spend-controls.md)
+* [Agent Awareness](docs/developers/agent-awareness.md)
+* [x402 Payment Facilitator](docs/developers/x402-facilitator.md)
 * [x402 API Directory](docs/x402-directory/README.md)
   * [Compute](docs/x402-directory/compute.md)
   * [Voice](docs/x402-directory/voice.md)
@@ -52,9 +52,6 @@
   * [Submit an API](docs/x402-directory/submit.md)
 * [MCP Server](docs/developers/mcp-server.md)
 * [Webhooks](docs/developers/webhooks.md)
-* [Agent Working Capital](docs/developers/agent-working-capital.md)
-* [Spend Controls](docs/developers/spend-controls.md)
-* [Agent Awareness](docs/developers/agent-awareness.md)
 
 ## API Reference
 
@@ -76,7 +73,13 @@
 * [Glossary](docs/glossary.md)
 * [Changelog](docs/changelog.md)
 
-## Advanced
+## Advanced / on-chain (self-custody)
 
-* [Self-custody (advanced)](docs/developers/self-custody.md)
+> The surfaces below are the on-chain protocol layer for teams running their own keys. Working-capital credit is **in development** — not generally available.
+
+* [How Floe Works Under the Hood](docs/getting-started/core-concepts.md)
+* [Working capital (on-chain) — in development](docs/components/secured-credit.md)
+* [Unsecured working capital — in development](docs/components/unsecured-credit.md)
+* [Agent Working Capital (on-chain)](docs/developers/agent-working-capital.md)
+* [Self-custody](docs/developers/self-custody.md)
 * [Flash Loans](docs/developers/flash-loans.md)

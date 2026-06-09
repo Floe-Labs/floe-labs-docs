@@ -4,7 +4,7 @@ icon: plug
 
 # MCP Server
 
-Connect any AI agent to Floe's lending protocol using the [Model Context Protocol](https://modelcontextprotocol.io). The MCP server gives agents 36 tools for browsing markets, creating intents, managing loans, executing on-chain transactions, and reasoning about credit before paid calls — all through a standard interface that works with Claude, GPT, LangChain, CrewAI, and any MCP-compatible client.
+Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The MCP server gives agents 36 tools for paying x402 APIs, checking balance, managing spend limits, and reasoning about cost before a paid call — plus the on-chain market and loan tools for the self-custody path. Works with Claude, GPT, LangChain, CrewAI, and any MCP-compatible client. The next release adds 5 merchant-allowlist tools (41 total).
 
 > **See also:** [Credit REST API](credit-api.md) | [AgentKit Integration](agentkit.md) | [API Keys](api-keys.md)
 

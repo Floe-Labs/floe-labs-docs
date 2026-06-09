@@ -1,16 +1,16 @@
 # Quick Start (Agents)
 
-Get your agent a USDC credit line in **5 minutes.** Deposit USDC, borrow up to 95% instantly, start spending. Gas-free.
+Give your agent a funded balance and let it pay for any x402 API in **5 minutes.** No wallets to install, no tokens to buy, no gas. Gas-free.
+
+> The fastest path is the [walletless Quickstart](../getting-started/quickstart.md) — create an agent in the dashboard, fund it with a card, call `fetch()`. This page covers the SDK path for teams already running their own framework.
 
 ---
 
 ## What you'll need
 
 - Node.js 18+ (or Python 3.10+)
-- An EVM wallet your agent controls (private key, Coinbase CDP, Privy, Turnkey — any signer)
-- USDC on Base (that's it — no ETH needed for gas, Floe sponsors it)
-
-> **Don't have USDC on Base?** Buy directly from the [Developer Dashboard](../developers/developer-dashboard.md) via Coinbase, or bridge from any chain.
+- A Floe agent + API key from the [Developer Dashboard](https://dev-dashboard.floelabs.xyz) (Floe provisions the wallet — no seed phrase)
+- A funded balance (buy USDC with a card in the dashboard, or send USDC on Base)
 
 ---
 
@@ -28,7 +28,7 @@ npm install floe-agent @coinbase/agentkit viem zod
 pip install floe-agentkit-actions
 ```
 
-Both SDKs expose the same 45 actions. Pick the one that matches your stack.
+Both SDKs expose the same **47 actions** (52 once the upcoming allowlist actions ship). Pick the one that matches your stack.
 
 ---
 
@@ -61,54 +61,49 @@ If your agent supports MCP (Claude Desktop, Cursor), add Floe's hosted MCP serve
 
 ---
 
-## Step 3 — Get working capital
+## Step 3 — Pay for an API
 
-The fastest path is `instant_borrow` — deposits your USDC collateral and borrows against it in one call:
+Call any x402 API through the proxy. Payment comes from your prepaid balance automatically; if the API is free, the request passes through.
 
 ```ts
-// Deposit 10,000 USDC, borrow 9,500 (95% LTV), max 8% APR, 30 days
-const result = await agent.run("instant_borrow", {
-  marketId: "USDC/USDC",                // same-token working capital market
-  borrowAmount: "9500000000",            // $9,500 USDC (6 decimals)
-  collateralAmount: "10000000000",       // $10,000 USDC deposit
-  maxInterestRateBps: "800",             // 8% APR cap
-  duration: "2592000",                   // 30 days in seconds
+const response = await agent.run("x402_fetch", {
+  url: "https://api.example.com/premium/data",
+  method: "POST",
+  body: { prompt: "..." },
 });
-// → { loanId, rate, collateralLocked, usdcReceived }
 ```
 
-USDC lands in your agent's wallet. Done.
+Check what's left any time:
 
-> **Have ETH or BTC instead?** Use the WETH/USDC or cbBTC/USDC markets — same `instant_borrow` call, just change the `marketId` and `collateralAmount`.
+```ts
+await agent.run("x402_get_balance", {});
+```
 
 ---
 
-## Step 4 — Manage the credit line
+## Step 4 — Reason before you spend
+
+Use the agent-awareness tools to preflight cost and check balance before committing:
 
 | Action | When to use |
 |---|---|
-| `check_credit_status` | See balance, accrued interest, time to expiry |
-| `repay_credit` | Repay and get your deposit back |
-| `repay_and_reborrow` | Roll over into a new loan in one call |
-| `add_collateral` | Increase your deposit to extend the credit line |
+| `estimate_x402_cost` | Preflight a URL — cost + reflection against your balance, no payment |
+| `get_credit_remaining` | Available balance and headroom |
+| `get_spend_limit` / `set_spend_limit` / `clear_spend_limit` | Manage session spend caps |
 
-Full action reference: [AgentKit Actions](../developers/agentkit.md) (45 actions).
+Full action reference: [AgentKit Actions](../developers/agentkit.md) (47 actions).
 
 ---
 
-## Common issues
+## Advanced (in development): on-chain working capital
 
-| Problem | Fix |
-|---|---|
-| Match never happens | Your max rate is below market. Increase `maxInterestRateBps` or the matcher commission. |
-| Token approval errors | Floe's write actions auto-approve with a 1% buffer. If your wallet blocks, approve USDC manually first. |
-| Want zero-touch payments | Use the [x402 facilitator](../developers/x402-facilitator.md) — delegate once, then just call `fetch()`. |
+Borrowing USDC against on-chain collateral (`instant_borrow`, `repay_credit`, `add_collateral`) is part of Floe's **in-development** self-custody credit layer — not generally available. See [Working capital (on-chain)](../components/secured-credit.md).
 
 ---
 
 ## Next steps
 
-- [Credit for Agents](credit-for-agents.md) — full overview
+- [How Agents Pay With Floe](credit-for-agents.md) — full overview
 - [Agent Quickstart (Developer)](../developers/agent-quickstart.md) — complete happy-path walkthrough
 - [x402 Credit Facilitator](../developers/x402-facilitator.md) — zero-touch API payments
 - [Credit REST API](../developers/credit-api.md) — HTTP endpoints, no SDK needed

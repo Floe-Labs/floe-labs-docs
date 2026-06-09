@@ -6,9 +6,31 @@ Common questions about using Floe.
 
 ### What is Floe?
 
-Floe is a peer-to-peer, intent-based lending protocol on Base. Users create intents specifying their lending or borrowing terms, and solvers match compatible pairs to create loans.
+Floe is the **spend layer for AI agents**. You create an agent in the dashboard (Floe provisions a custodial wallet — no seed phrase), fund it with a card or bank transfer, and the agent pays for any x402 API through one Floe proxy endpoint — governed by programmable spend controls. No crypto experience needed.
 
-### How is Floe different from Aave or Compound?
+### What can my agent do today?
+
+* **Onboard walletless** — no MetaMask, no seed phrase, no gas tokens.
+* **Get funded with fiat** — card, bank, Apple Pay, Google Pay → USDC.
+* **Pay any x402 API** through `POST /v1/proxy/fetch` from a prepaid balance.
+* **Stay within budget** — per-call, daily, session, per-vendor, and per-team spend controls, enforced server-side.
+* **Reason about spend** — preflight cost and check balance before each call.
+
+### What blockchain is Floe on?
+
+Floe settles on **Base Mainnet** (Chain ID: 8453), an Ethereum Layer 2. Agents don't have to think about this — Floe handles the chain, signing, and gas.
+
+### What does it cost to pay for APIs?
+
+You pay whatever the API charges (deducted from your balance), plus ~1.5% Coinbase fees on fiat funding. Gas is free — Floe sponsors it.
+
+***
+
+## Advanced — on-chain lending (self-custody)
+
+> The questions below cover Floe's **on-chain protocol layer**, used by teams running their own keys. **Borrowing working-capital credit lines — and any associated rate — is in development and not generally available.** Most agent developers should use the walletless spend product above and can skip this section.
+
+### How is the on-chain protocol different from Aave or Compound?
 
 | Feature      | Floe                | Aave/Compound      |
 | ------------ | ------------------- | ------------------ |
@@ -18,18 +40,13 @@ Floe is a peer-to-peer, intent-based lending protocol on Base. Users create inte
 | Risk         | Isolated per loan   | Shared across pool |
 | Terms        | Custom              | Standardized       |
 
-### What blockchain is Floe on?
+### What markets exist?
 
-Floe is deployed on **Base Mainnet** (Chain ID: 8453), an Ethereum Layer 2.
+Three active markets:
 
-### What tokens are supported?
-
-Floe supports 4 tokens across 4 active markets:
-
-* **Loan tokens**: USDC, USDT
-* **Collateral tokens**: WETH (Wrapped ETH), cbBTC (Coinbase Wrapped BTC)
-
-**Active markets**: USDC/WETH, USDC/cbBTC, USDT/WETH, USDT/cbBTC
+* **USDC/USDC** (same-token) — collateral and loan are both USDC, max LTV 95%, no price-volatility risk.
+* **WETH/USDC** — WETH collateral, USDC loan, max LTV 70%.
+* **cbBTC/USDC** — cbBTC collateral, USDC loan, max LTV 70%.
 
 ***
 

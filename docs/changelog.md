@@ -6,6 +6,8 @@ icon: swap
 
 Notable changes and updates to the Floe protocol.
 
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **47 actions**; `@floelabs/mcp-server` exposes **36 tools**. The next release adds 5 merchant-allowlist actions/tools (→ **52** SDK / **41** MCP). Per-version numbers in the dated entries below were accurate at the time of that release.
+
 ## Version History
 
 ### v1.8.0 — Spend Controls, Vendor Marketplace, Welcome Credit (June 2026)
@@ -26,7 +28,7 @@ Programmable budgets for agent wallets. Cap spending per vendor, per API hostnam
 
 **Vendor Marketplace**
 
-Curated directory of verified x402 API endpoints callable with Floe credit. 27 endpoints across 7 categories.
+Curated directory of verified x402 vendor API services callable with Floe. 2,000+ vendor API services across categories.
 
 * **Categories**: Compute, Voice, Image, Text, Search, Browser, Agent Tools
 * **Services**: Venice AI (9 endpoints), Exa (2), Firecrawl (2), Tavily (1), Parallel AI (3), Hyperbrowser (2), Browserbase (1), Anchor Browser (1), dTelecom STT (1), AgentMail (2), Pinata Cloud (1), PostalForm (2)
@@ -219,8 +221,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 
 ### v1.2.0 — Smart Contract Hardening (February 2026)
 
-* Telegram Bot — LendrBot available on Telegram.
-* X/Twitter Notifications — intent summaries and post-match alerts.
+* Telegram and X/Twitter notifications — intent summaries and post-match alerts.
 * Farcaster Mini App.
 * DefiLlama TVL tracking.
 
@@ -232,7 +233,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 * Real-time risk preview panel with LTV risk levels and liquidation warnings.
 * Duration bucket selector (1W, 1M, 3M, 6M, 1Y).
 * Redesigned loan cards with LTV donut gauge.
-* 4 active markets: USDC/WETH, USDC/cbBTC, USDT/WETH, USDT/cbBTC.
+* Active markets: USDC/USDC, USDC/WETH, USDC/cbBTC.
 
 ***
 
@@ -242,7 +243,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 * USDC/WETH market with dual-oracle price feeds (Chainlink + Pyth).
 * Circuit breaker protection, solver-based matching, liquidation with 5% bonus.
 * LendingIntentMatcher proxy: `0x17946cD3e180f82e632805e5549EC913330Bb175`.
-* Web app at [app.floelabs.xyz](https://app.floelabs.xyz).
+* Web app at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz).
 
 ***
 

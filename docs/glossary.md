@@ -39,14 +39,11 @@ Price feed that tells the protocol asset values. For volatile markets (WETH, cbB
 ## Circuit Breaker
 Safety mechanism that pauses the protocol if prices are stale or invalid.
 
-## Lendr
-Floe's AI assistant. Chat with it for help creating intents or understanding your loans.
-
 ## Market
-A loan/collateral token pair. Active markets: USDC/USDC (secured working capital, 95% LTV), USDC/WETH, USDC/cbBTC, USDT/WETH, USDT/cbBTC.
+A loan/collateral token pair. Active markets: USDC/USDC (95% LTV, no price risk), WETH/USDC (70% LTV), cbBTC/USDC (70% LTV).
 
 ## Same-Token Market
-A market where the loan and collateral are the same asset (e.g., USDC/USDC). The oracle returns a fixed 1:1 ratio, there is no price-volatility liquidation risk, and LTV can reach 99.5%. Designed for secured working capital lines.
+A market where the loan and collateral are the same asset (e.g., USDC/USDC). The oracle returns a fixed 1:1 ratio, there is no price-volatility liquidation risk, and the LTV cap is 95%. Used for the on-chain working-capital path.
 
 ## Fiat On-Ramp
 The ability to buy USDC from the Developer Dashboard using a credit card, debit card, or bank transfer via Coinbase CDP. Funds land directly in your agent's wallet on Base.
@@ -94,10 +91,10 @@ The L2 (Base) transaction ordering service. Floe's circuit breaker checks sequen
 An EIP-712 value that binds signatures to a specific contract on a specific chain, preventing cross-chain and cross-contract replay attacks.
 
 ## AgentKit
-Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `floe-agent` package provides 45 actions (30 lending + 6 x402 credit-delegation + 9 agent-awareness) as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP.
+Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `floe-agent` package provides 47 actions (30 Floe + 17 x402: delegation, x402 payment, and agent-awareness) as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP. The next release adds 5 allowlist actions (52 total).
 
 ## Working Capital
-USDC borrowed against a USDC deposit via the USDC/USDC market. At 95% LTV, a $10,000 deposit yields $9,500 in spendable working capital. No price risk, no crypto complexity.
+USDC borrowed against a USDC deposit via the USDC/USDC market (95% LTV cap, no price risk). The on-chain working-capital credit path is **in development** — the live way to fund an agent is a prepaid balance topped up with fiat.
 
 ## Credit Score
 An on-chain creditworthiness score computed by [Cred Protocol](https://cred.xyz) based on DeFi lending/borrowing history. Displayed as a radar chart on the Floe dashboard and as tier badges in the loan book. Informational only — does not gate access.
@@ -118,13 +115,10 @@ A strategy that uses a flash loan to exploit price differences between Floe and 
 An intent parameter specifying minimum and maximum acceptable loan durations instead of a single fixed value. Increases matching flexibility by allowing the matcher to select any duration within the overlapping range of a lend/borrow pair.
 
 ## ACP — Agent Commerce Protocol
-Onchain protocol for agents to transact with each other and with services. Source of deterministic agent revenue Floe can underwrite against.
-
-## ACP — Agent Commerce Protocol
 Onchain protocol for agents to transact with each other and with services.
 
 ## Facilitator (x402 Facilitator)
-A service that processes x402 payments on behalf of agents. Floe's facilitator borrows USDC via operator delegation and signs EIP-3009 authorizations — agents never handle payments directly.
+A service that processes x402 payments on behalf of agents. Floe's facilitator pays from the agent's prepaid balance and signs EIP-3009 authorizations — agents never handle payments directly.
 
 ## LP (Liquidity Provider)
 A participant providing capital by posting lend intents on Floe.
