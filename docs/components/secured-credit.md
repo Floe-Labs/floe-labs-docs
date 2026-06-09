@@ -2,9 +2,11 @@
 icon: hand-holding-dollar
 ---
 
-# 03 · Secured working capital `GA`
+# Working capital (on-chain) `In development`
 
-Instant credit against on-chain collateral. One API call, fixed rate, fixed term, per-loan isolated escrow. **3,000+ lines issued · zero defaults.**
+> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral is **not yet generally available**. This is part of Floe's Advanced / self-custody on-chain layer. The live way to give an agent money is the [walletless prepaid balance](../getting-started/quickstart.md) — fund with a card, pay for x402 APIs through the proxy. The actions and rates below describe the in-development on-chain credit surface.
+
+Credit against on-chain collateral: one API call, fixed rate, fixed term, per-loan isolated escrow.
 
 ---
 
@@ -43,11 +45,11 @@ Collateral auto-returns in the same transaction as repayment.
 
 ## Markets
 
-| Market | LTV ceiling | Notes |
+| Market | Max LTV | Notes |
 |---|---|---|
-| USDC / USDC (same-token) | up to 99.5% | No price-volatility risk. Primary working-capital market. |
-| WETH → USDC | 75% | Volatile-collateral market |
-| cbBTC → USDC | 75% | Volatile-collateral market |
+| USDC / USDC (same-token) | 95% | No price-volatility risk. Primary working-capital market. |
+| WETH → USDC | 70% | Volatile-collateral market |
+| cbBTC → USDC | 70% | Volatile-collateral market |
 
 Gas is free on all markets — Floe sponsors transaction costs.
 

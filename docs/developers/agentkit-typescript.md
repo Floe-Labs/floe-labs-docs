@@ -4,7 +4,7 @@ icon: js
 
 # TypeScript SDK
 
-The `floe-agent` package provides Coinbase AgentKit ActionProviders with **45 total actions** (30 in `FloeActionProvider` + 15 in `X402ActionProvider` — 6 credit delegation + 9 agent-awareness) for Node.js / TypeScript environments.
+The `floe-agent` package provides Coinbase AgentKit ActionProviders with **47 total actions** (30 in `FloeActionProvider` + 17 in `X402ActionProvider` — delegation, x402 payment, and agent-awareness) for Node.js / TypeScript environments. The next release adds 5 merchant-allowlist actions (52 total).
 
 > **Naming convention:** All action names and parameters in the TypeScript SDK use **camelCase** (e.g., `borrowAmount`, `maxInterestRateBps`). The Python SDK uses **snake_case** for the same fields. Code examples are not interchangeable between SDKs without adjusting case.
 
@@ -65,7 +65,7 @@ const tools = await getLangChainTools(agentkit);
 
 ### MCP Server (Claude Desktop / Cursor)
 
-Expose all 45 Floe actions as MCP tools:
+Expose the Floe MCP tools (36 today) in Claude Desktop / Cursor:
 
 ```bash
 npm install @coinbase/agentkit-model-context-protocol @modelcontextprotocol/sdk
@@ -122,7 +122,7 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 ## CLI: `floe-agent`
 
-Interactive conversational agent + per-agent registration tooling. The `run` subcommand drives all 45 actions (30 lending + 6 x402 + 9 agent-awareness) through an LLM; the other subcommands manage Floe agents and their API keys.
+Interactive conversational agent + per-agent registration tooling. The `run` subcommand drives all 47 actions (30 Floe + 17 x402) through an LLM; the other subcommands manage Floe agents and their API keys.
 
 ### Install
 

@@ -2,13 +2,13 @@
 icon: zap
 ---
 
-# x402 Credit Facilitator
+# x402 Payment Facilitator
 
-Pay for any x402-enabled API with Floe credit. No pre-funding, no wallet management — delegate your collateral and the facilitator handles everything.
+Pay for any x402-enabled API through Floe. No wallet management — fund a balance and the facilitator handles signing, settlement, and verification.
 
 > You can also set up agents through the [Developer Dashboard](developer-dashboard.md) — a web UI at `dev-dashboard.floelabs.xyz`.
 
-**Works with 13,000+ existing x402 APIs** on Base — no per-service integration needed.
+**Reaches 2,000+ vendor API services** on Base — no per-service integration needed.
 
 ## Protocol versions
 

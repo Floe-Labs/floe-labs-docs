@@ -4,9 +4,9 @@ icon: python
 
 # Python SDK
 
-The `floe-agentkit-actions` package provides Coinbase AgentKit ActionProviders with **45 total actions** (30 in `FloeActionProvider` + 15 in `X402ActionProvider` — 6 credit delegation + 9 agent-awareness) for Python 3.10+ environments.
+The `floe-agentkit-actions` package provides Coinbase AgentKit ActionProviders with **47 total actions** (30 in `FloeActionProvider` + 17 in `X402ActionProvider` — delegation, x402 payment, and agent-awareness) for Python 3.10+ environments. The next release adds 5 merchant-allowlist actions (52 total).
 
-> **Parity note.** As of May 2026, the Python SDK has full parity with the TypeScript SDK: 30 Floe actions, 6 X402 credit-delegation actions, and 9 agent-awareness actions (45 total). The previously TS-only credit-facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) and the v0.3.0 agent-awareness actions are all available in Python.
+> **Parity note.** The Python SDK has full parity with the TypeScript SDK: 30 Floe actions plus 17 X402 actions (47 total). The credit-facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) belong to the **in-development** on-chain credit path and are present in both SDKs.
 
 > **Naming convention:** All action names and parameters in the Python SDK use **snake_case** (e.g., `borrow_amount`, `max_interest_rate_bps`). The TypeScript SDK uses camelCase for the same fields. Code examples are not interchangeable between SDKs without adjusting case.
 

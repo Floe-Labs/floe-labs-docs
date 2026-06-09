@@ -1,8 +1,10 @@
-# How Floe Works
+# How Floe Works Under the Hood
 
-The mechanics behind Floe's credit protocol — intents, isolated loans, and the matching engine.
+> **This is the Advanced / on-chain layer.** You do **not** need any of this to use Floe. The live product is walletless: create an agent, fund it with a card, and pay for x402 APIs through the proxy — see the [Quickstart](quickstart.md). This page explains the on-chain protocol that sits underneath, used on the self-custody path. The on-chain working-capital credit path is **in development**.
 
-> **TL;DR.** A borrower (human or agent) signs an *intent*. A solver matches it with a lender's intent. The result is an isolated, fixed-rate loan with smart-contract-enforced repayment. Fixed rate. Fixed term. Per-loan isolated escrow. Gas-free for agents.
+The mechanics behind Floe's on-chain protocol — intents, isolated loans, and the matching engine.
+
+> **TL;DR.** On the on-chain path, a borrower (human or agent) signs an *intent*. A solver matches it with a lender's intent. The result is an isolated, fixed-rate loan with smart-contract-enforced repayment. Fixed rate. Fixed term. Per-loan isolated escrow. Gas-free for agents.
 
 ---
 
@@ -173,34 +175,11 @@ Floe surfaces onchain credit scores via [Cred Protocol](https://cred.xyz) on the
 
 ## 10. Agent interfaces
 
-- **AgentKit** — TypeScript + Python SDKs with 45 actions
-- **MCP server** — same actions exposed to any Claude/OpenAI/Cursor-compatible agent
+- **AgentKit** — TypeScript + Python SDKs with 47 actions (52 once the upcoming allowlist actions ship)
+- **MCP server** — 36 tools exposed to any Claude/OpenAI/Cursor-compatible agent
 - **Credit REST API** — HTTP endpoints for any language
 
----
-
-## 13. Agent interfaces
-
-- **MCP server** — same actions exposed to any Claude/OpenAI/Cursor-compatible agent.
-- **AgentKit** — TS + Python SDKs with 45 actions.
-
 → [MCP Server](../developers/mcp-server.md) · [AgentKit](../developers/agentkit.md)
-
----
-
-## 14. Markets
-
-A market is a (loan token, collateral token) pair. Currently live:
-
-| Market | Loan token | Collateral | Max LTV | Liquidation risk |
-|---|---|---|---|---|
-| **USDC/USDC** | USDC | USDC | **95%** | **Interest accrual only** |
-| USDC/WETH | USDC | WETH | 70% | Price volatility |
-| USDC/cbBTC | USDC | cbBTC | 70% | Price volatility |
-| USDT/WETH | USDT | WETH | 70% | Price volatility |
-| USDT/cbBTC | USDT | cbBTC | 70% | Price volatility |
-
-**USDC/USDC (same-token market):** The protocol hardcodes a 1:1 oracle ratio — no external price feed, no circuit breaker impact. LTV gap reduced to 0.5% (vs 8% for volatile markets). Designed for secured working capital lines.
 
 New markets are added by governance and have their own default rate, default LTV, protocol fee, and liquidation incentive.
 
@@ -225,6 +204,6 @@ New markets are added by governance and have their own default rate, default LTV
 
 ## Next
 
-- [Credit for Agents](../agents/credit-for-agents.md) — secured working capital for AI agents
-- [Agent Working Capital](../developers/agent-working-capital.md) — deposit, borrow, repay via the API
+- [How Agents Pay With Floe](../agents/credit-for-agents.md) — fund a balance, pay for APIs
+- [Working capital (on-chain)](../components/secured-credit.md) — the in-development credit path
 - [Architecture](../protocol/architecture.md) — contracts and flow

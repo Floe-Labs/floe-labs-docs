@@ -17,18 +17,18 @@ AgentKit is Coinbase's open-source framework that gives AI agents on-chain capab
 | **Package** | `floe-agent` | `floe-agentkit-actions` |
 | **Install** | `npm install floe-agent` | `pip install floe-agentkit-actions` |
 | **Runtime** | Node.js 18+ | Python 3.10+ |
-| **Actions exposed** | **45** (30 Floe + 6 X402 credit-delegation + 9 agent-awareness) | **45** (30 Floe + 6 X402 credit-delegation + 9 agent-awareness) — full parity |
+| **Actions exposed** | **47** (30 Floe + 17 X402: delegation + x402 payment + agent-awareness) | **47** — full parity. Next release adds 5 merchant-allowlist actions (→ 52). |
 | **AI Frameworks** | Vercel AI SDK, LangChain, MCP Server, OpenAI Agents SDK | LangChain, OpenAI Function Calling |
 | **CLI** | `floe-agent` (via npx) | `floe-agent` (via pip) |
 | **GitHub** | [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions) | [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py) |
 
-> **SDK parity note.** The Python SDK has full parity with TypeScript: 30 Floe actions plus 6 X402 credit-delegation actions plus 9 agent-awareness actions (45 total in both). The high-level credit facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) are available in both SDKs.
+> **SDK parity note.** The Python SDK has full parity with TypeScript: 30 Floe actions plus 17 X402 actions (delegation, x402 payment, and agent-awareness) — **47 total** in both. The next release adds 5 merchant-allowlist actions (52 total). The high-level credit-facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) belong to the **in-development** on-chain credit path and are present in both SDKs.
 >
 > **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
 >
 > **Need working capital for your agent?** See [Agent Working Capital](agent-working-capital.md) for credit facility actions that let agents request, match, and manage fixed-rate loans.
 
-## Actions Reference (TypeScript — 45 total)
+## Actions Reference (TypeScript — 47 total)
 
 The full list below reflects the **TypeScript SDK** surface. Where an action is Python-available too, it's marked. See the [Python SDK page](agentkit-python.md) for the Python-only list.
 
@@ -71,18 +71,38 @@ All write actions auto-approve tokens to the LendingIntentMatcher with a 1% buff
 
 > **`flash_loan` vs `flash_arb`:** `flash_loan` sends tokens to `msg.sender` and calls `receiveFlashLoan()` — your connected wallet must be a smart contract. EOA wallets will revert. Use `flash_arb` instead, which routes through a pre-deployed FlashArbReceiver contract that handles repayment automatically.
 
-### x402 Credit Actions (6)
+### x402 & Agent-Awareness Actions (17)
+
+These live on the separate `X402ActionProvider`.
+
+**Payment (live):**
 
 | Action | Description |
 |--------|-------------|
-| `grant_credit_delegation` | Provision a new Floe agent (managed Privy wallet + server-side delegation) and mint its `floe_*` API key in one call. Takes `name`, `borrowLimit`, `maxRateBps`, `expiryDays`. Prefer the `floe-agent register` CLI for persistent multi-agent setups. |
-| `revoke_credit_delegation` | Revoke an on-chain operator permission from your local wallet (legacy operation). For managed agents, use `floe-agent revoke <name>` or the dashboard. |
-| `check_credit_delegation` | Read `getOperatorPermission` on-chain from your local wallet for the given operator (legacy operation). For managed-agent state, use `GET /v1/developer/agents/{agentId}`. |
-| `x402_fetch` | Fetch any URL through the facilitator proxy — auto-pays 402 responses |
-| `x402_get_balance` | Check credit status: limit, used, available, active loans |
+| `x402_fetch` | Fetch any URL through the facilitator proxy — auto-pays 402 responses from your prepaid balance |
+| `x402_get_balance` | Check spending balance: available, used, limit |
+| `x402_await_settlement` | Wait for an in-flight payment to settle |
 | `x402_get_transactions` | View payment history with pagination |
 
-> **x402 actions use a separate provider.** Register `x402ActionProvider` alongside `floeActionProvider` to get both lending and payment actions. See [x402 Credit Facilitator](x402-facilitator.md) for setup details.
+**Agent-awareness (live)** — `get_credit_remaining`, `get_loan_state`, `get_spend_limit`, `set_spend_limit`, `clear_spend_limit`, `list_credit_thresholds`, `register_credit_threshold`, `delete_credit_threshold`, `estimate_x402_cost`. See [Agent Awareness](agent-awareness.md).
+
+**Delegation (in-development on-chain credit path):** `grant_credit_delegation`, `open_credit_line`, `revoke_credit_delegation`, `check_credit_delegation`.
+
+> The next release adds 5 merchant-allowlist actions (`set_allowlist_mode`, `get_allowlist_mode`, `add_allowlist_entry`, `remove_allowlist_entry`, `list_allowlist`) → 52 total. Register `x402ActionProvider` alongside `floeActionProvider` to get both. See [x402 Payment Facilitator](x402-facilitator.md).
+
+### Credit Facility Actions (7) — in development
+
+> These belong to the **in-development** on-chain working-capital credit path (deposit collateral, borrow USDC). Not generally available. See [Working capital (on-chain)](../components/secured-credit.md).
+
+| Action | Description |
+|--------|-------------|
+| `instant_borrow` | One-call borrow — auto-selects lender, approves, registers, matches |
+| `repay_and_reborrow` | Repay an open loan and instantly take a fresh one |
+| `request_credit` | Browse current offers before borrowing |
+| `manual_match_credit` | Match a specific lender's intent |
+| `check_credit_status` | Loan health, balance, interest accrued, time to expiry |
+| `repay_credit` | Repay an open loan; collateral returns |
+| `renew_credit_line` | Roll a position before expiry |
 
 ### Deploy / Verify Actions (3)
 

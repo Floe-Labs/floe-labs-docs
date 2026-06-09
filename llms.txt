@@ -1,6 +1,6 @@
-# Floe — Working Capital for AI Agents
+# Floe — The spend layer for AI agents
 
-> Floe is the credit bureau and capital rail for AI agents. Deposit USDC, borrow up to 95% as working capital (same-token, no price risk). Also supports WETH/cbBTC collateral. Fixed rates, per-loan isolated escrow, gas-free for agents. 3,000+ lines issued, zero defaults. Live on Base mainnet. Dashboard: dev-dashboard.floelabs.xyz.
+> Floe is the spend layer for AI agents. Walletless onboarding (no crypto, no seed phrase), fiat funding (card/bank/Apple Pay/Google Pay → USDC), and one x402 proxy endpoint to pay any of 2,000+ vendor API services — all governed by programmable, context-aware spend controls (per call, day, session, vendor, agent team). Spend analytics and multi-agent key management included. Live on Base mainnet. On-chain working-capital credit is in development. Dashboard: dev-dashboard.floelabs.xyz.
 
 This file is a structured map of the Floe documentation, optimized for LLM agents reading it as part of a tool loop. Each page can also be queried directly by appending `?ask=<question>` to the URL — the response includes citations.
 
@@ -15,8 +15,8 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 
 ## For agent operators
 
-- [Bank Account → First API Call](https://floe-labs.gitbook.io/docs/agents/fiat-to-x402): Fund with a bank account or card, get a USDC credit line, call any x402 API — no crypto experience needed — ask: "How do I fund my agent with a credit card?"
-- [Credit for Agents](https://floe-labs.gitbook.io/docs/agents/credit-for-agents): Why agents pre-fund today, why that's broken, how Floe replaces it with secured working capital
+- [Bank Account → First API Call](https://floe-labs.gitbook.io/docs/agents/fiat-to-x402): Fund with a bank account or card, then call any x402 API from your prepaid balance — no crypto experience needed — ask: "How do I fund my agent with a credit card?"
+- [Credit for Agents](https://floe-labs.gitbook.io/docs/agents/credit-for-agents): How an agent pays for APIs from a funded balance today; on-chain working-capital credit (in development)
 
 ## For developers
 
@@ -94,22 +94,22 @@ All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them th
 ## Key facts for retrieval
 
 - **Network**: Base mainnet (chain ID 8453)
-- **Loan tokens**: USDC, USDT
-- **Collateral**: USDC (primary, same-token market at 95% LTV), WETH, cbBTC
-- **Primary market**: USDC/USDC — deposit USDC, borrow up to 95% as working capital, hardcoded 1:1 oracle, no price risk
+- **What's live**: walletless onboarding, fiat on-ramp, x402 payment proxy, programmable spend controls, agent-awareness tools, multi-agent key management
+- **Funding model (live)**: agent pays for x402 APIs from a prepaid USDC balance funded by card/bank/Apple Pay/Google Pay
+- **Active markets (on-chain, advanced)**: USDC/USDC (95% LTV), WETH/USDC (70%), cbBTC/USDC (70%)
 - **Lending matcher proxy**: 0x17946cD3e180f82e632805e5549EC913330Bb175
 - **Facilitator EOA**: 0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1
-- **Credit model**: Secured, fixed rate, fixed term. USDC/USDC has no price-volatility liquidation risk.
+- **Working-capital credit (in development)**: borrow USDC against on-chain collateral; same-token USDC/USDC market has no price-volatility liquidation risk
 - **Gas**: Sponsored by Floe for agents using the x402 facilitator
 - **Fiat on-ramp**: Buy USDC via Coinbase (credit card / bank transfer) from the Developer Dashboard
-- **Multi-agent**: Up to 5 agent wallets per developer, each with independent credit line
-- **AgentKit actions**: 45 total (30 Floe + 6 x402 + 9 agent-awareness)
-- **MCP tools**: 36 (12 read + 9 write + 3 analysis + 3 utility + 9 agent-awareness)
-- **x402 verified services**: 27 endpoints across 7 categories (compute, voice, image, text, search, browser, agent-tools)
-- **npm**: `floe-agent` (v0.3.0), `@floelabs/mcp-server` (v0.2.0)
-- **PyPI**: `floe-agentkit-actions` (v0.3.0)
+- **Multi-agent**: Up to 5 agent wallets per developer, each with independent spend controls and API keys
+- **AgentKit actions**: 47 total (30 Floe + 17 x402: 4 delegation + 4 x402 + 9 agent-awareness). Next release adds 5 allowlist actions → 52.
+- **MCP tools**: 36. Next release adds 5 allowlist tools → 41.
+- **x402 reach**: 2,000+ vendor API services across categories (compute, voice, image, text, search, browser, agent-tools)
+- **npm**: `floe-agent` (v0.5.1), `@floelabs/mcp-server` (v0.2.1)
+- **PyPI**: `floe-agentkit-actions` (v0.5.1)
 - **MCP endpoint**: https://mcp.floelabs.xyz/mcp
-- **x402 proxy**: `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` — pays any x402 API from your credit line
+- **x402 proxy**: `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` — pays any x402 API from your prepaid balance
 
 ## Querying these docs
 

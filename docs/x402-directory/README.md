@@ -4,7 +4,7 @@ icon: compass
 
 # x402 API Directory
 
-**Verified x402 APIs** you can call with Floe credit. Every endpoint listed here accepts USDC on Base and works with `x402_fetch` or `/v1/proxy/fetch`.
+**Verified x402 vendor API services** you can pay for with Floe — 2,000+ reachable through the proxy. Every endpoint listed here accepts USDC on Base and works with `x402_fetch` or `/v1/proxy/fetch`, paid from your prepaid balance.
 
 ## Floe Verified Services
 

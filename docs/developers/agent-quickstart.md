@@ -345,5 +345,5 @@ One env var, one function, full payment abstraction. See [Agent Runtime Contract
 - **[API Keys](api-keys.md)** — Generate keys for programmatic access
 - **[x402 Credit Facilitator](x402-facilitator.md)** — Zero-touch API payments
 - **[Credit REST API](credit-api.md)** — HTTP endpoints for any language
-- **[AgentKit Integration](agentkit.md)** — Full action reference (45 actions, TypeScript + Python)
+- **[AgentKit Integration](agentkit.md)** — Full action reference (47 actions, TypeScript + Python)
 - **[Agent Working Capital](agent-working-capital.md)** — Deep dive into credit design and supported markets
