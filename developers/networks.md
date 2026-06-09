@@ -50,8 +50,6 @@ The **Facilitator EOA** is the address you pass as the `operator` argument to `s
 
 ### Active Markets
 
-<!-- VERIFY: USDT markets removed per canonical 3-market ground truth. Confirm against modular-lending deployment record that no USDT/WETH or USDT/cbBTC market is live before publishing. -->
-
 | Market     | Loan Token | Collateral Token | Max LTV | Notes |
 | ---------- | ---------- | ---------------- | ------- | ----- |
 | **USDC/USDC** | USDC    | USDC             | **95%** | Same-token working capital — no price risk, hardcoded 1:1 oracle |

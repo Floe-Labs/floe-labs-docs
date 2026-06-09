@@ -77,7 +77,7 @@ Per ground truth, working-capital credit lines, any live rate, and "stop pre-fun
 | `docs/frameworks/crewai.md` | 61 | "auto-borrows USDC against your credit line" | not-live-as-live |
 | `docs/changelog.md` | 74, 83, 89–97, 105, 167–169 | v1.6/v1.7 entries document "open-credit-line", "managed credit line", auto-borrow as shipped | not-live-as-live (see VERIFY-1) |
 
-<!-- VERIFY-1: changelog v1.7.0 and docs/developers/credit-api.md document POST /v1/developer/agents/:id/open-credit-line and instant-borrow as shipped endpoints. Ground truth says credit lines / live rates are NOT live. Either (a) the borrow layer is genuinely roadmap and these endpoints are pre-GA, or (b) the facilitator's internal borrow is live but must not be marketed as a standalone product. Backend-dev must confirm prod status of /v1/credit/instant-borrow, /v1/developer/agents/:id/open-credit-line, and /v1/credit/offers before relabeling. Do not assert either way in live edits until confirmed. -->
+<!-- VERIFY-1 (NON-BLOCKING — cross-team follow-up, not a docs placeholder): the docs already treat the credit/borrow layer as "in development" per the ground-truth override, so no published page asserts it as live. This note remains only as a standing flag for backend-dev to confirm the prod status of /v1/credit/instant-borrow, /v1/developer/agents/:id/open-credit-line, and /v1/credit/offers, and to reconcile the v1.6/v1.7 changelog entries that describe them as shipped. Does not block this PR. -->
 
 ### 2.4 `number-drift`
 
@@ -115,7 +115,7 @@ Per ground truth, working-capital credit lines, any live rate, and "stop pre-fun
 | `docs/developers/x402-facilitator.md` | 11 | "Works with **13,000+** existing x402 APIs" | number-drift |
 | `docs/frameworks/crewai.md` | 61 | "any of the **13,000+** x402 endpoints" | number-drift |
 
-<!-- VERIFY-2: Pick ONE verified vendor count. The directory README lists ~12 services / ~7 categories; changelog says 27 endpoints; x402.md says 60. The "13,000+ reachable" claim (ecosystem-wide x402 endpoint count) is unverifiable from this repo and reads as a marketing superlative — confirm or drop. Recommend: state the curated count (the actual number of entries in docs/x402-directory/directory.json) and drop "13,000+". -->
+<!-- VERIFY-2 (RESOLVED 2026-06-09): vendor count confirmed as "2,000+ vendor API services". All 27 / 60 / 13,000+ instances were replaced with that phrasing across the published docs. -->
 
 **Market list / LTV drift** (canonical = `developers/networks.md`):
 
@@ -127,7 +127,7 @@ Per ground truth, working-capital credit lines, any live rate, and "stop pre-fun
 | `docs/getting-started/core-concepts.md` | 76–82 vs 195–201 | one table lists 3 markets (USDC/USDC, WETH, cbBTC), a second duplicate table lists 5 incl. USDT | internal contradiction |
 | `docs/glossary.md` | 46 | 5 markets incl. USDT | vs CLAUDE.md "3 active markets" |
 
-<!-- VERIFY-3: Project CLAUDE.md lists only 3 active markets (USDC/USDC, WETH/USDC, cbBTC/USDC). networks.md, faq, glossary, core-concepts list USDT/WETH and USDT/cbBTC as active. Confirm with smart-contract-dev / on-chain deployment record whether USDT markets are actually live. If not, remove them from networks.md and downstream. Also reconcile volatile-market LTV: 70% (networks.md, core-concepts) vs 75% (secured-credit.md). -->
+<!-- VERIFY-3 (RESOLVED 2026-06-09): confirmed against modular-lending/script/deploy/deployments/8453.json and project CLAUDE.md — no live USDT market (USDT only appears as hypotheticals in modular-lending/docs design docs). Canonical 3-market list stands: USDC/USDC (95%), WETH/USDC (70%), cbBTC/USDC (70%). USDT markets removed from networks.md and downstream; 75% → 70% LTV drift fixed. -->
 
 ### 2.5 `positioning` (lending / P2P / yield as headline; custody)
 
@@ -159,9 +159,9 @@ The `floe-docs-optimization/` folder (15 files) is an **unpublished** internal r
 | SDK "45 actions" | **47 on main / 52 post-merge** | `agentkit-actions/src/floeActionProvider.ts` = 30 `@CreateAction`; `x402ActionProvider.ts` = 22 on the open PR branch (= 17 on main + 5 allowlist). `agentkit-actions-py` matches: `action_provider.py` 30, `x402_action_provider.py` 22. |
 | MCP "36 tools" | **36 on main / 41 post-merge** | `floe-mcp-server/src/tools/index.ts` = 41 tool registrations on `feat/mcp-merchant-allowlist-parity` (= 36 main + 5 allowlist). |
 | Py "30 + 6 + 9" split | The X402 provider is a single 17→22 action group; the "6+9" historical split is stale | `x402ActionProvider.ts` action names include 4 x402 + 9 awareness + 4 delegation + 5 allowlist on branch. |
-| "27 verified endpoints" / "60 verified" / "13,000+" | unresolved — see VERIFY-2 | conflicting across `README.md`, `x402.md`, `changelog.md` |
+| "27 verified endpoints" / "60 verified" / "13,000+" | **resolved → "2,000+ vendor API services"** (VERIFY-2) | was conflicting across `README.md`, `x402.md`, `changelog.md` |
 | Volatile LTV "70%" vs "75%" | networks.md (canonical) = **70%** | `developers/networks.md:57–60` |
-| USDT markets live? | unresolved — see VERIFY-3 | CLAUDE.md says 3 markets; networks.md/faq/glossary say 5 |
+| USDT markets live? | **resolved → no** (VERIFY-3, confirmed vs 8453.json) | canonical 3-market list stands; USDT removed |
 
 ---
 
