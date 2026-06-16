@@ -55,7 +55,7 @@ Two **internal contradictions** stand out and should be treated as high priority
 | `floe-docs-optimization/01_introduction.md` | 35, 69 | "App: [app.floelabs.xyz]" | dead-link (unpublished draft) |
 | `floe-docs-optimization/14_llms.txt` | 3 | "App: app.floelabs.xyz" | dead-link (unpublished draft) |
 
-No instances of `x402.floelabs.xyz`, `x402.floe.xyz`, or `floe.run` found anywhere. The live hosts in use are correct: `dev-dashboard.floelabs.xyz`, `credit-api.floelabs.xyz`, `mcp.floelabs.xyz`.
+No instances of any legacy or third-party hosts found anywhere. The live hosts in use are correct: `dev-dashboard.floelabs.xyz`, `credit-api.floelabs.xyz`, `mcp.floelabs.xyz`.
 
 ### 2.3 `not-live-as-live` (credit lines / live rates / auto-borrow presented as shipped)
 
