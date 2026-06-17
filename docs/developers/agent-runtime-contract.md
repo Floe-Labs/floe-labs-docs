@@ -106,6 +106,12 @@ Notes:
 - **Advisory, not enforcement.** Ignoring it doesn't break anything; the existing `402 insufficient_balance` / policy hard-stop is still the backstop.
 - **`window_resets_at`** tells you when a rolling cap refills, so you can choose to wait instead of downgrade. `once`/`session` caps don't auto-refill.
 
+### Same signal, locally (open source)
+
+No Floe account yet? The open-source [`floe-guard`](https://github.com/Floe-Labs/floe-guard) library exposes the **same advisory shape** on its in-process budget guard — `guard.advisory()` returns `near_limit`, `used_bps`, and `remaining_usd` for your local cap (Python and TypeScript). Write your taper logic against it for free, no account, no network.
+
+When you move to the hosted proxy, that logic ports unchanged — it just reads `X-Floe-Budget-Advisory` and gains what a single in-process budget can't know: the **tightest** cap across `credit_line | session | task | api | vendor`, cross-vendor reasoning, server-truth balances, and `window_resets_at`. Local guard is estimate-based and single-cap; the hosted advisory is server-truth and multi-cap.
+
 ## Error Handling Matrix
 
 | Status | `error` body | Meaning | Retry? | How |
