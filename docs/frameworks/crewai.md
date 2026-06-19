@@ -58,7 +58,7 @@ The crew spends real USDC against the Floe credit line — but never more than `
 
 ### Paying for tools — `Floe402Tool`
 
-`Floe402Tool(url=...)` is a `crewai.tools.BaseTool` that calls any of the 13,000+ [x402](../developers/x402-facilitator.md) endpoints Floe can reach. Each call routes through the Floe facilitator, which auto-borrows USDC against your credit line, signs the EIP-3009 payment, and returns the response.
+`Floe402Tool(url=...)` is a `crewai.tools.BaseTool` that calls any of the **2,000+ vendor API services** reachable through [x402](../developers/x402-facilitator.md). Each call routes through the Floe facilitator, which funds the payment from your agent's Floe-managed balance, signs the EIP-3009 payment, and returns the response.
 
 ```python
 from crewai_floe import Floe402Tool

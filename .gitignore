@@ -1,1 +1,4 @@
 floe-docs-optimization/
+.DS_Store
+.claude/
+.vscode/

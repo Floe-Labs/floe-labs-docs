@@ -4,9 +4,9 @@ icon: rocket
 
 # Quickstart (5 minutes)
 
-Give your AI agent a prepaid balance, then let it pay for any x402 API. That's the whole product. No wallets to install, no keys to manage, no tokens to buy, no gas to pay.
+Create an agent, give it a Floe-managed balance, then let it pay for any x402 API — every call governed by spend controls you set. That's the whole product: **a budget, not a balance.** No wallets to install, no keys to manage, no tokens to buy, no gas to pay.
 
-> **$2 free credit (~200 API calls).** Your agent can start paying for APIs today — no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
+> **$2 Welcome Credit (~200 API calls).** Your agent can start paying for APIs today — no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
 
 ---
 
@@ -22,7 +22,11 @@ In the dashboard, click **Fund Wallet** on the agent and pay with **card, Apple 
 
 Suggested first amount: **$10**. That's enough to test the loop and call a few hundred x402 APIs at typical $0.001–$0.05 prices.
 
-## 3. Call any API
+## 3. Set a spend control (optional but recommended)
+
+Cap what the agent can spend — per call, per day, per vendor, or across your whole team — before it makes its first call. Enforced server-side, so a runaway loop can't blow your budget. See [Spend Controls](../developers/spend-controls.md). (Scope note: Floe caps x402 payments made through the proxy, not LLM token bills you pay with your own provider key — see that page.)
+
+## 4. Call any API
 
 Install the SDK and call `fetch`. If the API is x402-gated, payment happens automatically; if it's free, the request passes through. Either way, your agent's balance updates.
 
@@ -70,7 +74,7 @@ console.log(`Balance: $${(await agent.balance()).toFixed(2)}`);
 
 That's the entire happy path. No `instant_borrow`, no `marketId`, no LTV, no signing, no `viem`, no `web3.py`, no `PRIVATE_KEY`, no RPC URL, no gas token.
 
-## 4. Topping up automatically
+## 5. Topping up automatically
 
 Production agents shouldn't sleep on a low balance. Two options:
 
@@ -79,11 +83,11 @@ Production agents shouldn't sleep on a low balance. Two options:
 
 Both are in the dashboard under your agent's settings.
 
-## 5. What's next
+## 6. What's next
 
 - [How my agent gets paid](../agents/credit-for-agents.md) — the same mechanics in reverse: receive x402 payments from other agents
 - [Frameworks](../frameworks/agentkit.md) — drop FloeAgent into LangChain, CrewAI, Claude Desktop / MCP, OpenAI Agents SDK
-- [Advanced: how Floe works under the hood](core-concepts.md) — the crypto plumbing (working-capital loans, USDC settlement, x402 facilitator) you didn't have to learn to ship
+- [Advanced: how Floe works under the hood](core-concepts.md) — the on-chain plumbing (managed funding, USDC settlement, x402 facilitator) Floe handles for you so you didn't have to learn it to ship
 - [Self-custody](../developers/self-custody.md) — for teams that need to hold their own signing keys
 
 ---
