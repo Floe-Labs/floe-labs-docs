@@ -124,11 +124,13 @@ floe-agent run --agent research  # override per session
 
 ### Example Session
 
+> The lending/market interactions below are part of the **roadmap** on-chain credit product (self-custody), not the live spend layer. Rates shown are illustrative.
+
 ```
 You: What markets are available?
   -> Lists all Floe lending markets with rates, LTV bounds
 
-You: Post a lend intent for 100 USDC at 5% APR
+You: Post a lend intent for 100 USDC at my chosen rate
   -> Auto-approves USDC, posts the lending offer on-chain
 
 You: Check the health of loan #42

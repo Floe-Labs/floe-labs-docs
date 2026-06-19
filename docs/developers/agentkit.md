@@ -79,7 +79,7 @@ These live on the separate `X402ActionProvider`.
 
 | Action | Description |
 |--------|-------------|
-| `x402_fetch` | Fetch any URL through the facilitator proxy — auto-pays 402 responses from your prepaid balance |
+| `x402_fetch` | Fetch any URL through the facilitator proxy — auto-pays 402 responses from your agent's Floe-managed balance |
 | `x402_get_balance` | Check spending balance: available, used, limit |
 | `x402_await_settlement` | Wait for an in-flight payment to settle |
 | `x402_get_transactions` | View payment history with pagination |
