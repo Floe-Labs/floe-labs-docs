@@ -335,12 +335,12 @@ This replaces the older two-step "pre-register → sign setOperator → register
 
 ### Public (No Auth)
 
-#### GET /health
+#### GET /v1/health
 
 Liveness probe.
 
 ```bash
-curl https://credit-api.floelabs.xyz/health
+curl https://credit-api.floelabs.xyz/v1/health
 # → { "status": "ok" }
 ```
 
