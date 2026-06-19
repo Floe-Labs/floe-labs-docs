@@ -11,7 +11,7 @@ Gas-free — Floe sponsors all transaction costs.
 1. **Create an agent** in the [dashboard](https://dev-dashboard.floelabs.xyz). Floe provisions a custodial wallet — no seed phrase, no MetaMask.
 2. **Fund it** with a card, Apple Pay, Google Pay, or bank transfer. Fiat converts to USDC on Base behind the scenes. Or send USDC from any wallet.
 3. **Set spend controls** — per call, per day, per session, per vendor, or across your whole agent team.
-4. **Pay any x402 API** through `POST /v1/proxy/fetch`. The facilitator signs and settles from your prepaid balance; the agent only sees the response.
+4. **Pay any x402 API** through `POST /v1/proxy/fetch`. The facilitator signs and settles from your agent's Floe-managed balance; the agent only sees the response.
 
 The agent never touches crypto, never signs a transaction, never pays gas.
 
@@ -21,7 +21,7 @@ The agent never touches crypto, never signs a transaction, never pays gas.
 
 ## Example: x402 facilitator (zero-touch)
 
-An agent calls x402-enabled APIs. The deployer provisions the agent once via `POST /v1/developer/agents` (dashboard, CLI, or REST) — Floe creates a managed Privy wallet for the agent. The agent then calls `POST /v1/proxy/fetch` with any URL — the facilitator pays from the agent's prepaid balance, signs the EIP-3009 payment, and returns the API response. The agent never thinks about money.
+An agent calls x402-enabled APIs. The deployer provisions the agent once via `POST /v1/developer/agents` (dashboard, CLI, or REST) — Floe creates a managed Privy wallet for the agent. The agent then calls `POST /v1/proxy/fetch` with any URL — the facilitator funds the payment from the agent's Floe-managed balance, signs the EIP-3009 payment, and returns the API response. The agent never thinks about money.
 
 ---
 
@@ -38,7 +38,7 @@ An agent calls x402-enabled APIs. The deployer provisions the agent once via `PO
 
 ## Advanced (in development): on-chain working capital
 
-> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral — and any associated rate — is **not generally available**. The section below describes the intended self-custody, on-chain surface. The live way to give an agent money is the prepaid balance above.
+> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral — and any associated rate — is **not generally available** as a product. The section below describes the intended self-custody, on-chain surface. The live way to give an agent money is the Floe-managed balance above. (Today, the facilitator already funds your payments on-chain for you — see [How Floe works under the hood](../getting-started/core-concepts.md) — but you don't borrow, set rates, or manage loans.)
 
 The planned model: an agent deposits USDC and borrows up to 95% back as working capital in the same-token USDC/USDC market — same token in, same token out, so no price-volatility risk. Volatile-collateral markets (WETH/USDC, cbBTC/USDC at 70% LTV) would let agents that already hold ETH or BTC borrow USDC at a fixed rate and term.
 

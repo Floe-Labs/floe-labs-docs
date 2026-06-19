@@ -94,7 +94,7 @@ An EIP-712 value that binds signatures to a specific contract on a specific chai
 Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `floe-agent` package provides 47 actions (30 Floe + 17 x402: delegation, x402 payment, and agent-awareness) as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP. The next release adds 5 allowlist actions (52 total).
 
 ## Working Capital
-USDC borrowed against a USDC deposit via the USDC/USDC market (95% LTV cap, no price risk). The on-chain working-capital credit path is **in development** — the live way to fund an agent is a prepaid balance topped up with fiat.
+USDC borrowed against a USDC deposit via the USDC/USDC market (95% LTV cap, no price risk). Working-capital **credit as a product** (borrow-against-collateral, rates, terms) is **on the roadmap** — not generally available. The live way to fund an agent is a Floe-managed balance topped up with fiat. (Under the hood, the facilitator already funds your payments via this on-chain mechanism today — see [How Floe works under the hood](getting-started/core-concepts.md) — but you never borrow or set rates yourself.)
 
 ## Credit Score
 An on-chain creditworthiness score computed by [Cred Protocol](https://cred.xyz) based on DeFi lending/borrowing history. Displayed as a radar chart on the Floe dashboard and as tier badges in the loan book. Informational only — does not gate access.
@@ -118,7 +118,10 @@ An intent parameter specifying minimum and maximum acceptable loan durations ins
 Onchain protocol for agents to transact with each other and with services.
 
 ## Facilitator (x402 Facilitator)
-A service that processes x402 payments on behalf of agents. Floe's facilitator pays from the agent's prepaid balance and signs EIP-3009 authorizations — agents never handle payments directly.
+A service that processes x402 payments on behalf of agents. Floe's facilitator funds each payment from the agent's Floe-managed balance and signs EIP-3009 authorizations — agents never handle payments directly.
+
+## Floe-managed balance
+The spendable balance behind a Floe agent. You fund it with fiat or USDC; Floe handles the on-chain funding that makes each x402 payment settle (today, via the managed borrow mechanism — see [How Floe works under the hood](getting-started/core-concepts.md)). It is **not** a literal prepaid balance you draw down yourself; a true prepaid-balance spend model is on the roadmap.
 
 ## LP (Liquidity Provider)
 A participant providing capital by posting lend intents on Floe.

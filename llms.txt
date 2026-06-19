@@ -1,6 +1,6 @@
 # Floe — The spend layer for AI agents
 
-> Floe is the spend layer for AI agents. Walletless onboarding (no crypto, no seed phrase), fiat funding (card/bank/Apple Pay/Google Pay → USDC), and one x402 proxy endpoint to pay any of 2,000+ vendor API services — all governed by programmable, context-aware spend controls (per call, day, session, vendor, agent team). Spend analytics and multi-agent key management included. Live on Base mainnet. On-chain working-capital credit is in development. Dashboard: dev-dashboard.floelabs.xyz.
+> Floe is the spend layer for AI agents — a budget, not a balance. Walletless onboarding (no crypto, no seed phrase), fiat funding (card/bank/Apple Pay/Google Pay → USDC), and one x402 proxy endpoint to pay any of 2,000+ vendor API services — all governed by programmable, context-aware spend controls (per call, day, session, vendor, agent team). Spend controls govern x402 payments made through the proxy, not raw LLM token bills paid with your own provider key. Spend analytics and multi-agent key management included. Live on Base mainnet. Working-capital credit as a product is on the roadmap (today the facilitator funds payments via a managed on-chain mechanism for you). Dashboard: dev-dashboard.floelabs.xyz.
 
 This file is a structured map of the Floe documentation, optimized for LLM agents reading it as part of a tool loop. Each page can also be queried directly by appending `?ask=<question>` to the URL — the response includes citations.
 
@@ -15,7 +15,7 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 
 ## For agent operators
 
-- [Bank Account → First API Call](https://floe-labs.gitbook.io/docs/agents/fiat-to-x402): Fund with a bank account or card, then call any x402 API from your prepaid balance — no crypto experience needed — ask: "How do I fund my agent with a credit card?"
+- [Bank Account → First API Call](https://floe-labs.gitbook.io/docs/agents/fiat-to-x402): Fund with a bank account or card, then call any x402 API from your agent's Floe-managed balance — no crypto experience needed — ask: "How do I fund my agent with a credit card?"
 - [Credit for Agents](https://floe-labs.gitbook.io/docs/agents/credit-for-agents): How an agent pays for APIs from a funded balance today; on-chain working-capital credit (in development)
 
 ## For developers
@@ -95,11 +95,12 @@ All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them th
 
 - **Network**: Base mainnet (chain ID 8453)
 - **What's live**: walletless onboarding, fiat on-ramp, x402 payment proxy, programmable spend controls, agent-awareness tools, multi-agent key management
-- **Funding model (live)**: agent pays for x402 APIs from a prepaid USDC balance funded by card/bank/Apple Pay/Google Pay
+- **Funding model (live)**: agent pays for x402 APIs from a Floe-managed USDC balance funded by card/bank/Apple Pay/Google Pay. Floe handles the on-chain funding (today via a managed borrow mechanism); a literal prepaid-balance spend model is on the roadmap.
+- **Spend-control scope**: governs x402 payments made through the Floe proxy. Does NOT cap raw OpenAI/Anthropic token bills paid with your own provider key. LLM tokens are only metered if routed through Floe's LLM proxy (`/v1/llm/chat/completions`, feature-flagged).
 - **Active markets (on-chain, advanced)**: USDC/USDC (95% LTV), WETH/USDC (70%), cbBTC/USDC (70%)
 - **Lending matcher proxy**: 0x17946cD3e180f82e632805e5549EC913330Bb175
 - **Facilitator EOA**: 0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1
-- **Working-capital credit (in development)**: borrow USDC against on-chain collateral; same-token USDC/USDC market has no price-volatility liquidation risk
+- **Working-capital credit (roadmap, not GA)**: borrow USDC against on-chain collateral as a product; same-token USDC/USDC market has no price-volatility liquidation risk
 - **Gas**: Sponsored by Floe for agents using the x402 facilitator
 - **Fiat on-ramp**: Buy USDC via Coinbase (credit card / bank transfer) from the Developer Dashboard
 - **Multi-agent**: Up to 5 agent wallets per developer, each with independent spend controls and API keys
@@ -109,7 +110,7 @@ All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them th
 - **npm**: `floe-agent` (v0.5.1), `@floelabs/mcp-server` (v0.2.1)
 - **PyPI**: `floe-agentkit-actions` (v0.5.1)
 - **MCP endpoint**: https://mcp.floelabs.xyz/mcp
-- **x402 proxy**: `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` — pays any x402 API from your prepaid balance
+- **x402 proxy**: `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` — pays any x402 API from your agent's Floe-managed balance
 
 ## Querying these docs
 

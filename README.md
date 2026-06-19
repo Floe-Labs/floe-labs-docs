@@ -4,7 +4,7 @@ icon: hand-wave
 
 # Floe — The spend layer for AI agents
 
-**No crypto required.** Fund an agent with a card, then let it pay for any x402 API through one proxy endpoint — governed by programmable spend controls. Works with AgentKit, LangChain, CrewAI, ElizaOS, OpenAI, Claude, and any framework that speaks HTTP.
+**The spend layer for AI agents — a budget, not a balance.** No crypto required: fund an agent with a card, then let it pay for any x402 API through one proxy endpoint — every call governed by programmable spend controls. Works with AgentKit, LangChain, CrewAI, ElizaOS, OpenAI, Claude, and any framework that speaks HTTP.
 
 ---
 
@@ -24,7 +24,7 @@ Buy USDC with a card, Apple Pay, Google Pay, or bank transfer — directly in th
 
 ### 3. Set spend controls
 
-Cap what your agent can spend — per call, per day, per vendor, or across your whole team. Enforced server-side by Floe, so a runaway loop can't blow your budget.
+Cap what your agent can spend — per call, per day, per vendor, or across your whole team. Enforced server-side by Floe, so a runaway loop can't blow your budget. (Scope: Floe governs x402 payments made through the proxy, not raw LLM token bills you pay with your own provider key — see [Spend Controls](docs/developers/spend-controls.md).)
 
 → [Spend Controls](docs/developers/spend-controls.md)
 
@@ -101,11 +101,11 @@ Also supported: [CrewAI](docs/frameworks/crewai.md) · [ElizaOS](docs/frameworks
 |---|---|---|---|
 | 01 | **[Agent Wallet](docs/components/wallet.md)** | Custodial-by-default wallet (Floe-provisioned, no seed phrase) with programmable spend limits and allowed-destination permissions. Self-custody optional. | `GA` |
 | 02 | **[Fiat on/off-ramp](docs/components/onramp.md)** | USDC in via cards, bank, Apple Pay, Google Pay. Local payouts in 100+ countries. | Onramp `GA` · Offramp `Preview` |
-| 03 | **[x402 payment facilitator](docs/components/x402.md)** | One proxy endpoint to pay any x402 API from your prepaid balance. | `GA` |
+| 03 | **[x402 payment facilitator](docs/components/x402.md)** | One proxy endpoint to pay any x402 API from your agent's Floe-managed balance. | `GA` |
 | 04 | **[Spend controls](docs/developers/spend-controls.md)** | Programmable, context-aware budgets — per call, day, session, vendor, agent team. Enforced server-side. | `GA` |
-| 05 | **[Credit & trust bureau](docs/components/credit-bureau.md)** | Repayment and spend history as a portable on-chain signal. | Reader `Beta` |
-| 06 | **[Working capital (on-chain)](docs/components/secured-credit.md)** | Borrow USDC against on-chain collateral. Advanced / self-custody path. | `In development` |
-| 07 | **[Unsecured working capital](docs/components/unsecured-credit.md)** | Credit underwritten against agent receivables and cashflow signals. | `In development` |
+| 05 | **[Credit & trust bureau](docs/components/credit-bureau.md)** | Repayment and spend history as a portable on-chain signal. Programmable credit-utilization thresholds are live; the portable credit profile is in development. | Thresholds `GA` · Profile `In development` |
+| 06 | **[Working capital (on-chain)](docs/components/secured-credit.md)** | Borrow USDC against on-chain collateral. Roadmap / self-custody path. | `Roadmap` |
+| 07 | **[Unsecured working capital](docs/components/unsecured-credit.md)** | Credit underwritten against agent receivables and cashflow signals. | `Roadmap` |
 
 ---
 
