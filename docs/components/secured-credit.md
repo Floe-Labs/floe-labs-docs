@@ -2,15 +2,15 @@
 icon: hand-holding-dollar
 ---
 
-# Working capital (on-chain) `In development`
+# Working capital (on-chain) `Roadmap`
 
-> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral is **not yet generally available**. This is part of Floe's Advanced / self-custody on-chain layer. The live way to give an agent money is the [walletless prepaid balance](../getting-started/quickstart.md) — fund with a card, pay for x402 APIs through the proxy. The actions and rates below describe the in-development on-chain credit surface.
+> **Status: roadmap — not generally available.** Borrowing USDC working capital against on-chain collateral, as a product you call directly, is **not live**. This page describes the **planned** Advanced / self-custody on-chain credit surface. The live way to give an agent money is the [walletless Floe-managed balance](../getting-started/quickstart.md) — fund with a card, pay for x402 APIs through the proxy. (Note: the facilitator already uses an on-chain funding mechanism to settle your payments today — see [How Floe works under the hood](../getting-started/core-concepts.md) — but you do not borrow, set rates, or manage loans yourself.) Code and rates below are illustrative of the planned API, not a live quickstart.
 
-Credit against on-chain collateral: one API call, fixed rate, fixed term, per-loan isolated escrow.
+The planned model: credit against on-chain collateral — one API call, fixed rate, fixed term, per-loan isolated escrow.
 
 ---
 
-## The 5 credit-facility actions
+## The 5 credit-facility actions (planned)
 
 | Action | Use |
 |---|---|
@@ -22,20 +22,22 @@ Credit against on-chain collateral: one API call, fixed rate, fixed term, per-lo
 
 Plus 15 lower-level lending primitives — `post_lend_intent`, `post_borrow_intent`, `match_intents`, `repay_loan`, `add_collateral`, `withdraw_collateral`, `liquidate_loan`, and 8 read actions. See the [Credit REST API](../developers/credit-api.md) for the full surface.
 
-## Borrow in one call
+## Borrow in one call (planned API — illustrative)
 
 ```typescript
+// Roadmap — not callable today.
 await agentkit.run("instant_borrow", {
   borrowAmount: "5000000",        // 5 USDC
   collateralAmount: "6000000",    // 6 USDC
-  maxInterestRateBps: "1200",     // 12% APR ceiling
+  maxInterestRateBps: "1200",     // borrow-rate ceiling the match must stay under (bps)
   duration: "604800",             // 7 days
 });
 ```
 
-## Repay
+## Repay (planned API — illustrative)
 
 ```typescript
+// Roadmap — not callable today.
 await agentkit.run("repay_loan", { loanId: "42" });
 // or roll the position
 await agentkit.run("repay_and_reborrow", { loanId: "42" });

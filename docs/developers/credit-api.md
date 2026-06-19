@@ -4,7 +4,11 @@ icon: webhook
 
 # Credit REST API
 
-The Credit API lets any agent — regardless of language or framework — access Floe's instant credit facilities via HTTP. It returns unsigned transaction calldata that agents sign and submit with their own wallet.
+The Credit API is the HTTP surface for both Floe's **live spend layer** and its **roadmap on-chain credit product**. Agents of any language or framework can use it; write endpoints return unsigned transaction calldata that agents sign and submit with their own wallet.
+
+> **What's live vs roadmap on this page:**
+> - **Live (spend layer):** Developer Endpoints, Developer Agents, Agent Endpoints (balance, transactions), Agent Awareness Endpoints (credit-remaining, loan-state, spend-limit, credit-thresholds, x402/estimate), and the x402 Proxy Endpoints. `open-credit-line` is **managed plumbing** the facilitator uses to fund your payments.
+> - **Roadmap (on-chain credit product — not generally available):** the `/v1/credit/*` borrow endpoints (`instant-borrow`, `repay`, `repay-and-reborrow`, `status`), `/v1/credit/offers`, `/v1/markets/:id/cost-of-capital`, and direct market/intent matching. Borrowing as a developer-facing product — and any associated rate — is not live. The live way to fund an agent is the [walletless Floe-managed balance](../getting-started/quickstart.md).
 
 > **See also:** [API Keys](api-keys.md) | [Webhooks](webhooks.md) | [Developer Dashboard](developer-dashboard.md)
 
@@ -90,9 +94,9 @@ curl "https://credit-api.floelabs.xyz/v1/markets"
 }
 ```
 
-### GET /v1/credit/offers
+### GET /v1/credit/offers `Roadmap`
 
-Query available lend intents. **Public — no auth required.**
+Query available lend intents (part of the roadmap on-chain credit product, not the live spend layer). **Public — no auth required.**
 
 ```bash
 # All markets
@@ -313,7 +317,9 @@ Giza agents, Olas agents, and Safe multisigs authenticate the same way. The API 
 
 ## Authenticated Endpoints
 
-### POST /v1/credit/instant-borrow
+> **The `/v1/credit/*` borrow endpoints below are roadmap (on-chain credit product), not the live spend layer.** Borrowing as a developer-facing product is not generally available. To fund an agent today, use the [walletless Floe-managed balance](../getting-started/quickstart.md).
+
+### POST /v1/credit/instant-borrow `Roadmap`
 
 Build unsigned transactions for an instant borrow. The API selects the best available lender automatically and persists an attempt record so a partial flow (TX1 confirmed but TX2 not yet broadcast) is always recoverable.
 
@@ -339,7 +345,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/credit/instant-borrow" \
 | `marketId` | bytes32 | Yes | Market ID (see [Markets](#markets) above) |
 | `borrowAmount` | string | Yes | Amount to borrow (raw units) |
 | `collateralAmount` | string | Yes | Collateral to post (raw units) |
-| `maxInterestRateBps` | string | Yes | Max acceptable rate (bps). 1200 = 12% APR |
+| `maxInterestRateBps` | string | Yes | Borrow-rate ceiling the match must stay under (bps). e.g. `1200` = 12.00% |
 | `duration` | string | Yes | Loan duration in seconds. 2592000 = 30 days |
 | `minLtvBps` | string | No | Min LTV (default: 8000 = 80%) |
 | `maxLtvBps` | string | No | Max initial LTV (bps). Rejects if oracle-computed LTV exceeds this. 7500 = 75% |
