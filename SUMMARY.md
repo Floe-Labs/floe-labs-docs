@@ -41,6 +41,7 @@
 * [Spend Controls](docs/developers/spend-controls.md)
 * [Agent Awareness](docs/developers/agent-awareness.md)
 * [x402 Payment Facilitator](docs/developers/x402-facilitator.md)
+* [Venice AI — Model Inference](docs/developers/venice.md)
 * [x402 API Directory](docs/x402-directory/README.md)
   * [Compute](docs/x402-directory/compute.md)
   * [Voice](docs/x402-directory/voice.md)

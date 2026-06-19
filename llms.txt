@@ -35,6 +35,7 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them through `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` with your Floe API key.
 
 ### Compute
+- [Venice AI — Models (90+ chat + embedding, pick by capability & price)](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-models): full catalog with per-token pricing; discover live at `GET https://api.venice.ai/api/v1/models`
 - [Venice AI — Chat Completions](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-ai-chat-completions): `POST https://api.venice.ai/api/v1/chat/completions` · metered/tokens
 - [Venice AI — Responses](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-ai-chat-completions): `POST https://api.venice.ai/api/v1/responses` · metered/tokens
 - [Venice AI — Embeddings](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-ai-embeddings): `POST https://api.venice.ai/api/v1/embeddings` · metered/tokens
