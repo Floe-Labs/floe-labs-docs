@@ -35,6 +35,8 @@ Spec references: [x402 v2 specification](https://github.com/x402-foundation/x402
 
 ## How It Works
 
+> **This is managed plumbing — what Floe does for you.** You don't borrow, set rates, or manage loans. For managed agents (created in the dashboard or via `POST /v1/developer/agents`), Floe provisions the wallet, submits the on-chain delegation, and funds each payment automatically. The steps below describe the on-chain mechanism the facilitator runs on your behalf so an x402 payment can settle — you only fund the agent and call the proxy. (The on-chain borrow is how payments are funded **today**; it is not a credit product you operate.)
+
 ```
 Developer signs the auth header (off-chain)
     │
@@ -190,8 +192,8 @@ const agentkit = await AgentKit.from({
 const result = await agentkit.invoke("grant_credit_delegation", {
   name: "my-agent",
   facilitatorUrl: "https://credit-api.floelabs.xyz",
-  borrowLimit: "10000",   // $10K max credit
-  maxRateBps: "1500",     // 15% max interest rate
+  borrowLimit: "10000",   // $10K spend ceiling the facilitator stays under
+  maxRateBps: "1500",     // borrow-rate ceiling the facilitator must stay under (bps)
   expiryDays: "90",       // 90-day delegation
 });
 // → result includes the API key (stored in-memory for the session)
@@ -530,7 +532,7 @@ For **managed agents** (created via `POST /v1/developer/agents` or the CLI), Flo
 | Provisioning input | On-chain field | Notes |
 |---|---|---|
 | `borrowLimitRaw` (`POST /v1/developer/agents`) / `--borrow-limit` (CLI) | `borrowLimit` (uint256) | Raw USDC, 6 decimals. CLI flag is in USDC for convenience. |
-| `maxRateBps` | `maxRateBps` (uint256) | Interest rate ceiling in basis points (e.g. `1500` = 15% APR). |
+| `maxRateBps` | `maxRateBps` (uint256) | Borrow-rate ceiling in basis points the facilitator must stay under when it funds your payments (e.g. `1500` = 15.00%). |
 | `expirySeconds` / `--expiry-days` | `expiry` (uint256) | Server adds `expirySeconds` to `now` before submitting. |
 | _(server-managed)_ | `operator` (address) | The facilitator's operator EOA. |
 | _(server-managed)_ | `onBehalfOfRestriction` (address) | Set to the agent's own Privy wallet by the server. There is nothing for the caller to pass here. |
