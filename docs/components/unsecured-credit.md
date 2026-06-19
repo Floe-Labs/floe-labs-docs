@@ -2,7 +2,7 @@
 icon: hourglass-half
 ---
 
-# 04 · Unsecured working capital `In development`
+# 04 · Unsecured working capital `Roadmap`
 
 Credit underwritten against an agent's **receivables** and **cashflow signals** — no collateral required.
 

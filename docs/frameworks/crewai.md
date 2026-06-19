@@ -4,7 +4,9 @@ icon: users
 
 # CrewAI `Beta`
 
-One Floe credit line caps **everything your crew spends** — paid tool calls *and* LLM tokens — behind a hard, server-side ceiling. The agent can never spend past it, no matter what the model decides to do.
+One Floe spend ceiling caps your crew's **paid tool calls** — and, **when you route models through Floe's LLM proxy (`FloeLLM`)**, its LLM tokens too — behind a hard, server-side limit. The agent can never spend past it, no matter what the model decides to do.
+
+> **Scope.** Floe governs x402 payments made through the proxy. It does **not** cap raw OpenAI/Anthropic token bills paid with your own provider key unless you route those calls through Floe's LLM proxy (`FloeLLM`, see [Paying for LLM tokens](#paying-for-llm-tokens-flollm) below). The LLM proxy is feature-flagged — confirm availability before relying on it.
 
 > Your 3 AM infinite loop dies at **$1**, not $414.
 
@@ -58,7 +60,7 @@ The crew spends real USDC against the Floe credit line — but never more than `
 
 ### Paying for tools — `Floe402Tool`
 
-`Floe402Tool(url=...)` is a `crewai.tools.BaseTool` that calls any of the 13,000+ [x402](../developers/x402-facilitator.md) endpoints Floe can reach. Each call routes through the Floe facilitator, which auto-borrows USDC against your credit line, signs the EIP-3009 payment, and returns the response.
+`Floe402Tool(url=...)` is a `crewai.tools.BaseTool` that calls any of the **2,000+ vendor API services** reachable through [x402](../developers/x402-facilitator.md). Each call routes through the Floe facilitator, which funds the payment from your agent's Floe-managed balance, signs the EIP-3009 payment, and returns the response.
 
 ```python
 from crewai_floe import Floe402Tool
@@ -103,13 +105,15 @@ Supplying `allow={...}` flips the agent to **default-deny**: it may only pay the
 budget = FloeBudget(
     usd_limit=5,
     allow={
-        "api.openai.com": "$2",        # at most $2 to this host/payee
+        "api.venice.ai": "$2",         # at most $2 to this x402 vendor host/payee
         "api.somevendor.com": "$1",
     },
 )
 ```
 
 Both checks run inside the Floe facilitator, so they hold even if a tool is misconfigured or bypassed on the client. `allow=None` (the default) means allow-any.
+
+> **Allowlist scope.** Hosts on this list are matched against x402 payments routed through the Floe proxy. A direct call to a model provider with your own key (e.g. `api.openai.com`, not routed through `FloeLLM`) never reaches Floe, so listing it here has no effect. To cap frontier-model token spend, route through `FloeLLM` — the host then becomes `credit-api.floelabs.xyz`.
 
 ## LLM cost control
 

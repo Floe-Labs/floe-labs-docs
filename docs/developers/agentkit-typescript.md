@@ -8,6 +8,8 @@ The `floe-agent` package provides Coinbase AgentKit ActionProviders with **47 to
 
 > **Naming convention:** All action names and parameters in the TypeScript SDK use **camelCase** (e.g., `borrowAmount`, `maxInterestRateBps`). The Python SDK uses **snake_case** for the same fields. Code examples are not interchangeable between SDKs without adjusting case.
 
+> **Live vs roadmap actions.** The live spend-layer actions are the x402 payment, agent-awareness, and spend-control actions. The credit-facility actions (`instantBorrow`, `repayAndReborrow`, `requestCredit`, `manualMatchCredit`, `checkCreditStatus`, `repayCredit`, `renewCreditLine`) belong to the **roadmap** on-chain credit product (self-custody) and are not the live way to fund an agent — see [Quickstart](../getting-started/quickstart.md).
+
 ## Installation
 
 ```bash

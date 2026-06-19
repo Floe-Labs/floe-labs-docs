@@ -9,8 +9,8 @@ Fund your agent with a bank account or card. Call any x402 API. No crypto experi
 ```
 Bank account / card
   → Buy USDC via Coinbase (in the Floe dashboard)
-  → USDC lands in your agent's prepaid balance on Base
-  → Agent calls x402 APIs — Floe pays from the balance automatically
+  → USDC lands in your agent's Floe-managed balance on Base
+  → Agent calls x402 APIs — Floe funds each payment from the balance automatically
   → Top up when the balance runs low
 ```
 
@@ -34,7 +34,7 @@ No crypto exchange account needed. No bridging. No gas tokens.
 
 ## Step 3 — Set spend controls
 
-Cap what the agent can spend before it makes its first call — per call, per day, per session, per vendor, or across your whole agent team. The cap is enforced server-side by Floe, so a confused or runaway agent can't exceed it.
+Cap what the agent can spend before it makes its first call — per call, per day, per session, per vendor, or across your whole agent team. The cap is enforced server-side by Floe, so a confused or runaway agent can't exceed it. (Scope: this governs x402 payments made through the Floe proxy, not raw LLM token bills you pay with your own provider key.)
 
 → [Spend Controls](../developers/spend-controls.md)
 
@@ -42,7 +42,7 @@ Cap what the agent can spend before it makes its first call — per call, per da
 
 ## Step 4 — Call any x402 API
 
-Your agent calls `POST /v1/proxy/fetch` with any URL. Floe pays from the prepaid balance, signs the payment, and returns the API response. The agent never sees USDC, never signs a transaction, never pays gas.
+Your agent calls `POST /v1/proxy/fetch` with any URL. Floe funds the payment from the agent's Floe-managed balance, signs it, and returns the API response. The agent never sees USDC, never signs a transaction, never pays gas.
 
 ```typescript
 // Every call — zero transactions, zero gas

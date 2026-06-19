@@ -2,13 +2,11 @@
 icon: rocket
 ---
 
-# Agent Working Capital Quickstart
+# Agent Working Capital Quickstart `In development`
 
-Give your agent a balance sheet in under a minute.
+> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral — and any associated rate — is **not generally available**. The code below describes the **planned** self-custody on-chain credit surface; it is not a live quickstart. The live way to give an agent money is the walletless [$2 Welcome Credit + funded balance](../getting-started/quickstart.md).
 
-For a guided setup experience, use the [Developer Dashboard](developer-dashboard.md) at `dev-dashboard.floelabs.xyz`.
-
-> **$2 free credit (~200 API calls).** Your agent can start paying for APIs today — no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
+The planned flow would give your agent a balance sheet in under a minute.
 
 ## Check Live Offers First
 
@@ -33,7 +31,7 @@ const agentkit = await AgentKit.from({
 const loan = await agentkit.invoke("instant_borrow", {
   borrowAmount: "9500000000",            // $9,500 USDC working capital
   collateralAmount: "10000000000",       // $10,000 USDC deposit
-  maxInterestRateBps: "800",             // up to 8% APR
+  maxInterestRateBps: "800",             // borrow-rate ceiling the match must stay under (bps)
   duration: "2592000",                   // 30 days
 });
 // → loan.loanId, loan.rate, loan.collateralLocked
@@ -75,7 +73,7 @@ await agentkit.invoke("grant_credit_delegation", {
   name: "my-agent",                     // unique label per developer
   facilitatorUrl: "https://credit-api.floelabs.xyz",
   borrowLimit: "10000",                 // $10,000 max credit (USDC)
-  maxRateBps: "1500",                   // cap at 15% APR
+  maxRateBps: "1500",                   // borrow-rate ceiling the facilitator must stay under (bps)
   expiryDays: "90",                     // delegation TTL
 });
 

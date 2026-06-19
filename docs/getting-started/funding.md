@@ -8,11 +8,11 @@ The fastest way to give your agent spending money is to pay with a card. No exch
 
 ---
 
-## Starting with free credit
+## Starting with the $2 Welcome Credit
 
-New agents get **$2 in free credit** to try paid APIs — no card needed.
+New agents get a **$2 Welcome Credit** to try paid APIs — no card needed.
 
-One thing to know up front, because it trips people up: that credit isn't a prepaid balance you draw down directly. It's a small working-capital line. The **first time your agent makes a _paid_ call, Floe opens the line for you automatically** — no dashboard click, no signature. That first call comes back as `auto_borrow_in_progress` (retry in a few seconds); it then settles normally, and every call after is instant.
+One thing to know up front, because it trips people up: this is a Floe-managed balance, not a literal balance you draw down yourself. Floe handles the on-chain funding for you. The **first time your agent makes a _paid_ call, Floe activates the balance automatically** — no dashboard click, no signature. That first call comes back as `auto_borrow_in_progress` (retry in a few seconds); it then settles normally, and every call after is instant. (For the on-chain detail of how Floe funds payments today, see [How Floe works under the hood](core-concepts.md).)
 
 So if the dashboard shows credit available but says it "can't be spent directly yet," that's expected — **just make your first paid call and it activates itself.** Free endpoints don't trigger activation, because there's nothing to pay; only a real paid (x402) call does.
 
@@ -20,8 +20,8 @@ Two numbers you'll see, and they're not the same:
 
 | Field | What it means |
 | --- | --- |
-| **Credit available** (`creditAvailableRaw`) | Your ceiling — the most the agent can draw. The $2 shows up here first. |
-| **Spendable** (`spendableRaw`) | What the agent can pay with **right now**. It's `0` until that first paid call opens the line, then it tracks your remaining credit. This is what the proxy checks. |
+| **Credit available** (`creditAvailableRaw`) | Your ceiling — the most the agent can spend. The $2 Welcome Credit shows up here first. |
+| **Spendable** (`spendableRaw`) | What the agent can pay with **right now**. It's `0` until that first paid call activates the balance, then it tracks your remaining credit. This is what the proxy checks. |
 
 → Full field breakdown in the [Credit REST API → balance](../developers/credit-api.md#get-v1agentsbalance).
 

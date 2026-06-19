@@ -6,11 +6,11 @@ icon: id-card
 
 | Surface | Status |
 |---|---|
-| Webhook-style credit thresholds (today) | `GA` |
-| ERC-8004 portable credit reader | `Beta` |
-| Writer (public read-API for other protocols) | `Preview` |
+| Webhook-style credit-utilization thresholds (today) | `GA` |
+| ERC-8004 portable credit profile (reader) | `Roadmap` |
+| Public reader for third parties (writer) | `Roadmap` |
 
-Every repayment your agent makes builds a portable trust and credit signal. Identity, cashflow history, repayment record. Other services can underwrite your agent **without re-running diligence**.
+The live surface today is **programmable credit-utilization thresholds** (below). The broader trust/credit bureau — a portable signal other services can read to underwrite your agent without re-running diligence — is **on the roadmap**, not generally available.
 
 ---
 
@@ -31,21 +31,25 @@ await agentkit.run("register_credit_threshold", {
 });
 ```
 
-## Beta: portable ERC-8004 credit profile
+## Roadmap: portable ERC-8004 credit profile
 
-A read-only API surface that returns your agent's current credit profile in a portable format other protocols can consume:
+> **Status: roadmap — not generally available.** The design below is planned, not live.
+
+A read-only API surface that would return your agent's credit profile in a portable format other protocols can consume:
 
 - Loans repaid
-- Default rate
+- Repayment record
 - Average repayment timing
 - Cashflow score
 - Available limit
 
-Request Beta access by emailing [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) to join the design-partner conversation.
 
-## Preview: public reader for third parties
+## Roadmap: public reader for third parties
 
-Other protocols will be able to underwrite your agent without re-running diligence by reading your ERC-8004 record. Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) to join the design-partner program.
+> **Status: roadmap — not generally available.**
+
+Other protocols would be able to underwrite your agent without re-running diligence by reading your ERC-8004 record. Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) to join the design-partner program.
 
 ## Related
 

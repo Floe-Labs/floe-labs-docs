@@ -4,7 +4,9 @@ icon: plug
 
 # MCP Server
 
-Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The MCP server gives agents 36 tools for paying x402 APIs, checking balance, managing spend limits, and reasoning about cost before a paid call — plus the on-chain market and loan tools for the self-custody path. Works with Claude, GPT, LangChain, CrewAI, and any MCP-compatible client. The next release adds 5 merchant-allowlist tools (41 total).
+Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The MCP server gives agents **36 tools**: the live spend-layer tools — checking balance, managing spend limits, registering credit-utilization thresholds, and reasoning about cost before a paid call — **plus** the on-chain market and loan tools for the Advanced self-custody path. Works with Claude, GPT, LangChain, CrewAI, and any MCP-compatible client. The next release adds 5 merchant-allowlist tools (41 total).
+
+> **Note on payments.** There is **no MCP tool that makes an x402 payment.** Paying for an x402 API goes through the proxy (`POST /v1/proxy/fetch`) or an AgentKit action (`x402_fetch`), not an MCP tool. The tools below split into **spend-control + awareness** tools (live spend layer) and **on-chain protocol** tools (Advanced / self-custody). Use `estimate_x402_cost` to preflight a paid call, then pay via the proxy or AgentKit.
 
 > **See also:** [Credit REST API](credit-api.md) | [AgentKit Integration](agentkit.md) | [API Keys](api-keys.md)
 
@@ -141,7 +143,34 @@ Each session is scoped to one agent — credit lines, spend limits, and webhook 
 
 ## Tools Reference (36)
 
-### Read Tools
+The server exposes **36 tools** in two groups: the **live spend-layer tools** (use these for the shipped product) and the **Advanced / on-chain (self-custody) tools** (the on-chain protocol layer — markets, intents, loans — not the spend product).
+
+### Spend-layer tools (live)
+
+Lets an agent answer "what can I spend?", "is this call worth it?", and "am I within my cap?" before committing. All require an agent API key (`floe_*`); identity comes from the bearer token, so none take a wallet address. (Field names like `headroom to auto-borrow` reflect the managed funding mechanism Floe runs for you — read "credit" as "spendable balance".)
+
+| Tool | Description |
+|------|-------------|
+| `get_wallet_balance` | Spendable balance for the agent (USDC + token balances) |
+| `get_credit_remaining` | Spendable USDC, spend headroom, utilization in bps, session-cap state |
+| `get_loan_state` | Coarse managed-funding state: `idle` \| `borrowing` \| `at_limit` \| `repaying` |
+| `get_spend_limit` | Currently active session spend cap, if any |
+| `set_spend_limit` | Set a session-level USDC ceiling (resets the session window) |
+| `clear_spend_limit` | Remove the session spend cap |
+| `list_credit_thresholds` | List registered credit-utilization webhook triggers |
+| `register_credit_threshold` | Register a webhook trigger at a utilization threshold (cap: 20 per agent) |
+| `delete_credit_threshold` | Remove a registered threshold |
+| `estimate_x402_cost` | Preflight an x402 URL — returns cost + reflection against your spendable balance (no payment) |
+
+> **Decision-loop pattern:** call `estimate_x402_cost` → check `willExceedAvailable` / `willExceedSpendLimit` → if OK, make the payment via the proxy (`POST /v1/proxy/fetch`) or the AgentKit `x402_fetch` action. **The payment itself is not an MCP tool.** See [Agent Awareness](agent-awareness.md) for the full pattern.
+>
+> **Scope:** these tools account for x402 payments made through the Floe proxy, not raw LLM token bills paid with your own provider key.
+
+### Advanced / on-chain (self-custody) tools
+
+> These are the **on-chain protocol layer** (markets, intents, loans), not the live spend product. Borrowing/lending as a developer-facing product is on the [roadmap](../components/secured-credit.md); these tools exist for teams running their own keys on the self-custody path. All write tools return **unsigned transactions** — the server never holds private keys. See [Transaction Flow](#transaction-flow) below.
+
+**Read:**
 
 | Tool | Description |
 |------|-------------|
@@ -155,18 +184,15 @@ Each session is scoped to one agent — credit lines, spend limits, and webhook 
 | `get_loan_health` | Check loan LTV, health status, liquidation risk, early repayment terms |
 | `get_liquidation_quote` | Get liquidation eligibility and details for an unhealthy loan |
 | `get_token_price` | Current oracle price for collateral tokens (Chainlink + Pyth) |
-| `get_wallet_balance` | Token balances for a wallet (ETH + all protocol tokens) |
-| `get_accrued_interest` | Interest accrued on a loan with full credit status |
+| `get_accrued_interest` | Interest accrued on a loan with full status |
 
-### Write Tools
-
-All write tools return **unsigned transactions**. The server never holds private keys. See [Transaction Flow](#transaction-flow) below.
+**Write** (return unsigned transactions):
 
 | Tool | Description |
 |------|-------------|
 | `create_lend_intent` | Create a lending offer. Solver matches it with borrowers. |
 | `create_borrow_intent` | Create a borrowing request with collateral. Solver matches with lenders. |
-| `create_counter_intent` | Accept an existing offer by creating a matching counter-intent. **Primary way to borrow or lend.** |
+| `create_counter_intent` | Accept an existing offer by creating a matching counter-intent. |
 | `repay_loan` | Repay a loan with automatic approval and slippage protection |
 | `add_collateral` | Add collateral to improve loan health |
 | `withdraw_collateral` | Withdraw excess collateral (enforces safety buffer) |
@@ -174,39 +200,16 @@ All write tools return **unsigned transactions**. The server never holds private
 | `revoke_intent` | Cancel an active lend or borrow intent |
 | `approve_token` | Pre-approve a token for the protocol (usually automatic) |
 
-### Analysis Tools
+**Analysis & utility:**
 
 | Tool | Description |
 |------|-------------|
 | `check_compatibility` | Check if two intents (lend + borrow) can match |
 | `calculate_risk` | Risk metrics: LTV, liquidation price, buffer, price drop tolerance |
 | `estimate_interest` | Estimate total interest for given loan terms |
-
-### Utility Tools
-
-| Tool | Description |
-|------|-------------|
 | `simulate_transaction` | Dry-run an unsigned transaction via `eth_call`. Returns success/revert and gas estimate. |
 | `broadcast_transaction` | Submit a signed transaction to Base Mainnet. Returns hash and receipt. |
 | `get_transaction_status` | Check confirmation status of a previously submitted transaction |
-
-### Agent Awareness Tools
-
-Lets an agent answer "do I have credit?", "is this call worth it?", and "where am I in the loan lifecycle?" before committing capital. All require an agent API key (`floe_*`); identity comes from the bearer token, so none of these tools take a wallet address.
-
-| Tool | Description |
-|------|-------------|
-| `get_credit_remaining` | Available USDC, headroom to auto-borrow, utilization in bps, session-cap state |
-| `get_loan_state` | Coarse state: `idle` \| `borrowing` \| `at_limit` \| `repaying` |
-| `get_spend_limit` | Currently active session spend cap, if any |
-| `set_spend_limit` | Set a session-level USDC ceiling (resets the session window) |
-| `clear_spend_limit` | Remove the session spend cap |
-| `list_credit_thresholds` | List registered credit-utilization webhook triggers |
-| `register_credit_threshold` | Register a webhook trigger at a utilization threshold (cap: 20 per agent) |
-| `delete_credit_threshold` | Remove a registered threshold |
-| `estimate_x402_cost` | Preflight an x402 URL — returns cost + reflection against your credit (no payment) |
-
-> **Decision-loop pattern:** call `estimate_x402_cost` → check `willExceedAvailable` / `willExceedSpendLimit` → conditionally `proxy/fetch`. This is the "answer the 3 rational-agent questions in one round-trip" workflow. See [Agent Awareness](agent-awareness.md) for the full pattern.
 
 ---
 

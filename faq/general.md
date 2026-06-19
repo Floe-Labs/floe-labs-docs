@@ -12,8 +12,8 @@ Floe is the **spend layer for AI agents**. You create an agent in the dashboard 
 
 * **Onboard walletless** — no MetaMask, no seed phrase, no gas tokens.
 * **Get funded with fiat** — card, bank, Apple Pay, Google Pay → USDC.
-* **Pay any x402 API** through `POST /v1/proxy/fetch` from a prepaid balance.
-* **Stay within budget** — per-call, daily, session, per-vendor, and per-team spend controls, enforced server-side.
+* **Pay any x402 API** through `POST /v1/proxy/fetch` from a Floe-managed balance.
+* **Stay within budget** — per-call, daily, session, per-vendor, and per-team spend controls, enforced server-side. (These govern x402 payments through the proxy, not raw LLM token bills paid with your own provider key.)
 * **Reason about spend** — preflight cost and check balance before each call.
 
 ### What blockchain is Floe on?
@@ -97,11 +97,7 @@ Yes. Go to your loan in the Loans page and click "Add Collateral" to improve you
 
 ### What rates can I expect?
 
-Rates are market-driven. Typical ranges:
-
-* **Conservative**: 4-6% APR
-* **Moderate**: 6-8% APR
-* **Higher risk**: 8%+ APR
+When this on-chain credit product ships, rates will be market-driven and negotiated per loan — set at match time between lender and borrower. Floe does not publish or guarantee a rate. (This surface is on the roadmap, not generally available.)
 
 ### Can my lend intent be partially filled?
 
@@ -155,10 +151,10 @@ Try adjusting your terms to be more competitive.
 ### How is interest calculated?
 
 ```
-Interest = Principal × (APR / 365) × Days
+Interest = Principal × (rate / 365) × Days
 ```
 
-Example: $5,000 at 6% APR for 30 days = $24.66
+The rate is the negotiated per-loan rate set at match time (this on-chain credit surface is on the roadmap, not generally available).
 
 ### Can I extend my loan?
 

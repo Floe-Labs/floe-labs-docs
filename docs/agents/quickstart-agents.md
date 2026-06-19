@@ -63,7 +63,7 @@ If your agent supports MCP (Claude Desktop, Cursor), add Floe's hosted MCP serve
 
 ## Step 3 — Pay for an API
 
-Call any x402 API through the proxy. Payment comes from your prepaid balance automatically; if the API is free, the request passes through.
+Call any x402 API through the proxy. Floe funds the payment from your agent's Floe-managed balance automatically; if the API is free, the request passes through.
 
 ```ts
 const response = await agent.run("x402_fetch", {

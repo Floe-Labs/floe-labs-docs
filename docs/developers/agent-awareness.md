@@ -8,6 +8,10 @@ A rational agent answers three questions before every paid action:
 
 Without first-class primitives for these, agents either over-spend (no gating) or under-act (refuse to spend out of caution). Floe ships **5 REST primitives** that answer all three in one round-trip — surfaced as 9 actions in the SDKs and MCP tools (three of the primitives are CRUD).
 
+> **A note on "credit" terminology.** These primitives report on your agent's spendable balance. The field names (`creditLimit`, `creditOut`, `headroomToAutoBorrow`) reflect the managed on-chain funding mechanism the facilitator runs **for you** today — they are not a credit product you borrow from or operate. Read "credit" here as "spendable balance / spend headroom".
+>
+> **Scope.** `estimate_x402_cost` and these checks govern x402 payments made through the Floe proxy. They do **not** account for raw LLM token bills you pay with your own provider key — only x402 payments (and LLM tokens routed through Floe's LLM proxy) flow through this accounting.
+
 ## The 5 primitives
 
 | API | Question it answers |

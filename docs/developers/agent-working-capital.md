@@ -2,9 +2,9 @@
 icon: vault
 ---
 
-# Agent Working Capital (on-chain) `In development`
+# Agent Working Capital (on-chain) `Roadmap`
 
-> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral — and any associated rate — is **not generally available**. This is Floe's Advanced / self-custody on-chain surface. The live way to give an agent money is the [walletless prepaid balance](../getting-started/quickstart.md). The design below describes the in-development credit path.
+> **Status: roadmap — not generally available.** Borrowing USDC working capital against on-chain collateral as a developer-facing product — and any associated rate — is **not live**. This page describes the **planned** Advanced / self-custody on-chain surface; the actions and code below are illustrative of the intended API, not a live quickstart. The live way to give an agent money is the [walletless Floe-managed balance](../getting-started/quickstart.md). (The underlying USDC/USDC market contracts are deployed and the facilitator already borrows against them to fund your payments today — see [How Floe works under the hood](../getting-started/core-concepts.md) — but you do not call these borrow actions, set rates, or manage loans yourself.)
 
 The intended model: an agent deposits USDC and borrows up to 95% back — spend on anything, repay when ready.
 
@@ -80,8 +80,8 @@ The protocol's oracle returns a fixed 1:1 ratio for same-token pairs (hardcoded,
 ### Example Flow
 
 ```
-Agent: instant_borrow — "I need $9,500 USDC, up to 8% APR, 30 days, $10K USDC deposit"
-  → Finds best lender at 6.5% APR
+Agent: instant_borrow — "I need $9,500 USDC, 30 days, $10K USDC deposit, within my rate ceiling"
+  → Finds the best available lender within the ceiling
   → Approves collateral, registers intent, matches — all in one call
   → Returns: loanId, rate, duration, collateral locked
 
@@ -123,7 +123,7 @@ All borrow actions accept an optional `onBehalfOf` address. When set, borrowed U
 await agentkit.invoke("instant_borrow", {
   borrowAmount: "9500000000",
   collateralAmount: "10000000000",
-  maxInterestRateBps: "800",
+  maxInterestRateBps: "800",          // borrow-rate ceiling the match must stay under (bps)
   duration: "2592000",
   onBehalfOf: "0x...payment_wallet",  // USDC goes here
 });
@@ -147,10 +147,12 @@ If omitted, USDC goes to your own wallet.
 
 ## Supported Markets
 
-| Market | Deposit (Collateral) | Borrow (Working Capital) | Max LTV | Status |
-|--------|---------------------|--------------------------|---------|--------|
-| **USDC/USDC** | USDC | USDC | **95%** | **Live** |
-| WETH/USDC | WETH | USDC | 70% | Live |
-| cbBTC/USDC | cbBTC | USDC | 70% | Live |
+| Market | Deposit (Collateral) | Borrow (Working Capital) | Max LTV | Contract status |
+|--------|---------------------|--------------------------|---------|-----------------|
+| **USDC/USDC** | USDC | USDC | **95%** | Deployed on-chain |
+| WETH/USDC | WETH | USDC | 70% | Deployed on-chain |
+| cbBTC/USDC | cbBTC | USDC | 70% | Deployed on-chain |
+
+The market **contracts** are deployed on Base mainnet (and the facilitator borrows against the USDC/USDC market to fund your payments today). The **developer-facing borrow product** described on this page — calling these actions yourself, setting rates, managing loans — is on the roadmap, not generally available.
 
 **USDC/USDC** uses a hardcoded 1:1 oracle (no Chainlink dependency, no circuit breaker impact). WETH and cbBTC markets use Chainlink primary + Pyth fallback with circuit breaker protection.
