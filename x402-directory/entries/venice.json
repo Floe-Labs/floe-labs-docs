@@ -3,14 +3,16 @@
   "name": "Venice",
   "provider": "Venice",
   "homepage": "https://venice.ai",
-  "description": "Open-source AI models, uncensored, no data retention.",
+  "description": "90+ open-source and frontier AI models (chat + embeddings) — reasoning, vision, code, and private TEE-attested E2EE inference. Uncensored options, zero data retention.",
   "resource": "https://api.venice.ai/v1/chat",
   "method": "POST",
   "category": "llm-inference",
   "tags": [
     "llm",
     "open-source",
-    "privacy"
+    "privacy",
+    "embeddings",
+    "models"
   ],
   "x402Version": 2,
   "network": "eip155:8453",
@@ -18,5 +20,233 @@
   "priceUsd": "0.01",
   "pricingModel": "dynamic",
   "floeCompatible": true,
-  "status": "verified"
+  "status": "verified",
+  "modelCount": 100,
+  "modelCatalogUrl": "https://api.venice.ai/api/v1/models",
+  "models": [
+    {
+      "id": "openai-gpt-oss-120b",
+      "mode": "chat",
+      "capabilities": [
+        "function-calling",
+        "reasoning",
+        "reasoning-effort",
+        "web-search"
+      ],
+      "inputPer1M": 0.07,
+      "outputPer1M": 0.3,
+      "contextTokens": 128000,
+      "maxCompletionTokens": 16384
+    },
+    {
+      "id": "llama-3.3-70b",
+      "mode": "chat",
+      "capabilities": [
+        "function-calling",
+        "web-search"
+      ],
+      "inputPer1M": 0.7,
+      "outputPer1M": 2.8,
+      "contextTokens": 128000,
+      "maxCompletionTokens": 4096
+    },
+    {
+      "id": "qwen3-vl-235b-a22b",
+      "mode": "chat",
+      "capabilities": [
+        "function-calling",
+        "multi-image",
+        "structured-output",
+        "vision",
+        "web-search"
+      ],
+      "inputPer1M": 0.25,
+      "outputPer1M": 1.5,
+      "contextTokens": 256000,
+      "maxCompletionTokens": 16384
+    },
+    {
+      "id": "venice-uncensored-1-2",
+      "mode": "chat",
+      "capabilities": [
+        "function-calling",
+        "multi-image",
+        "structured-output",
+        "vision",
+        "web-search"
+      ],
+      "inputPer1M": 0.2,
+      "outputPer1M": 0.9,
+      "contextTokens": 128000,
+      "maxCompletionTokens": 8192
+    },
+    {
+      "id": "qwen3-coder-480b-a35b-instruct-turbo",
+      "mode": "chat",
+      "capabilities": [
+        "code",
+        "function-calling",
+        "logprobs",
+        "structured-output",
+        "web-search"
+      ],
+      "inputPer1M": 0.35,
+      "outputPer1M": 1.5,
+      "contextTokens": 256000,
+      "maxCompletionTokens": 65536
+    },
+    {
+      "id": "kimi-k2-5",
+      "mode": "chat",
+      "capabilities": [
+        "code",
+        "function-calling",
+        "logprobs",
+        "multi-image",
+        "reasoning",
+        "reasoning-effort",
+        "structured-output",
+        "vision",
+        "web-search"
+      ],
+      "inputPer1M": 0.56,
+      "outputPer1M": 3.5,
+      "contextTokens": 256000,
+      "maxCompletionTokens": 65536
+    },
+    {
+      "id": "deepseek-v4-pro",
+      "mode": "chat",
+      "capabilities": [
+        "code",
+        "function-calling",
+        "reasoning",
+        "structured-output",
+        "web-search"
+      ],
+      "inputPer1M": 1.73,
+      "outputPer1M": 3.796,
+      "contextTokens": 1000000,
+      "maxCompletionTokens": 32768
+    },
+    {
+      "id": "zai-org-glm-5-2",
+      "mode": "chat",
+      "capabilities": [
+        "function-calling",
+        "reasoning",
+        "structured-output",
+        "web-search"
+      ],
+      "inputPer1M": 1.4,
+      "outputPer1M": 4.4,
+      "contextTokens": 1000000,
+      "maxCompletionTokens": 131072
+    },
+    {
+      "id": "grok-4-20",
+      "mode": "chat",
+      "capabilities": [
+        "function-calling",
+        "multi-image",
+        "reasoning",
+        "structured-output",
+        "vision",
+        "web-search",
+        "x-search"
+      ],
+      "inputPer1M": 1.42,
+      "outputPer1M": 2.83,
+      "contextTokens": 2000000,
+      "maxCompletionTokens": 128000
+    },
+    {
+      "id": "gemini-3-1-pro-preview",
+      "mode": "chat",
+      "capabilities": [
+        "audio-input",
+        "function-calling",
+        "multi-image",
+        "reasoning",
+        "reasoning-effort",
+        "structured-output",
+        "video-input",
+        "vision",
+        "web-search"
+      ],
+      "inputPer1M": 2.5,
+      "outputPer1M": 15,
+      "contextTokens": 1000000,
+      "maxCompletionTokens": 32768
+    },
+    {
+      "id": "claude-sonnet-4-6",
+      "mode": "chat",
+      "capabilities": [
+        "code",
+        "function-calling",
+        "multi-image",
+        "reasoning",
+        "structured-output",
+        "vision",
+        "web-search"
+      ],
+      "inputPer1M": 3.6,
+      "outputPer1M": 18,
+      "contextTokens": 1000000,
+      "maxCompletionTokens": 64000
+    },
+    {
+      "id": "claude-opus-4-8",
+      "mode": "chat",
+      "capabilities": [
+        "code",
+        "function-calling",
+        "multi-image",
+        "reasoning",
+        "structured-output",
+        "vision",
+        "web-search"
+      ],
+      "inputPer1M": 6,
+      "outputPer1M": 30,
+      "contextTokens": 1000000,
+      "maxCompletionTokens": 128000
+    },
+    {
+      "id": "openai-gpt-55",
+      "mode": "chat",
+      "capabilities": [
+        "function-calling",
+        "multi-image",
+        "reasoning",
+        "reasoning-effort",
+        "structured-output",
+        "vision",
+        "web-search"
+      ],
+      "inputPer1M": 6.25,
+      "outputPer1M": 37.5,
+      "contextTokens": 1000000,
+      "maxCompletionTokens": 131072
+    },
+    {
+      "id": "text-embedding-3-small",
+      "mode": "embedding",
+      "capabilities": [],
+      "inputPer1M": 0.025,
+      "outputPer1M": 0,
+      "contextTokens": null,
+      "maxCompletionTokens": null
+    },
+    {
+      "id": "text-embedding-bge-m3",
+      "mode": "embedding",
+      "capabilities": [],
+      "inputPer1M": 0.15,
+      "outputPer1M": 0,
+      "contextTokens": null,
+      "maxCompletionTokens": null
+    }
+  ]
 }

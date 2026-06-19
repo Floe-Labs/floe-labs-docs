@@ -1,6 +1,8 @@
-# Venice AI (OpenAI-compatible)
+# Venice AI — metered model inference
 
-Floe gives you a **drop-in OpenAI base URL** for [Venice AI](https://venice.ai) inference. Point any OpenAI SDK at Floe with your Floe agent key — no Venice account, no Venice key, no wallet. Floe funds Venice from your credit line and meters each call.
+Run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per token** from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
+
+Venice is the first model-inference provider in Floe's [vendor marketplace](../x402-directory/README.md). Access is **OpenAI-compatible**: point any OpenAI SDK at Floe with your Floe agent key — no Venice account, no Venice key, no wallet.
 
 ```
 Base URL:  https://credit-api.floelabs.xyz/v1/venice
@@ -17,7 +19,7 @@ Floe keeps a single prepaid Venice balance funded from a pooled wallet. On every
 2. Authenticates to Venice with the pooled wallet and forwards your request.
 3. Meters the response by token usage and debits your credit line at the metered cost.
 
-You are billed the **token cost of your call** — not the pool top-up. The cost is returned on every response:
+You're billed the **metered cost of each call** — token usage priced from Venice's live catalog, plus a small Floe service margin and any per-search surcharge (web / X search) — never the pool top-up. The exact charge is returned on every response:
 
 | Header | Meaning |
 |---|---|
@@ -36,9 +38,61 @@ These are served first-class and metered per token:
 | Responses | `POST /v1/venice/responses` | `responses.create` |
 | Embeddings | `POST /v1/venice/embeddings` | `embeddings.create` |
 
-Models are passed straight through — use `kimi-k2-5`, `llama-3.3-70b`, `text-embedding-bge-m3`, etc. A `venice/` prefix is accepted and stripped. Venice's `venice_parameters` (character slug, web search, E2EE) pass through unchanged.
-
 > **Streaming is not supported** — set `stream: false` (the default). Per-call metering needs the terminal usage block that a streamed response doesn't deliver. A `stream: true` request is refused with `400 streaming_not_supported`.
+
+## Models
+
+Pass any Venice **text** or **embedding** model id straight through in the `model` field — a `venice/` prefix is accepted and stripped (`venice/kimi-k2-5` → `kimi-k2-5`). There's **no allowlist**: any model in Venice's catalog works. (Image, audio, and video models run through the [x402 proxy](#image-voice-and-video), not this endpoint.)
+
+**Discover the full live catalog** — capabilities, context windows, and pricing — from Venice's public models endpoint (free, no key required):
+
+```bash
+curl "https://api.venice.ai/api/v1/models?type=text"        # chat / reasoning models
+curl "https://api.venice.ai/api/v1/models?type=embedding"   # embedding models
+```
+
+Each model carries `model_spec.capabilities` (reasoning, vision, function calling, code, web search, E2EE, …) and `model_spec.pricing`, so an agent can select by capability and cost at runtime. A full per-model breakdown lives in the [vendor marketplace → Compute](../x402-directory/compute.md#venice-models).
+
+### Featured models
+
+A representative slice — **not** the full menu and **not** a fixed list. Prices are USD per 1M tokens, track Venice's catalog (refreshed ~weekly), and may change; you're billed the exact metered amount in `X-Floe-Cost-USDC`.
+
+| Model | Capabilities | Context | Input $/1M | Output $/1M |
+|---|---|---|---|---|
+| `openai-gpt-oss-120b` | reasoning | 128K | $0.07 | $0.30 |
+| `venice-uncensored-1-2` | vision · uncensored | 128K | $0.20 | $0.90 |
+| `qwen3-vl-235b-a22b` | vision | 256K | $0.25 | $1.50 |
+| `qwen3-coder-480b-a35b-instruct-turbo` | code | 256K | $0.35 | $1.50 |
+| `kimi-k2-5` | reasoning · vision · code | 256K | $0.56 | $3.50 |
+| `llama-3.3-70b` | tools | 128K | $0.70 | $2.80 |
+| `zai-org-glm-5-2` | reasoning | 1M | $1.40 | $4.40 |
+| `grok-4-20` | reasoning · vision · X search | 2M | $1.42 | $2.83 |
+| `deepseek-v4-pro` | reasoning · code | 1M | $1.73 | $3.80 |
+| `gemini-3-1-pro-preview` | reasoning · vision · audio · video | 1M | $2.50 | $15.00 |
+| `claude-sonnet-4-6` | reasoning · vision · code | 1M | $3.60 | $18.00 |
+| `claude-opus-4-8` | reasoning · vision · code | 1M | $6.00 | $30.00 |
+| `openai-gpt-55` | reasoning · vision | 1M | $6.25 | $37.50 |
+
+**Embeddings**
+
+| Model | Input $/1M |
+|---|---|
+| `text-embedding-3-small` | $0.025 |
+| `text-embedding-bge-m3` | $0.15 |
+| `text-embedding-3-large` | $0.1625 |
+
+### Pick by capability
+
+- **Reasoning & tool use** — `claude-opus-4-8`, `openai-gpt-55`, `deepseek-v4-pro`, `kimi-k2-5`
+- **Vision (image input)** — `qwen3-vl-235b-a22b`, `claude-sonnet-4-6`, `gemini-3-1-pro-preview`
+- **Coding** — `qwen3-coder-480b-a35b-instruct-turbo`, `kimi-k2-7-code`, `openai-gpt-53-codex`
+- **Long context (1M–2M)** — `grok-4-20` (2M), `claude-opus-4-8` (1M), `zai-org-glm-5-2` (1M)
+- **Cheapest** — `e2ee-gpt-oss-20b-p` ($0.05/1M), `openai-gpt-oss-120b` ($0.07/1M)
+- **Private / E2EE** — `e2ee-glm-5-1`, `e2ee-gpt-oss-120b-p` (run inside a TEE, end-to-end encrypted)
+- **Uncensored** — `venice-uncensored-1-2`, `gemma-4-uncensored`
+- **X / Twitter search** — `grok-4-20` (built-in X search via `venice_parameters`)
+
+> **Privacy** — all Venice models are zero-retention. `e2ee-*` models additionally run inside a TEE with end-to-end encryption, so Venice never sees your plaintext prompt. Venice's `venice_parameters` (character slug, web search, E2EE) pass through unchanged.
 
 ## Chat completions
 
