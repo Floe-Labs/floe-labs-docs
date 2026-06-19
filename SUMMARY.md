@@ -48,6 +48,7 @@
 * [API Keys](docs/developers/api-keys.md)
 * [Agent Runtime Contract](docs/developers/agent-runtime-contract.md)
 * [x402 Payment Facilitator](docs/developers/x402-facilitator.md)
+* [Venice AI — Model Inference](docs/developers/venice.md)
 * [MCP Server](docs/developers/mcp-server.md)
 * [Webhooks](docs/developers/webhooks.md)
 

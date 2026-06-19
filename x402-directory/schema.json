@@ -27,6 +27,26 @@
     "priceUsd": { "type": "string", "pattern": "^(0|[1-9]\\d*)(\\.\\d+)?$" },
     "pricingModel": { "enum": ["fixed-per-call", "tiered", "dynamic", "upto"] },
     "floeCompatible": { "type": "boolean" },
-    "status": { "enum": ["verified", "unverified", "preview", "deprecated"] }
+    "status": { "enum": ["verified", "unverified", "preview", "deprecated"] },
+    "modelCount": { "type": "integer", "minimum": 0 },
+    "modelCatalogUrl": { "type": "string", "format": "uri" },
+    "models": {
+      "type": "array",
+      "description": "Featured/representative models for vendors that expose a model menu (e.g. LLM inference). Not exhaustive — the full live catalog is at modelCatalogUrl. Lets agents pick a model by capability and price.",
+      "items": {
+        "type": "object",
+        "required": ["id", "mode", "inputPer1M", "outputPer1M"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "mode": { "enum": ["chat", "embedding"] },
+          "capabilities": { "type": "array", "items": { "type": "string" } },
+          "inputPer1M": { "type": "number", "minimum": 0, "description": "USD per 1,000,000 input tokens." },
+          "outputPer1M": { "type": "number", "minimum": 0, "description": "USD per 1,000,000 output tokens (0 for embeddings)." },
+          "contextTokens": { "type": ["integer", "null"] },
+          "maxCompletionTokens": { "type": ["integer", "null"] }
+        }
+      }
+    }
   }
 }
