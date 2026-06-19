@@ -27,9 +27,11 @@ const { text } = await generateText({
   model: openai("gpt-4o"),
   tools,
   maxSteps: 10,
-  prompt: "Borrow 5 USDC for a week and then call my paid API.",
+  prompt: "Call my paid x402 API and tell me what it cost.",
 });
 ```
+
+> **Scope.** In this example the `gpt-4o` model tokens are billed by OpenAI against **your own** `@ai-sdk/openai` key — Floe does not see or cap them. Floe's spend controls cap the x402 payments your agent makes through the proxy. To bring LLM token spend under a Floe ceiling, route models through Floe's LLM proxy (`/v1/llm/chat/completions`, feature-flagged). See [Spend Controls](../developers/spend-controls.md).
 
 ## Example
 
