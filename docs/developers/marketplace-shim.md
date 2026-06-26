@@ -6,7 +6,7 @@ icon: store
 
 The **marketplace shim** lets Floe list vendors that don't speak x402 natively — like [Deepgram](../x402-directory/voice.md#deepgram-speech-to-text) and [HydraDB](../x402-directory/database.md) — and have agents consume them exactly like every other storefront vendor. It re-exposes those vendors as plain Floe endpoints under one host:
 
-```
+```text
 Host:  https://marketplace.floelabs.xyz
 ```
 

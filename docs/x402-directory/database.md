@@ -12,7 +12,7 @@ Vector database and agent-memory APIs — payable with Floe credit on Base.
 
 HydraDB is a non-x402 vendor re-exposed as Floe endpoints by the [marketplace shim](../developers/marketplace-shim.md). You call each route through the proxy with your Floe key, and the shim charges a flat per-operation price against your credit line — no HydraDB account or key required.
 
-> **Per-payer isolation.** `tenant_id` is auto-derived and forced per agent by the shim — you never set it, and you can't reach another payer's data (hard isolation). Within your tenant, you control namespacing yourself with the optional `subTenantId` field on every request.
+> **Per-payer isolation.** `tenant_id` is auto-derived and forced per agent by the shim — you never set it, and you can't reach another payer's data (hard isolation). Within your tenant, you control namespacing yourself with the optional `subTenantId` field on the data routes above.
 
 ---
 
