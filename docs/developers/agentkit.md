@@ -17,18 +17,18 @@ AgentKit is Coinbase's open-source framework that gives AI agents on-chain capab
 | **Package** | `floe-agent` | `floe-agentkit-actions` |
 | **Install** | `npm install floe-agent` | `pip install floe-agentkit-actions` |
 | **Runtime** | Node.js 18+ | Python 3.10+ |
-| **Actions exposed** | **47** (30 Floe + 17 X402: delegation + x402 payment + agent-awareness) | **47** — full parity. Next release adds 5 merchant-allowlist actions (→ 52). |
+| **Actions exposed** | **54** (30 Floe + 24 X402: delegation + x402 payment + agent-awareness + merchant-allowlist + Floe Inference) | **54** — full parity. |
 | **AI Frameworks** | Vercel AI SDK, LangChain, MCP Server, OpenAI Agents SDK | LangChain, OpenAI Function Calling |
 | **CLI** | `floe-agent` (via npx) | `floe-agent` (via pip) |
 | **GitHub** | [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions) | [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py) |
 
-> **SDK parity note.** The Python SDK has full parity with TypeScript: 30 Floe actions plus 17 X402 actions (delegation, x402 payment, and agent-awareness) — **47 total** in both. The next release adds 5 merchant-allowlist actions (52 total). The high-level credit-facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) belong to the **in-development** on-chain credit path and are present in both SDKs.
+> **SDK parity note.** The Python SDK has full parity with TypeScript: 30 Floe actions plus 24 X402 actions (delegation, x402 payment, agent-awareness, merchant-allowlist, and Floe Inference) — **54 total** in both. The high-level credit-facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) belong to the **in-development** on-chain credit path and are present in both SDKs.
 >
 > **Get started:** [TypeScript SDK](agentkit-typescript.md) | [Python SDK](agentkit-python.md)
 >
 > **Need working capital for your agent?** See [Agent Working Capital](agent-working-capital.md) for credit facility actions that let agents request, match, and manage fixed-rate loans.
 
-## Actions Reference (TypeScript — 47 total)
+## Actions Reference (TypeScript — 54 total)
 
 The full list below reflects the **TypeScript SDK** surface. Where an action is Python-available too, it's marked. See the [Python SDK page](agentkit-python.md) for the Python-only list.
 
@@ -71,7 +71,7 @@ All write actions auto-approve tokens to the LendingIntentMatcher with a 1% buff
 
 > **`flash_loan` vs `flash_arb`:** `flash_loan` sends tokens to `msg.sender` and calls `receiveFlashLoan()` — your connected wallet must be a smart contract. EOA wallets will revert. Use `flash_arb` instead, which routes through a pre-deployed FlashArbReceiver contract that handles repayment automatically.
 
-### x402 & Agent-Awareness Actions (17)
+### x402, Agent-Awareness & Inference Actions (24)
 
 These live on the separate `X402ActionProvider`.
 
@@ -88,7 +88,9 @@ These live on the separate `X402ActionProvider`.
 
 **Delegation (in-development on-chain credit path):** `grant_credit_delegation`, `open_credit_line`, `revoke_credit_delegation`, `check_credit_delegation`.
 
-> The next release adds 5 merchant-allowlist actions (`set_allowlist_mode`, `get_allowlist_mode`, `add_allowlist_entry`, `remove_allowlist_entry`, `list_allowlist`) → 52 total. Register `x402ActionProvider` alongside `floeActionProvider` to get both. See [x402 Payment Facilitator](x402-facilitator.md).
+**Floe Inference (live):** `list_inference_models`, `estimate_inference_cost` — browse the [keyless inference](keyless-inference.md) catalog and price a call before spending.
+
+> The x402 provider also includes 5 merchant-allowlist actions (`set_allowlist_mode`, `get_allowlist_mode`, `add_allowlist_entry`, `remove_allowlist_entry`, `list_allowlist`). Register `x402ActionProvider` alongside `floeActionProvider` to get all 54. See [x402 Payment Facilitator](x402-facilitator.md).
 
 ### Credit Facility Actions (7) — in development
 

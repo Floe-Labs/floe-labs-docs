@@ -1,0 +1,18 @@
+{
+  "id": "assemblyai-stt",
+  "name": "AssemblyAI STT",
+  "provider": "AssemblyAI",
+  "homepage": "https://assemblyai.com",
+  "description": "Speech-to-text (Universal-3) via AssemblyAI through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+  "resource": "https://marketplace.floelabs.xyz/v1/stt/assemblyai",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": ["speech-to-text", "transcription", "marketplace"],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -27,7 +27,7 @@ Zero-install: point your MCP client at the hosted Floe endpoint.
 
 ## What you get
 
-All 36 Floe MCP tools — wallet, secured working capital, x402 preflight, credit thresholds, transaction utilities. See the [MCP Server reference](../developers/mcp-server.md).
+All 43 Floe MCP tools — wallet, secured working capital, x402 preflight, credit thresholds, transaction utilities. See the [MCP Server reference](../developers/mcp-server.md).
 
 ## Local install (optional)
 

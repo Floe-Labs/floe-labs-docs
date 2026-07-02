@@ -28,7 +28,7 @@ npm install floe-agent @coinbase/agentkit viem zod
 pip install floe-agentkit-actions
 ```
 
-Both SDKs expose the same **47 actions** (52 once the upcoming allowlist actions ship). Pick the one that matches your stack.
+Both SDKs expose the same **54 actions**. Pick the one that matches your stack.
 
 ---
 
@@ -91,7 +91,7 @@ Use the agent-awareness tools to preflight cost and check balance before committ
 | `get_credit_remaining` | Available balance and headroom |
 | `get_spend_limit` / `set_spend_limit` / `clear_spend_limit` | Manage session spend caps |
 
-Full action reference: [AgentKit Actions](../developers/agentkit.md) (47 actions).
+Full action reference: [AgentKit Actions](../developers/agentkit.md) (54 actions).
 
 ---
 

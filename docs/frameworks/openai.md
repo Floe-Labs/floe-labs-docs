@@ -21,14 +21,14 @@ A native `floe-agent` adapter for the OpenAI Agents SDK is in development. Until
 }
 ```
 
-Your OpenAI agent now has access to all 36 Floe MCP tools.
+Your OpenAI agent now has access to all 43 Floe MCP tools.
 
 ## Roadmap
 
 The native adapter will:
 
 - Provide a one-line `import { getOpenAIAgentTools } from "floe-agent"`
-- Auto-bind the same 47 actions as the AgentKit provider
+- Auto-bind the same 54 actions as the AgentKit provider
 - Stream agent-awareness state alongside tool calls
 
 Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) for early access.

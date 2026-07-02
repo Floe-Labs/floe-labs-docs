@@ -1,7 +1,7 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "entryCount": 49,
+  "entryCount": 54,
   "categories": [
     "web-search",
     "social-news",
@@ -1096,6 +1096,116 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "deepgram-stt",
+      "name": "Deepgram STT",
+      "provider": "Deepgram",
+      "homepage": "https://deepgram.com",
+      "description": "Speech-to-text via Deepgram through the Floe marketplace shim. Pass an audioUrl; Floe probes the true duration server-side and bills whole audio minutes.",
+      "resource": "https://marketplace.floelabs.xyz/v1/stt/deepgram",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "speech-to-text",
+        "transcription",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "elevenlabs-tts",
+      "name": "ElevenLabs TTS",
+      "provider": "ElevenLabs",
+      "homepage": "https://elevenlabs.io",
+      "description": "Text-to-speech via ElevenLabs through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/elevenlabs",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "cartesia-tts",
+      "name": "Cartesia TTS",
+      "provider": "Cartesia",
+      "homepage": "https://cartesia.ai",
+      "description": "Low-latency text-to-speech (Sonic) via Cartesia through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/cartesia",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "google-tts",
+      "name": "Google Cloud TTS",
+      "provider": "Google Cloud",
+      "homepage": "https://cloud.google.com/text-to-speech",
+      "description": "Text-to-speech (Chirp 3 HD) via Google Cloud through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/google",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "assemblyai-stt",
+      "name": "AssemblyAI STT",
+      "provider": "AssemblyAI",
+      "homepage": "https://assemblyai.com",
+      "description": "Speech-to-text (Universal-3) via AssemblyAI through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+      "resource": "https://marketplace.floelabs.xyz/v1/stt/assemblyai",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "speech-to-text",
+        "transcription",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
     }

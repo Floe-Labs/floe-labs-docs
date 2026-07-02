@@ -4,7 +4,7 @@ icon: square-bolt
 
 # Coinbase AgentKit `GA`
 
-Native integration via `floeActionProvider()` (TypeScript) and `floe_action_provider()` (Python). Both expose the same 47 actions (52 once the upcoming allowlist actions ship).
+Native integration via `floeActionProvider()` (TypeScript) and `floe_action_provider()` (Python). Both expose the same 54 actions.
 
 ## Install
 

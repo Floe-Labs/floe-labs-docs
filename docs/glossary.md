@@ -91,7 +91,7 @@ The L2 (Base) transaction ordering service. Floe's circuit breaker checks sequen
 An EIP-712 value that binds signatures to a specific contract on a specific chain, preventing cross-chain and cross-contract replay attacks.
 
 ## AgentKit
-Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `floe-agent` package provides 47 actions (30 Floe + 17 x402: delegation, x402 payment, and agent-awareness) as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP. The next release adds 5 allowlist actions (52 total).
+Coinbase's open-source framework that gives AI agents on-chain capabilities. Floe's `floe-agent` package provides 54 actions (30 Floe + 24 x402: delegation, x402 payment, agent-awareness, merchant-allowlist, and Floe Inference) as an AgentKit ActionProvider, compatible with Vercel AI SDK, LangChain, and MCP.
 
 ## Working Capital
 USDC borrowed against a USDC deposit via the USDC/USDC market (95% LTV cap, no price risk). Working-capital **credit as a product** (borrow-against-collateral, rates, terms) is **on the roadmap** — not generally available. The live way to fund an agent is a Floe-managed balance topped up with fiat. (Under the hood, the facilitator already funds your payments via this on-chain mechanism today — see [How Floe works under the hood](getting-started/core-concepts.md) — but you never borrow or set rates yourself.)

@@ -109,7 +109,7 @@ const agentkit = await AgentKit.from({
 });
 ```
 
-All credit-facility actions are available alongside the rest of the SDK's 47 actions.
+All credit-facility actions are available alongside the rest of the SDK's 54 actions.
 
 ## Routing Working Capital
 

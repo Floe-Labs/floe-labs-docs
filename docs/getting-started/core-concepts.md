@@ -175,8 +175,8 @@ Floe surfaces onchain credit scores via [Cred Protocol](https://cred.xyz) on the
 
 ## 10. Agent interfaces
 
-- **AgentKit** — TypeScript + Python SDKs with 47 actions (52 once the upcoming allowlist actions ship)
-- **MCP server** — 36 tools exposed to any Claude/OpenAI/Cursor-compatible agent
+- **AgentKit** — TypeScript + Python SDKs with 54 actions
+- **MCP server** — 43 tools exposed to any Claude/OpenAI/Cursor-compatible agent
 - **Credit REST API** — HTTP endpoints for any language
 
 → [MCP Server](../developers/mcp-server.md) · [AgentKit](../developers/agentkit.md)
