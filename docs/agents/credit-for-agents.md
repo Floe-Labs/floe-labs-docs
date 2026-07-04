@@ -56,6 +56,6 @@ Repayment history would feed the [Credit & trust bureau](../components/credit-bu
 ## Next
 
 - **Get started:** [Quickstart](../getting-started/quickstart.md) — first paid API call in 5 minutes
-- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 47 actions across TypeScript + Python
+- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 54 actions across TypeScript + Python
 - **x402 proxy:** [x402 Credit Facilitator](../developers/x402-facilitator.md) — zero-touch API payments
 - **Dashboard:** [Developer Dashboard](../developers/developer-dashboard.md) — manage agents via web UI

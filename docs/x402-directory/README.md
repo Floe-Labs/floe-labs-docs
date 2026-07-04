@@ -13,7 +13,7 @@ Services with endpoints in the [Floe dashboard](https://dev-dashboard.floelabs.x
 | Category | Services |
 |----------|----------|
 | [Compute](compute.md) | Venice AI — chat completions, embeddings |
-| [Voice](voice.md) | Venice AI — TTS, transcription · Deepgram — speech-to-text · Twilio (coming soon) |
+| [Voice](voice.md) | Venice AI — TTS, transcription · Deepgram, AssemblyAI — STT · ElevenLabs, Cartesia, Google Cloud — TTS · Twilio (coming soon) |
 | [Database](database.md) | HydraDB — vector query, ingest, memory & tenant management |
 | [Image](image.md) | Venice AI — image generation |
 | [Text](text.md) | Firecrawl |

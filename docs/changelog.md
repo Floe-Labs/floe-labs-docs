@@ -6,9 +6,37 @@ icon: swap
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **47 actions**; `@floelabs/mcp-server` exposes **36 tools**. The next release adds 5 merchant-allowlist actions/tools (→ **52** SDK / **41** MCP). Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **43 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.9.0 — Floe Inference: keyless pay-as-you-go LLM & voice (June 2026)
+
+**Floe Inference (FLO-602)**
+
+One OpenAI-compatible endpoint to call LLMs, embeddings, and voice models and pay **per call** from your Floe balance — no provider account, no provider key, no wallet. Floe routes each call to the cheapest available source, meters exact usage, and debits your balance (your balance is the hard ceiling).
+
+* **Endpoints** (base `https://credit-api.floelabs.xyz/v1`): `chat/completions`, `embeddings`, `audio/speech`, `audio/transcriptions`, `realtime` (WS), `models`, `estimate`
+* **Rails** — `direct-account`, `self-host`, `venice`, `x402-router`, `byok` (your key, fee only), `free`; cheapest available wins, with transparent cross-rail fallback on upstream 5xx/429
+* **Metering** — per token (text/realtime), per character (TTS), or per audio second (STT); a 5% Floe margin over metered upstream cost, returned in `X-Floe-Cost-USDC`
+* **Estimate before you spend** — `POST /v1/estimate` prices a usage vector without making the call
+
+→ [Floe Inference docs](developers/keyless-inference.md)
+
+**Voice (FLO-606)**
+
+* **OpenAI-native audio on the gateway** — `openai/tts-1` (per character), `openai/whisper-1` (per audio second)
+* **Realtime** — OpenAI (`gpt-realtime`) and Google (`gemini-live`), metered per completed turn
+* **Third-party voice vendors** — ElevenLabs, Cartesia, Google Cloud (TTS) and Deepgram, AssemblyAI (STT) are served through the [Vendor Marketplace](../x402-directory/voice.md) via `POST /v1/proxy/fetch` (keyless, billed to your Floe balance), not the OpenAI-compatible gateway surface
+
+**Closed-model coverage (direct-account)**
+
+Keyless closed LLMs added to the gateway catalog (OpenAI-compatible, Floe-fronted accounts): **xAI Grok**, **Mistral**, **Cohere Command**, **DeepSeek** (direct API), **Z.AI/Zhipu GLM**, **Moonshot Kimi**, **Perplexity Sonar** — alongside the existing OpenAI, Anthropic, Google. Plus OpenAI audio `tts-1-hd`, `gpt-4o-transcribe`, `gpt-4o-mini-transcribe`. Each is a catalog row + Floe-held key; browse the live set with `GET /v1/models`.
+
+**MCP + AgentKit**
+
+* MCP: `list_models`, `estimate_inference_cost` (**43 tools** total)
+* AgentKit (TypeScript + Python): `list_inference_models`, `estimate_inference_cost` (**54 actions** total, full TS/Python parity)
 
 ### v1.8.0 — Spend Controls, Vendor Marketplace, Welcome Credit (June 2026)
 

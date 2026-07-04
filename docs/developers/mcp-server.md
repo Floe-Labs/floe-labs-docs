@@ -4,7 +4,7 @@ icon: plug
 
 # MCP Server
 
-Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The MCP server gives agents **36 tools**: the live spend-layer tools — checking balance, managing spend limits, registering credit-utilization thresholds, and reasoning about cost before a paid call — **plus** the on-chain market and loan tools for the Advanced self-custody path. Works with Claude, GPT, LangChain, CrewAI, and any MCP-compatible client. The next release adds 5 merchant-allowlist tools (41 total).
+Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The MCP server gives agents **43 tools**: the live spend-layer tools — checking balance, managing spend limits, registering credit-utilization thresholds, reasoning about cost before a paid call, and browsing/pricing [Floe Inference](keyless-inference.md) models — **plus** the on-chain market and loan tools for the Advanced self-custody path. Works with Claude, GPT, LangChain, CrewAI, and any MCP-compatible client.
 
 > **Note on payments.** There is **no MCP tool that makes an x402 payment.** Paying for an x402 API goes through the proxy (`POST /v1/proxy/fetch`) or an AgentKit action (`x402_fetch`), not an MCP tool. The tools below split into **spend-control + awareness** tools (live spend layer) and **on-chain protocol** tools (Advanced / self-custody). Use `estimate_x402_cost` to preflight a paid call, then pay via the proxy or AgentKit.
 
@@ -141,9 +141,9 @@ Each session is scoped to one agent — credit lines, spend limits, and webhook 
 
 ---
 
-## Tools Reference (36)
+## Tools Reference (43)
 
-The server exposes **36 tools** in two groups: the **live spend-layer tools** (use these for the shipped product) and the **Advanced / on-chain (self-custody) tools** (the on-chain protocol layer — markets, intents, loans — not the spend product).
+The server exposes **43 tools** in two groups: the **live spend-layer tools** (use these for the shipped product) and the **Advanced / on-chain (self-custody) tools** (the on-chain protocol layer — markets, intents, loans — not the spend product).
 
 ### Spend-layer tools (live)
 
@@ -161,6 +161,8 @@ Lets an agent answer "what can I spend?", "is this call worth it?", and "am I wi
 | `register_credit_threshold` | Register a webhook trigger at a utilization threshold (cap: 20 per agent) |
 | `delete_credit_threshold` | Remove a registered threshold |
 | `estimate_x402_cost` | Preflight an x402 URL — returns cost + reflection against your spendable balance (no payment) |
+| `list_models` | Browse the [Floe Inference](keyless-inference.md) catalog — model ids, modality, context window |
+| `estimate_inference_cost` | Price a Floe Inference call for a model + usage vector before spending (no call, no debit) |
 
 > **Decision-loop pattern:** call `estimate_x402_cost` → check `willExceedAvailable` / `willExceedSpendLimit` → if OK, make the payment via the proxy (`POST /v1/proxy/fetch`) or the AgentKit `x402_fetch` action. **The payment itself is not an MCP tool.** See [Agent Awareness](agent-awareness.md) for the full pattern.
 >

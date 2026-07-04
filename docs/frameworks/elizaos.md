@@ -21,7 +21,7 @@ A native ElizaOS plugin for Floe is on the roadmap. Until it ships, ElizaOS agen
 }
 ```
 
-ElizaOS picks up the 36 Floe MCP tools automatically.
+ElizaOS picks up the 43 Floe MCP tools automatically.
 
 ## Roadmap
 

@@ -28,7 +28,8 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 - [Credit REST API](https://floe-labs.gitbook.io/docs/developers/credit-api): HTTP endpoints for any language
 - [Agent Runtime Contract](https://floe-labs.gitbook.io/docs/developers/agent-runtime-contract): Error matrix + retry rules — ask: "What do I do when I get a 402 insufficient_balance?"
 - [Webhooks](https://floe-labs.gitbook.io/docs/developers/webhooks): Push notifications for credit events (credit.warning, credit.at_limit, credit.recovered)
-- [MCP Server](https://floe-labs.gitbook.io/docs/developers/mcp-server): Hosted MCP endpoint, 36 tools
+- [Floe Inference](https://floe-labs.gitbook.io/docs/developers/keyless-inference): Keyless pay-as-you-go OpenAI-compatible LLM/embeddings/voice gateway — model ids like `openai/gpt-4o`, metered per call, `POST /v1/estimate` to price first
+- [MCP Server](https://floe-labs.gitbook.io/docs/developers/mcp-server): Hosted MCP endpoint, 43 tools
 
 ## x402 API Directory — verified services callable with Floe credit
 
@@ -43,6 +44,11 @@ All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them th
 ### Voice
 - [Venice AI — Text to Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#venice-ai-text-to-speech): `POST https://api.venice.ai/api/v1/audio/speech` · metered/chars
 - [Venice AI — Transcription](https://floe-labs.gitbook.io/docs/x402-directory/voice#venice-ai-transcription): `POST https://api.venice.ai/api/v1/audio/transcriptions` · metered/min
+- [Deepgram — Speech-to-Text](https://floe-labs.gitbook.io/docs/x402-directory/voice#deepgram-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/deepgram` (via /v1/proxy/fetch) · metered/audio-min
+- [ElevenLabs — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#elevenlabs-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/elevenlabs` (via /v1/proxy/fetch) · metered/char
+- [Cartesia — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#cartesia-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/cartesia` (via /v1/proxy/fetch) · metered/char
+- [Google Cloud — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#google-cloud-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/google` (via /v1/proxy/fetch) · metered/char
+- [AssemblyAI — Speech-to-Text](https://floe-labs.gitbook.io/docs/x402-directory/voice#assemblyai-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/assemblyai` (via /v1/proxy/fetch) · metered/audio-sec
 - [dTelecom — STT Session](https://floe-labs.gitbook.io/docs/x402-directory/voice): `POST https://x402.dtelecom.org/v1/stt/session` · $0.025/req
 
 ### Image
@@ -105,8 +111,8 @@ All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them th
 - **Gas**: Sponsored by Floe for agents using the x402 facilitator
 - **Fiat on-ramp**: Buy USDC via Coinbase (credit card / bank transfer) from the Developer Dashboard
 - **Multi-agent**: Up to 5 agent wallets per developer, each with independent spend controls and API keys
-- **AgentKit actions**: 47 total (30 Floe + 17 x402: 4 delegation + 4 x402 + 9 agent-awareness). Next release adds 5 allowlist actions → 52.
-- **MCP tools**: 36. Next release adds 5 allowlist tools → 41.
+- **AgentKit actions**: 54 total (30 Floe + 24 x402: 4 delegation + 4 x402 + 9 agent-awareness + 5 merchant-allowlist + 2 Floe Inference).
+- **MCP tools**: 43 (incl. list_models, estimate_inference_cost + merchant-allowlist).
 - **x402 reach**: 2,000+ vendor API services across categories (compute, voice, image, text, search, browser, agent-tools)
 - **npm**: `floe-agent` (v0.5.1), `@floelabs/mcp-server` (v0.2.1)
 - **PyPI**: `floe-agentkit-actions` (v0.5.1)
