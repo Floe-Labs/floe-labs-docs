@@ -16,7 +16,7 @@ Text-to-speech, transcription, and voice APIs — payable with Floe credit on Ba
 | AssemblyAI | Speech-to-Text | metered / audio-second | Verified |
 | Twilio | — | — | Coming soon |
 
-> **Deepgram, ElevenLabs, Cartesia, Google Cloud TTS, and AssemblyAI** run through the **Floe marketplace shim** (`marketplace.floelabs.xyz`) — Floe holds the vendor key, meters the call, and bills your Floe balance. Reach them via `POST /v1/proxy/fetch` with only your Floe key (keyless).
+> **Deepgram, ElevenLabs, Cartesia, Google Cloud TTS, and AssemblyAI** run through the **[Floe marketplace shim](../developers/marketplace-shim.md)** (`marketplace.floelabs.xyz`) — Floe holds the vendor key, meters the call, and bills your Floe balance. Reach them via `POST /v1/proxy/fetch` with only your Floe key (keyless).
 
 ---
 

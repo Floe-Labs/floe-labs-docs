@@ -251,3 +251,57 @@ curl -X POST https://credit-api.floelabs.xyz/v1/venice/embeddings \
   -H "Content-Type: application/json" \
   -d '{"model":"text-embedding-bge-m3","input":"x402 makes agents pay per call"}'
 ```
+
+### Pick a model
+
+The curated Venice chat models — with model ids, latency tier, context window, and tool-calling support — live on the marketplace at [`/vendors/venice-compute`](https://dev-dashboard.floelabs.xyz/vendors/venice-compute). That card is the canonical model reference; pass any listed id as the `model` field. For a voice agent, start at the fast end (e.g. a small instruct model) and reach for a frontier reasoning model only when reasoning matters more than turn speed.
+
+---
+
+## Voice agents: Vapi + Venice through Floe
+
+A voice agent has two cost centers: the **model's tokens** (its brain) and the **paid tool calls** it makes (search, transcription, your own APIs). Route both through the Floe proxy and a **single credit line meters and caps both** — one ceiling, no separate Venice key or USDC to manage.
+
+The reference implementation is **`vapi-floe-poc`**. It works like this:
+
+1. Point your Vapi assistant's LLM at a **`custom-llm`** provider whose URL is a tiny shim you host.
+2. The shim forwards Vapi's OpenAI-shaped chat request to Venice's chat endpoint **through the Floe proxy** (`POST /v1/proxy/fetch` → `api.venice.ai/api/v1/chat/completions`).
+3. The agent's tools already call paid APIs through the **same** proxy with the **same** Floe key.
+
+Because every request — model and tools — debits the same Floe credit line, your session cap is a unified ceiling. When it's exhausted, the next call is refused with `402` before any upstream spend.
+
+**The shim** (the "compute" plane) forwards one request:
+
+```typescript
+// Vapi POSTs an OpenAI chat request here; we pay Venice through Floe.
+const veniceBody = JSON.stringify({ model, stream: false, messages, tools });
+
+const res = await fetch("https://credit-api.floelabs.xyz/v1/proxy/fetch", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.FLOE_API_KEY}`,  // same key as tools
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    url: "https://api.venice.ai/api/v1/chat/completions",
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: veniceBody,  // Venice request, serialized to a string
+  }),
+});
+
+const completion = await res.json();
+const costUsdc = res.headers.get("X-Floe-Payment-Amount");  // per-call cost
+```
+
+**The Vapi assistant** points its model at that shim:
+
+```typescript
+model: {
+  provider: "custom-llm",
+  url: `${SERVER_URL}/llm`,   // your shim — forwards to Venice via Floe
+  model: "llama-3.2-3b",      // any id from /vendors/venice-compute
+}
+```
+
+Pick the `model` id from the marketplace card at [`/vendors/venice-compute`](https://dev-dashboard.floelabs.xyz/vendors/venice-compute) — for voice, a small low-latency model with tool calling keeps turns snappy. Venice's raw x402 settlement (Sign-In-With-X, balance, top-up, payment headers) is entirely Floe's job; the shim only needs a Floe API key.
