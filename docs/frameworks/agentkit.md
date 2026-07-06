@@ -52,4 +52,4 @@ See [TypeScript SDK](../developers/agentkit-typescript.md) or [Python SDK](../de
 
 ## Example
 
-The [`agentkit-ts-chatbot`](https://github.com/Floe-Labs/floe-examples/tree/main/agentkit-ts-chatbot) example wires AgentKit + Vercel AI SDK + Floe into a conversational agent.
+The [`x402-client`](https://github.com/Floe-Labs/floe-cookbook/tree/main/x402-client) example wires AgentKit + Floe into an agent that pays an x402 endpoint through the proxy. Browse the [cookbook index](https://github.com/Floe-Labs/floe-cookbook) for more integrations across LangChain, CrewAI, MCP, and OpenAI Agents.
