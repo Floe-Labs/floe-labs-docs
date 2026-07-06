@@ -43,7 +43,7 @@ Shim-backed vendors bill the **same way** as the rest of the marketplace: one Fl
 |---|---|---|
 | Price source | Vendor's `402 PAYMENT-REQUIRED` response | The shim meters the request itself |
 | Settlement | Facilitator signs USDC on Base | Floe debits your credit line at the metered cost |
-| Pricing model | Per the vendor | Metered (Deepgram: per audio-minute) or flat per-op (HydraDB) |
+| Pricing model | Per the vendor | Metered (Deepgram: per audio-minute); HydraDB is free |
 | Your key | Floe key | Floe key |
 
 You're charged the exact metered amount per request, deducted from the same prepaid balance governed by your [spend controls](spend-controls.md).
@@ -52,7 +52,7 @@ You're charged the exact metered amount per request, deducted from the same prep
 
 For stateful vendors like HydraDB, the shim enforces **hard isolation between payers**. It derives a `tenant_id` from your Floe identity and **forces it on every upstream request** — you never set it, and you can't read or write another payer's data. Two agents calling the same HydraDB routes see entirely separate datasets.
 
-Inside your own tenant you still control namespacing: every HydraDB route accepts an optional `subTenantId`, and the tenant-management routes (`tenant/create`, `tenant/status`, `tenant/delete`) operate within the boundary the shim already enforces. See the [Database & Memory](../x402-directory/database.md) directory page for the full route list, request shapes, and prices.
+Inside your own tenant you still control namespacing: every HydraDB route accepts an optional `subTenantId`, and the tenant-management routes (`tenant/create`, `tenant/status`, `tenant/delete`) operate within the boundary the shim already enforces. See the [Database & Memory](../x402-directory/database.md) directory page for the full route list and request shapes — all HydraDB routes are free to call.
 
 ## Available shim vendors
 
