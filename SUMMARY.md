@@ -61,8 +61,6 @@
 
 ## Advanced / under the hood (managed plumbing)
 
-> The surfaces below are the on-chain protocol layer Floe runs **for you** to fund payments today, plus the self-custody path for teams running their own keys. You don't need any of this to fund an agent and pay for x402 APIs — see the [Quickstart](docs/getting-started/quickstart.md).
-
 * [How Floe Works Under the Hood](docs/getting-started/core-concepts.md)
 * [Self-custody](docs/developers/self-custody.md)
 * [Architecture](docs/protocol/architecture.md)
@@ -72,8 +70,6 @@
 * [Flash Loans](docs/developers/flash-loans.md)
 
 ## Roadmap (not generally available)
-
-> The surfaces below are **in development** — described in future tense, not callable today. Working-capital credit as a product is on the roadmap; today the facilitator funds payments via managed plumbing (above), and you never borrow or set rates yourself.
 
 * [Working capital (on-chain)](docs/components/secured-credit.md)
 * [Unsecured working capital](docs/components/unsecured-credit.md)
