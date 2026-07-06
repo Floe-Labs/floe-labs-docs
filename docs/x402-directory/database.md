@@ -4,13 +4,13 @@ icon: database
 
 # Database & Memory
 
-Vector database and agent-memory APIs — payable with Floe credit on Base.
+Vector database and agent-memory APIs — free to use with your Floe key.
 
 | Service | Endpoints | Price | Status |
 |---------|-----------|-------|--------|
-| HydraDB | Query, Ingest, Status, List, Delete, Tenant management | flat per-op | Verified |
+| HydraDB | Query, Ingest, Status, List, Delete, Tenant management | Free | Verified |
 
-HydraDB is a non-x402 vendor re-exposed as Floe endpoints by the [marketplace shim](../developers/marketplace-shim.md). You call each route through the proxy with your Floe key, and the shim charges a flat per-operation price against your credit line — no HydraDB account or key required.
+HydraDB is a non-x402 vendor re-exposed as Floe endpoints by the [marketplace shim](../developers/marketplace-shim.md). You call each route through the proxy with your Floe key, **free of charge** — nothing is billed to your credit line, no balance is required, and no HydraDB account or key is needed.
 
 > **Per-payer isolation.** `tenant_id` is auto-derived and forced per agent by the shim — you never set it, and you can't reach another payer's data (hard isolation). Within your tenant, you control namespacing yourself with the optional `subTenantId` field on the data routes above.
 
@@ -19,7 +19,7 @@ HydraDB is a non-x402 vendor re-exposed as Floe endpoints by the [marketplace sh
 ## HydraDB — Query
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/db/hydradb/query`
-**Price:** $0.002 USDC per query · Base mainnet · billed via the Floe marketplace shim
+**Price:** Free · via the Floe marketplace shim
 
 > Search stored memories and knowledge. Supports keyword/semantic modes and field-scoped queries.
 
@@ -35,9 +35,9 @@ Request body: `{ query, type?, queryBy?, mode?, maxResults?, subTenantId? }`
 ## HydraDB — Ingest
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/db/hydradb/ingest`
-**Price:** $0.004 USDC per item · Base mainnet · billed via the Floe marketplace shim
+**Price:** Free · via the Floe marketplace shim
 
-> Store memories or app knowledge. Billed per item ingested.
+> Store memories or app knowledge.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
@@ -51,7 +51,7 @@ Request body: `{ type: 'memory' | 'knowledge', memories?: [{ text, infer? }], ap
 ## HydraDB — Status
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/db/hydradb/status`
-**Price:** $0.0005 USDC per call · Base mainnet · billed via the Floe marketplace shim
+**Price:** Free · via the Floe marketplace shim
 
 > Check the processing status of one or more ingested items by id.
 
@@ -67,7 +67,7 @@ Request body: `{ ids: [string], subTenantId? }`
 ## HydraDB — List
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/db/hydradb/list`
-**Price:** $0.001 USDC per call · Base mainnet · billed via the Floe marketplace shim
+**Price:** Free · via the Floe marketplace shim
 
 > List stored items with optional type filter and pagination.
 
@@ -83,7 +83,7 @@ Request body: `{ type?, subTenantId?, limit?, offset? }`
 ## HydraDB — Delete
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/db/hydradb/delete`
-**Price:** $0.001 USDC per call · Base mainnet · billed via the Floe marketplace shim
+**Price:** Free · via the Floe marketplace shim
 
 > Delete stored items by id.
 
@@ -105,7 +105,7 @@ Request body: `{ ids: [string], type?, subTenantId? }`
 ### HydraDB — Tenant Create
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/db/hydradb/tenant/create`
-**Price:** $0.005 USDC per call · Base mainnet · billed via the Floe marketplace shim
+**Price:** Free · via the Floe marketplace shim
 
 > Create a sub-tenant within your forced tenant, optionally with a metadata schema.
 
@@ -121,7 +121,7 @@ Request body: `{ tenantMetadataSchema? }`
 ### HydraDB — Tenant Status
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/db/hydradb/tenant/status`
-**Price:** $0.0005 USDC per call · Base mainnet · billed via the Floe marketplace shim
+**Price:** Free · via the Floe marketplace shim
 
 > Report the status of your tenant.
 
@@ -137,7 +137,7 @@ Request body: `{}`
 ### HydraDB — Tenant Delete
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/db/hydradb/tenant/delete`
-**Price:** $0.002 USDC per call · Base mainnet · billed via the Floe marketplace shim
+**Price:** Free · via the Floe marketplace shim
 
 > Delete your tenant and its data. Requires explicit confirmation.
 
