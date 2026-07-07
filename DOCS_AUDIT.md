@@ -1,6 +1,6 @@
 # Floe Labs Docs — Reality Audit (Report Only)
 
-**Scope:** every Markdown file in `floe-labs-docs` plus cross-checks against `floe-examples`, the SDK/MCP source, and `developers/networks.md`.
+**Scope:** every Markdown file in `floe-labs-docs` plus cross-checks against `floe-cookbook`, the SDK/MCP source, and `developers/networks.md`.
 **Mode:** REPORT ONLY. No published file was edited. This file is the only artifact created.
 **Date generated:** 2026-06-09.
 
@@ -165,7 +165,7 @@ The `floe-docs-optimization/` folder (15 files) is an **unpublished** internal r
 
 ---
 
-## 4. Example run-status (cross-check `floe-examples`)
+## 4. Example run-status (cross-check `floe-cookbook`)
 
 "Runs today" = executes end-to-end against **live** functionality (prepaid x402 proxy, hosted MCP, spend controls, agent-awareness reads). Anything depending on `instant_borrow` / `repay_loan` / `repay_credit` / `open_credit_line` / managed `grant_credit_delegation` is on the **not-live credit path**. Anything importing `crewai_floe` depends on the unmerged PR #27.
 
@@ -209,7 +209,7 @@ The `floe-docs-optimization/` folder (15 files) is an **unpublished** internal r
 - **`llms.txt`** — Rewrite the one-line definition to lead with spend/walletless; remove "3,000+ lines, zero defaults"; update "36 tools" to 41 when the PR lands; mirror the new positioning.
 - **`developers/networks.md`** — Resolve VERIFY-3 (USDT markets live or not); this is canonical, so fix here first and let other pages link in.
 - **`floe-docs-optimization/`** — Unpublished stale draft; delete from the repo or relocate. It reintroduces removed claims and an off-ground-truth "credit-tiers/receivables/institutions" narrative.
-- **`floe-examples` (cross-repo, flag only):** rewrite `x402-client` and `financial-os-loop` to the live prepaid `fetch` path; gate the credit-loop examples (`financial-os-loop`, `langchain-agent`, `yield-optimizer`) behind a clear "Advanced / on-chain (requires self-custody, roadmap credit)" label; `crewai-demo` stays blocked until PR #27 publishes `crewai-floe`.
+- **`floe-cookbook` (cross-repo, flag only):** rewrite `x402-client` and `financial-os-loop` to the live prepaid `fetch` path; gate the credit-loop examples (`financial-os-loop`, `langchain-agent`, `yield-optimizer`) behind a clear "Advanced / on-chain (requires self-custody, roadmap credit)" label; `crewai-demo` stays blocked until PR #27 publishes `crewai-floe`.
 
 ---
 

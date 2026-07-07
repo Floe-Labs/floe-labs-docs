@@ -154,7 +154,7 @@ agent = budget_enabled_agent(
 
 ## Demos
 
-Two runnable crews live in [`floe-examples/crewai-demo`](https://github.com/Floe-Labs/floe-examples/tree/main/crewai-demo):
+Two runnable crews live in [`floe-cookbook/crewai-demo`](https://github.com/Floe-Labs/floe-cookbook/tree/main/crewai-demo):
 
 - **`loop_kill.py`** — the headline. A crew rigged to infinite-loop on GPT/Claude through the metered proxy with `FloeBudget(usd_limit=1)`. Without Floe it would burn money until you noticed; with Floe the proxy refuses past `$1` and the crew stops dead. It prints total spend at the halt.
 - **`procurement_crew.py`** — a Researcher → Buyer → Manager crew with an allowlist. The Buyer tries an off-allowlist host (hard-stopped with `host_not_allowlisted`) and tries to overspend its sub-cap (hard-stopped). The per-agent spend ledger is printed at the end.

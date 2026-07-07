@@ -39,4 +39,4 @@ Use this if you want to point the client at a locally running server (handy for 
 
 ## Example
 
-See [`floe-examples/mcp-demo`](https://github.com/Floe-Labs/floe-examples/tree/main/mcp-demo) for a zero-code Claude Desktop config.
+See [`floe-cookbook/mcp-demo`](https://github.com/Floe-Labs/floe-cookbook/tree/main/mcp-demo) for a zero-code Claude Desktop config.

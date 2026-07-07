@@ -35,4 +35,4 @@ const { text } = await generateText({
 
 ## Example
 
-[`floe-examples/agentkit-ts-chatbot`](https://github.com/Floe-Labs/floe-examples/tree/main/agentkit-ts-chatbot).
+The dedicated Vercel-AI-SDK chatbot example has been retired. For a runnable AgentKit client that pays an x402 endpoint through the Floe proxy, see [`floe-cookbook/x402-client`](https://github.com/Floe-Labs/floe-cookbook/tree/main/x402-client), or browse the full [cookbook index](https://github.com/Floe-Labs/floe-cookbook) to pick the example closest to your stack.
