@@ -54,7 +54,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/sarvam` (via the Floe marketplace shim)
 **Price:** metered per input character · Base mainnet · x402 v2
 
-> Bulbul text-to-speech across 22+ Indian languages (`bulbul:v2`, `bulbul:v3`). Audio returns base64-encoded in `result.audioBase64`. Pass a `target_language_code` (e.g. `hi-IN`). ~₹30/10k chars ≈ $0.36/10k (INR list at ~₹83/$ + 5% Floe margin).
+> Bulbul text-to-speech across 22+ Indian languages (`bulbul:v2`, `bulbul:v3`). Audio returns base64-encoded in `result.audioBase64`. Pass a `target_language_code` (e.g. `hi-IN`). ~₹30/10k chars ≈ $0.36/10k (Sarvam's INR list at ~₹83/$, before Floe's 5% margin).
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
