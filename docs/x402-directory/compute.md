@@ -74,8 +74,32 @@ When the credit line (or session cap) is exhausted, the call is refused with `40
 | Service | Endpoints | Price | Status |
 |---------|-----------|-------|--------|
 | Venice AI | Chat Completions, Responses, Embeddings | metered / tokens | Verified |
+| Sarvam AI | Chat Completions (Indic LLM) | metered / tokens | Verified |
 
 Venice chat, responses, and embeddings are served through Floe's **drop-in OpenAI-compatible surface** — point any OpenAI SDK at `https://credit-api.floelabs.xyz/v1/venice` with your Floe agent key. No Venice key, no request envelope. See the full guide: [**Venice AI — Model Inference**](../developers/venice.md).
+
+Sarvam AI chat is served on Floe's **OpenAI-compatible gateway** — call `POST /v1/chat/completions` with the model `sarvam/<id>` and your Floe agent key. No Sarvam key. Its proprietary voice, translation, transliteration, language-ID, and document models run through the marketplace shim (see [Voice](voice.md)). See the full guide: [**Sarvam AI — Indic Inference**](../developers/sarvam.md).
+
+---
+
+## Sarvam AI — Chat Completions
+
+**Endpoint:** `POST https://credit-api.floelabs.xyz/v1/chat/completions` · model `sarvam/<id>`
+**Price:** metered per token · Base mainnet · x402 v2
+
+> Indic-language chat (Sarvam 105B / 30B) across 22+ Indian languages — India's sovereign-AI stack. OpenAI-compatible; set `stream: false`. Prices are Sarvam's INR list converted at ~₹83/$ plus a 5% Floe margin.
+
+| Model | id | Context | Input $/1M | Output $/1M |
+|---|---|---|---|---|
+| Sarvam 105B | `sarvam/sarvam-105b` | 128K | $0.048 | $0.193 |
+| Sarvam 30B | `sarvam/sarvam-30b` | 64K | $0.030 | $0.121 |
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
+  -H "Authorization: Bearer $FLOE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"sarvam/sarvam-105b","messages":[{"role":"user","content":"नमस्ते! भारत की राजधानी क्या है?"}]}'
+```
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "entryCount": 54,
+  "entryCount": 55,
   "categories": [
     "web-search",
     "social-news",
@@ -1205,6 +1205,30 @@
       "network": "eip155:8453",
       "asset": "USDC",
       "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "sarvam",
+      "name": "Sarvam AI",
+      "provider": "Sarvam AI",
+      "homepage": "https://www.sarvam.ai",
+      "description": "Sovereign Indic AI — chat in 22+ Indian languages (Sarvam 105B/30B), plus Bulbul TTS, Saaras STT, Mayura translation, transliteration, language ID, and Sarvam Vision document digitization. Floe-held subscription key.",
+      "resource": "https://api.sarvam.ai/v1/chat/completions",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "llm",
+        "indic",
+        "multilingual",
+        "voice",
+        "translation"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
       "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"

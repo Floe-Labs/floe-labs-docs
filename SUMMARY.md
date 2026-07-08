@@ -51,6 +51,7 @@
 * [x402 Payment Facilitator](docs/developers/x402-facilitator.md)
 * [Marketplace Shim](docs/developers/marketplace-shim.md)
 * [Venice AI — Model Inference](docs/developers/venice.md)
+* [Sarvam AI — Indic Inference](docs/developers/sarvam.md)
 * [Floe Inference — Keyless LLM & Voice](docs/developers/keyless-inference.md)
 * [MCP Server](docs/developers/mcp-server.md)
 * [Webhooks](docs/developers/webhooks.md)

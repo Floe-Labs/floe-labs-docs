@@ -40,10 +40,13 @@ All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them th
 - [Venice AI — Chat Completions](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-ai-chat-completions): `POST https://api.venice.ai/api/v1/chat/completions` · metered/tokens
 - [Venice AI — Responses](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-ai-chat-completions): `POST https://api.venice.ai/api/v1/responses` · metered/tokens
 - [Venice AI — Embeddings](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-ai-embeddings): `POST https://api.venice.ai/api/v1/embeddings` · metered/tokens
+- [Sarvam AI — Indic Chat (Sarvam 105B/30B, 22+ Indian languages)](https://floe-labs.gitbook.io/docs/x402-directory/compute#sarvam-ai-chat-completions): `POST https://credit-api.floelabs.xyz/v1/chat/completions` model `sarvam/<id>` · metered/tokens
 
 ### Voice
 - [Venice AI — Text to Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#venice-ai-text-to-speech): `POST https://api.venice.ai/api/v1/audio/speech` · metered/chars
 - [Venice AI — Transcription](https://floe-labs.gitbook.io/docs/x402-directory/voice#venice-ai-transcription): `POST https://api.venice.ai/api/v1/audio/transcriptions` · metered/min
+- [Sarvam AI — Text to Speech (Bulbul)](https://floe-labs.gitbook.io/docs/x402-directory/voice#sarvam-ai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/sarvam` (via /v1/proxy/fetch) · metered/char
+- [Sarvam AI — Speech-to-Text (Saaras)](https://floe-labs.gitbook.io/docs/x402-directory/voice#sarvam-ai-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/sarvam` (via /v1/proxy/fetch) · metered/audio-sec
 - [Deepgram — Speech-to-Text](https://floe-labs.gitbook.io/docs/x402-directory/voice#deepgram-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/deepgram` (via /v1/proxy/fetch) · metered/audio-min
 - [ElevenLabs — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#elevenlabs-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/elevenlabs` (via /v1/proxy/fetch) · metered/char
 - [Cartesia — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#cartesia-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/cartesia` (via /v1/proxy/fetch) · metered/char
