@@ -10,6 +10,15 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.10.0 — Sarvam AI: sovereign Indic inference (July 2026)
+
+Added **Sarvam AI** — India's sovereign-AI stack for **22+ Indian languages** — as a Floe-verified vendor. Keyless: Floe holds the Sarvam subscription key and meters each call to your credit line (Sarvam's INR list at ~₹83/$ + 5% Floe margin).
+
+* **Chat** — `sarvam/sarvam-105b` (128K ctx) and `sarvam/sarvam-30b` (64K ctx) on the OpenAI-compatible gateway (`POST /v1/chat/completions`, model `sarvam/<id>`), metered per token
+* **Voice & language via the [marketplace shim](developers/marketplace-shim.md)** (`POST /v1/proxy/fetch`): Bulbul **TTS** (`/v1/tts/sarvam`), Saaras **STT** (`/v1/stt/sarvam`) and **speech-translate** (`/v1/stt-translate/sarvam`), Mayura **translation** (`/v1/translate/sarvam`), **transliteration** (`/v1/transliterate/sarvam`), **language ID** (`/v1/lid/sarvam`), and **Sarvam Vision** document digitization (`/v1/doc/sarvam`, async · preview)
+
+→ [Sarvam AI — Indic Inference](developers/sarvam.md) · [Compute](x402-directory/compute.md#sarvam-ai-chat-completions) · [Voice](x402-directory/voice.md#sarvam-ai-text-to-speech)
+
 ### v1.9.0 — Floe Inference: keyless pay-as-you-go LLM & voice (June 2026)
 
 **Floe Inference (FLO-602)**

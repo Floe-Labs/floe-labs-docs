@@ -9,6 +9,7 @@ Text-to-speech, transcription, and voice APIs — payable with Floe credit on Ba
 | Service | Endpoints | Price | Status |
 |---------|-----------|-------|--------|
 | Venice AI | Text to Speech, Transcription | metered | Verified |
+| Sarvam AI | Text-to-Speech (Bulbul), Speech-to-Text (Saaras) | metered / char, audio-second | Verified |
 | Deepgram | Speech-to-Text | metered / audio-minute | Verified |
 | ElevenLabs | Text-to-Speech | metered / character | Verified |
 | Cartesia | Text-to-Speech | metered / character | Verified |
@@ -16,7 +17,7 @@ Text-to-speech, transcription, and voice APIs — payable with Floe credit on Ba
 | AssemblyAI | Speech-to-Text | metered / audio-second | Verified |
 | Twilio | — | — | Coming soon |
 
-> **Deepgram, ElevenLabs, Cartesia, Google Cloud TTS, and AssemblyAI** run through the **[Floe marketplace shim](../developers/marketplace-shim.md)** (`marketplace.floelabs.xyz`) — Floe holds the vendor key, meters the call, and bills your Floe balance. Reach them via `POST /v1/proxy/fetch` with only your Floe key (keyless).
+> **Sarvam AI, Deepgram, ElevenLabs, Cartesia, Google Cloud TTS, and AssemblyAI** run through the **[Floe marketplace shim](../developers/marketplace-shim.md)** (`marketplace.floelabs.xyz`) — Floe holds the vendor key, meters the call, and bills your Floe balance. Reach them via `POST /v1/proxy/fetch` with only your Floe key (keyless).
 
 ---
 
@@ -46,6 +47,34 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://api.venice.ai/api/v1/audio/transcriptions", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"model\":\"whisper-large-v3\",\"file\":\"<base64-encoded-audio>\"}"}'
+```
+
+## Sarvam AI — Text to Speech
+
+**Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/sarvam` (via the Floe marketplace shim)
+**Price:** metered per input character · Base mainnet · x402 v2
+
+> Bulbul text-to-speech across 22+ Indian languages (`bulbul:v2`, `bulbul:v3`). Audio returns base64-encoded in `result.audioBase64`. Pass a `target_language_code` (e.g. `hi-IN`). ~₹30/10k chars ≈ $0.36/10k (Sarvam's INR list at ~₹83/$, before Floe's 5% margin).
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://marketplace.floelabs.xyz/v1/tts/sarvam", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"model\":\"bulbul:v2\",\"text\":\"भुगतान हो गया।\",\"target_language_code\":\"hi-IN\"}"}'
+```
+
+## Sarvam AI — Speech-to-Text
+
+**Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/sarvam` (via the Floe marketplace shim)
+**Price:** metered per audio second · Base mainnet · x402 v2
+
+> Saaras speech-to-text for Indian languages (`saaras:v3`, `saarika:v2.5`). Pass an `audioUrl`; Floe probes the true duration server-side and returns the transcript in `result.text`. ~₹30/hr ≈ $0.36/hr. For speech-in → English-out, use `/v1/stt-translate/sarvam` (`saaras:v2.5`).
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://marketplace.floelabs.xyz/v1/stt/sarvam", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"model\":\"saaras:v3\",\"audioUrl\":\"https://dpgr.am/spacewalk.wav\",\"language_code\":\"hi-IN\"}"}'
 ```
 
 ## Deepgram — Speech-to-Text

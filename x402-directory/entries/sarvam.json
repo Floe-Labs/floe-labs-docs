@@ -1,0 +1,53 @@
+{
+  "id": "sarvam",
+  "name": "Sarvam AI",
+  "provider": "Sarvam AI",
+  "homepage": "https://www.sarvam.ai",
+  "description": "Sovereign India-focused AI — Indic-language chat (Sarvam 105B/30B) across 22+ Indian languages, plus proprietary Bulbul TTS, Saaras STT, Mayura translation, transliteration, language ID, and Sarvam Vision document digitization. Server-side subscription-key auth, held by Floe.",
+  "resource": "https://api.sarvam.ai/v1/chat/completions",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "llm",
+    "indic",
+    "multilingual",
+    "voice",
+    "translation"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified",
+  "modelCount": 2,
+  "modelCatalogUrl": "https://docs.sarvam.ai",
+  "models": [
+    {
+      "id": "sarvam-105b",
+      "mode": "chat",
+      "capabilities": [
+        "function-calling",
+        "multilingual",
+        "reasoning"
+      ],
+      "inputPer1M": 0.048,
+      "outputPer1M": 0.193,
+      "contextTokens": 128000,
+      "maxCompletionTokens": null
+    },
+    {
+      "id": "sarvam-30b",
+      "mode": "chat",
+      "capabilities": [
+        "function-calling",
+        "multilingual"
+      ],
+      "inputPer1M": 0.03,
+      "outputPer1M": 0.121,
+      "contextTokens": 64000,
+      "maxCompletionTokens": null
+    }
+  ]
+}

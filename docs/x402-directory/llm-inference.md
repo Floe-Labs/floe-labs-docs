@@ -15,6 +15,7 @@ AI model inference — Claude, GPT, open-source models. All payable with Floe cr
 | dTelecom STT | dTelecom | $0.01 | POST | Verified |
 | Ekai Labs | Ekai Labs | $0.01 | POST | Verified |
 | Octomil | Octomil | $0.005 | POST | Verified |
+| Sarvam AI | Sarvam AI | $0.01 | POST | Verified |
 | Venice | Venice | $0.01 | POST | Verified |
 
 ---
@@ -136,6 +137,23 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://api.octomil.com/v1/infer", "method": "POST"}'
+```
+
+## Sarvam AI
+
+**Provider:** [Sarvam AI](https://www.sarvam.ai)
+**Endpoint:** `POST https://api.sarvam.ai/v1/chat/completions`
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
+**Floe compatible:** Yes
+
+> Sovereign Indic AI — chat in 22+ Indian languages (Sarvam 105B/30B), plus Bulbul TTS, Saaras STT, Mayura translation, transliteration, language ID, and Sarvam Vision document digitization. Floe-held subscription key.
+
+```bash
+# Call through Floe
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://api.sarvam.ai/v1/chat/completions", "method": "POST"}'
 ```
 
 ## Venice
