@@ -81,7 +81,7 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
       "command": "npx",
       "args": [
         "-y",
-        "mcp-remote",
+        "mcp-remote@0.1.38",
         "https://mcp.floelabs.xyz/mcp",
         "--header",
         "Authorization:${AUTH_HEADER}"
