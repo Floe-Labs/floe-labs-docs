@@ -44,22 +44,11 @@ A developer can own multiple agents — see [Multiple Agents](#multiple-agents) 
 
 ### Option 1: Remote Endpoint (recommended)
 
-Point your MCP client to the hosted endpoint. No installation needed.
-
-**Claude Desktop / Claude Code:**
-
-```json
-{
-  "mcpServers": {
-    "floe": {
-      "url": "https://mcp.floelabs.xyz/mcp",
-      "headers": {
-        "Authorization": "Bearer floe_YOUR_AGENT_KEY"
-      }
-    }
-  }
-}
-```
+Point your MCP client to the hosted endpoint. Clients that speak MCP over HTTP
+natively — **Cursor** and **Claude Code** — connect with just the URL and an
+`Authorization` header. **Claude Desktop's config file is stdio-only**, so it
+reaches the same endpoint through the
+[`mcp-remote`](https://www.npmjs.com/package/mcp-remote) bridge (needs Node.js).
 
 **Cursor** (`.cursor/mcp.json`):
 
@@ -75,6 +64,42 @@ Point your MCP client to the hosted endpoint. No installation needed.
   }
 }
 ```
+
+**Claude Code** (CLI):
+
+```bash
+claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
+  --header "Authorization: Bearer floe_YOUR_AGENT_KEY"
+```
+
+**Claude Desktop** (`claude_desktop_config.json`, bridged via `mcp-remote`):
+
+```json
+{
+  "mcpServers": {
+    "floe": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://mcp.floelabs.xyz/mcp",
+        "--header",
+        "Authorization:${AUTH_HEADER}"
+      ],
+      "env": {
+        "AUTH_HEADER": "Bearer floe_YOUR_AGENT_KEY"
+      }
+    }
+  }
+}
+```
+
+> **Why the bridge?** Claude Desktop only launches local (stdio) MCP servers from
+> its config file — it can't dial a remote URL there. `mcp-remote` runs as that
+> local process and proxies to the hosted endpoint. The `Authorization` value
+> lives in `env` because Claude Desktop mishandles spaces inside a `--header`
+> argument. On paid plans you can alternatively add the server via
+> **Settings → Connectors**.
 
 ### Option 2: Local via npx
 
