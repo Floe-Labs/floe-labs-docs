@@ -13,7 +13,7 @@ Image, video, audio, and music generation. All payable with Floe credit on Base.
 | Imference | Imference | $0.05 | POST | Verified |
 | Kodo | Kodo | $0.05 | POST | Verified |
 | Soundside | Soundside | $0.02 | POST | Verified |
-| Spraay | Spraay | $0.02 | POST | Verified |
+| Spraay | Spraay | $0.03 | POST | Verified |
 
 ---
 
@@ -105,17 +105,17 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ## Spraay
 
 **Provider:** [Spraay](https://spraay.ai)
-**Endpoint:** `POST https://api.spraay.ai/v1/run`
-**Price:** $0.02 USDC per call (dynamic) · Base mainnet · x402 v2
+**Endpoint:** `POST https://gateway.spraay.app/api/v1/compute/text-to-speech`
+**Price:** $0.03 USDC per call (tiered) · Base mainnet · x402 v2
 **Floe compatible:** Yes
 
-> AI inference including Replicate-backed image/video/audio.
+> AI inference including Replicate-backed image/video/audio, plus voice at gateway.spraay.app — text-to-speech (XTTS-v2, $0.03) and speech-to-text (Whisper, $0.02). Also settles on Solana.
 
 ```bash
 # Call through Floe
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://api.spraay.ai/v1/run", "method": "POST"}'
+  -d '{"url": "https://gateway.spraay.app/api/v1/compute/text-to-speech", "method": "POST"}'
 ```
 

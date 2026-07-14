@@ -1,0 +1,22 @@
+{
+  "id": "speechmatics-stt",
+  "name": "Speechmatics STT",
+  "provider": "Speechmatics",
+  "homepage": "https://speechmatics.com",
+  "description": "Speech-to-text (melia-1) via Speechmatics through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+  "resource": "https://marketplace.floelabs.xyz/v1/stt/speechmatics",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "speech-to-text",
+    "transcription",
+    "marketplace"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "agent402",
+  "name": "Agent402",
+  "provider": "Agent402",
+  "homepage": "https://agent402.tools",
+  "description": "Agent voice tools — TTS ($0.05), HD TTS ($0.10), and transcription ($0.03). Multi-chain settlement: Base, Solana, Polygon, Arbitrum, Stellar.",
+  "resource": "https://agent402.tools/api/tts",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "text-to-speech",
+    "speech-to-text",
+    "voice"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.05",
+  "pricingModel": "tiered",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -110,11 +110,15 @@ Browse the live catalog — ids, modality, and context windows — from `GET /v1
 | `qwen/qwen3-235b-a22b-instruct` · `deepseek/deepseek-r1-0528` · `meta/llama-4-maverick` · `google/gemma-3-27b` · `moonshot/kimi-k2.5` · `mistral/mistral-nemo` · `microsoft/phi-4` … | text | open-weight, self-host (DeepInfra/Together) |
 | `venice/llama-3.3-70b` · `venice/qwen3-235b` | text | open-weight via Venice |
 | `openai/text-embedding-3-small` | embedding | |
-| `openai/tts-1` · `openai/tts-1-hd` | tts | metered per character |
-| `openai/whisper-1` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` | stt | metered per audio second |
-| `openai/gpt-realtime` · `google/gemini-live` | realtime | metered per token, per turn |
+| `openai/tts-1` · `openai/tts-1-hd` · `openai/gpt-4o-mini-tts` | tts | OpenAI, metered per character |
+| `hexgrad/kokoro-82m` · `resembleai/chatterbox-turbo` · `canopylabs/orpheus-3b` · `qwen/qwen3-tts` · `cartesia/sonic-3` · `groq/orpheus-v1-english` | tts | open-weight + hosted, self-host (DeepInfra/Together/Groq), metered per character |
+| `google/gemini-2.5-flash-tts` · `google/gemini-3.1-flash-tts` | tts | Google, preview, metered per audio token |
+| `openai/whisper-1` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` | stt | OpenAI, metered per audio second |
+| `openai/whisper-large-v3-turbo` · `nvidia/parakeet-tdt-0.6b-v3` · `mistral/voxtral-mini-transcribe` · `groq/whisper-large-v3-turbo` | stt | self-host (DeepInfra/Together/Groq) + Mistral, metered per audio second |
+| `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime` · `google/gemini-live-3.1` | realtime | metered per token, per turn |
+| `openai/gpt-realtime-whisper` · `openai/gpt-realtime-translate` · `xai/grok-voice` | realtime | metered per minute |
 
-> The catalog is representative and grows over time — always resolve ids from `GET /v1/models` at runtime rather than hard-coding a fixed list. Third-party **voice** vendors (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI) live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`.
+> The catalog is representative and grows over time — always resolve ids from `GET /v1/models` at runtime rather than hard-coding a fixed list. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, Inworld, MiniMax, Azure, Amazon Polly, xAI, Speechmatics) live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`.
 
 ## Chat completions
 
@@ -195,7 +199,18 @@ Agents can call the same estimate through the [MCP tool](mcp-server.md) `estimat
 
 ## Voice
 
-This gateway serves **OpenAI-native** voice models (`openai/tts-1`, `openai/whisper-1`): **text-to-speech** meters per character of input; **transcription** meters per audio second.
+The gateway serves **TTS and STT from multiple providers** on the same OpenAI-compatible endpoints — OpenAI, DeepInfra, Together, Groq, and Mistral, plus Google Gemini TTS in preview. **Text-to-speech** meters per character of input (Gemini TTS per audio output token); **transcription** meters per audio second. As everywhere on this gateway, you're billed the upstream rate **plus a small Floe margin** (5% default); prices below are upstream list.
+
+| Provider | TTS | STT |
+|---|---|---|
+| OpenAI | `tts-1`, `tts-1-hd`, `gpt-4o-mini-tts` (preview) | `whisper-1`, `gpt-4o-transcribe`, `gpt-4o-mini-transcribe` |
+| DeepInfra | Kokoro ($0.62/1M chars), Chatterbox, Orpheus, Qwen3-TTS | Whisper large-v3-turbo ($0.0002/min), Voxtral |
+| Together | Kokoro, Orpheus, Cartesia `sonic-3` | Whisper large-v3, Parakeet ($0.0015/min) |
+| Groq | Orpheus TTS | `whisper-large-v3-turbo` ($0.04/hr — cheapest batch STT) |
+| Mistral | — | Voxtral transcribe ($0.003/min) |
+| Google | Gemini 2.5 / 3.1 Flash TTS (preview) | — |
+
+Open-weight models available on more than one host (Kokoro, Orpheus, Whisper) are a single catalog id — Floe routes to the cheapest available source.
 
 {% tabs %}
 {% tab title="TTS (TypeScript)" %}
@@ -221,7 +236,9 @@ print(tr.text)
 
 ### Realtime voice
 
-Open a WebSocket to `wss://credit-api.floelabs.xyz/v1/realtime?model=openai/gpt-realtime` (or `google/gemini-live`), authenticating with `Authorization: Bearer <floe key>` or `?api_key=`. Floe relays events verbatim in both directions and meters **each completed turn** from the provider's usage block. Because your balance is the ceiling, the session is cut off the instant a turn would exhaust it.
+Open a WebSocket to `wss://credit-api.floelabs.xyz/v1/realtime?model=openai/gpt-realtime-2.1`, authenticating with `Authorization: Bearer <floe key>` or `?api_key=`. Floe relays events verbatim in both directions and meters **each completed turn** from the provider's usage block — per token for conversational models, per minute for duration-billed ones. Because your balance is the ceiling, the session is cut off the instant a turn would exhaust it.
+
+Available realtime models: `openai/gpt-realtime-2.1` and `openai/gpt-realtime-2.1-mini` (plus the original `openai/gpt-realtime`), the duration-billed `openai/gpt-realtime-whisper` (live STT) and `openai/gpt-realtime-translate` (live translation), `google/gemini-live-3.1`, and `xai/grok-voice` ($0.05/min upstream). **Amazon Nova 2 Sonic is coming** — it needs a dedicated Bedrock bridge and ships separately.
 
 ## Errors
 

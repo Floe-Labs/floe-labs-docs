@@ -1,0 +1,22 @@
+{
+  "id": "cartesia-stt",
+  "name": "Cartesia STT",
+  "provider": "Cartesia",
+  "homepage": "https://cartesia.ai",
+  "description": "Speech-to-text (Ink-Whisper) via Cartesia through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+  "resource": "https://marketplace.floelabs.xyz/v1/stt/cartesia",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "speech-to-text",
+    "transcription",
+    "marketplace"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

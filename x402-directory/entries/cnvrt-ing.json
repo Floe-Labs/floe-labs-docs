@@ -1,0 +1,22 @@
+{
+  "id": "cnvrt-ing",
+  "name": "cnvrt.ing",
+  "provider": "cnvrt.ing",
+  "homepage": "https://cnvrt.ing",
+  "description": "Whisper transcription of any media URL at a flat price per call. Speaks the older x402 v1 protocol — confirm client compatibility before wiring it into a pipeline.",
+  "resource": "https://cnvrt.ing/api/transcribe",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "speech-to-text",
+    "transcription",
+    "voice"
+  ],
+  "x402Version": 1,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.025",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "preview"
+}

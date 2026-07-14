@@ -1,0 +1,22 @@
+{
+  "id": "gedx402",
+  "name": "GEDX402",
+  "provider": "GEDX402",
+  "homepage": "https://media.gedx402.com",
+  "description": "Voice media suite — TTS (MeloTTS $0.005, Aura-2 $0.0395), ASR (whisper-large-v3-turbo $0.006, Nova-3 $0.0085), and full voice sessions ($1.49) at media.gedx402.com.",
+  "resource": "https://media.gedx402.com/v1/tts/melotts",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "text-to-speech",
+    "speech-to-text",
+    "voice"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "tiered",
+  "floeCompatible": true,
+  "status": "verified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "azure-tts",
+  "name": "Azure Speech TTS",
+  "provider": "Microsoft Azure",
+  "homepage": "https://azure.microsoft.com/products/ai-services/ai-speech",
+  "description": "Neural text-to-speech via Azure AI Speech through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+  "resource": "https://marketplace.floelabs.xyz/v1/tts/azure",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "text-to-speech",
+    "voice",
+    "marketplace"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

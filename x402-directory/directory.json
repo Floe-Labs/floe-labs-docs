@@ -1,7 +1,7 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "entryCount": 55,
+  "entryCount": 74,
   "categories": [
     "web-search",
     "social-news",
@@ -78,6 +78,28 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "agent402",
+      "name": "Agent402",
+      "provider": "Agent402",
+      "homepage": "https://agent402.tools",
+      "description": "Agent voice tools — TTS ($0.05), HD TTS ($0.10), and transcription ($0.03). Multi-chain settlement: Base, Solana, Polygon, Arbitrum, Stellar.",
+      "resource": "https://agent402.tools/api/tts",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "speech-to-text",
+        "voice"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.05",
+      "pricingModel": "tiered",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -171,6 +193,28 @@
       "status": "verified"
     },
     {
+      "id": "assemblyai-stt",
+      "name": "AssemblyAI STT",
+      "provider": "AssemblyAI",
+      "homepage": "https://assemblyai.com",
+      "description": "Speech-to-text (Universal-3) via AssemblyAI through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+      "resource": "https://marketplace.floelabs.xyz/v1/stt/assemblyai",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "speech-to-text",
+        "transcription",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "aws-x402",
       "name": "AWS x402 Reference",
       "provider": "AWS",
@@ -192,6 +236,50 @@
       "pricingModel": "dynamic",
       "floeCompatible": false,
       "status": "preview"
+    },
+    {
+      "id": "azure-stt",
+      "name": "Azure Speech STT",
+      "provider": "Microsoft Azure",
+      "homepage": "https://azure.microsoft.com/products/ai-services/ai-speech",
+      "description": "Speech-to-text (fast transcription) via Azure AI Speech through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+      "resource": "https://marketplace.floelabs.xyz/v1/stt/azure",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "speech-to-text",
+        "transcription",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "azure-tts",
+      "name": "Azure Speech TTS",
+      "provider": "Microsoft Azure",
+      "homepage": "https://azure.microsoft.com/products/ai-services/ai-speech",
+      "description": "Neural text-to-speech via Azure AI Speech through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/azure",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
     },
     {
       "id": "bitrefill",
@@ -282,6 +370,50 @@
       "status": "verified"
     },
     {
+      "id": "cartesia-stt",
+      "name": "Cartesia STT",
+      "provider": "Cartesia",
+      "homepage": "https://cartesia.ai",
+      "description": "Speech-to-text (Ink-Whisper) via Cartesia through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+      "resource": "https://marketplace.floelabs.xyz/v1/stt/cartesia",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "speech-to-text",
+        "transcription",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "cartesia-tts",
+      "name": "Cartesia TTS",
+      "provider": "Cartesia",
+      "homepage": "https://cartesia.ai",
+      "description": "Low-latency text-to-speech (Sonic) via Cartesia through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/cartesia",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "cloudflare-x402",
       "name": "Cloudflare Pay-per-Crawl",
       "provider": "Cloudflare",
@@ -305,6 +437,28 @@
       "status": "preview"
     },
     {
+      "id": "cnvrt-ing",
+      "name": "cnvrt.ing",
+      "provider": "cnvrt.ing",
+      "homepage": "https://cnvrt.ing",
+      "description": "Whisper transcription of any media URL at a flat price per call. Speaks the older x402 v1 protocol — confirm client compatibility before wiring it into a pipeline.",
+      "resource": "https://cnvrt.ing/api/transcribe",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "speech-to-text",
+        "transcription",
+        "voice"
+      ],
+      "x402Version": 1,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.025",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "preview"
+    },
+    {
       "id": "daydreams-router",
       "name": "Daydreams Router",
       "provider": "Daydreams",
@@ -322,6 +476,50 @@
       "network": "eip155:8453",
       "asset": "USDC",
       "priceUsd": "0.01",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "deepgram-stt",
+      "name": "Deepgram STT",
+      "provider": "Deepgram",
+      "homepage": "https://deepgram.com",
+      "description": "Speech-to-text via Deepgram through the Floe marketplace shim. Pass an audioUrl; Floe probes the true duration server-side and bills whole audio minutes.",
+      "resource": "https://marketplace.floelabs.xyz/v1/stt/deepgram",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "speech-to-text",
+        "transcription",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "deepgram-tts",
+      "name": "Deepgram TTS",
+      "provider": "Deepgram",
+      "homepage": "https://deepgram.com",
+      "description": "Text-to-speech (Aura-2) via Deepgram through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/deepgram",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
       "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
@@ -350,22 +548,23 @@
     },
     {
       "id": "dtelecom-stt",
-      "name": "dTelecom STT",
+      "name": "dTelecom Voice",
       "provider": "dTelecom",
       "homepage": "https://dtelecom.org",
-      "description": "Real-time speech-to-text in 99+ languages.",
-      "resource": "https://api.dtelecom.org/v1/transcribe",
+      "description": "Full voice stack on a prepaid-credits model at x402.dtelecom.org — buy credits (min $0.10), then open STT sessions ($0.006/min, 99+ languages), TTS sessions ($0.008/1K chars), WebRTC tokens ($0.001/participant-min), or managed agent sessions (~$0.015/min). Also settles on Solana and Tempo.",
+      "resource": "https://x402.dtelecom.org/v1/credits/purchase",
       "method": "POST",
       "category": "llm-inference",
       "tags": [
         "speech-to-text",
-        "transcription",
+        "text-to-speech",
+        "webrtc",
         "multilingual"
       ],
       "x402Version": 2,
       "network": "eip155:8453",
       "asset": "USDC",
-      "priceUsd": "0.01",
+      "priceUsd": "0.10",
       "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
@@ -388,6 +587,50 @@
       "network": "eip155:8453",
       "asset": "USDC",
       "priceUsd": "0.01",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "elevenlabs-stt",
+      "name": "ElevenLabs STT",
+      "provider": "ElevenLabs",
+      "homepage": "https://elevenlabs.io",
+      "description": "Speech-to-text (Scribe v2) via ElevenLabs through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+      "resource": "https://marketplace.floelabs.xyz/v1/stt/elevenlabs",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "speech-to-text",
+        "transcription",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "elevenlabs-tts",
+      "name": "ElevenLabs TTS",
+      "provider": "ElevenLabs",
+      "homepage": "https://elevenlabs.io",
+      "description": "Text-to-speech via ElevenLabs through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/elevenlabs",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
       "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
@@ -459,6 +702,28 @@
       "status": "verified"
     },
     {
+      "id": "forgemesh-voice",
+      "name": "ForgeMesh Voice",
+      "provider": "ForgeMesh",
+      "homepage": "https://forgemesh.io",
+      "description": "OpenAI-compatible text-to-speech (POST /v1/audio/speech) at a flat price per call — the cheapest live x402 TTS.",
+      "resource": "https://voice.forgemesh.io/v1/audio/speech",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "openai-compatible"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "freepik",
       "name": "Freepik",
       "provider": "Freepik",
@@ -477,6 +742,28 @@
       "asset": "USDC",
       "priceUsd": "0.02",
       "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "gedx402",
+      "name": "GEDX402",
+      "provider": "GEDX402",
+      "homepage": "https://media.gedx402.com",
+      "description": "Voice media suite — TTS (MeloTTS $0.005, Aura-2 $0.0395), ASR (whisper-large-v3-turbo $0.006, Nova-3 $0.0085), and full voice sessions ($1.49) at media.gedx402.com.",
+      "resource": "https://media.gedx402.com/v1/tts/melotts",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "speech-to-text",
+        "voice"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "tiered",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -525,6 +812,50 @@
       "status": "verified"
     },
     {
+      "id": "google-tts",
+      "name": "Google Cloud TTS",
+      "provider": "Google Cloud",
+      "homepage": "https://cloud.google.com/text-to-speech",
+      "description": "Text-to-speech (Chirp 3 HD) via Google Cloud through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/google",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "hume-tts",
+      "name": "Hume TTS",
+      "provider": "Hume AI",
+      "homepage": "https://hume.ai",
+      "description": "Expressive text-to-speech (Octave 2) via Hume AI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/hume",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "hyperbrowser",
       "name": "Hyperbrowser",
       "provider": "Hyperbrowser",
@@ -565,6 +896,28 @@
       "asset": "USDC",
       "priceUsd": "0.05",
       "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "inworld-tts",
+      "name": "Inworld TTS",
+      "provider": "Inworld AI",
+      "homepage": "https://inworld.ai",
+      "description": "Text-to-speech (inworld-tts-2) via Inworld AI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/inworld",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -724,6 +1077,28 @@
       "status": "verified"
     },
     {
+      "id": "minimax-tts",
+      "name": "MiniMax TTS",
+      "provider": "MiniMax",
+      "homepage": "https://www.minimax.io",
+      "description": "Text-to-speech (speech-2.8-turbo; HD tier available) via MiniMax through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/minimax",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "neynar-farcaster",
       "name": "Neynar Farcaster",
       "provider": "Neynar",
@@ -834,6 +1209,28 @@
       "status": "verified"
     },
     {
+      "id": "polly-tts",
+      "name": "Amazon Polly TTS",
+      "provider": "Amazon Web Services",
+      "homepage": "https://aws.amazon.com/polly",
+      "description": "Text-to-speech (neural; standard and generative engines available) via Amazon Polly through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/polly",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "postera",
       "name": "Postera",
       "provider": "Postera",
@@ -852,6 +1249,28 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "rime-tts",
+      "name": "Rime TTS",
+      "provider": "Rime",
+      "homepage": "https://rime.ai",
+      "description": "Text-to-speech (coda) via Rime through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/rime",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -877,6 +1296,59 @@
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
+    },
+    {
+      "id": "sarvam",
+      "name": "Sarvam AI",
+      "provider": "Sarvam AI",
+      "homepage": "https://www.sarvam.ai",
+      "description": "Sovereign India-focused AI — Indic-language chat (Sarvam 105B/30B) across 22+ Indian languages, plus proprietary Bulbul TTS, Saaras STT, Mayura translation, transliteration, language ID, and Sarvam Vision document digitization. Server-side subscription-key auth, held by Floe.",
+      "resource": "https://api.sarvam.ai/v1/chat/completions",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "llm",
+        "indic",
+        "multilingual",
+        "voice",
+        "translation"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified",
+      "modelCount": 2,
+      "modelCatalogUrl": "https://docs.sarvam.ai",
+      "models": [
+        {
+          "id": "sarvam-105b",
+          "mode": "chat",
+          "capabilities": [
+            "function-calling",
+            "multilingual",
+            "reasoning"
+          ],
+          "inputPer1M": 0.048,
+          "outputPer1M": 0.193,
+          "contextTokens": 128000,
+          "maxCompletionTokens": null
+        },
+        {
+          "id": "sarvam-30b",
+          "mode": "chat",
+          "capabilities": [
+            "function-calling",
+            "multilingual"
+          ],
+          "inputPer1M": 0.03,
+          "outputPer1M": 0.121,
+          "contextTokens": 64000,
+          "maxCompletionTokens": null
+        }
+      ]
     },
     {
       "id": "sociologic",
@@ -924,24 +1396,47 @@
       "status": "verified"
     },
     {
+      "id": "speechmatics-stt",
+      "name": "Speechmatics STT",
+      "provider": "Speechmatics",
+      "homepage": "https://speechmatics.com",
+      "description": "Speech-to-text (melia-1) via Speechmatics through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+      "resource": "https://marketplace.floelabs.xyz/v1/stt/speechmatics",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "speech-to-text",
+        "transcription",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
       "id": "spraay",
       "name": "Spraay",
       "provider": "Spraay",
       "homepage": "https://spraay.ai",
-      "description": "AI inference including Replicate-backed image/video/audio.",
-      "resource": "https://api.spraay.ai/v1/run",
+      "description": "AI inference including Replicate-backed image/video/audio, plus voice at gateway.spraay.app — text-to-speech (XTTS-v2, $0.03) and speech-to-text (Whisper, $0.02). Also settles on Solana.",
+      "resource": "https://gateway.spraay.app/api/v1/compute/text-to-speech",
       "method": "POST",
       "category": "media-generation",
       "tags": [
         "replicate",
         "inference",
-        "multimodal"
+        "multimodal",
+        "voice"
       ],
       "x402Version": 2,
       "network": "eip155:8453",
       "asset": "USDC",
-      "priceUsd": "0.02",
-      "pricingModel": "dynamic",
+      "priceUsd": "0.03",
+      "pricingModel": "tiered",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -1038,20 +1533,335 @@
       "name": "Venice",
       "provider": "Venice",
       "homepage": "https://venice.ai",
-      "description": "Open-source AI models, uncensored, no data retention.",
+      "description": "90+ open-source and frontier AI models (chat + embeddings) — reasoning, vision, code, and private TEE-attested E2EE inference. Uncensored options, zero data retention.",
       "resource": "https://api.venice.ai/v1/chat",
       "method": "POST",
       "category": "llm-inference",
       "tags": [
         "llm",
         "open-source",
-        "privacy"
+        "privacy",
+        "embeddings",
+        "models"
       ],
       "x402Version": 2,
       "network": "eip155:8453",
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified",
+      "modelCount": 100,
+      "modelCatalogUrl": "https://api.venice.ai/api/v1/models",
+      "models": [
+        {
+          "id": "openai-gpt-oss-120b",
+          "mode": "chat",
+          "capabilities": [
+            "function-calling",
+            "reasoning",
+            "reasoning-effort",
+            "web-search"
+          ],
+          "inputPer1M": 0.07,
+          "outputPer1M": 0.3,
+          "contextTokens": 128000,
+          "maxCompletionTokens": 16384
+        },
+        {
+          "id": "llama-3.3-70b",
+          "mode": "chat",
+          "capabilities": [
+            "function-calling",
+            "web-search"
+          ],
+          "inputPer1M": 0.7,
+          "outputPer1M": 2.8,
+          "contextTokens": 128000,
+          "maxCompletionTokens": 4096
+        },
+        {
+          "id": "qwen3-vl-235b-a22b",
+          "mode": "chat",
+          "capabilities": [
+            "function-calling",
+            "multi-image",
+            "structured-output",
+            "vision",
+            "web-search"
+          ],
+          "inputPer1M": 0.25,
+          "outputPer1M": 1.5,
+          "contextTokens": 256000,
+          "maxCompletionTokens": 16384
+        },
+        {
+          "id": "venice-uncensored-1-2",
+          "mode": "chat",
+          "capabilities": [
+            "function-calling",
+            "multi-image",
+            "structured-output",
+            "vision",
+            "web-search"
+          ],
+          "inputPer1M": 0.2,
+          "outputPer1M": 0.9,
+          "contextTokens": 128000,
+          "maxCompletionTokens": 8192
+        },
+        {
+          "id": "qwen3-coder-480b-a35b-instruct-turbo",
+          "mode": "chat",
+          "capabilities": [
+            "code",
+            "function-calling",
+            "logprobs",
+            "structured-output",
+            "web-search"
+          ],
+          "inputPer1M": 0.35,
+          "outputPer1M": 1.5,
+          "contextTokens": 256000,
+          "maxCompletionTokens": 65536
+        },
+        {
+          "id": "kimi-k2-5",
+          "mode": "chat",
+          "capabilities": [
+            "code",
+            "function-calling",
+            "logprobs",
+            "multi-image",
+            "reasoning",
+            "reasoning-effort",
+            "structured-output",
+            "vision",
+            "web-search"
+          ],
+          "inputPer1M": 0.56,
+          "outputPer1M": 3.5,
+          "contextTokens": 256000,
+          "maxCompletionTokens": 65536
+        },
+        {
+          "id": "deepseek-v4-pro",
+          "mode": "chat",
+          "capabilities": [
+            "code",
+            "function-calling",
+            "reasoning",
+            "structured-output",
+            "web-search"
+          ],
+          "inputPer1M": 1.73,
+          "outputPer1M": 3.796,
+          "contextTokens": 1000000,
+          "maxCompletionTokens": 32768
+        },
+        {
+          "id": "zai-org-glm-5-2",
+          "mode": "chat",
+          "capabilities": [
+            "function-calling",
+            "reasoning",
+            "structured-output",
+            "web-search"
+          ],
+          "inputPer1M": 1.4,
+          "outputPer1M": 4.4,
+          "contextTokens": 1000000,
+          "maxCompletionTokens": 131072
+        },
+        {
+          "id": "grok-4-20",
+          "mode": "chat",
+          "capabilities": [
+            "function-calling",
+            "multi-image",
+            "reasoning",
+            "structured-output",
+            "vision",
+            "web-search",
+            "x-search"
+          ],
+          "inputPer1M": 1.42,
+          "outputPer1M": 2.83,
+          "contextTokens": 2000000,
+          "maxCompletionTokens": 128000
+        },
+        {
+          "id": "gemini-3-1-pro-preview",
+          "mode": "chat",
+          "capabilities": [
+            "audio-input",
+            "function-calling",
+            "multi-image",
+            "reasoning",
+            "reasoning-effort",
+            "structured-output",
+            "video-input",
+            "vision",
+            "web-search"
+          ],
+          "inputPer1M": 2.5,
+          "outputPer1M": 15,
+          "contextTokens": 1000000,
+          "maxCompletionTokens": 32768
+        },
+        {
+          "id": "claude-sonnet-4-6",
+          "mode": "chat",
+          "capabilities": [
+            "code",
+            "function-calling",
+            "multi-image",
+            "reasoning",
+            "structured-output",
+            "vision",
+            "web-search"
+          ],
+          "inputPer1M": 3.6,
+          "outputPer1M": 18,
+          "contextTokens": 1000000,
+          "maxCompletionTokens": 64000
+        },
+        {
+          "id": "claude-opus-4-8",
+          "mode": "chat",
+          "capabilities": [
+            "code",
+            "function-calling",
+            "multi-image",
+            "reasoning",
+            "structured-output",
+            "vision",
+            "web-search"
+          ],
+          "inputPer1M": 6,
+          "outputPer1M": 30,
+          "contextTokens": 1000000,
+          "maxCompletionTokens": 128000
+        },
+        {
+          "id": "openai-gpt-55",
+          "mode": "chat",
+          "capabilities": [
+            "function-calling",
+            "multi-image",
+            "reasoning",
+            "reasoning-effort",
+            "structured-output",
+            "vision",
+            "web-search"
+          ],
+          "inputPer1M": 6.25,
+          "outputPer1M": 37.5,
+          "contextTokens": 1000000,
+          "maxCompletionTokens": 131072
+        },
+        {
+          "id": "text-embedding-3-small",
+          "mode": "embedding",
+          "capabilities": [],
+          "inputPer1M": 0.025,
+          "outputPer1M": 0,
+          "contextTokens": null,
+          "maxCompletionTokens": null
+        },
+        {
+          "id": "text-embedding-bge-m3",
+          "mode": "embedding",
+          "capabilities": [],
+          "inputPer1M": 0.15,
+          "outputPer1M": 0,
+          "contextTokens": null,
+          "maxCompletionTokens": null
+        }
+      ]
+    },
+    {
+      "id": "x402engine",
+      "name": "x402engine",
+      "provider": "x402engine",
+      "description": "Voice gateway — OpenAI TTS ($0.01), ElevenLabs TTS ($0.02), and Nova-3 transcription ($0.10) behind one x402 host. Also settles on Solana and MegaETH.",
+      "resource": "https://x402-gateway-production.up.railway.app/api/tts/openai",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "speech-to-text",
+        "voice"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
+      "pricingModel": "tiered",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "xai-stt",
+      "name": "xAI STT",
+      "provider": "xAI",
+      "homepage": "https://x.ai",
+      "description": "Speech-to-text via xAI through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+      "resource": "https://marketplace.floelabs.xyz/v1/stt/xai",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "speech-to-text",
+        "transcription",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "xai-tts",
+      "name": "xAI TTS",
+      "provider": "xAI",
+      "homepage": "https://x.ai",
+      "description": "Text-to-speech via xAI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64. Pick a voice with voice_id (e.g. eve).",
+      "resource": "https://marketplace.floelabs.xyz/v1/tts/xai",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice",
+        "marketplace"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "dynamic",
+      "floeCompatible": true,
+      "status": "verified"
+    },
+    {
+      "id": "xona-agent",
+      "name": "Xona Agent",
+      "provider": "Xona",
+      "description": "Grok-powered text-to-speech at a flat price per call.",
+      "resource": "https://api.xona-agent.com/base-main/audio/x-text-to-speech",
+      "method": "POST",
+      "category": "llm-inference",
+      "tags": [
+        "text-to-speech",
+        "voice"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
+      "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
     },
@@ -1096,140 +1906,6 @@
       "asset": "USDC",
       "priceUsd": "0.01",
       "pricingModel": "fixed-per-call",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "deepgram-stt",
-      "name": "Deepgram STT",
-      "provider": "Deepgram",
-      "homepage": "https://deepgram.com",
-      "description": "Speech-to-text via Deepgram through the Floe marketplace shim. Pass an audioUrl; Floe probes the true duration server-side and bills whole audio minutes.",
-      "resource": "https://marketplace.floelabs.xyz/v1/stt/deepgram",
-      "method": "POST",
-      "category": "llm-inference",
-      "tags": [
-        "speech-to-text",
-        "transcription",
-        "marketplace"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "elevenlabs-tts",
-      "name": "ElevenLabs TTS",
-      "provider": "ElevenLabs",
-      "homepage": "https://elevenlabs.io",
-      "description": "Text-to-speech via ElevenLabs through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
-      "resource": "https://marketplace.floelabs.xyz/v1/tts/elevenlabs",
-      "method": "POST",
-      "category": "llm-inference",
-      "tags": [
-        "text-to-speech",
-        "voice",
-        "marketplace"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "cartesia-tts",
-      "name": "Cartesia TTS",
-      "provider": "Cartesia",
-      "homepage": "https://cartesia.ai",
-      "description": "Low-latency text-to-speech (Sonic) via Cartesia through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
-      "resource": "https://marketplace.floelabs.xyz/v1/tts/cartesia",
-      "method": "POST",
-      "category": "llm-inference",
-      "tags": [
-        "text-to-speech",
-        "voice",
-        "marketplace"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "google-tts",
-      "name": "Google Cloud TTS",
-      "provider": "Google Cloud",
-      "homepage": "https://cloud.google.com/text-to-speech",
-      "description": "Text-to-speech (Chirp 3 HD) via Google Cloud through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
-      "resource": "https://marketplace.floelabs.xyz/v1/tts/google",
-      "method": "POST",
-      "category": "llm-inference",
-      "tags": [
-        "text-to-speech",
-        "voice",
-        "marketplace"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "assemblyai-stt",
-      "name": "AssemblyAI STT",
-      "provider": "AssemblyAI",
-      "homepage": "https://assemblyai.com",
-      "description": "Speech-to-text (Universal-3) via AssemblyAI through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
-      "resource": "https://marketplace.floelabs.xyz/v1/stt/assemblyai",
-      "method": "POST",
-      "category": "llm-inference",
-      "tags": [
-        "speech-to-text",
-        "transcription",
-        "marketplace"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.005",
-      "pricingModel": "dynamic",
-      "floeCompatible": true,
-      "status": "verified"
-    },
-    {
-      "id": "sarvam",
-      "name": "Sarvam AI",
-      "provider": "Sarvam AI",
-      "homepage": "https://www.sarvam.ai",
-      "description": "Sovereign Indic AI — chat in 22+ Indian languages (Sarvam 105B/30B), plus Bulbul TTS, Saaras STT, Mayura translation, transliteration, language ID, and Sarvam Vision document digitization. Floe-held subscription key.",
-      "resource": "https://api.sarvam.ai/v1/chat/completions",
-      "method": "POST",
-      "category": "llm-inference",
-      "tags": [
-        "llm",
-        "indic",
-        "multilingual",
-        "voice",
-        "translation"
-      ],
-      "x402Version": 2,
-      "network": "eip155:8453",
-      "asset": "USDC",
-      "priceUsd": "0.01",
-      "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
     }

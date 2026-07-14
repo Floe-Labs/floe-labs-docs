@@ -1,0 +1,22 @@
+{
+  "id": "minimax-tts",
+  "name": "MiniMax TTS",
+  "provider": "MiniMax",
+  "homepage": "https://www.minimax.io",
+  "description": "Text-to-speech (speech-2.8-turbo; HD tier available) via MiniMax through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+  "resource": "https://marketplace.floelabs.xyz/v1/tts/minimax",
+  "method": "POST",
+  "category": "llm-inference",
+  "tags": [
+    "text-to-speech",
+    "voice",
+    "marketplace"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}
