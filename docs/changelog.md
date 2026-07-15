@@ -10,6 +10,17 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.13.0 — Outcome-linked spend attribution: cost per action vs result (July 2026)
+
+Tag paid calls with an `X-Floe-Action-Id` header (accepted on every paid surface — x402 proxy, marketplace, keyless gateway, `/v1/llm`, `/v1/venice`, realtime) and report how each action turned out; Floe joins spend ↔ outcome so you can evaluate what every decision cost against what it produced.
+
+* **Tagging** — `X-Floe-Action-Id` (≤128 chars) rides on the authenticated request; every debit row carries it. Attribution only — never affects budgets (use `X-Floe-Task-Id` for caps).
+* **Outcome reporting** — `POST /v1/agents/actions/:id/outcome` (agent key) or `POST /v1/developer/agents/:agentId/actions/:id/outcome` (session): `{ status: success|failure|partial|unknown, scoreBps?, note? }`. Caller-supplied verbatim — Floe never judges quality. Re-reports upsert.
+* **Eval view** — `GET /v1/developer/agents/:id/actions` returns calls / settled spend / outcome per action; new *Actions* panel on the dashboard agent page.
+* **SDK (`floe-agent`)** — `fetch({ actionId, taskId })` sends the tags; new `reportOutcome(actionId, { status, scoreBps, note })`.
+
+→ [Agent Runtime Contract — Outcome-Linked Spend Attribution](developers/agent-runtime-contract.md#outcome-linked-spend-attribution)
+
 ### v1.11.0 — Per-agent kill-switch: pause/resume + suspend-on-breach policies (July 2026)
 
 Two ways to stop a runaway agent without touching the rest of your fleet:
