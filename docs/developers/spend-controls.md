@@ -116,20 +116,85 @@ Match against the **`X-Floe-Task-Id` header** sent with each proxy call. Case-in
 
 ## Enforcement
 
-Policies are checked on every `POST /v1/proxy/fetch` call, inside the same transaction as the balance reservation. If any policy would be exceeded, the call is rejected with:
+Policies are checked on every `POST /v1/proxy/fetch` call, inside the same transaction as the balance reservation. If any policy would be exceeded, the call is rejected with **402**:
 
 ```json
 {
   "error": "policy_exceeded",
-  "policy_id": 42,
   "kind": "vendor",
-  "limit": "50000000",
+  "matchKey": "0xb775…ce86",
+  "policyId": 42,
+  "label": "Venice daily cap",
+  "reason": null,
+  "required": "5000000",
   "spent": "48500000",
-  "cost": "5000000"
+  "limit": "50000000"
 }
 ```
 
+When the breached policy is a kill-switch (`action: "suspend_agent"`, see below), the same body additionally carries `"auto_suspended": true`. The field is present **only** in that case — a plain breach omits it:
+
+```json
+{
+  "error": "policy_exceeded",
+  "kind": "task",
+  "matchKey": "batch-run-7",
+  "policyId": 57,
+  "label": null,
+  "reason": null,
+  "required": "5000000",
+  "spent": "9500000",
+  "limit": "10000000",
+  "auto_suspended": true
+}
+```
+
+`suspendedReason` is **not** part of the 402 body — it lives on the agent record (`GET /v1/developer/agents/:agentId`) as the audit trail for why the agent is suspended.
+
 Spend is calculated from settled + in-flight payments. Refunded/failed calls automatically drop out of the spend sum.
+
+## Breach Action: the Policy Kill-Switch
+
+By default a breach only declines the single call (the agent can keep trying). Set `action: "suspend_agent"` on a policy to turn it into a **kill-switch**: the breaching call still gets the 402 above (with `"auto_suspended": true`), and the **whole agent is suspended** — every subsequent call is rejected at authentication with 403 until you resume it.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "task",
+    "matchKey": "batch-run-7",
+    "limitRaw": "10000000",
+    "windowKind": "rolling",
+    "windowSeconds": 86400,
+    "action": "suspend_agent"
+  }'
+```
+
+A runaway agent that blows through this $10/day task budget is stopped cold instead of burning retries against a 402 wall.
+
+Notes:
+
+- Omitted or `"block"` preserves the default decline-one-call behavior.
+- Only a genuine over-limit breach trips the switch. Fail-closed denials (e.g. an `api` policy that can't resolve the target hostname) decline the call but never suspend.
+- **Team-scoped policies:** `action` is accepted on team policies too. A breach suspends **the single agent whose call crossed the cap** — never the whole team. The team cap keeps counting every agent's spend, so once it's saturated, each additional agent trips itself on its next paid call.
+- The suspension is auditable: the agent record's `suspendedReason` (`GET /v1/developer/agents/:agentId`) reads `policy:<id>`, and the dashboard's agent page shows which policy tripped it.
+- Resume via the pause/resume endpoint below or the dashboard — the policy stays active, so an unresolved budget breach will trip it again.
+
+## Pause / Resume an Agent (self-serve kill-switch)
+
+Pause one agent without touching the rest of your fleet — no key rotation, no close:
+
+```bash
+curl -X PATCH https://credit-api.floelabs.xyz/v1/developer/agents/1/status \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{ "status": "suspended" }'   # or "active" to resume
+```
+
+- Takes effect on the agent's next call (403 at authentication).
+- Only `active ↔ suspended` transitions are allowed. Closed or credit-frozen agents can't be resurrected through this endpoint (409) — those states belong to their own lifecycle flows.
+- Resuming clears `suspendedReason`; pausing sets it to `developer_manual`.
 
 ## API Reference
 
@@ -144,6 +209,12 @@ Spend is calculated from settled + in-flight payments. Refunded/failed calls aut
 | POST | `/v1/agents/policies/:id/reset` | Agent key | Reset rolling window |
 
 Same routes available at `/v1/developer/agents/:agentId/policies` with session cookie auth.
+
+### Agent Status (kill-switch)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| PATCH | `/v1/developer/agents/:agentId/status` | Session cookie | Pause (`suspended`) or resume (`active`) one agent |
 
 ### Team Policies
 
@@ -167,6 +238,7 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
   effectiveFrom?: number,        // UNIX seconds
   effectiveUntil?: number,       // UNIX seconds
   label?: string,                // Free-form label
+  action?: 'block' | 'suspend_agent',  // Breach behavior; omitted = 'block'
 }
 ```
 

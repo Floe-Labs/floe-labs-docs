@@ -22,7 +22,7 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 
 - [Integrate with Your Framework](https://floe-labs.gitbook.io/docs/frameworks/agentkit): AgentKit, LangChain, Vercel AI, CrewAI, ElizaOS, OpenAI, Claude/MCP, plain HTTP — ask: "Show me the integration code for LangChain"
 - [Developer Dashboard](https://floe-labs.gitbook.io/docs/developers/developer-dashboard): Create agent wallets, mint API keys, manage spend controls
-- [Spend Controls](https://floe-labs.gitbook.io/docs/developers/spend-controls): Vendor, API, task, and team-level spend caps with rolling/calendar windows — ask: "How do I set a daily vendor spending limit?"
+- [Spend Controls](https://floe-labs.gitbook.io/docs/developers/spend-controls): Session, vendor, API, task, and team-level spend caps with rolling/calendar windows, plus the per-agent kill-switch (pause/resume + suspend-on-breach policies) — ask: "How do I set a daily vendor spending limit?" or "How do I auto-suspend a runaway agent?"
 - [Agent Awareness](https://floe-labs.gitbook.io/docs/developers/agent-awareness): Decision-loop primitives — credit-remaining, loan-state, spend-limit, credit-thresholds, x402-estimate — ask: "How does my agent check its balance before a call?"
 - [x402 Credit Facilitator](https://floe-labs.gitbook.io/docs/developers/x402-facilitator): Zero-tx API payments via operator delegation — ask: "How does the payment proxy work?"
 - [Credit REST API](https://floe-labs.gitbook.io/docs/developers/credit-api): HTTP endpoints for any language

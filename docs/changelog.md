@@ -10,6 +10,15 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.11.0 — Per-agent kill-switch: pause/resume + suspend-on-breach policies (July 2026)
+
+Two ways to stop a runaway agent without touching the rest of your fleet:
+
+* **Self-serve pause/resume** — `PATCH /v1/developer/agents/:id/status { "status": "suspended" | "active" }` (plus a Pause/Resume toggle on the dashboard agent page). A paused agent's calls are rejected at authentication; resume restores it. No key rotation, no close.
+* **Policy-triggered auto-suspend** — spend policies gain an `action` field. `action: "suspend_agent"` turns any cap (task / api / vendor / session) into a kill-switch: the breaching call is declined with `"auto_suspended": true` on the 402 body, **and** the agent is suspended automatically — its record's `suspendedReason` reads `policy:<id>` for audit. Fail-closed denials (unresolvable host/recipient) never trip it.
+
+→ [Spend Controls — Breach Action & Pause/Resume](developers/spend-controls.md#breach-action-the-policy-kill-switch)
+
 ### v1.10.0 — Sarvam AI: sovereign Indic inference (July 2026)
 
 Added **Sarvam AI** — India's sovereign-AI stack for **22+ Indian languages** — as a Floe-verified vendor. Keyless: Floe holds the Sarvam subscription key and meters each call to your credit line (Sarvam's INR list at ~₹83/$ + 5% Floe margin).
