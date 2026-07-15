@@ -30,6 +30,37 @@ The exact charge is returned on every response:
 | `X-Floe-Model` | The resolved model id |
 | `X-Floe-Rail` | Which rail served the call (see below) |
 | `X-Floe-Attempts` | Present when a fallback occurred (number of sources tried) |
+| `X-Floe-RateLimit-Advisory` | Normalized upstream rate-limit headroom (when enabled) — see below |
+
+## Rate-Limit Advisory (cross-provider backpressure)
+
+When enabled by the operator, gateway responses carry an `X-Floe-RateLimit-Advisory` header: the serving provider's own rate-limit headers (OpenAI `x-ratelimit-*`, Anthropic `anthropic-ratelimit-*`, generic `Retry-After`), normalized into **one shape** — so an agent nearing OpenAI RPM or Anthropic TPM reads a single `near_limit` / headroom signal regardless of provider, and can back off *before* hitting the 429 wall.
+
+```jsonc
+{
+  "near_limit": true,          // present only when the operator set a threshold
+  "provider": "openai",        // upstream that served (or refused) the call
+  "shared": true,              // true = pooled Floe key: headroom is shared
+                               // across ALL agents on this rail, not your own
+                               // quota. false = your BYOK key.
+  "tightest": {                // the cap with the least headroom
+    "kind": "tokens",          // requests | tokens | input_tokens | output_tokens
+    "remaining": 15000,
+    "limit": 200000,
+    "used_bps": 9250,          // 0..10000 of the cap consumed; null if limit unknown
+    "resets_at": "2026-07-15T12:00:01.000Z"
+  },
+  "retry_after_seconds": 30    // present on 429-style backpressure (e.g. Gemini)
+}
+```
+
+Notes:
+
+- **Passive signal only** — Floe already retries the next source on a 429; this header just lets you smooth your own request rate proactively.
+- Sent on successful responses, on error passthroughs, and on an all-sources-unavailable `502` (where a `retry_after_seconds` from the last 429 tells you when to try again).
+- Some providers expose less: Gemini's OpenAI-compatible surface only sends `Retry-After` on a 429 — in that case `tightest` is absent and `retry_after_seconds` carries the signal. Nothing is ever fabricated.
+- Off by default (`RATELIMIT_ADVISORY_ENABLED`); responses are byte-identical when disabled. The optional `RATELIMIT_ADVISORY_NEAR_LIMIT_BPS` threshold drives `near_limit`.
+- Only calls routed through this gateway carry the signal — own-key calls made directly to a provider never touch Floe and can't be observed.
 
 ## Rails
 
