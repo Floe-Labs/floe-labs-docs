@@ -132,11 +132,30 @@ Policies are checked on every `POST /v1/proxy/fetch` call, inside the same trans
 }
 ```
 
+When the breached policy is a kill-switch (`action: "suspend_agent"`, see below), the same body additionally carries `"auto_suspended": true`. The field is present **only** in that case — a plain breach omits it:
+
+```json
+{
+  "error": "policy_exceeded",
+  "kind": "task",
+  "matchKey": "batch-run-7",
+  "policyId": 57,
+  "label": null,
+  "reason": null,
+  "required": "5000000",
+  "spent": "9500000",
+  "limit": "10000000",
+  "auto_suspended": true
+}
+```
+
+`suspendedReason` is **not** part of the 402 body — it lives on the agent record (`GET /v1/developer/agents/:agentId`) as the audit trail for why the agent is suspended.
+
 Spend is calculated from settled + in-flight payments. Refunded/failed calls automatically drop out of the spend sum.
 
 ## Breach Action: the Policy Kill-Switch
 
-By default a breach only declines the single call (the agent can keep trying). Set `action: "suspend_agent"` on a policy to turn it into a **kill-switch**: the breaching call still gets the 402 above (with an extra `"auto_suspended": true` field), and the **whole agent is suspended** — every subsequent call is rejected at authentication with 403 until you resume it.
+By default a breach only declines the single call (the agent can keep trying). Set `action: "suspend_agent"` on a policy to turn it into a **kill-switch**: the breaching call still gets the 402 above (with `"auto_suspended": true`), and the **whole agent is suspended** — every subsequent call is rejected at authentication with 403 until you resume it.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
@@ -158,7 +177,8 @@ Notes:
 
 - Omitted or `"block"` preserves the default decline-one-call behavior.
 - Only a genuine over-limit breach trips the switch. Fail-closed denials (e.g. an `api` policy that can't resolve the target hostname) decline the call but never suspend.
-- The suspension is auditable: the agent's `suspendedReason` reads `policy:<id>`, and the dashboard's agent page shows which policy tripped it.
+- **Team-scoped policies:** `action` is accepted on team policies too. A breach suspends **the single agent whose call crossed the cap** — never the whole team. The team cap keeps counting every agent's spend, so once it's saturated, each additional agent trips itself on its next paid call.
+- The suspension is auditable: the agent record's `suspendedReason` (`GET /v1/developer/agents/:agentId`) reads `policy:<id>`, and the dashboard's agent page shows which policy tripped it.
 - Resume via the pause/resume endpoint below or the dashboard — the policy stays active, so an unresolved budget breach will trip it again.
 
 ## Pause / Resume an Agent (self-serve kill-switch)

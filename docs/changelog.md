@@ -15,7 +15,7 @@ Notable changes and updates to the Floe protocol.
 Two ways to stop a runaway agent without touching the rest of your fleet:
 
 * **Self-serve pause/resume** — `PATCH /v1/developer/agents/:id/status { "status": "suspended" | "active" }` (plus a Pause/Resume toggle on the dashboard agent page). A paused agent's calls are rejected at authentication; resume restores it. No key rotation, no close.
-* **Policy-triggered auto-suspend** — spend policies gain an `action` field. `action: "suspend_agent"` turns any cap (task / api / vendor / session) into a kill-switch: the breaching call is declined **and** the agent is suspended automatically, with an auditable `suspendedReason` of `policy:<id>` and `"auto_suspended": true` on the 402 body. Fail-closed denials (unresolvable host/recipient) never trip it.
+* **Policy-triggered auto-suspend** — spend policies gain an `action` field. `action: "suspend_agent"` turns any cap (task / api / vendor / session) into a kill-switch: the breaching call is declined with `"auto_suspended": true` on the 402 body, **and** the agent is suspended automatically — its record's `suspendedReason` reads `policy:<id>` for audit. Fail-closed denials (unresolvable host/recipient) never trip it.
 
 → [Spend Controls — Breach Action & Pause/Resume](developers/spend-controls.md#breach-action-the-policy-kill-switch)
 
