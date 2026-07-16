@@ -58,6 +58,8 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 | `Authorization: Bearer floe_<hex>` | yes | Your agent API key |
 | `Content-Type: application/json` | yes | — |
 | `Idempotency-Key: <opaque>` | **recommended** | Stripe-style retry key, ≤255 chars (typically a UUIDv4). Same key + same agent within 10 minutes replays the cached response — including its status, headers, and body — instead of running a second payment. Without this header, a retry after a network failure can double-charge you. See [x402 Facilitator → Idempotency](x402-facilitator.md#idempotency). |
+| `X-Floe-Task-Id: <opaque>` | optional | Task tag (≤128 chars, lowercased server-side). Spend accrues against any per-task budget with this id — see [Spend Controls](spend-controls.md). |
+| `X-Floe-Action-Id: <opaque>` | optional | Decision/action tag (≤128 chars, lowercased server-side). Attributes this call's cost to one action of your run for the cost-vs-outcome eval view — see [Outcome-Linked Spend Attribution](#outcome-linked-spend-attribution). Accepted on **every** paid surface (x402 proxy, marketplace, keyless gateway, `/v1/llm`, `/v1/venice`, realtime). |
 
 **Response**
 
@@ -111,6 +113,42 @@ Notes:
 No Floe account yet? The open-source [`floe-guard`](https://github.com/Floe-Labs/floe-guard) library exposes the **same advisory shape** on its in-process budget guard — `guard.advisory()` returns `near_limit`, `used_bps`, and `remaining_usd` for your local cap (Python and TypeScript). Write your taper logic against it for free, no account, no network.
 
 When you move to the hosted proxy, that logic ports unchanged — it just reads `X-Floe-Budget-Advisory` and gains what a single in-process budget can't know: the **tightest** cap across `credit_line | session | task | api | vendor`, cross-vendor reasoning, server-truth balances, and `window_resets_at`. Local guard is estimate-based and single-cap; the hosted advisory is server-truth and multi-cap.
+
+## Outcome-Linked Spend Attribution
+
+Cost tells you what an action spent; only you know whether it worked. Close the loop in three steps:
+
+**1. Tag your paid calls.** Send `X-Floe-Action-Id` (any opaque id, ≤128 chars) on any paid surface. Every debit row that call produces carries the tag.
+
+**2. Report the outcome.** When you know how the action turned out, report it against the same id:
+
+```ts
+await fetch('https://credit-api.floelabs.xyz/v1/agents/actions/summarize-doc-42/outcome', {
+  method: 'POST',
+  headers: { 'Authorization': `Bearer ${process.env.FLOE_API_KEY}`, 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    status: 'success',        // success | failure | partial | unknown
+    scoreBps: 9000,           // optional quality score, 0..10000 (90%)
+    note: 'summary accepted', // optional, ≤500 chars
+  }),
+});
+```
+
+Re-reporting the same action replaces the previous signal (a `reportCount` tracks how many times). Floe never judges quality — the status/score are yours, stored verbatim.
+
+With the `floe-agent` SDK this is two calls:
+
+```ts
+await agent.fetch({ url, actionId: 'summarize-doc-42' });
+await agent.reportOutcome('summarize-doc-42', { status: 'success', scoreBps: 9000 });
+```
+
+**3. Read cost-vs-outcome.** Your operator's dashboard (agent page → *Actions*) and `GET /v1/developer/agents/:id/actions` (session auth) return, per action: total calls, settled spend, and your reported outcome — the raw material for "was this decision worth what it cost?" eval and optimization. Your operator can also report/correct outcomes via `POST /v1/developer/agents/:id/actions/:actionId/outcome`.
+
+Notes:
+- `X-Floe-Action-Id` is attribution only — it never affects budgets or enforcement. Use `X-Floe-Task-Id` for per-task **caps**; use action ids for per-decision **accounting**. The two compose (a task usually spans several actions).
+- Spend is aggregated from settled calls only; failed/refunded calls are counted but not summed.
+- An outcome may be reported before (or without) any tagged spend — it shows as a zero-cost action.
 
 ## Error Handling Matrix
 
