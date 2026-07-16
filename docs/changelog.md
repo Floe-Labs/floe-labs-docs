@@ -10,6 +10,16 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.14.0 — Value-aware caps, outcome-quality throttling, LatencyBudget (July 2026)
+
+Spend controls learn about *value* — of the task, of the results, and of time:
+
+* **Value-aware caps** — give a policy operator-set bounds (`limitFloorRaw` / `limitCeilingRaw`) and the caller's `X-Floe-Task-Value` header (bps, `10000` = 1×) scales the effective cap between them: high-value tasks get more headroom, low-value ones less, from one policy definition. Policies without bounds ignore the header; a caller can never raise a cap beyond what the operator provisioned. Enforcement, `/forecast`, and the budget advisory all report the same effective cap.
+* **Outcome-quality throttle** — set `qualityThrottleFloorBps` on a policy and the effective cap tightens toward that floor when the agent's caller-reported outcomes (v1.13.0 attribution) degrade — throttle on value delivered, not just dollars spent — and relaxes as quality recovers. No reported outcomes → behavior unchanged (fail-open by design). Floe never judges quality; the signal is the caller's.
+* **`LatencyBudget` (floe-guard)** — the open-source guard gains BudgetGuard's time sibling: `LatencyBudget(sla_ms=5000)`, `check(expected_ms)` sheds the next call before it would blow the SLA, `remaining_ms` steers routing, and `advisory().near_deadline` mirrors `near_limit`. Monotonic clock; cooperative (the kill is your framework's job). Python + TypeScript.
+
+→ [Spend Controls — Value-Aware Caps & Quality Throttle](developers/spend-controls.md#value-aware-caps-x-floe-task-value)
+
 ### v1.13.0 — Outcome-linked spend attribution: cost per action vs result (July 2026)
 
 Tag paid calls with an `X-Floe-Action-Id` header (accepted on every paid surface — x402 proxy, marketplace, keyless gateway, `/v1/llm`, `/v1/venice`, realtime) and report how each action turned out; Floe joins spend ↔ outcome so you can evaluate what every decision cost against what it produced.

@@ -60,6 +60,7 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 | `Idempotency-Key: <opaque>` | **recommended** | Stripe-style retry key, ≤255 chars (typically a UUIDv4). Same key + same agent within 10 minutes replays the cached response — including its status, headers, and body — instead of running a second payment. Without this header, a retry after a network failure can double-charge you. See [x402 Facilitator → Idempotency](x402-facilitator.md#idempotency). |
 | `X-Floe-Task-Id: <opaque>` | optional | Task tag (≤128 chars, lowercased server-side). Spend accrues against any per-task budget with this id — see [Spend Controls](spend-controls.md). |
 | `X-Floe-Action-Id: <opaque>` | optional | Decision/action tag (≤128 chars, lowercased server-side). Attributes this call's cost to one action of your run for the cost-vs-outcome eval view — see [Outcome-Linked Spend Attribution](#outcome-linked-spend-attribution). Accepted on **every** paid surface (x402 proxy, marketplace, keyless gateway, `/v1/llm`, `/v1/venice`, realtime). |
+| `X-Floe-Task-Value: <bps>` | optional | Task-value multiplier in basis points (`10000` = 1×, integer 1..100000). Scales the effective cap of policies whose operator set value-scaling bounds — and only inside those bounds; policies without bounds ignore it entirely. See [Spend Controls → Value-Aware Caps](spend-controls.md#value-aware-caps-x-floe-task-value). |
 
 **Response**
 

@@ -181,6 +181,73 @@ Notes:
 - The suspension is auditable: the agent record's `suspendedReason` (`GET /v1/developer/agents/:agentId`) reads `policy:<id>`, and the dashboard's agent page shows which policy tripped it.
 - Resume via the pause/resume endpoint below or the dashboard — the policy stays active, so an unresolved budget breach will trip it again.
 
+## Value-Aware Caps (`X-Floe-Task-Value`)
+
+A static cap treats a $0.10 spam-filter run and a $500-revenue lead-enrichment run the same. Value-aware caps let one policy definition flex with the business value of the task — **inside operator-set bounds**.
+
+Enable it by giving a policy scaling bounds:
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "task",
+    "matchKey": "lead-enrichment",
+    "limitRaw": "1000000",
+    "limitFloorRaw": "500000",
+    "limitCeilingRaw": "3000000",
+    "windowKind": "rolling",
+    "windowSeconds": 86400
+  }'
+```
+
+The caller then sends `X-Floe-Task-Value` (basis points; `10000` = 1×) on its paid calls:
+
+```
+X-Floe-Task-Value: 30000    → effective cap = clamp($1 × 3, $0.50, $3) = $3
+X-Floe-Task-Value: 2500     → effective cap = clamp($1 × 0.25, $0.50, $3) = $0.50
+(no header)                 → effective cap = $1 (the base limitRaw)
+```
+
+Security model — the header is **caller-supplied and untrusted by construction**:
+
+- A policy **without** bounds ignores the header completely. Nothing changes for existing policies.
+- With bounds, the header can only move the cap **between** `limitFloorRaw` and `limitCeilingRaw` — both operator-set (`floor ≤ limitRaw ≤ ceiling`, enforced at the API and by DB constraints). A caller can never grant itself more than the operator provisioned.
+- An unset side clamps at `limitRaw`: a bare ceiling enables upscaling only, a bare floor downscaling only.
+- Enforcement, `/forecast` preflight, and the `X-Floe-Budget-Advisory` header all report the same **effective** cap (one shared computation — they cannot drift).
+
+Accepted range for the header: integer `1..100000` (0.0001×–10×); anything else is ignored (1×).
+
+## Outcome-Quality Throttle (throttle on value, not just cost)
+
+Cost caps stop an agent from spending too much; the quality throttle stops it from spending too much **on work that isn't working**. It consumes the caller-reported outcome signal from [Outcome-Linked Spend Attribution](agent-runtime-contract.md#outcome-linked-spend-attribution) — Floe never judges quality; your agent's own reports drive it.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "task",
+    "matchKey": "lead-enrichment",
+    "limitRaw": "1000000",
+    "qualityThrottleFloorBps": 5000,
+    "qualityWindowSeconds": 3600,
+    "windowKind": "rolling",
+    "windowSeconds": 86400
+  }'
+```
+
+How it behaves:
+
+- Floe averages the agent's reported outcomes in the window (`scoreBps` when reported; otherwise `success`→100%, `partial`→50%, `failure`/`unknown`→0%) into a quality reading.
+- The effective cap is multiplied by `max(quality, qualityThrottleFloorBps)` — successive low-quality actions tighten spend toward the floor **even under budget**; recovering quality relaxes it back to 1×.
+- **No reported outcomes in the window → factor 1.0 — behavior unchanged.** No signal, no change: the throttle is deliberately fail-open (unlike the fail-closed host/recipient guards) because quality is an optional caller-supplied signal, not a resolvable request fact.
+- With value scaling on the same policy, quality applies after it; an operator `limitFloorRaw` still bounds the result from below.
+- The reading is cached for ~30s, which also damps a flapping signal.
+
+Trust boundary, stated plainly: quality is self-reported. An agent that lies about its own quality can avoid being throttled — the throttle protects you from *honest* runaway waste (retry loops, degraded upstream output), not from an adversarial agent. Hard caps remain the backstop.
+
 ## Pause / Resume an Agent (self-serve kill-switch)
 
 Pause one agent without touching the rest of your fleet — no key rotation, no close:
@@ -239,6 +306,10 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
   effectiveUntil?: number,       // UNIX seconds
   label?: string,                // Free-form label
   action?: 'block' | 'suspend_agent',  // Breach behavior; omitted = 'block'
+  limitFloorRaw?: string,        // Value-scaling lower bound (≤ limitRaw)
+  limitCeilingRaw?: string,      // Value-scaling upper bound (≥ limitRaw); enables X-Floe-Task-Value
+  qualityThrottleFloorBps?: number,  // 0..10000 — enables the outcome-quality throttle
+  qualityWindowSeconds?: number,     // Quality lookback (min 60; default 86400)
 }
 ```
 
