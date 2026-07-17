@@ -21,6 +21,12 @@ Tag paid calls with an `X-Floe-Action-Id` header (accepted on every paid surface
 
 → [Agent Runtime Contract — Outcome-Linked Spend Attribution](developers/agent-runtime-contract.md#outcome-linked-spend-attribution)
 
+### v1.12.0 — Cross-provider rate-limit advisory on the keyless gateway (July 2026)
+
+Gateway responses can now carry `X-Floe-RateLimit-Advisory`: the serving provider's rate-limit headers (OpenAI `x-ratelimit-*`, Anthropic `anthropic-ratelimit-*`, generic `Retry-After`) normalized into one shape — a single `near_limit` / headroom / `retry_after_seconds` signal regardless of provider, so an agent backs off **before** the 429 wall. Passive and flag-gated (`RATELIMIT_ADVISORY_ENABLED`, off by default); pooled-rail signals are marked `"shared": true` since that headroom spans every agent on the rail. Also present on error passthroughs and all-sources-unavailable `502`s, where the last 429's `retry_after_seconds` says when to retry.
+
+→ [Keyless Inference — Rate-Limit Advisory](developers/keyless-inference.md#rate-limit-advisory-cross-provider-backpressure)
+
 ### v1.11.0 — Per-agent kill-switch: pause/resume + suspend-on-breach policies (July 2026)
 
 Two ways to stop a runaway agent without touching the rest of your fleet:
