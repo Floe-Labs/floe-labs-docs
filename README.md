@@ -2,50 +2,63 @@
 icon: hand-wave
 ---
 
-# Floe — The spend layer for AI agents
+# Floe — FinOps for voice AI builders
 
-**The spend layer for AI agents — a budget, not a balance.** No crypto required: fund an agent with a card, then let it pay for any x402 API through one proxy endpoint — every call governed by programmable spend controls. Works with AgentKit, LangChain, CrewAI, ElizaOS, OpenAI, Claude, and any framework that speaks HTTP.
+**One key. Every voice primitive. Every model.** Your agent's entire bill — LLM, voice, telephony, data — on one key. Every voice-agent call spends across 5–10 vendors in real time. Floe pays all of them per call through a single key, enforces per-agent and per-task budgets, and puts the whole bill on one ledger.
+
+No crypto, no wallets to manage. Works with AgentKit, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP.
 
 ---
 
 ## Your agent is 4 steps from its first paid API call
 
-### 1. Sign up and create an agent wallet
+### 1. Sign up and create an agent
 
-Go to the [Developer Dashboard](https://dev-dashboard.floelabs.xyz). Sign in with email, Google, or any wallet. Create an agent wallet — Floe provisions the keys, no MetaMask or seed phrase.
+Go to the [Developer Dashboard](https://dev-dashboard.floelabs.xyz). Sign in with email, Google, or a wallet. Create an agent — Floe provisions everything, no MetaMask or seed phrase.
 
 → [Dashboard guide](docs/developers/developer-dashboard.md)
 
 ### 2. Fund it
 
-Buy USDC with a card, Apple Pay, Google Pay, or bank transfer — directly in the dashboard. Or send USDC on Base from any wallet.
+Add money with a card, Apple Pay, Google Pay, or bank transfer — directly in the dashboard. The balance is shown in dollars, and your agent spends it per call.
 
 → [Funding guide](docs/getting-started/funding.md)
 
-### 3. Set spend controls
+### 3. Set budgets
 
-Cap what your agent can spend — per call, per day, per vendor, or across your whole team. Enforced server-side by Floe, so a runaway loop can't blow your budget. (Scope: Floe governs x402 payments made through the proxy, not raw LLM token bills you pay with your own provider key — see [Spend Controls](docs/developers/spend-controls.md).)
+Cap what your agent can spend — per call, per day, per task, per vendor, or across your whole team. Enforced server-side, so a runaway loop can't blow your budget. One task budget caps the whole conversation — LLM, voice, telephony, and data together.
 
 → [Spend Controls](docs/developers/spend-controls.md)
 
-### 4. Make paid API calls
+### 4. Pay any vendor through one key
 
-Call any x402 API through Floe's proxy. Your agent sends one HTTP request; Floe handles the payment, signing, and settlement. The response comes back with an `X-Floe-Payment-Amount` header showing the cost.
+Your agent sends one HTTP request; Floe pays the vendor, and the response comes back with an `X-Floe-Payment-Amount` header showing the cost. The same key pays LLM tokens, so every leg lands on one ledger.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "X-Floe-Task-Id: call-8842" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://api.exa.ai/search", "method": "POST", "body": "{\"query\":\"hello world\"}"}'
 ```
 
-→ [x402 Facilitator docs](docs/developers/x402-facilitator.md) · [Vendor Marketplace](docs/x402-directory/README.md) (2,000+ vendor API services)
+→ [Payment facilitator](docs/developers/x402-facilitator.md) · [Vendor Marketplace](docs/x402-directory/README.md) (2,000+ vendor API services)
+
+---
+
+## Build a voice agent on one key
+
+| Guide | What you get |
+|---|---|
+| **[The Voice Stack](docs/build/voice-stack.md)** | Run a full voice turn — STT → LLM → TTS → telephony — on one key, one budget. |
+| **[Unified Billing & Ledger](docs/build/unified-ledger.md)** | LLM, voice, telephony, and data on one ledger, priced per call. |
+| **[Budget-Aware Routing](docs/build/budget-aware-routing.md)** | Downgrade, finish, or hard-stop as an agent nears its budget — the job still finishes. |
 
 ---
 
 ## Integrate with your framework
 
-All frameworks use the same flow — create an agent wallet, get an API key, call the proxy. The only difference is the import.
+Every framework follows the same payment flow — create an agent, get an API key, call the proxy. Setup differs per framework: AgentKit needs a wallet provider, MCP needs server config, and REST is direct HTTP.
 
 {% tabs %}
 {% tab title="AgentKit (TypeScript)" %}
@@ -87,49 +100,32 @@ const tools = floeTools({ apiKey: process.env.FLOE_KEY! });
 curl -H "Authorization: Bearer $FLOE_API_KEY" \
   https://credit-api.floelabs.xyz/v1/agents/balance
 ```
-→ [REST API guide](docs/frameworks/http.md) · [Credit API reference](docs/developers/credit-api.md)
+→ [REST API guide](docs/frameworks/http.md)
 {% endtab %}
 {% endtabs %}
 
-Also supported: [CrewAI](docs/frameworks/crewai.md) · [ElizaOS](docs/frameworks/elizaos.md) · [OpenAI Agents SDK](docs/frameworks/openai.md)
+Also supported: [CrewAI](docs/frameworks/crewai.md) · [OpenAI Agents SDK](docs/frameworks/openai.md). See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookbook) and [Eve](https://github.com/Floe-Labs/eve-floe), Floe's reference voice agent.
 
 ---
 
-## The Floe Stack
+## What Floe gives you
 
-| # | Component | What it does | Status |
-|---|---|---|---|
-| 01 | **[Agent Wallet](docs/components/wallet.md)** | Custodial-by-default wallet (Floe-provisioned, no seed phrase) with programmable spend limits and allowed-destination permissions. Self-custody optional. | `GA` |
-| 02 | **[Fiat on/off-ramp](docs/components/onramp.md)** | USDC in via cards, bank, Apple Pay, Google Pay. Local payouts in 100+ countries. | Onramp `GA` · Offramp `Preview` |
-| 03 | **[x402 payment facilitator](docs/components/x402.md)** | One proxy endpoint to pay any x402 API from your agent's Floe-managed balance. | `GA` |
-| 04 | **[Spend controls](docs/developers/spend-controls.md)** | Programmable, context-aware budgets — per call, day, session, vendor, agent team. Enforced server-side. | `GA` |
-| 05 | **[Credit & trust bureau](docs/components/credit-bureau.md)** | Repayment and spend history as a portable on-chain signal. Programmable credit-utilization thresholds are live; the portable credit profile is in development. | Thresholds `GA` · Profile `In development` |
-| 06 | **[Working capital (on-chain)](docs/components/secured-credit.md)** | Borrow USDC against on-chain collateral. Roadmap / self-custody path. | `Roadmap` |
-| 07 | **[Unsecured working capital](docs/components/unsecured-credit.md)** | Credit underwritten against agent receivables and cashflow signals. | `Roadmap` |
+| Capability | What it does |
+|---|---|
+| **[Agent Wallet](docs/components/wallet.md)** | A funded dollar balance per agent, with programmable spend limits. |
+| **[Funding & Withdrawals](docs/components/onramp.md)** | Add money by card, Apple Pay, Google Pay, or bank; withdraw anytime. |
+| **[Payment facilitator](docs/developers/x402-facilitator.md)** | One endpoint pays any vendor API, per call, from the agent's balance. |
+| **[Unified billing & ledger](docs/build/unified-ledger.md)** | LLM, voice, telephony, and data on one ledger, one policy set. |
+| **[Spend controls](docs/developers/spend-controls.md)** | Per-call, per-day, per-task, per-vendor, per-team budgets — enforced server-side. |
+| **[Budget-aware routing](docs/build/budget-aware-routing.md)** | Downgrade, finish, or hard-stop as budgets tighten. |
 
 ---
 
 ## Why this matters
 
-Agents need to pay for things — APIs, compute, data — without a human in the loop and without touching crypto. Floe is the spend layer that makes that safe:
+A voice agent's cost is never just tokens. One conversation pays for telephony, speech-to-text, an LLM, and text-to-speech — 5 to 10 vendors, in real time. If they bill four different ways, you can't answer the only question that matters: what did this call cost, and was it worth it?
 
-- **Walletless onboarding** — no seed phrase, no gas, no tokens to buy
-- **One proxy endpoint** to pay any of **2,000+** vendor API services reachable via x402
-- **Programmable spend controls** — per call, per day, per session, per vendor, per agent team — enforced server-side
-- **Spend analytics** and multi-agent key management in the dashboard
-
----
-
-## Advanced: the on-chain layer
-
-Underneath the walletless product is an on-chain protocol. These surfaces are for teams running their own keys (self-custody); the working-capital credit path is **in development**.
-
-- **Intent-based matching.** No pools. Each loan is isolated with its own rate and term.
-- **Same-token markets.** USDC/USDC loans have no price risk — up to 95% LTV.
-- **Operator delegation.** Scoped, revocable permission so Floe can act within on-chain bounds.
-- **Dual-oracle pricing.** Chainlink primary, Pyth fallback, with circuit breakers.
-
-[Architecture](docs/protocol/architecture.md) | [Security](docs/protocol/security.md) | [Contract Addresses](developers/networks.md)
+Floe answers it. One key pays every vendor per call, per-agent and per-task budgets stop a runaway loop server-side, and the whole bill lands on one ledger — tagged by agent, task, and vendor.
 
 ---
 

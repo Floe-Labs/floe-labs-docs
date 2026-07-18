@@ -2,13 +2,25 @@
 icon: zap
 ---
 
-# x402 Payment Facilitator
+# Payment Facilitator
 
-Pay for any x402-enabled API through Floe. No wallet management — fund a balance and the facilitator handles signing, settlement, and verification.
+Floe is the spend layer: one key pays every vendor per call, governed by server-side spend controls. Fund an agent's balance once, and the facilitator pays each vendor per call from that balance — handling signing, settlement, and verification. No wallet management.
 
 > You can also set up agents through the [Developer Dashboard](developer-dashboard.md) — a web UI at `dev-dashboard.floelabs.xyz`.
 
-**Reaches 2,000+ vendor API services** on Base — no per-service integration needed.
+**Reaches 2,000+ vendor API services** — no per-service integration needed.
+
+## How payment works
+
+Your agent has a prepaid dollar balance. When it calls a vendor API through the proxy:
+
+1. The proxy forwards the request to the vendor.
+2. If the vendor requires payment, the facilitator pays it from your agent's balance and re-sends the request.
+3. Your agent receives the vendor's response; its balance is debited by the exact per-call cost.
+
+Every call is checked against your spend controls first, and paid only if the vendor charges. Free endpoints pass through with no charge. Your agent never signs a payment or manages a wallet — it just calls `fetch()`.
+
+Under the hood, payment settles in USDC on Base using the [x402 payment protocol](https://github.com/x402-foundation/x402) and EIP-3009 signatures. You never touch any of that.
 
 ## Protocol versions
 
@@ -33,67 +45,33 @@ The facilitator only accepts offers with `scheme: "exact"` on Base mainnet (`net
 
 Spec references: [x402 v2 specification](https://github.com/x402-foundation/x402/blob/main/specs/x402-specification-v2.md), [v2 HTTP transport](https://github.com/x402-foundation/x402/blob/main/specs/transports-v2/http.md), [CDP migration guide](https://docs.cdp.coinbase.com/x402/migration-guide).
 
-## How It Works
+## The managed-agent flow
 
-> **This is managed plumbing — what Floe does for you.** You don't borrow, set rates, or manage loans. For managed agents (created in the dashboard or via `POST /v1/developer/agents`), Floe provisions the wallet, submits the on-chain delegation, and funds each payment automatically. The steps below describe the on-chain mechanism the facilitator runs on your behalf so an x402 payment can settle — you only fund the agent and call the proxy. (The on-chain borrow is how payments are funded **today**; it is not a credit product you operate.)
+> **This is managed plumbing — what Floe does for you.** You fund an agent and call the proxy. Floe provisions the wallet and pays each vendor from the agent's balance automatically.
 
-```
+```text
 Developer signs the auth header (off-chain)
     │
-    ├── 1. Provision a Floe credit agent (one-time)
-    │      → POST /v1/developer/agents creates a managed Privy wallet
-    │      → Floe (the server) sends setOperator on-chain FROM that Privy
-    │        wallet, scoping the facilitator to borrow against the agent's
-    │        collateral up to borrowLimit, at rates ≤ maxRateBps, until expiry
+    ├── 1. Provision an agent (one-time)
+    │      → POST /v1/developer/agents creates a managed wallet
     │      → POST /v1/developer/agents/:id/keys mints the agent's runtime
     │        `floe_*` API key (shown once)
     │
-    ├── 2. Fund the agent's Privy wallet with USDC
-    │      → Direct on-chain transfer, or buy via the dashboard's Coinbase
-    │        on-ramp (credit card / bank). No bridge needed.
+    ├── 2. Fund the agent's balance
+    │      → Buy via the dashboard (card / Apple Pay / Google Pay / bank),
+    │        or send a direct transfer. No bridge needed.
     │
-    ├── 3. Open the credit line
-    │      → POST /v1/developer/agents/:id/open-credit-line {depositRaw}
-    │        (or `floe-agent open-credit-line --name <name> --deposit <usdc>`)
-    │      → Floe server-signs registerBorrowIntent FROM the Privy wallet,
-    │        posting a borrow intent against an open lender intent
-    │      → Solver matches asynchronously; facility_loans row goes
-    │        pending_on_chain → pending_match → active (a few seconds)
-    │      → Borrowed USDC lands in the Privy wallet; creditIn now > 0
+    ├── 3. Call vendor APIs through the facilitator
+    │      → The agent calls POST /v1/proxy/fetch with its floe_* key
+    │      → If the vendor charges, the facilitator pays it from the agent's
+    │        balance and returns the response; the balance is debited
     │
-    ├── 4. Call x402 APIs through the facilitator
-    │      → Facilitator signs EIP-3009 transferWithAuthorization from the
-    │        Privy wallet for each 402 response
-    │      → The agent receives the API response; its credit is debited
-    │
-    └── 5. When done, wind the agent down
+    └── 4. When done, close the agent
            → POST /v1/developer/agents/:id/close
-           → Facilitator repays outstanding loans, returns collateral,
-             transfers remaining USDC back to the developer
+           → Remaining balance is transferred back to the developer
 ```
 
-The **managed-agent pattern** is the abstraction boundary: you provision a Floe credit agent once, and the facilitator handles everything else on-chain. The developer's local wallet only signs API auth headers — Floe constructs and submits the on-chain operator delegation server-side from the agent's Privy wallet. The agent at runtime never signs intents, never manages loans, never touches EIP-3009. It just calls `fetch()` and the facilitator does the rest.
-
-The on-chain primitives the facilitator relies on (all submitted server-side from the agent's Privy wallet):
-
-- **`setOperator(operator, OperatorPermission)`** — Floe submits this at provisioning time to grant the facilitator scoped delegation.
-- **`revokeOperator(operator)`** — submitted on agent close (or directly by the Privy wallet on any other revocation path).
-- **`getOperatorPermission(agent, operator)`** — read by the facilitator before every borrow match to re-validate the constraints below.
-
-The `OperatorPermission` struct (enforced by the `LendingIntentMatcher` contract at every match):
-
-```solidity
-struct OperatorPermission {
-    bool    approved;                // revocable on-chain
-    uint256 borrowLimit;             // max cumulative principal
-    uint256 borrowed;                // running total of outstanding debt
-    uint256 maxRateBps;              // ceiling on borrow rate
-    uint256 expiry;                  // timestamp when permission expires
-    address onBehalfOfRestriction;   // server sets this to the agent's Privy wallet
-}
-```
-
-All five constraints are re-validated at the moment of each borrow match, so the facilitator provably cannot exceed them even if compromised.
+The **managed-agent pattern** is the abstraction boundary: you provision an agent once and fund it, and the facilitator handles every payment. The developer's local wallet only signs API auth headers. The agent at runtime never signs anything and never touches settlement — it just calls `fetch()` and the facilitator does the rest.
 
 ## Reservation Lifecycle (RC-12)
 
@@ -167,13 +145,13 @@ The simplest way to register an agent and get an API key:
 
 ```bash
 # TypeScript SDK
-npx floe-agent register --name my-agent --borrow-limit 10000
+npx floe-agent register --name my-agent
 
 # Python SDK
-floe-agent register --name my-agent --borrow-limit 10000
+floe-agent register --name my-agent
 ```
 
-The CLI signs a wallet auth message, calls `POST /v1/developer/agents` to provision a managed Privy wallet (with server-side `setOperator` delegation), mints a `floe_*` key via `POST /v1/developer/agents/:id/keys`, and stores the key in your OS keychain. The key is printed once.
+The CLI signs a wallet auth message, calls `POST /v1/developer/agents` to provision a managed wallet, mints a `floe_*` key via `POST /v1/developer/agents/:id/keys`, and stores the key in your OS keychain. The key is printed once.
 
 ### With AgentKit action (in-conversation)
 
@@ -191,14 +169,11 @@ const agentkit = await AgentKit.from({
 
 const result = await agentkit.invoke("grant_credit_delegation", {
   name: "my-agent",
-  facilitatorUrl: "https://credit-api.floelabs.xyz",
-  borrowLimit: "10000",   // $10K spend ceiling the facilitator stays under
-  maxRateBps: "1500",     // borrow-rate ceiling the facilitator must stay under (bps)
-  expiryDays: "90",       // 90-day delegation
+  expiryDays: "90",       // 90-day agent lifetime
 });
 // → result includes the API key (stored in-memory for the session)
 
-// Now fetch any x402 API
+// Now pay any vendor API
 const data = await agentkit.invoke("x402_fetch", {
   url: "https://api.example.com/premium-data",
 });
@@ -219,12 +194,13 @@ The flow uses two different credentials:
 export FLOE_LIVE_KEY="floe_live_…"
 
 # Step 1: Provision a managed agent. Auth: floe_live_* developer key.
+# Omitting borrowLimitRaw creates a wallet-funded, pay-as-you-go agent that
+# spends from its prepaid balance.
 AGENT=$(curl -sS -X POST https://credit-api.floelabs.xyz/v1/developer/agents \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "name": "my-agent",
-    "borrowLimitRaw": "10000000000",
     "maxRateBps": 1500,
     "expirySeconds": 7776000
   }')
@@ -261,7 +237,7 @@ curl -sS -X POST https://credit-api.floelabs.xyz/v1/developer/agents \
   -H "X-Wallet-Address: $YOUR_DEVELOPER_ADDRESS" \
   -H "X-Signature: $SIGNATURE" \
   -H "X-Timestamp: $TIMESTAMP" \
-  -d '{ "name": "my-agent", "borrowLimitRaw": "10000000000", "maxRateBps": 1500, "expirySeconds": 7776000 }'
+  -d '{ "name": "my-agent", "maxRateBps": 1500, "expirySeconds": 7776000 }'
 ```
 
 Signatures are valid for ±5 minutes, so a long-running backend has to re-sign per request. The developer-key path above is simpler unless you're already managing wallet signing.
@@ -300,7 +276,7 @@ print(resp.json())  # Response from the target API
 
 Registration is a two-step API call, both authenticated with a wallet signature:
 
-1. **Create the agent** (`POST /v1/developer/agents`) — Floe provisions a managed Privy wallet for the agent, then issues the on-chain `setOperator` delegation **from that Privy wallet** to the facilitator. You don't send any on-chain transactions from your local wallet. Body: `{ name, borrowLimitRaw, maxRateBps, expirySeconds }`. Returns `{ agentId, status, privyWalletAddress, delegationTxHash }`.
+1. **Create the agent** (`POST /v1/developer/agents`) — Floe provisions a managed wallet for the agent. You don't send any on-chain transactions from your local wallet. Body: `{ name, maxRateBps, expirySeconds }`. Returns `{ agentId, status, privyWalletAddress }`.
 2. **Mint an API key** (`POST /v1/developer/agents/:agentId/keys`) — issues a `floe_*` key scoped to that agent. Optional body `{ label, permissions }`. The full key is returned **once**; only its prefix is persisted server-side. Each agent has a one-active-key cap — use `POST /keys/:keyId/rotate` to swap atomically.
 
 Both calls accept any of three credentials interchangeably: a dashboard session cookie, a `floe_live_*` developer key, or a wallet-signature header set (`X-Wallet-Address` + `X-Signature` + `X-Timestamp`). The agentkit SDKs use the signature path so users don't need to obtain a developer key first.
@@ -314,21 +290,19 @@ Timestamp: {unix-seconds}
 
 Signed with the developer's wallet via `personal_sign` / EIP-191. The middleware verifies the recovered signer matches `X-Wallet-Address` and rejects timestamps more than ±5 minutes from server time. EOA (ECDSA), deployed ERC-1271 smart wallets, and undeployed ERC-6492-wrapped smart wallets are all accepted.
 
-### Managed Privy wallets
+### Managed wallets
 
-Each agent owns its own server-managed Privy wallet. The Privy wallet is the on-chain identity that holds collateral, takes facility loans, and pays merchants via the facilitator. The developer's wallet is only used to authenticate management calls — it never signs settlement or `setOperator` transactions.
-
-This replaces the older two-step "pre-register → sign setOperator → register" dance. There is no `onBehalfOfRestriction` to set: the Privy wallet *is* the borrowing identity.
+Each agent owns its own server-managed wallet, which holds the agent's balance and pays vendors via the facilitator. The developer's wallet is only used to authenticate management calls — it never signs settlements.
 
 ## AgentKit Actions
 
 | Action | Type | Description |
 |--------|------|-------------|
-| `grant_credit_delegation` | Setup | One-shot: provisions a managed Privy wallet, delegates the facilitator server-side, mints an API key. Takes `name`, `borrowLimit`, `maxRateBps`, `expiryDays`. Prefer the `floe-agent register` CLI for persistent multi-agent setups. |
-| `revoke_credit_delegation` | Teardown | Calls `revokeOperator` on-chain to revoke a facilitator delegation from your local wallet (legacy on-chain operation; not used for managed agents created via `grant_credit_delegation`). |
-| `check_credit_delegation` | Read | Reads `getOperatorPermission` on-chain from your local wallet for the given operator (legacy on-chain operation). |
-| `x402_fetch` | Proxy | Fetch any URL — auto-pays if 402, passthrough if free |
-| `x402_get_balance` | Read | Credit status: limit, used, available, active loans |
+| `grant_credit_delegation` | Setup | One-shot: provisions a managed agent wallet and mints an API key. Takes `name` and `expiryDays`. Prefer the `floe-agent register` CLI for persistent multi-agent setups. |
+| `revoke_credit_delegation` | Teardown | Legacy teardown for agents provisioned outside the managed flow. Not needed for managed agents created via `grant_credit_delegation`. |
+| `check_credit_delegation` | Read | Legacy read for agents provisioned outside the managed flow. |
+| `x402_fetch` | Proxy | Pay any vendor URL — pays if the vendor charges, passthrough if free |
+| `x402_get_balance` | Read | Spendable balance and pending settlements |
 | `x402_get_transactions` | Read | Payment history with pagination |
 
 ## REST API Reference
@@ -380,7 +354,7 @@ On a 402 response with a parseable `PAYMENT-REQUIRED` header, the body is:
 
 #### POST /v1/proxy/fetch
 
-Proxy a request. Handles x402 payments automatically.
+Proxy a request. Pays the vendor automatically when payment is required.
 
 ```json
 {
@@ -407,14 +381,15 @@ Proxy a request. Handles x402 payments automatically.
 | `X-Floe-Payment-Amount` | on 2xx paid responses | Human-readable decimal USDC amount (e.g. `0.005000`), derived from `X-Floe-Cost-USDC` (raw units ÷ 10⁶). Intended for display only. |
 | `X-Floe-Idempotent-Replay: true` | on replays only | Indicates the response body is a cached replay of a prior request with the same `Idempotency-Key`. Absent on the first attempt and on requests without a key. |
 
-> **Note on upstream headers:** The proxy forwards most response headers from the upstream API. Some providers (e.g. Venice) include their own balance headers like `X-Balance-Remaining`. These reflect the **facilitator's balance with that provider**, not your agent's Floe credit. Always use `X-Floe-Cost-USDC` or `GET /v1/agents/balance` for your agent's actual spend and credit state.
+> **Note on upstream headers:** The proxy forwards most response headers from the upstream API. Some providers (e.g. Venice) include their own balance headers like `X-Balance-Remaining`. These reflect the **facilitator's balance with that provider**, not your agent's Floe balance. Always use `X-Floe-Cost-USDC` or `GET /v1/agents/balance` for your agent's actual spend and balance state.
 
 | Status | Meaning |
 |--------|---------|
 | 200 | Success — response from target |
 | 400 | Invalid request or blocked URL |
 | 401 | Invalid API key |
-| 402 | Insufficient credit |
+| 402 | `Insufficient balance` — top up the agent's balance |
+| 402 | `spend_limit_exceeded` — the call was rejected by a server-side spend control |
 | 403 | Account frozen or closed |
 | 409 | `Idempotency-Key` is currently in-flight on another request — see [Idempotency](#idempotency) |
 | 429 | Rate limit exceeded — see body shape below |
@@ -469,16 +444,14 @@ Stripe's contract applies: the response body is cached regardless of status (2xx
 
 ```json
 {
-  "creditLimit": "10000000000",
-  "creditUsed": "3200000000",
-  "creditAvailable": "6800000000",
-  "pendingSettlements": "50000000",
-  "activeLoans": [{ "loanId": "42", "principalRaw": "5000000000" }],
-  "delegationActive": true
+  "spendableRaw": "6800000000",
+  "pendingSettlements": "50000000"
 }
 ```
 
-**`pendingSettlements`** (RC-12): sum of reservations in `pending_settlement` state — authorizations that have been signed and sent but not yet confirmed on-chain by the reconciliation loop. This amount is temporarily reserved against the agent's credit limit until the reconciliation loop finalizes each reservation to `settled` or `expired_unsettled`. See [Reservation Lifecycle (RC-12)](#reservation-lifecycle-rc-12).
+**`spendableRaw`**: the agent's prepaid balance available to spend right now, in raw USDC (6 decimals). This is what your agent can pay with on its next call.
+
+**`pendingSettlements`** (RC-12): sum of reservations in `pending_settlement` state — authorizations that have been signed and sent but not yet confirmed on-chain by the reconciliation loop. This amount is temporarily reserved against the agent's balance until the reconciliation loop finalizes each reservation to `settled` or `expired_unsettled`. See [Reservation Lifecycle (RC-12)](#reservation-lifecycle-rc-12).
 
 #### GET /v1/agents/transactions
 
@@ -501,57 +474,31 @@ Paginated payment history.
 }
 ```
 
-#### POST /v1/agents/close
+#### POST /v1/developer/agents/:agentId/close
 
-Initiate wind-down. Repays all loans, transfers remaining USDC to your wallet, closes account.
+Close the agent. Returns the remaining balance to the developer and closes the account.
 
 ```json
 {
   "status": "completed",
-  "loansRepaid": 2,
-  "loansRemaining": 0,
   "usdcTransferred": "1500000000"
 }
 ```
 
-## Credit Model
+## Balance & spend controls
 
-Your credit is backed by on-chain collateral (ETH or cbBTC) via Floe's lending protocol. The facilitator:
+Each agent spends from its own prepaid balance. You fund the agent (from the dashboard or a direct transfer), and the facilitator pays each vendor per call from that balance. When the balance runs out, calls that require payment stop until you top it up. There is no credit line and nothing for your agent to manage — it just calls the proxy.
 
-- **Borrows USDC** against your collateral when your payment wallet runs low
-- **Monitors collateral health** and freezes spending before you're at risk
-- **Rolls over loans** before they expire so your credit stays active
-- **Repays everything** when you revoke delegation or close your account
+Every paid call is governed by server-side spend controls before any money moves:
 
-You never manage loans directly. The facilitator handles the entire lifecycle.
+- **Spend limits** — per-key and per-session caps so an agent can't overspend, even in a loop.
+- **Allowed destinations** — restrict an agent to a list of vendor endpoints.
+- **Value-aware caps** — reject a call whose cost exceeds a per-call ceiling.
 
-### OperatorPermission parameters
+Controls are enforced by the facilitator on every request. A call is paid only if it passes them and the vendor actually charges.
 
-For **managed agents** (created via `POST /v1/developer/agents` or the CLI), Floe constructs and submits `setOperator` server-side from the agent's Privy wallet — you never set these parameters directly. The values you choose at provisioning time map to the on-chain fields as follows:
+### Closing an agent
 
-| Provisioning input | On-chain field | Notes |
-|---|---|---|
-| `borrowLimitRaw` (`POST /v1/developer/agents`) / `--borrow-limit` (CLI) | `borrowLimit` (uint256) | Raw USDC, 6 decimals. CLI flag is in USDC for convenience. |
-| `maxRateBps` | `maxRateBps` (uint256) | Borrow-rate ceiling in basis points the facilitator must stay under when it funds your payments (e.g. `1500` = 15.00%). |
-| `expirySeconds` / `--expiry-days` | `expiry` (uint256) | Server adds `expirySeconds` to `now` before submitting. |
-| _(server-managed)_ | `operator` (address) | The facilitator's operator EOA. |
-| _(server-managed)_ | `onBehalfOfRestriction` (address) | Set to the agent's own Privy wallet by the server. There is nothing for the caller to pass here. |
+To retire an agent, use `POST /v1/developer/agents/:agentId/close` — the server transfers any remaining balance back to the developer and marks the agent `closed`. This is the path that frees up the agent slot.
 
-All five fields are enforced on-chain by the `LendingIntentMatcher` contract at every borrow match — the facilitator cannot exceed any of them. Because the Privy wallet IS the on-chain borrowing identity, there is no separate `onBehalfOfRestriction` for the caller to manage.
-
-### Revoking delegation
-
-To wind an agent down, use:
-
-- **REST**: `POST /v1/developer/agents/:agentId/close` — server triggers a full wind-down: repays all outstanding facility loans, transfers any remaining USDC from the agent's Privy wallet back to the developer, and marks the agent `closed`. This is the **only** path that actually retires the operator permission and frees up the agent slot.
-- **On-chain** (advanced): the legacy `revokeOperator(operator)` action remains available for callers that hold an EOA-issued operator permission outside the managed flow.
-
-> `floe-agent revoke <name>` is **not** a wind-down. It only revokes the agent's API key (server-side + local keychain entry) — the on-chain operator permission, active loans, and the Privy wallet's USDC balance are untouched. Use it to rotate credentials, not to retire an agent.
-
-The facilitator can no longer register new borrow intents once the operator permission is revoked, and any in-flight intents fail match-time revalidation. Existing active loans remain callable for repay/rollover by the facilitator (intentional — protects against agent-side griefing that would trap an operator mid-loan).
-
-### What Happens If Collateral Drops
-
-The facilitator monitors the agent's collateral-to-debt ratio. If it drops too low, new spending is paused until the price recovers or the agent receives more collateral. Active loans are unaffected — they continue to maturity and can be rolled over.
-
-To stop entirely, call `POST /v1/developer/agents/:agentId/close`. The facilitator repays loans, the agent's collateral returns, and remaining USDC is transferred to the developer.
+> `floe-agent revoke <name>` is **not** a close. It only revokes the agent's API key (server-side + local keychain entry) — the agent's balance is untouched. Use it to rotate credentials, not to retire an agent.
