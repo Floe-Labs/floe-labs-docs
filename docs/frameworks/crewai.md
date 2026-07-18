@@ -6,7 +6,7 @@ icon: users
 
 One Floe spend ceiling caps your crew's **paid tool calls** — and, **when you route models through Floe's LLM proxy (`FloeLLM`)**, its LLM tokens too — behind a hard, server-side limit. The agent can never spend past it, no matter what the model decides to do.
 
-> **Scope.** Floe governs x402 payments made through the proxy. It does **not** cap raw OpenAI/Anthropic token bills paid with your own provider key unless you route those calls through Floe's LLM proxy (`FloeLLM`, see [Paying for LLM tokens](#paying-for-llm-tokens-flollm) below). The LLM proxy is feature-flagged — confirm availability before relying on it.
+> **Scope.** Floe's spend controls cap every paid call it settles — x402 payments through the proxy **and** LLM tokens routed through Floe's LLM proxy (`FloeLLM`, see [Paying for LLM tokens](#paying-for-llm-tokens-flollm) below), on one ledger and one set of caps. A call sent straight to a provider with your own key, bypassing Floe, is the one thing a policy can't see.
 
 > Your 3 AM infinite loop dies at **$1**, not $414.
 
