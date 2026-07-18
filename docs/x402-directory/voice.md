@@ -2,40 +2,39 @@
 icon: microphone
 ---
 
-# Voice
+# Voice Stack
 
-Text-to-speech, transcription, and voice APIs — payable with Floe credit on Base.
+Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) APIs — payable with Floe credit on Base. The voice stack is split into four categories:
 
-| Service | Endpoints | Price | Status |
-|---------|-----------|-------|--------|
-| Venice AI | Text to Speech, Transcription | metered | Verified |
-| Sarvam AI | Text-to-Speech (Bulbul), Speech-to-Text (Saaras) | metered / char, audio-second | Verified |
-| Deepgram | Speech-to-Text | metered / audio-minute | Verified |
-| ElevenLabs | Text-to-Speech | metered / character | Verified |
-| Cartesia | Text-to-Speech | metered / character | Verified |
-| Google Cloud TTS | Text-to-Speech | metered / character | Verified |
-| AssemblyAI | Speech-to-Text | metered / audio-second | Verified |
-| Twilio | — | — | Coming soon |
+* **[STT](#stt-speech-to-text)** — OpenAI (Whisper/Transcribe), Deepgram, AssemblyAI, Sarvam (Saaras), Venice, dTelecom
+* **[TTS](#tts-text-to-speech)** — OpenAI (TTS-1), ElevenLabs, Cartesia, Google Cloud TTS, Sarvam (Bulbul), Venice
+* **[Telephony](#telephony)** — Twilio (coming soon)
+* **[WebRTC](#webrtc)** — OpenAI (GPT Realtime), Google Gemini Live, LiveKit (coming soon)
+
+| Service | Category | Endpoints | Price | Status |
+|---------|----------|-----------|-------|--------|
+| OpenAI | STT / TTS / WebRTC | Whisper/Transcribe, TTS-1, GPT Realtime | metered | Verified |
+| Deepgram | STT | Speech-to-Text | metered / audio-minute | Verified |
+| AssemblyAI | STT | Speech-to-Text | metered / audio-second | Verified |
+| Sarvam AI | STT / TTS | Saaras STT, Bulbul TTS | metered / char, audio-second | Verified |
+| Venice AI | STT / TTS | Transcription, Text to Speech | metered | Verified |
+| dTelecom | STT | STT Session | $0.006 / min | Verified |
+| ElevenLabs | TTS | Text-to-Speech | metered / character | Verified |
+| Cartesia | TTS | Text-to-Speech | metered / character | Verified |
+| Google Cloud TTS | TTS | Text-to-Speech | metered / character | Verified |
+| Google Gemini Live | WebRTC | Realtime | metered / turn | Verified |
+| Twilio | Telephony | — | — | Coming soon |
+| LiveKit | WebRTC | — | — | Coming soon |
 
 > **Sarvam AI, Deepgram, ElevenLabs, Cartesia, Google Cloud TTS, and AssemblyAI** run through the **[Floe marketplace shim](../developers/marketplace-shim.md)** (`marketplace.floelabs.xyz`) — Floe holds the vendor key, meters the call, and bills your Floe balance. Reach them via `POST /v1/proxy/fetch` with only your Floe key (keyless).
 
 ---
 
-## Venice AI — Text to Speech
+## STT (Speech-to-Text)
 
-**Endpoint:** `POST https://api.venice.ai/api/v1/audio/speech`
-**Price:** metered per character · Base mainnet · x402 v2
+Transcribe audio to text. OpenAI (`whisper-1`, `gpt-4o-transcribe`) is served on the [Floe Inference](../developers/keyless-inference.md) OpenAI-compatible gateway. Deepgram, AssemblyAI, and Sarvam run through the [marketplace shim](../developers/marketplace-shim.md); Venice and dTelecom are first-party x402 endpoints reached directly through the Floe proxy.
 
-> Generate natural speech audio from text across multiple voices.
-
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
-  -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://api.venice.ai/api/v1/audio/speech", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"model\":\"tts-kokoro\",\"input\":\"Payment settled.\",\"voice\":\"af_sky\"}"}'
-```
-
-## Venice AI — Transcription
+### Venice AI — Transcription
 
 **Endpoint:** `POST https://api.venice.ai/api/v1/audio/transcriptions`
 **Price:** metered per minute · Base mainnet · x402 v2
@@ -49,21 +48,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "https://api.venice.ai/api/v1/audio/transcriptions", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"model\":\"whisper-large-v3\",\"file\":\"<base64-encoded-audio>\"}"}'
 ```
 
-## Sarvam AI — Text to Speech
-
-**Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/sarvam` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
-
-> Bulbul text-to-speech across 22+ Indian languages (`bulbul:v2`, `bulbul:v3`). Audio returns base64-encoded in `result.audioBase64`. Pass a `target_language_code` (e.g. `hi-IN`). ~₹30/10k chars ≈ $0.36/10k (Sarvam's INR list at ~₹83/$, before Floe's 5% margin).
-
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
-  -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://marketplace.floelabs.xyz/v1/tts/sarvam", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"model\":\"bulbul:v2\",\"text\":\"भुगतान हो गया।\",\"target_language_code\":\"hi-IN\"}"}'
-```
-
-## Sarvam AI — Speech-to-Text
+### Sarvam AI — Speech-to-Text
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/sarvam` (via the Floe marketplace shim)
 **Price:** metered per audio second · Base mainnet · x402 v2
@@ -77,7 +62,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "https://marketplace.floelabs.xyz/v1/stt/sarvam", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"model\":\"saaras:v3\",\"audioUrl\":\"https://dpgr.am/spacewalk.wav\",\"language_code\":\"hi-IN\"}"}'
 ```
 
-## Deepgram — Speech-to-Text
+### Deepgram — Speech-to-Text
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/deepgram` (via the Floe marketplace shim)
 **Price:** metered per audio minute · Base mainnet · x402 v2
@@ -91,7 +76,76 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "https://marketplace.floelabs.xyz/v1/stt/deepgram", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"audioUrl\":\"https://dpgr.am/spacewalk.wav\",\"options\":{\"model\":\"nova-3\"}}"}'
 ```
 
-## ElevenLabs — Text-to-Speech
+### AssemblyAI — Speech-to-Text
+
+**Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/assemblyai` (via the Floe marketplace shim)
+**Price:** metered per audio second · Base mainnet · x402 v2
+
+> Transcribe audio with AssemblyAI (Universal-3). Pass an `audioUrl`; Floe meters the true duration server-side and returns the transcript in `result.text`. Best for short clips — long audio may exceed the poll timeout.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://marketplace.floelabs.xyz/v1/stt/assemblyai", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"audioUrl\":\"https://dpgr.am/spacewalk.wav\",\"options\":{\"speech_model\":\"universal-3-pro\"}}"}'
+```
+
+### OpenAI — Transcription
+
+**Endpoint:** `POST https://credit-api.floelabs.xyz/v1/audio/transcriptions` (Floe Inference gateway)
+**Price:** metered per audio second · Base mainnet
+
+> Whisper-class transcription via the keyless OpenAI-compatible gateway (`whisper-1`, `gpt-4o-transcribe`). No OpenAI key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md).
+
+### dTelecom — Speech-to-Text
+
+**Endpoint:** `POST https://x402.dtelecom.org/v1/stt/session`
+**Price:** $0.006 USDC per minute (per-second billing) · Base mainnet · x402 v2
+
+> Start a real-time speech-to-text session over dTelecom's decentralized infrastructure. This is a **two-step, session-based** flow, not a single audio-file call: first **purchase credits** via `POST https://x402.dtelecom.org/v1/credits/purchase` (paid with x402), then open a session with the request below. The session request requires `duration_minutes` (number); `language` is optional (defaults to `en`). dTelecom is a first-party x402 vendor — you reach it directly through the Floe proxy, not the marketplace shim, so pass only your Floe key: the proxy handles the x402 payment and wallet auth.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://x402.dtelecom.org/v1/stt/session", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"duration_minutes\":5,\"language\":\"en\"}"}'
+```
+
+---
+
+## TTS (Text-to-Speech)
+
+Synthesize speech from text. OpenAI (`tts-1`) is served on the [Floe Inference](../developers/keyless-inference.md) OpenAI-compatible gateway. ElevenLabs, Cartesia, Google Cloud TTS, and Sarvam run through the [marketplace shim](../developers/marketplace-shim.md) (audio returns base64-encoded in `result.audioBase64`); Venice is a first-party x402 endpoint reached directly through the Floe proxy.
+
+### Venice AI — Text to Speech
+
+**Endpoint:** `POST https://api.venice.ai/api/v1/audio/speech`
+**Price:** metered per character · Base mainnet · x402 v2
+
+> Generate natural speech audio from text across multiple voices.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://api.venice.ai/api/v1/audio/speech", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"model\":\"tts-kokoro\",\"input\":\"Payment settled.\",\"voice\":\"af_sky\"}"}'
+```
+
+### Sarvam AI — Text to Speech
+
+**Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/sarvam` (via the Floe marketplace shim)
+**Price:** metered per input character · Base mainnet · x402 v2
+
+> Bulbul text-to-speech across 22+ Indian languages (`bulbul:v2`, `bulbul:v3`). Audio returns base64-encoded in `result.audioBase64`. Pass a `target_language_code` (e.g. `hi-IN`). ~₹30/10k chars ≈ $0.36/10k (Sarvam's INR list at ~₹83/$, before Floe's 5% margin).
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://marketplace.floelabs.xyz/v1/tts/sarvam", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"model\":\"bulbul:v2\",\"text\":\"भुगतान हो गया।\",\"target_language_code\":\"hi-IN\"}"}'
+```
+
+### ElevenLabs — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/elevenlabs` (via the Floe marketplace shim)
 **Price:** metered per input character · Base mainnet · x402 v2
@@ -105,7 +159,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "https://marketplace.floelabs.xyz/v1/tts/elevenlabs", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"text\":\"Payment settled.\",\"voice\":\"JBFqnCBsd6RMkjVDRZzb\",\"model\":\"eleven_turbo_v2_5\"}"}'
 ```
 
-## Cartesia — Text-to-Speech
+### Cartesia — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/cartesia` (via the Floe marketplace shim)
 **Price:** metered per input character · Base mainnet · x402 v2
@@ -119,7 +173,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "https://marketplace.floelabs.xyz/v1/tts/cartesia", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"text\":\"Payment settled.\",\"voice\":\"a0e99841-438c-4a64-b679-ae501e7d6091\",\"model\":\"sonic-2\"}"}'
 ```
 
-## Google Cloud — Text-to-Speech
+### Google Cloud — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/google` (via the Floe marketplace shim)
 **Price:** metered per input character · Base mainnet · x402 v2
@@ -133,16 +187,43 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "https://marketplace.floelabs.xyz/v1/tts/google", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"text\":\"Payment settled.\",\"voice\":\"en-US-Chirp3-HD-Aoede\"}"}'
 ```
 
-## AssemblyAI — Speech-to-Text
+### OpenAI — Text to Speech
 
-**Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/assemblyai` (via the Floe marketplace shim)
-**Price:** metered per audio second · Base mainnet · x402 v2
+**Endpoint:** `POST https://credit-api.floelabs.xyz/v1/audio/speech` (Floe Inference gateway)
+**Price:** metered per character · Base mainnet
 
-> Transcribe audio with AssemblyAI (Universal-3). Pass an `audioUrl`; Floe meters the true duration server-side and returns the transcript in `result.text`. Best for short clips — long audio may exceed the poll timeout.
+> OpenAI `tts-1` (and `tts-1-hd`) via the keyless OpenAI-compatible gateway. No OpenAI key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md).
 
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
-  -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://marketplace.floelabs.xyz/v1/stt/assemblyai", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"audioUrl\":\"https://dpgr.am/spacewalk.wav\",\"options\":{\"speech_model\":\"universal-3-pro\"}}"}'
-```
+---
+
+## Telephony
+
+Programmable voice and phone-number APIs.
+
+### Twilio — Coming soon
+
+Programmable voice, SMS, and phone numbers, payable with Floe credit. Not yet live — check the [changelog](../changelog.md) for availability.
+
+---
+
+## WebRTC
+
+Realtime speech-to-speech over WebSocket / WebRTC, metered per completed turn.
+
+### OpenAI — GPT Realtime
+
+**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=openai/gpt-realtime` (Floe Inference gateway)
+**Price:** metered per completed turn · Base mainnet
+
+> OpenAI `gpt-realtime` speech-to-speech over the keyless realtime WebSocket. No OpenAI key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
+
+### Google Gemini Live
+
+**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=google/gemini-live` (Floe Inference gateway)
+**Price:** metered per completed turn · Base mainnet
+
+> Google `gemini-live` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
+
+### LiveKit — Coming soon
+
+Realtime agent infrastructure (WebRTC transport, agent framework), payable with Floe credit. Not yet live — check the [changelog](../changelog.md) for availability.
