@@ -121,9 +121,9 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ## Firecrawl — Scrape
 
 **Endpoint:** `POST https://api.firecrawl.dev/v1/scrape`
-**Price:** $0.010 USDC per page · Base mainnet · x402 v2
+**Price:** $0.010 USDC per page · Base mainnet
 
-> Render and extract structured content from any URL as markdown, HTML, or screenshots.
+> Render and extract structured content from any URL as markdown, HTML, or screenshots. Unlike `/v2/x402/search` (x402-native), this route is reached through Floe's x402 proxy wrapper — call it via `/v1/proxy/fetch` and Floe settles the charge from your balance.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \

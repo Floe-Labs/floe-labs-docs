@@ -18,7 +18,7 @@ The marketplace category taxonomy was reorganized around how agents actually bui
 * **Firecrawl → Search** — Firecrawl moved from the retired `Text` category into **Search**. The `Text` category (Firecrawl was its only member) was removed.
 * **Database → Memory** — the `Database` category was renamed **Memory**. HydraDB is unchanged.
 
-→ [x402 API Directory](../x402-directory/README.md) · [Voice Stack](../x402-directory/voice.md)
+→ [x402 API Directory](x402-directory/README.md) · [Voice Stack](x402-directory/voice.md)
 
 ### v1.14.0 — Value-aware caps, outcome-quality throttling, LatencyBudget (July 2026)
 
@@ -82,7 +82,7 @@ One OpenAI-compatible endpoint to call LLMs, embeddings, and voice models and pa
 
 * **OpenAI-native audio on the gateway** — `openai/tts-1` (per character), `openai/whisper-1` (per audio second)
 * **Realtime** — OpenAI (`gpt-realtime`) and Google (`gemini-live`), metered per completed turn
-* **Third-party voice vendors** — ElevenLabs, Cartesia, Google Cloud (TTS) and Deepgram, AssemblyAI (STT) are served through the [Vendor Marketplace](../x402-directory/voice.md) via `POST /v1/proxy/fetch` (keyless, billed to your Floe balance), not the OpenAI-compatible gateway surface
+* **Third-party voice vendors** — ElevenLabs, Cartesia, Google Cloud (TTS) and Deepgram, AssemblyAI (STT) are served through the [Vendor Marketplace](x402-directory/voice.md) via `POST /v1/proxy/fetch` (keyless, billed to your Floe balance), not the OpenAI-compatible gateway surface
 
 **Closed-model coverage (direct-account)**
 
@@ -117,7 +117,7 @@ Curated directory of verified x402 vendor API services callable with Floe. 2,000
 * **Services**: Venice AI (9 endpoints), Exa (2), Firecrawl (2), Tavily (1), Parallel AI (3), Hyperbrowser (2), Browserbase (1), Anchor Browser (1), dTelecom STT (1), AgentMail (2), Pinata Cloud (1), PostalForm (2)
 * Dashboard: Vendor Marketplace page with category filters, detail pages with code examples (cURL, TypeScript, Python)
 
-→ [x402 API Directory](../x402-directory/README.md)
+→ [x402 API Directory](x402-directory/README.md)
 
 **Welcome Credit**
 

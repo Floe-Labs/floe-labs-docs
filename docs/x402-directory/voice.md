@@ -115,7 +115,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 ## TTS (Text-to-Speech)
 
-Synthesize speech from text. OpenAI (`tts-1`) is served on the [Floe Inference](../developers/keyless-inference.md) OpenAI-compatible gateway; the vendors below run through the marketplace shim (audio returns base64-encoded in `result.audioBase64`).
+Synthesize speech from text. OpenAI (`tts-1`) is served on the [Floe Inference](../developers/keyless-inference.md) OpenAI-compatible gateway. ElevenLabs, Cartesia, Google Cloud TTS, and Sarvam run through the [marketplace shim](../developers/marketplace-shim.md) (audio returns base64-encoded in `result.audioBase64`); Venice is a first-party x402 endpoint reached directly through the Floe proxy.
 
 ### Venice AI — Text to Speech
 
@@ -212,14 +212,14 @@ Realtime speech-to-speech over WebSocket / WebRTC, metered per completed turn.
 
 ### OpenAI — GPT Realtime
 
-**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime` (Floe Inference gateway)
+**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=openai/gpt-realtime` (Floe Inference gateway)
 **Price:** metered per completed turn · Base mainnet
 
 > OpenAI `gpt-realtime` speech-to-speech over the keyless realtime WebSocket. No OpenAI key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime).
 
 ### Google Gemini Live
 
-**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime` (Floe Inference gateway, model `gemini-live`)
+**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=google/gemini-live` (Floe Inference gateway)
 **Price:** metered per completed turn · Base mainnet
 
 > Google `gemini-live` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime).
