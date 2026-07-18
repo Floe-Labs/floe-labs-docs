@@ -71,5 +71,4 @@ The dashboard and SDK always show you dollars.
 ## See also
 
 - [Quickstart](quickstart.md) — create and fund an agent in five minutes
-- [Receiving payments](../agents/credit-for-agents.md) — accept payments from other agents
 - [The Voice Stack](../build/voice-stack.md) — pay every leg of a voice call on one key

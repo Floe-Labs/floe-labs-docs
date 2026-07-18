@@ -4,7 +4,7 @@ icon: zap
 
 # Payment Facilitator
 
-Pay any vendor API through Floe. Fund an agent's balance once, and the facilitator pays each vendor per call from that balance — handling signing, settlement, and verification. No wallet management.
+Floe is the spend layer: one key pays every vendor per call, governed by server-side spend controls. Fund an agent's balance once, and the facilitator pays each vendor per call from that balance — handling signing, settlement, and verification. No wallet management.
 
 > You can also set up agents through the [Developer Dashboard](developer-dashboard.md) — a web UI at `dev-dashboard.floelabs.xyz`.
 
@@ -49,7 +49,7 @@ Spec references: [x402 v2 specification](https://github.com/x402-foundation/x402
 
 > **This is managed plumbing — what Floe does for you.** You fund an agent and call the proxy. Floe provisions the wallet and pays each vendor from the agent's balance automatically.
 
-```
+```text
 Developer signs the auth header (off-chain)
     │
     ├── 1. Provision an agent (one-time)
@@ -169,7 +169,6 @@ const agentkit = await AgentKit.from({
 
 const result = await agentkit.invoke("grant_credit_delegation", {
   name: "my-agent",
-  facilitatorUrl: "https://credit-api.floelabs.xyz",
   expiryDays: "90",       // 90-day agent lifetime
 });
 // → result includes the API key (stored in-memory for the session)
@@ -300,8 +299,8 @@ Each agent owns its own server-managed wallet, which holds the agent's balance a
 | Action | Type | Description |
 |--------|------|-------------|
 | `grant_credit_delegation` | Setup | One-shot: provisions a managed agent wallet and mints an API key. Takes `name` and `expiryDays`. Prefer the `floe-agent register` CLI for persistent multi-agent setups. |
-| `revoke_credit_delegation` | Teardown | Legacy on-chain teardown for agents provisioned outside the managed flow. Not needed for managed agents created via `grant_credit_delegation`. |
-| `check_credit_delegation` | Read | Legacy on-chain read for agents provisioned outside the managed flow. |
+| `revoke_credit_delegation` | Teardown | Legacy teardown for agents provisioned outside the managed flow. Not needed for managed agents created via `grant_credit_delegation`. |
+| `check_credit_delegation` | Read | Legacy read for agents provisioned outside the managed flow. |
 | `x402_fetch` | Proxy | Pay any vendor URL — pays if the vendor charges, passthrough if free |
 | `x402_get_balance` | Read | Spendable balance and pending settlements |
 | `x402_get_transactions` | Read | Payment history with pagination |
@@ -389,7 +388,8 @@ Proxy a request. Pays the vendor automatically when payment is required.
 | 200 | Success — response from target |
 | 400 | Invalid request or blocked URL |
 | 401 | Invalid API key |
-| 402 | Insufficient balance |
+| 402 | `Insufficient balance` — top up the agent's balance |
+| 402 | `spend_limit_exceeded` — the call was rejected by a server-side spend control |
 | 403 | Account frozen or closed |
 | 409 | `Idempotency-Key` is currently in-flight on another request — see [Idempotency](#idempotency) |
 | 429 | Rate limit exceeded — see body shape below |
@@ -474,9 +474,9 @@ Paginated payment history.
 }
 ```
 
-#### POST /v1/agents/close
+#### POST /v1/developer/agents/:agentId/close
 
-Close the agent. Transfers any remaining balance back to your wallet and closes the account.
+Close the agent. Returns the remaining balance to the developer and closes the account.
 
 ```json
 {

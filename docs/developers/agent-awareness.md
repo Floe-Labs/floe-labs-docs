@@ -1,6 +1,6 @@
 # Agent Awareness
 
-A rational agent answers two questions before every paid action:
+Floe is the spend layer: one key pays every vendor per call, governed by server-side spend controls. A rational agent answers two questions before every paid action:
 
 1. **Do I have enough balance to make this call?**
 2. **Is this call worth its cost, and will it fit under my spend limit?**
@@ -13,7 +13,7 @@ Without first-class primitives for these, agents either over-spend (no gating) o
 
 | API | Question it answers |
 |---|---|
-| `GET /v1/balance/:wallet` | What is my spendable balance? |
+| `GET /v1/agents/balance` | What is my spendable balance? |
 | `GET / PUT / DELETE /v1/agents/spend-limit` | Operator-defined session ceiling |
 | `POST /v1/x402/estimate` | What does this call cost? Will it fit my budget? |
 
@@ -78,9 +78,11 @@ const view = await provider.getWalletBalance(walletProvider, {});
 
 ## Where the primitives live
 
-- **REST API**: `GET /v1/balance/:wallet` for balance, `/v1/agents/spend-limit` for the session cap
+- **REST API**: `GET /v1/agents/balance` for balance, `/v1/agents/spend-limit` for the session cap
 - **MCP server**: [mcp-server.md → Agent Awareness Tools](mcp-server.md#agent-awareness-tools) — `get_wallet_balance`, `get_spend_limit` (snake_case)
 - **TypeScript SDK**: `floe-agent` v0.3.0+, on `X402ActionProvider`
 - **Python SDK**: `floe-agentkit-actions` v0.3.0+, on `X402ActionProvider`
 
-All four surfaces use identical names and identical semantics. Pick the wrapper that matches your runtime.
+Each surface exposes the same balance and spend-limit semantics, but the names differ per surface — the AgentKit x402 balance action is `x402_get_balance`, the MCP tool is `get_wallet_balance`, and the REST route is `GET /v1/agents/balance`. Pick the wrapper that matches your runtime.
+
+> **Caveat.** A local balance read (`get_wallet_balance`) is an advisory snapshot and can race with in-flight settlements. The authoritative preflight is `estimate_x402_cost` plus the proxy's server-side spend checks, which decide at pay time.

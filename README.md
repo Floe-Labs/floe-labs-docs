@@ -58,7 +58,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 ## Integrate with your framework
 
-All frameworks use the same flow — create an agent, get an API key, call the proxy. The only difference is the import.
+Every framework follows the same payment flow — create an agent, get an API key, call the proxy. Setup differs per framework: AgentKit needs a wallet provider, MCP needs server config, and REST is direct HTTP.
 
 {% tabs %}
 {% tab title="AgentKit (TypeScript)" %}
