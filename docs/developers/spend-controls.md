@@ -6,7 +6,7 @@ icon: shield-check
 
 Programmable budgets for your agent wallets. Cap spending per vendor, per task, per API, or across your whole team — with optional time windows.
 
-> **Scope: one ledger, one policy set.** Spend controls cap **every paid call Floe settles** — x402 vendors through the proxy (`POST /v1/proxy/fetch`) **and** LLM tokens through the LLM proxy (`POST /v1/llm/chat/completions`, host `credit-api.floelabs.xyz`). Route both through Floe and a single task or session budget bounds the entire conversation cost across every vendor. The one thing a policy can't see is a call you send straight to a provider with your own key, bypassing Floe — so route it through Floe.
+> **Scope: what these controls govern.** Spend controls cap **x402 payments made through the Floe proxy** (`POST /v1/proxy/fetch`). They do **not** cap raw OpenAI/Anthropic LLM token bills you pay with your own provider key — those calls never touch Floe, so no Floe policy can see or stop them. LLM token spend is governed only if you route it through **Floe's LLM proxy** (`/v1/llm/chat/completions`, feature-flagged); in that case the destination host is `credit-api.floelabs.xyz`, not the model provider's domain. An `api` policy matching on a hostname only counts spend that actually flows through the Floe proxy.
 
 ## Policy Types
 

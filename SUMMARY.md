@@ -7,12 +7,6 @@
 * [Quickstart (5 minutes)](docs/getting-started/quickstart.md)
 * [Funding your agent](docs/getting-started/funding.md)
 
-## Build
-
-* [The Voice Stack](docs/build/voice-stack.md)
-* [Unified Billing & Ledger](docs/build/unified-ledger.md)
-* [Budget-Aware Routing](docs/build/budget-aware-routing.md)
-
 ## Core concepts
 
 * [Agent Wallet](docs/components/wallet.md)
@@ -69,6 +63,18 @@
 
 * [How Floe Works Under the Hood](docs/getting-started/core-concepts.md)
 * [Self-custody](docs/developers/self-custody.md)
+* [Architecture](docs/protocol/architecture.md)
+* [Intent Auto Matching](docs/protocol/orderbook-matching.md)
+* [Oracles & Circuit Breaker](docs/protocol/oracles-conditions.md)
+* [Security](docs/protocol/security.md)
+* [Flash Loans](docs/developers/flash-loans.md)
+
+## Roadmap (not generally available)
+
+* [Working capital (on-chain)](docs/components/secured-credit.md)
+* [Unsecured working capital](docs/components/unsecured-credit.md)
+* [Agent Working Capital (on-chain)](docs/developers/agent-working-capital.md)
+* [Credit & trust bureau](docs/components/credit-bureau.md)
 
 ## Reference
 

@@ -29,7 +29,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   }'
 ```
 
-> **Scope.** This governs every paid call Floe settles — x402 payments through the proxy **and** LLM tokens routed through Floe's LLM proxy at `/v1/llm/chat/completions`, all on one ledger and one set of caps. A call you send straight to a provider with your own key, bypassing Floe, is the one thing a policy can't see. See [Spend Controls](../developers/spend-controls.md).
+> **Scope.** This governs x402 payments through the proxy, not raw LLM token bills you pay with your own provider key (those are only metered if routed through Floe's LLM proxy at `/v1/llm/chat/completions`, which is feature-flagged). See [Spend Controls](../developers/spend-controls.md).
 
 ## Example: borrow `Roadmap`
 
