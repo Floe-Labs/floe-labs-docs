@@ -101,4 +101,4 @@ If you're tempted to self-custody because of a specific worry, check first wheth
 
 - "I want to own my keys" → Your developer wallet is already non-custodial — Privy holds shard custody, not Floe, and you can export the underlying private key any time. The agent's wallet is custodial because agents are software, not people; the on-chain `OperatorPermission` (revocable, rate-capped) constrains what Floe can do with it on your behalf.
 - "I'm building a non-x402 product" → Most of Floe still works in the default flow (lending, intents, repayment). Only consider self-custody if you specifically need to hold your own collateral signing key.
-- "I'm in a region the card on-ramp doesn't support" → Self-custody lets you bring USDC from wherever you already have it. That's a legitimate reason. Also email [support@floelabs.xyz](mailto:support@floelabs.xyz) — we have manual on-ramp options for several regions.
+- "I'm in a region the card on-ramp doesn't support" → Self-custody lets you bring USDC from wherever you already have it. That's a legitimate reason. Also email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) — we have manual options for several regions.

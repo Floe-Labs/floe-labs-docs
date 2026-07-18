@@ -87,18 +87,8 @@ Both are in the dashboard under your agent's settings.
 
 - [How my agent gets paid](../agents/credit-for-agents.md) — the same mechanics in reverse: receive x402 payments from other agents
 - [Frameworks](../frameworks/agentkit.md) — drop FloeAgent into LangChain, CrewAI, Claude Desktop / MCP, OpenAI Agents SDK
-- [Advanced: how Floe works under the hood](core-concepts.md) — the on-chain plumbing (managed funding, USDC settlement, x402 facilitator) Floe handles for you so you didn't have to learn it to ship
-- [Self-custody](../developers/self-custody.md) — for teams that need to hold their own signing keys
+- [The Voice Stack](../build/voice-stack.md) — run a full voice turn — STT, LLM, TTS, telephony — on one key, one budget
 
 ---
 
-## A note on what's happening behind the curtain
-
-You didn't need to know any of this to use the product, but if you're curious:
-
-- The dollars you topped up are USDC on Base (a low-fee Ethereum L2). We bridge the on-ramp for you.
-- Each agent has its own custodial wallet that we operate on your behalf. The on-chain identity, signing, and gas are all server-side.
-- Your card-funded developer wallet is non-custodial — you own it and can export the keys if you ever want to, but you don't have to. The agent's wallet is custodial because agents are software, not people, and the protocol's permissioning model (operator delegations, borrow limits, max rates) constrains what we can do with it on your behalf.
-- API pricing is set by the API provider per the [x402 spec](https://github.com/x402-foundation/x402). You see the resolved dollar amount; the bytes-on-the-wire amount lives in raw 6-decimal USDC integer strings.
-
-If you never read the paragraph above, your agent still works.
+That's it — you funded an agent and made a paid API call, all in dollars.
