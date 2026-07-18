@@ -18,7 +18,7 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 | AssemblyAI | STT | Speech-to-Text | metered / audio-second | Verified |
 | Sarvam AI | STT / TTS | Saaras STT, Bulbul TTS | metered / char, audio-second | Verified |
 | Venice AI | STT / TTS | Transcription, Text to Speech | metered | Verified |
-| dTelecom | STT | Speech-to-Text | metered | Verified |
+| dTelecom | STT | STT Session | $0.025 / req | Verified |
 | ElevenLabs | TTS | Text-to-Speech | metered / character | Verified |
 | Cartesia | TTS | Text-to-Speech | metered / character | Verified |
 | Google Cloud TTS | TTS | Text-to-Speech | metered / character | Verified |
@@ -32,7 +32,7 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 
 ## STT (Speech-to-Text)
 
-Transcribe audio to text. OpenAI (`whisper-1`, `gpt-4o-transcribe`) is served on the [Floe Inference](../developers/keyless-inference.md) OpenAI-compatible gateway; the vendors below run through the marketplace shim.
+Transcribe audio to text. OpenAI (`whisper-1`, `gpt-4o-transcribe`) is served on the [Floe Inference](../developers/keyless-inference.md) OpenAI-compatible gateway. Deepgram, AssemblyAI, and Sarvam run through the [marketplace shim](../developers/marketplace-shim.md); Venice and dTelecom are first-party x402 endpoints reached directly through the Floe proxy.
 
 ### Venice AI — Transcription
 
@@ -99,16 +99,16 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 ### dTelecom — Speech-to-Text
 
-**Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/dtelecom` (via the Floe marketplace shim)
-**Price:** metered · Base mainnet · x402 v2
+**Endpoint:** `POST https://x402.dtelecom.org/v1/stt/session`
+**Price:** $0.025 USDC per request · Base mainnet · x402 v2
 
-> Transcribe audio to text with dTelecom. Pass an `audioUrl`; Floe meters usage server-side and returns the transcript.
+> Start a real-time speech-to-text session over dTelecom's decentralized infrastructure. This is a **two-step, session-based** flow, not a single audio-file call: first **purchase credits** via `POST https://x402.dtelecom.org/v1/credits/purchase` (paid with x402), then open a session with the request below. dTelecom is a first-party x402 vendor — you reach it directly through the Floe proxy, not the marketplace shim.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://marketplace.floelabs.xyz/v1/stt/dtelecom", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"audioUrl\":\"https://dpgr.am/spacewalk.wav\"}"}'
+  -d '{"url": "https://x402.dtelecom.org/v1/stt/session", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"language\":\"en\"}"}'
 ```
 
 ---
