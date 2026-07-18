@@ -28,15 +28,16 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "<DEEPGRAM_STT_ENDPOINT>", "method": "POST", "body": "{\"audioUrl\":\"https://example.com/turn.wav\"}"}'
 ```
 
-### 2. Reason (LLM, OpenAI-compatible)
+### 2. Reason (LLM, keyless — only your Floe key)
+
+Floe holds the upstream model key, so this leg needs no provider key of your own — just the same Floe key as every other leg.
 
 ```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
+curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
   -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "X-Floe-Provider-Key: $OPENAI_API_KEY" \
   -H "Content-Type: application/json" \
   -H "X-Floe-Task-Id: call-8842" \
-  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Caller asked to reschedule to Friday. Confirm."}]}'
+  -d '{"model": "openai/gpt-4o", "messages": [{"role": "user", "content": "Caller asked to reschedule to Friday. Confirm."}]}'
 ```
 
 ### 3. Speak (ElevenLabs, via the proxy)

@@ -10,18 +10,19 @@ Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from 
 
 ## Route your LLM through Floe
 
-The LLM endpoint is OpenAI-compatible — same request shape as OpenAI Chat Completions. Point it at Floe's host, authenticate with your Floe agent key, and pass your upstream provider key per request in `X-Floe-Provider-Key` (Floe uses it only to call upstream — it is never stored).
+The LLM endpoint is OpenAI-compatible — same request shape as OpenAI Chat Completions. With keyless inference you send **only your Floe key**; Floe holds the upstream model key and bills you per call, on the same ledger as your vendor legs.
 
 ```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
+curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
   -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "X-Floe-Provider-Key: $OPENAI_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gpt-4o",
+    "model": "openai/gpt-4o",
     "messages": [{ "role": "user", "content": "Hello from Floe" }]
   }'
 ```
+
+Already pay OpenAI or Anthropic directly and want to keep using your own key? Send it per request as `X-Floe-Provider-Key` to `/v1/llm/chat/completions` instead — Floe forwards with it and charges only a routing fee. See [Floe Inference](../developers/keyless-inference.md).
 
 Now LLM tokens, speech, and search all count against the same budgets, appear in the same analytics, and feed the same per-agent cost history — right next to the x402 vendors you already pay through the proxy.
 
