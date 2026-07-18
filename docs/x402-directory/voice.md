@@ -18,7 +18,7 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 | AssemblyAI | STT | Speech-to-Text | metered / audio-second | Verified |
 | Sarvam AI | STT / TTS | Saaras STT, Bulbul TTS | metered / char, audio-second | Verified |
 | Venice AI | STT / TTS | Transcription, Text to Speech | metered | Verified |
-| dTelecom | STT | STT Session | $0.025 / req | Verified |
+| dTelecom | STT | STT Session | $0.006 / min | Verified |
 | ElevenLabs | TTS | Text-to-Speech | metered / character | Verified |
 | Cartesia | TTS | Text-to-Speech | metered / character | Verified |
 | Google Cloud TTS | TTS | Text-to-Speech | metered / character | Verified |
@@ -100,15 +100,15 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### dTelecom — Speech-to-Text
 
 **Endpoint:** `POST https://x402.dtelecom.org/v1/stt/session`
-**Price:** $0.025 USDC per request · Base mainnet · x402 v2
+**Price:** $0.006 USDC per minute (per-second billing) · Base mainnet · x402 v2
 
-> Start a real-time speech-to-text session over dTelecom's decentralized infrastructure. This is a **two-step, session-based** flow, not a single audio-file call: first **purchase credits** via `POST https://x402.dtelecom.org/v1/credits/purchase` (paid with x402), then open a session with the request below. dTelecom is a first-party x402 vendor — you reach it directly through the Floe proxy, not the marketplace shim.
+> Start a real-time speech-to-text session over dTelecom's decentralized infrastructure. This is a **two-step, session-based** flow, not a single audio-file call: first **purchase credits** via `POST https://x402.dtelecom.org/v1/credits/purchase` (paid with x402), then open a session with the request below. The session request requires `duration_minutes` (number); `language` is optional (defaults to `en`). dTelecom is a first-party x402 vendor — you reach it directly through the Floe proxy, not the marketplace shim, so pass only your Floe key: the proxy handles the x402 payment and wallet auth.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://x402.dtelecom.org/v1/stt/session", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"language\":\"en\"}"}'
+  -d '{"url": "https://x402.dtelecom.org/v1/stt/session", "method": "POST", "headers": {"Content-Type": "application/json"}, "body": "{\"duration_minutes\":5,\"language\":\"en\"}"}'
 ```
 
 ---
@@ -215,14 +215,14 @@ Realtime speech-to-speech over WebSocket / WebRTC, metered per completed turn.
 **Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=openai/gpt-realtime` (Floe Inference gateway)
 **Price:** metered per completed turn · Base mainnet
 
-> OpenAI `gpt-realtime` speech-to-speech over the keyless realtime WebSocket. No OpenAI key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime).
+> OpenAI `gpt-realtime` speech-to-speech over the keyless realtime WebSocket. No OpenAI key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
 
 ### Google Gemini Live
 
 **Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=google/gemini-live` (Floe Inference gateway)
 **Price:** metered per completed turn · Base mainnet
 
-> Google `gemini-live` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime).
+> Google `gemini-live` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
 
 ### LiveKit — Coming soon
 
