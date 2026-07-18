@@ -33,6 +33,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
   -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "X-Floe-Provider-Key: $OPENAI_API_KEY" \
   -H "Content-Type: application/json" \
   -H "X-Floe-Task-Id: call-8842" \
   -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Caller asked to reschedule to Friday. Confirm."}]}'

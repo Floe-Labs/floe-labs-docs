@@ -10,14 +10,15 @@ Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from 
 
 ## Route your LLM through Floe
 
-The LLM endpoint is OpenAI-compatible — same request shape as OpenAI Chat Completions. Only the host and the key change.
+The LLM endpoint is OpenAI-compatible — same request shape as OpenAI Chat Completions. Point it at Floe's host, authenticate with your Floe agent key, and pass your upstream provider key per request in `X-Floe-Provider-Key` (Floe uses it only to call upstream — it is never stored).
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
   -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "X-Floe-Provider-Key: $OPENAI_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "openai/gpt-4o",
+    "model": "gpt-4o",
     "messages": [{ "role": "user", "content": "Hello from Floe" }]
   }'
 ```

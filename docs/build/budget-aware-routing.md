@@ -17,10 +17,15 @@ Project a batch of costs through policy with the forecast endpoint:
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/x402/forecast \
   -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "Content-Type: application/json"
+  -H "Content-Type: application/json" \
+  -d '{
+    "items": [
+      { "url": "https://api.example.com/v1/tts", "method": "POST", "count": 12 }
+    ]
+  }'
 ```
 
-This runs the projected spend through your active policies — including value scaling and quality throttling — and returns the cost against the effective cap.
+Pass the paid calls you're about to make as `items` (each with a `url`, optional `method`, and optional `count`). Floe runs the projected spend through your active policies — including value scaling and quality throttling — and returns the aggregated cost plus a per-policy preflight of any cap the plan would breach.
 
 At runtime, the `X-Floe-Budget-Advisory` response header reports remaining headroom on the tightest effective cap (after value scaling and quality throttling). The agent reads it and picks a model before the next call. The header schema and how to branch on it are in the [Agent Runtime Contract](../developers/agent-runtime-contract.md#context-aware-spend-advisory) — forecast, enforcement, and the advisory header all report the same effective cap, so they can't drift.
 
