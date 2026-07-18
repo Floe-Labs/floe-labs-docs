@@ -13,12 +13,14 @@ Services with endpoints in the [Floe dashboard](https://dev-dashboard.floelabs.x
 | Category | Services |
 |----------|----------|
 | [Compute](compute.md) | Venice AI — chat completions, embeddings · Sarvam AI — Indic chat |
-| [Voice](voice.md) | Venice AI — TTS, transcription · Sarvam AI — TTS, STT · Deepgram, AssemblyAI — STT · ElevenLabs, Cartesia, Google Cloud — TTS · Twilio (coming soon) |
-| [Database](database.md) | HydraDB — vector query, ingest, memory & tenant management |
+| [STT](voice.md#stt-speech-to-text) | OpenAI (Whisper/Transcribe), Deepgram, AssemblyAI, Sarvam (Saaras), Venice, dTelecom |
+| [TTS](voice.md#tts-text-to-speech) | OpenAI (TTS-1), ElevenLabs, Cartesia, Google Cloud TTS, Sarvam (Bulbul), Venice |
+| [Telephony](voice.md#telephony) | Twilio (coming soon) |
+| [WebRTC](voice.md#webrtc) | OpenAI (GPT Realtime), Google Gemini Live, LiveKit (coming soon) |
 | [Image](image.md) | Venice AI — image generation |
-| [Text](text.md) | Firecrawl |
-| [Search](search.md) | Exa, Parallel AI, Tavily Search |
+| [Search](search.md) | Exa, Parallel AI, Tavily Search, Firecrawl |
 | [Browser](browser.md) | Hyperbrowser, Browserbase, Anchor Browser |
+| [Memory](database.md) | HydraDB — vector query, ingest, memory & tenant management |
 | [Agent Tools](agent-tools-verified.md) | AgentMail, Pinata Cloud, PostalForm |
 
 ## Call Any Listed API

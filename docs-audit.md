@@ -83,7 +83,7 @@ Classification legend: **KEEP-LIVE** / **FIX-CLAIMS** / **DEMOTE-TO-ROADMAP** / 
 | Page | Classification | Note |
 |---|---|---|
 | `docs/x402-directory/README.md` | KEEP-LIVE | "2,000+" ✓. Line 44 "CDP Bazaar 46,000+ endpoints" is externally attributed to Coinbase — acceptable, not a Floe reach claim. |
-| `compute.md`, `voice.md`, `image.md`, `text.md`, `search.md`, `browser.md`, `agent-tools-verified.md`, `submit.md` | KEEP-LIVE | In-nav marketplace category pages. |
+| `compute.md`, `voice.md`, `image.md`, `search.md`, `browser.md`, `database.md`, `agent-tools-verified.md`, `submit.md` | KEEP-LIVE | In-nav marketplace category pages. `voice.md` covers the STT/TTS/Telephony/WebRTC voice stack; `database.md` is the Memory category. `text.md` was removed (Firecrawl folded into `search.md`). |
 | `agent-tooling.md`, `browser-compute.md`, `identity-reputation.md`, `infra-gateway.md`, `llm-inference.md`, `media-generation.md`, `payments-commerce.md`, `social-news.md`, `storage.md`, `web-search.md` | KEEP-LIVE + **NOT-IN-NAV** | 10 category pages not referenced in SUMMARY (newer taxonomy not wired into nav, or stale duplicates of the 8 above). Decide: adopt new taxonomy or remove. `web-search.md:114` "50+ endpoints" is a single-vendor count, not a Floe reach claim — acceptable. |
 
 ### Protocol (on-chain — Advanced)

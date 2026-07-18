@@ -2,7 +2,7 @@
 icon: database
 ---
 
-# Database & Memory
+# Memory
 
 Vector database and agent-memory APIs — free to use with your Floe key.
 

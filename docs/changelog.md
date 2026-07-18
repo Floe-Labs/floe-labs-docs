@@ -10,6 +10,16 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.15.0 — Vendor marketplace restructure: the voice stack (July 2026)
+
+The marketplace category taxonomy was reorganized around how agents actually build. The full category set is now **Compute · STT · TTS · Telephony · WebRTC · Image · Search · Browser · Memory · Agent Tools**.
+
+* **Voice split into four categories** — the old `Voice` category is now **STT** (OpenAI Whisper/Transcribe, Deepgram, AssemblyAI, Sarvam Saaras, Venice, dTelecom), **TTS** (OpenAI TTS-1, ElevenLabs, Cartesia, Google Cloud TTS, Sarvam Bulbul, Venice), **Telephony** (Twilio — coming soon), and **WebRTC** realtime (OpenAI GPT Realtime, Google Gemini Live, and **LiveKit — coming soon**, new).
+* **Firecrawl → Search** — Firecrawl moved from the retired `Text` category into **Search**. The `Text` category (Firecrawl was its only member) was removed.
+* **Database → Memory** — the `Database` category was renamed **Memory**. HydraDB is unchanged.
+
+→ [x402 API Directory](../x402-directory/README.md) · [Voice Stack](../x402-directory/voice.md)
+
 ### v1.14.0 — Value-aware caps, outcome-quality throttling, LatencyBudget (July 2026)
 
 Spend controls learn about *value* — of the task, of the results, and of time:
@@ -103,7 +113,7 @@ Programmable budgets for agent wallets. Cap spending per vendor, per API hostnam
 
 Curated directory of verified x402 vendor API services callable with Floe. 2,000+ vendor API services across categories.
 
-* **Categories**: Compute, Voice, Image, Text, Search, Browser, Agent Tools
+* **Categories**: Compute, STT, TTS, Telephony, WebRTC, Image, Search, Browser, Memory, Agent Tools
 * **Services**: Venice AI (9 endpoints), Exa (2), Firecrawl (2), Tavily (1), Parallel AI (3), Hyperbrowser (2), Browserbase (1), Anchor Browser (1), dTelecom STT (1), AgentMail (2), Pinata Cloud (1), PostalForm (2)
 * Dashboard: Vendor Marketplace page with category filters, detail pages with code examples (cURL, TypeScript, Python)
 

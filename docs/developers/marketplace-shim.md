@@ -52,11 +52,11 @@ You're charged the exact metered amount per request, deducted from the same prep
 
 For stateful vendors like HydraDB, the shim enforces **hard isolation between payers**. It derives a `tenant_id` from your Floe identity and **forces it on every upstream request** — you never set it, and you can't read or write another payer's data. Two agents calling the same HydraDB routes see entirely separate datasets.
 
-Inside your own tenant you still control namespacing: every HydraDB route accepts an optional `subTenantId`, and the tenant-management routes (`tenant/create`, `tenant/status`, `tenant/delete`) operate within the boundary the shim already enforces. See the [Database & Memory](../x402-directory/database.md) directory page for the full route list and request shapes — all HydraDB routes are free to call.
+Inside your own tenant you still control namespacing: every HydraDB route accepts an optional `subTenantId`, and the tenant-management routes (`tenant/create`, `tenant/status`, `tenant/delete`) operate within the boundary the shim already enforces. See the [Memory](../x402-directory/database.md) directory page for the full route list and request shapes — all HydraDB routes are free to call.
 
 ## Available shim vendors
 
 | Vendor | Routes | Directory page |
 |---|---|---|
 | Deepgram | `POST /v1/stt/deepgram` | [Voice](../x402-directory/voice.md#deepgram-speech-to-text) |
-| HydraDB | `POST /v1/db/hydradb/{query,ingest,status,list,delete,tenant/create,tenant/status,tenant/delete}` | [Database & Memory](../x402-directory/database.md) |
+| HydraDB | `POST /v1/db/hydradb/{query,ingest,status,list,delete,tenant/create,tenant/status,tenant/delete}` | [Memory](../x402-directory/database.md) |
