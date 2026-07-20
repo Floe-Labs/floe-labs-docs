@@ -23,12 +23,12 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 | Cartesia | TTS | Text-to-Speech | metered / character | Verified |
 | Google Cloud TTS | TTS | Text-to-Speech | metered / character | Verified |
 | Google Gemini Live | WebRTC | Realtime | metered / turn | Verified |
-| Floe Phone | Telephony | Numbers, live voice calls | $1.21/mo + metered / min | Live |
+| Floe Phone | Telephony | Numbers, live voice calls | $1.21/mo + per-call usage | Live |
 | LiveKit | WebRTC | — | — | Coming soon |
 
 > **Sarvam AI, Deepgram, ElevenLabs, Cartesia, Google Cloud TTS, and AssemblyAI** run through the **[Floe marketplace shim](../developers/marketplace-shim.md)** (`marketplace.floelabs.xyz`) — Floe holds the vendor key, meters the call, and bills your Floe balance. Reach them via `POST /v1/proxy/fetch` with only your Floe key (keyless).
-
-> **Floe Phone** is first-party telephony: buy a US number bound to your agent and run live voice calls — carrier minutes, STT, LLM, and TTS all itemized on the agent's Floe balance. See **[Floe Phone — Numbers & Voice for Agents](../developers/floe-phone.md)**.
+>
+> **Floe Phone** is first-party telephony: buy a US number bound to your agent and run live voice calls — carrier minutes, STT, TTS, and (in hosted mode) the LLM leg all itemized on the agent's Floe balance. See **[Floe Phone — Numbers & Voice for Agents](../developers/floe-phone.md)**.
 
 ---
 
@@ -205,9 +205,9 @@ Phone numbers and live voice calls for agents.
 ### Floe Phone — Numbers & Voice for Agents
 
 **Endpoints:** `POST /v1/developer/agents/{agentId}/numbers` (buy + bind) · `POST /v1/calls` (outbound)
-**Price:** $1.21/mo per US number · $0.0089/min inbound · $0.0147/min outbound (+ STT/LLM/TTS legs, each itemized)
+**Price:** $1.21/mo per US number · transport $0.0089/min inbound, $0.0147/min outbound · STT ~$0.0045/min · TTS per character · hosted-mode LLM per token — each leg itemized
 
-> First-party telephony: buy a US local number bound 1:1 to your agent, and run live inbound/outbound voice calls — carrier minutes, transcription, model tokens, and speech synthesis all metered as separate line items on the agent's Floe balance, under its existing spend caps. Full endpoint reference, voice modes (hosted vs webhook), and examples: **[Floe Phone — Numbers & Voice for Agents](../developers/floe-phone.md)**.
+> First-party telephony: buy a US local number bound 1:1 to your agent, and run live inbound/outbound voice calls — carrier minutes, transcription, speech synthesis, and (in hosted mode) model tokens all metered as separate line items on the agent's Floe balance, under its existing spend caps. Full endpoint reference, voice modes (hosted vs webhook), and examples: **[Floe Phone — Numbers & Voice for Agents](../developers/floe-phone.md)**.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/42/numbers \

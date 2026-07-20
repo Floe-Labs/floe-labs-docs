@@ -4,11 +4,11 @@ icon: phone
 
 # Floe Phone — Numbers & Voice for Agents
 
-Give an agent a real US phone number in one API call. The number binds 1:1 to the agent, the monthly rental debits the agent's Floe balance, and every leg of a live voice call — carrier minutes, transcription, model tokens, speech synthesis — meters as separate line items on the same ledger, governed by the same spend controls as every other vendor.
+Give an agent a real US phone number in one API call. The number binds 1:1 to the agent, the monthly rental debits the agent's Floe balance, and every leg of a live voice call — carrier minutes, transcription, model tokens (hosted mode), speech synthesis — meters as separate line items on the same ledger, governed by the same spend controls as every other vendor.
 
 No carrier account, no telephony credentials, no per-vendor billing. One Floe key, one balance, one set of caps.
 
-When someone dials the agent's number, Floe answers into its media pipeline: caller audio is transcribed (Deepgram), the transcript runs through the agent's model via [keyless inference](keyless-inference.md), and the reply is spoken back (ElevenLabs) — all in real time, with barge-in support. Outbound works the same way via `POST /v1/calls`.
+When someone dials the agent's number, Floe answers into its media pipeline: caller audio is transcribed (Deepgram), the transcript runs through the agent's model via [keyless inference](keyless-inference.md) (hosted mode — in webhook mode your own backend supplies the reply instead), and the reply is spoken back (ElevenLabs) — all in real time, with barge-in support. Outbound works the same way via `POST /v1/calls`.
 
 ## Pricing
 
@@ -21,7 +21,7 @@ When someone dials the agent's number, Floe answers into its media pipeline: cal
 | Live-call speech (TTS) | **$0.0000525 / character** |
 | Live-call model (LLM) | the model's own [keyless-inference rate](keyless-inference.md) — hosted mode only |
 
-Prices are upstream cost plus Floe's standard 5% margin. The rental price is locked in when you buy the number; catalog price changes only affect future purchases. Each call produces itemized ledger rows (`phone://{number}/call/{callId}` for transport, `…/stt` and `…/tts` for the voice legs, plus the model's own gateway rows) — you can see exactly where a cent went.
+Prices are upstream cost plus Floe's standard 5% margin. The rental price is locked in when you buy the number; catalog price changes only affect future purchases. Each call produces itemized ledger rows (`phone://{number}/call/{callId}` for transport, `…/stt` and `…/tts` for the voice legs, plus — on hosted-mode calls — the model's own gateway rows; webhook mode uses your model, so no LLM leg is billed) — you can see exactly where a cent went.
 
 **Runaway calls are cut off mid-flight.** An upper bound (default $2.00) is reserved when a call starts; spend is metered live during the call, and if the next turn wouldn't fit — or a [spend policy](spend-controls.md) or session cap would breach — Floe hangs up the call. A carrier-side usage trigger acts as an async backstop and suspends the account's phone service if carrier spend crosses its monthly threshold.
 
@@ -31,7 +31,7 @@ Prices are upstream cost plus Floe's standard 5% margin. The rental price is loc
 
 All endpoints below use your **developer key** (`floe_live_…`) as a Bearer token — the same auth as the rest of the `/v1/developer` surface. Numbers are reached through the agent that owns them; a number under another developer's agent returns `404`.
 
-```
+```http
 Authorization: Bearer floe_live_...
 ```
 
@@ -43,15 +43,18 @@ One US local voice number per agent, bound at purchase, provisioned instantly. `
 
 {% tabs %}
 {% tab title="cURL" %}
+
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/42/numbers \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
   -d '{"areaCode": "415"}'
 ```
+
 {% endtab %}
 
 {% tab title="TypeScript" %}
+
 ```ts
 const res = await fetch('https://credit-api.floelabs.xyz/v1/developer/agents/42/numbers', {
   method: 'POST',
@@ -64,9 +67,11 @@ const res = await fetch('https://credit-api.floelabs.xyz/v1/developer/agents/42/
 const { number } = await res.json();
 console.log(number.phoneNumber); // "+14155550123"
 ```
+
 {% endtab %}
 
 {% tab title="Python" %}
+
 ```python
 import os, requests
 
@@ -77,6 +82,7 @@ res = requests.post(
 )
 print(res.json()["number"]["phoneNumber"])  # "+14155550123"
 ```
+
 {% endtab %}
 {% endtabs %}
 
@@ -170,15 +176,18 @@ Per-number spend time-series straight from the Floe ledger — rental debits plu
 
 {% tabs %}
 {% tab title="cURL" %}
+
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/calls \
   -H "Authorization: Bearer $FLOE_AGENT_KEY" \
   -H "Content-Type: application/json" \
   -d '{"toNumber": "+14155559876"}'
 ```
+
 {% endtab %}
 
 {% tab title="TypeScript" %}
+
 ```ts
 const res = await fetch('https://credit-api.floelabs.xyz/v1/calls', {
   method: 'POST',
@@ -190,9 +199,11 @@ const res = await fetch('https://credit-api.floelabs.xyz/v1/calls', {
 });
 const { callId } = await res.json();
 ```
+
 {% endtab %}
 
 {% tab title="Python" %}
+
 ```python
 import os, requests
 
@@ -203,6 +214,7 @@ res = requests.post(
 )
 print(res.json()["callId"])
 ```
+
 {% endtab %}
 {% endtabs %}
 
