@@ -6,7 +6,7 @@ icon: rocket
 
 Create an agent, give it a Floe-managed balance, then let it pay for any x402 API — every call governed by spend controls you set. That's the whole product: **a budget, not a balance.** No wallets to install, no keys to manage, no tokens to buy, no gas to pay.
 
-> **$2 Welcome Credit (~200 API calls).** Your agent can start paying for APIs today — no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
+> **$3 Welcome Credit (~300 API calls).** Your agent can start paying for APIs today — no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
 
 ---
 

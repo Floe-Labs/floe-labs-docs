@@ -4,7 +4,7 @@ icon: rocket
 
 # Agent Working Capital Quickstart `In development`
 
-> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral — and any associated rate — is **not generally available**. The code below describes the **planned** self-custody on-chain credit surface; it is not a live quickstart. The live way to give an agent money is the walletless [$2 Welcome Credit + funded balance](../getting-started/quickstart.md).
+> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral — and any associated rate — is **not generally available**. The code below describes the **planned** self-custody on-chain credit surface; it is not a live quickstart. The live way to give an agent money is the walletless [$3 Welcome Credit + funded balance](../getting-started/quickstart.md).
 
 The planned flow would give your agent a balance sheet in under a minute.
 

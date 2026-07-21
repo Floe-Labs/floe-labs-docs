@@ -14,14 +14,14 @@ When someone dials the agent's number, Floe answers into its media pipeline: cal
 
 | Item | Price |
 | --- | --- |
-| US local number | **$1.21 / month** (charged at purchase, then monthly) |
+| US local number | **$2.00 / month** flat (charged at purchase, then monthly) |
 | Inbound call transport | **$0.0089 / minute** |
 | Outbound call transport | **$0.0147 / minute** |
 | Live-call transcription (STT) | **~$0.0045 / minute** |
 | Live-call speech (TTS) | **$0.0000525 / character** |
 | Live-call model (LLM) | the model's own [keyless-inference rate](keyless-inference.md) — hosted mode only |
 
-Prices are upstream cost plus Floe's standard 5% margin. The rental price is locked in when you buy the number; catalog price changes only affect future purchases. Each call produces itemized ledger rows (`phone://{number}/call/{callId}` for transport, `…/stt` and `…/tts` for the voice legs, plus — on hosted-mode calls — the model's own gateway rows; webhook mode uses your model, so no LLM leg is billed) — you can see exactly where a cent went.
+Usage prices are upstream cost plus Floe's standard 5% margin; the number rental is a flat monthly price. The rental price is locked in when you buy the number; catalog price changes only affect future purchases. Each call produces itemized ledger rows (`phone://{number}/call/{callId}` for transport, `…/stt` and `…/tts` for the voice legs, plus — on hosted-mode calls — the model's own gateway rows; webhook mode uses your model, so no LLM leg is billed) — you can see exactly where a cent went.
 
 **Runaway calls are cut off mid-flight.** An upper bound (default $2.00) is reserved when a call starts; spend is metered live during the call, and if the next turn wouldn't fit — or a [spend policy](spend-controls.md) or session cap would breach — Floe hangs up the call. A carrier-side usage trigger acts as an async backstop and suspends the account's phone service if carrier spend crosses its monthly threshold.
 
@@ -95,7 +95,7 @@ print(res.json()["number"]["phoneNumber"])  # "+14155550123"
     "phoneNumber": "+14155550123",
     "status": "active",
     "areaCode": "415",
-    "monthlyRentalRaw": "1207500",
+    "monthlyRentalRaw": "2000000",
     "nextRenewalAt": "2026-08-20T18:00:00.000Z",
     "graceUntil": null,
     "releasedAt": null,
@@ -105,7 +105,7 @@ print(res.json()["number"]["phoneNumber"])  # "+14155550123"
 }
 ```
 
-The first month's rental (`monthlyRentalRaw`, raw 6-decimal USDC — `1207500` = $1.2075) is debited from the agent balance at purchase and returned in the `X-Floe-Cost-USDC` response header. The debit appears on the ledger as `phone://{number}/rental`.
+The first month's rental (`monthlyRentalRaw`, raw 6-decimal USDC — `2000000` = $2.00) is debited from the agent balance at purchase and returned in the `X-Floe-Cost-USDC` response header. The debit appears on the ledger as `phone://{number}/rental`.
 
 **Errors:** `402 insufficient_balance` (fund the agent first), `402 policy_exceeded` / `spend_limit_exceeded` (a spend policy blocked the debit), `409 number_exists` (the agent already has a number), `409 no_numbers_available` (try another area code), `409 agent_unavailable` (agent suspended or closed).
 
@@ -163,9 +163,9 @@ Per-number spend time-series straight from the Floe ledger — rental debits plu
 {
   "number": { "id": 7, "phoneNumber": "+14155550123" },
   "days": 30,
-  "totalRaw": "1207500",
+  "totalRaw": "2000000",
   "daily": [
-    { "day": "2026-07-20", "totalRaw": "1207500", "requests": 1 }
+    { "day": "2026-07-20", "totalRaw": "2000000", "requests": 1 }
   ]
 }
 ```
