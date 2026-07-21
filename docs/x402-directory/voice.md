@@ -8,7 +8,7 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 
 * **[STT](#stt-speech-to-text)** — OpenAI (Whisper/Transcribe), Deepgram, AssemblyAI, Sarvam (Saaras), Venice, dTelecom
 * **[TTS](#tts-text-to-speech)** — OpenAI (TTS-1), ElevenLabs, Cartesia, Google Cloud TTS, Sarvam (Bulbul), Venice
-* **[Telephony](#telephony)** — Twilio (coming soon)
+* **[Telephony](#telephony)** — Floe Phone (US numbers + live voice for agents)
 * **[WebRTC](#webrtc)** — OpenAI (GPT Realtime), Google Gemini Live, LiveKit (coming soon)
 
 | Service | Category | Endpoints | Price | Status |
@@ -23,10 +23,12 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 | Cartesia | TTS | Text-to-Speech | metered / character | Verified |
 | Google Cloud TTS | TTS | Text-to-Speech | metered / character | Verified |
 | Google Gemini Live | WebRTC | Realtime | metered / turn | Verified |
-| Twilio | Telephony | — | — | Coming soon |
+| Floe Phone | Telephony | Numbers, live voice calls | $2/mo + per-call usage | Live |
 | LiveKit | WebRTC | — | — | Coming soon |
 
 > **Sarvam AI, Deepgram, ElevenLabs, Cartesia, Google Cloud TTS, and AssemblyAI** run through the **[Floe marketplace shim](../developers/marketplace-shim.md)** (`marketplace.floelabs.xyz`) — Floe holds the vendor key, meters the call, and bills your Floe balance. Reach them via `POST /v1/proxy/fetch` with only your Floe key (keyless).
+>
+> **Floe Phone** is first-party telephony: buy a US number bound to your agent and run live voice calls — carrier minutes, STT, TTS, and (in hosted mode) the LLM leg all itemized on the agent's Floe balance. See **[Floe Phone — Numbers & Voice for Agents](../developers/floe-phone.md)**.
 
 ---
 
@@ -198,11 +200,21 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 ## Telephony
 
-Programmable voice and phone-number APIs.
+Phone numbers and live voice calls for agents.
 
-### Twilio — Coming soon
+### Floe Phone — Numbers & Voice for Agents
 
-Programmable voice, SMS, and phone numbers, payable with Floe credit. Not yet live — check the [changelog](../changelog.md) for availability.
+**Endpoints:** `POST /v1/developer/agents/{agentId}/numbers` (buy + bind) · `POST /v1/calls` (outbound)
+**Price:** $2/mo flat per US number · transport $0.0089/min inbound, $0.0147/min outbound · STT ~$0.0045/min · TTS per character · hosted-mode LLM per token — each leg itemized
+
+> First-party telephony: buy a US local number bound 1:1 to your agent, and run live inbound/outbound voice calls — carrier minutes, transcription, speech synthesis, and (in hosted mode) model tokens all metered as separate line items on the agent's Floe balance, under its existing spend caps. Full endpoint reference, voice modes (hosted vs webhook), and examples: **[Floe Phone — Numbers & Voice for Agents](../developers/floe-phone.md)**.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/42/numbers \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"areaCode": "415"}'
+```
 
 ---
 

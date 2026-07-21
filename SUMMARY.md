@@ -30,6 +30,7 @@
   * [Venice AI — Model Inference](docs/developers/venice.md)
   * [Sarvam AI — Indic Inference](docs/developers/sarvam.md)
   * [Floe Inference — Keyless LLM & Voice](docs/developers/keyless-inference.md)
+  * [Floe Phone — Numbers & Voice for Agents](docs/developers/floe-phone.md)
   * [Submit an API](docs/x402-directory/submit.md)
 
 ## Guides
