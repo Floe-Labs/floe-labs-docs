@@ -6,7 +6,7 @@
   "description": "AI inference including Replicate-backed image/video/audio, plus voice at gateway.spraay.app — text-to-speech (XTTS-v2, $0.03) and speech-to-text (Whisper, $0.02). Also settles on Solana.",
   "resource": "https://gateway.spraay.app/api/v1/compute/text-to-speech",
   "method": "POST",
-  "category": "media-generation",
+  "category": "voice",
   "tags": [
     "replicate",
     "inference",

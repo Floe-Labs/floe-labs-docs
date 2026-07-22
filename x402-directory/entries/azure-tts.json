@@ -6,7 +6,7 @@
   "description": "Neural text-to-speech via Azure AI Speech through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
   "resource": "https://marketplace.floelabs.xyz/v1/tts/azure",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "text-to-speech",
     "voice",

@@ -6,7 +6,7 @@
   "description": "OpenAI-compatible text-to-speech (POST /v1/audio/speech) at a flat price per call — the cheapest live pay-per-call TTS.",
   "resource": "https://voice.forgemesh.io/v1/audio/speech",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "text-to-speech",
     "voice",

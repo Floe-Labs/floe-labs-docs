@@ -6,7 +6,7 @@
   "description": "Speech-to-text via xAI through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
   "resource": "https://marketplace.floelabs.xyz/v1/stt/xai",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "speech-to-text",
     "transcription",

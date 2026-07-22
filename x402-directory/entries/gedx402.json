@@ -6,7 +6,7 @@
   "description": "Voice media suite — TTS (MeloTTS $0.005, Aura-2 $0.0395), ASR (whisper-large-v3-turbo $0.006, Nova-3 $0.0085), and full voice sessions ($1.49) at media.gedx402.com.",
   "resource": "https://media.gedx402.com/v1/tts/melotts",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "text-to-speech",
     "speech-to-text",

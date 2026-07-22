@@ -5,7 +5,7 @@
   "description": "Voice gateway — OpenAI TTS ($0.01), ElevenLabs TTS ($0.02), and Nova-3 transcription ($0.10) behind one x402 host. Also settles on Solana and MegaETH.",
   "resource": "https://x402-gateway-production.up.railway.app/api/tts/openai",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "text-to-speech",
     "speech-to-text",

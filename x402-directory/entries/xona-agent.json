@@ -5,7 +5,7 @@
   "description": "Grok-powered text-to-speech at a flat price per call.",
   "resource": "https://api.xona-agent.com/base-main/audio/x-text-to-speech",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "text-to-speech",
     "voice"

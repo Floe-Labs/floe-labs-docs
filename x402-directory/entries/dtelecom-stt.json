@@ -3,10 +3,10 @@
   "name": "dTelecom Voice",
   "provider": "dTelecom",
   "homepage": "https://dtelecom.org",
-  "description": "Full voice stack on a prepaid-credits model at x402.dtelecom.org — buy credits (min $0.10), then open STT sessions ($0.006/min, 99+ languages), TTS sessions ($0.008/1K chars), WebRTC tokens ($0.001/participant-min), or managed agent sessions (~$0.015/min). Also settles on Solana and Tempo.",
+  "description": "Full voice stack on a prepaid-credits model — buy credits (min $0.10), then open STT sessions ($0.006/min, 99+ languages), TTS sessions ($0.008/1K chars), WebRTC tokens ($0.001/participant-min), or managed agent sessions (~$0.015/min). Also settles on Solana and Tempo.",
   "resource": "https://x402.dtelecom.org/v1/credits/purchase",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "speech-to-text",
     "text-to-speech",

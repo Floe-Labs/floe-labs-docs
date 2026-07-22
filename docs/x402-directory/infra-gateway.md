@@ -19,8 +19,8 @@ Cloud infrastructure and gateway APIs. All payable with Floe credit on Base.
 
 **Provider:** [AWS](https://aws.amazon.com)
 **Endpoint:** `GET https://docs.aws.amazon.com/x402`
-**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
-**Floe compatible:** No
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet
+**Floe compatible:** Preview — verify compatibility before production use
 
 > Monetize any HTTP app with x402 and CloudFront/Lambda@Edge.
 
@@ -36,8 +36,8 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Cloudflare](https://www.cloudflare.com)
 **Endpoint:** `POST https://x402.cloudflare.com/crawl`
-**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
-**Floe compatible:** Yes
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet
+**Floe compatible:** Preview — verify compatibility before production use
 
 > Pay-per-crawl for AI agents accessing web content.
 
@@ -53,7 +53,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Horizen Labs](https://kurier.dev)
 **Endpoint:** `POST https://api.kurier.dev/v1/proof`
-**Price:** $0.10 USDC per call · Base mainnet · x402 v2
+**Price:** $0.10 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Pay-as-you-go ZK proof submission and verification.
@@ -70,7 +70,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [SocioLogic](https://sociologic.xyz)
 **Endpoint:** `GET https://api.sociologic.xyz/v1/rng`
-**Price:** $0.001 USDC per call · Base mainnet · x402 v2
+**Price:** $0.001 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Verifiable random number generation API.

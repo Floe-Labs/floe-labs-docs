@@ -6,7 +6,7 @@
   "description": "Agent voice tools — TTS ($0.05), HD TTS ($0.10), and transcription ($0.03). Multi-chain settlement: Base, Solana, Polygon, Arbitrum, Stellar.",
   "resource": "https://agent402.tools/api/tts",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "text-to-speech",
     "speech-to-text",

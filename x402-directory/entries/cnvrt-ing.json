@@ -6,7 +6,7 @@
   "description": "Whisper transcription of any media URL at a flat price per call. Runs an older payment-protocol version — confirm Floe proxy compatibility before wiring into a pipeline.",
   "resource": "https://cnvrt.ing/api/transcribe",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "speech-to-text",
     "transcription",

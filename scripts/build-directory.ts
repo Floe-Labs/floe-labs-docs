@@ -18,6 +18,9 @@ const CATEGORY_META: Record<string, { title: string; icon: string; description: 
   'web-search': { title: 'Web Search & Scraping', icon: 'globe', description: 'Web search, scraping, and data extraction.' },
   'social-news': { title: 'Social & News', icon: 'newspaper', description: 'Social media data, news signals, and content.' },
   'llm-inference': { title: 'LLM Inference', icon: 'brain', description: 'AI model inference — Claude, GPT, open-source models.' },
+  // voice.md is HAND-CURATED (per-vendor payload examples, category sections) —
+  // entries validate + list in the index/manifest, but no page is generated.
+  'voice': { title: 'Voice Stack', icon: 'microphone', description: 'Speech-to-text, text-to-speech, telephony, and realtime voice.' },
   'media-generation': { title: 'Media Generation', icon: 'image', description: 'Image, video, audio, and music generation.' },
   'browser-compute': { title: 'Browser & Compute', icon: 'desktop', description: 'Headless browsers, proxies, and compute.' },
   'storage': { title: 'Storage', icon: 'database', description: 'File storage and agent memory.' },
@@ -75,6 +78,10 @@ mkdirSync(OUTPUT_DIR, { recursive: true });
 
 // Generate category pages
 for (const [category, catEntries] of Object.entries(grouped)) {
+  if (category === 'voice') {
+    console.log(`  Skipped voice.md (hand-curated; ${catEntries.length} entries listed in index/manifest only)`);
+    continue;
+  }
   const meta = CATEGORY_META[category] || { title: category, icon: 'folder', description: '' };
 
   let md = `---\nicon: ${meta.icon}\n---\n\n# ${meta.title}\n\n`;
@@ -95,8 +102,13 @@ for (const [category, catEntries] of Object.entries(grouped)) {
     else md += `**Provider:** ${e.provider}\n`;
     md += `**Endpoint:** \`${e.method} ${e.resource}\`\n`;
     const pricingSuffix = e.pricingModel === 'dynamic' ? ' (dynamic)' : e.pricingModel === 'tiered' ? ' (tiered)' : '';
-    md += `**Price:** $${e.priceUsd} ${e.asset} per call${pricingSuffix} · Base mainnet · x402 v${e.x402Version}\n`;
-    md += `**Floe compatible:** ${e.floeCompatible ? 'Yes' : 'No'}\n\n`;
+    // Capability-first copy: the protocol version stays machine-readable in the
+    // entry JSON / manifest, not in user-facing prose.
+    md += `**Price:** $${e.priceUsd} ${e.asset} per call${pricingSuffix} · Base mainnet\n`;
+    const compat = e.status === 'preview'
+      ? 'Preview — verify compatibility before production use'
+      : e.floeCompatible ? 'Yes' : 'No';
+    md += `**Floe compatible:** ${compat}\n\n`;
     md += `> ${e.description}\n\n`;
 
     md += '```bash\n';

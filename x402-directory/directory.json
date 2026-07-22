@@ -89,7 +89,7 @@
       "description": "Agent voice tools — TTS ($0.05), HD TTS ($0.10), and transcription ($0.03). Multi-chain settlement: Base, Solana, Polygon, Arbitrum, Stellar.",
       "resource": "https://agent402.tools/api/tts",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "speech-to-text",
@@ -245,7 +245,7 @@
       "description": "Speech-to-text (fast transcription) via Azure AI Speech through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
       "resource": "https://marketplace.floelabs.xyz/v1/stt/azure",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "speech-to-text",
         "transcription",
@@ -267,7 +267,7 @@
       "description": "Neural text-to-speech via Azure AI Speech through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/azure",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -377,7 +377,7 @@
       "description": "Speech-to-text (Ink-Whisper) via Cartesia through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
       "resource": "https://marketplace.floelabs.xyz/v1/stt/cartesia",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "speech-to-text",
         "transcription",
@@ -444,7 +444,7 @@
       "description": "Whisper transcription of any media URL at a flat price per call. Runs an older payment-protocol version — confirm Floe proxy compatibility before wiring into a pipeline.",
       "resource": "https://cnvrt.ing/api/transcribe",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "speech-to-text",
         "transcription",
@@ -510,7 +510,7 @@
       "description": "Text-to-speech (Aura-2) via Deepgram through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/deepgram",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -551,10 +551,10 @@
       "name": "dTelecom Voice",
       "provider": "dTelecom",
       "homepage": "https://dtelecom.org",
-      "description": "Full voice stack on a prepaid-credits model at x402.dtelecom.org — buy credits (min $0.10), then open STT sessions ($0.006/min, 99+ languages), TTS sessions ($0.008/1K chars), WebRTC tokens ($0.001/participant-min), or managed agent sessions (~$0.015/min). Also settles on Solana and Tempo.",
+      "description": "Full voice stack on a prepaid-credits model — buy credits (min $0.10), then open STT sessions ($0.006/min, 99+ languages), TTS sessions ($0.008/1K chars), WebRTC tokens ($0.001/participant-min), or managed agent sessions (~$0.015/min). Also settles on Solana and Tempo.",
       "resource": "https://x402.dtelecom.org/v1/credits/purchase",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "speech-to-text",
         "text-to-speech",
@@ -599,7 +599,7 @@
       "description": "Speech-to-text (Scribe v2) via ElevenLabs through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
       "resource": "https://marketplace.floelabs.xyz/v1/stt/elevenlabs",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "speech-to-text",
         "transcription",
@@ -709,7 +709,7 @@
       "description": "OpenAI-compatible text-to-speech (POST /v1/audio/speech) at a flat price per call — the cheapest live pay-per-call TTS.",
       "resource": "https://voice.forgemesh.io/v1/audio/speech",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -753,7 +753,7 @@
       "description": "Voice media suite — TTS (MeloTTS $0.005, Aura-2 $0.0395), ASR (whisper-large-v3-turbo $0.006, Nova-3 $0.0085), and full voice sessions ($1.49) at media.gedx402.com.",
       "resource": "https://media.gedx402.com/v1/tts/melotts",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "speech-to-text",
@@ -841,7 +841,7 @@
       "description": "Expressive text-to-speech (Octave 2) via Hume AI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/hume",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -907,7 +907,7 @@
       "description": "Text-to-speech (inworld-tts-2) via Inworld AI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/inworld",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -1084,7 +1084,7 @@
       "description": "Text-to-speech (speech-2.8-turbo; HD tier available) via MiniMax through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/minimax",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -1216,7 +1216,7 @@
       "description": "Text-to-speech (neural; standard and generative engines available) via Amazon Polly through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/polly",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -1260,7 +1260,7 @@
       "description": "Text-to-speech (coda) via Rime through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/rime",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -1403,7 +1403,7 @@
       "description": "Speech-to-text (melia-1) via Speechmatics through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
       "resource": "https://marketplace.floelabs.xyz/v1/stt/speechmatics",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "speech-to-text",
         "transcription",
@@ -1425,7 +1425,7 @@
       "description": "AI inference including Replicate-backed image/video/audio, plus voice at gateway.spraay.app — text-to-speech (XTTS-v2, $0.03) and speech-to-text (Whisper, $0.02). Also settles on Solana.",
       "resource": "https://gateway.spraay.app/api/v1/compute/text-to-speech",
       "method": "POST",
-      "category": "media-generation",
+      "category": "voice",
       "tags": [
         "replicate",
         "inference",
@@ -1787,7 +1787,7 @@
       "description": "Voice gateway — OpenAI TTS ($0.01), ElevenLabs TTS ($0.02), and Nova-3 transcription ($0.10) behind one x402 host. Also settles on Solana and MegaETH.",
       "resource": "https://x402-gateway-production.up.railway.app/api/tts/openai",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "speech-to-text",
@@ -1809,7 +1809,7 @@
       "description": "Speech-to-text via xAI through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
       "resource": "https://marketplace.floelabs.xyz/v1/stt/xai",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "speech-to-text",
         "transcription",
@@ -1831,7 +1831,7 @@
       "description": "Text-to-speech via xAI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64. Pick a voice with voice_id (e.g. eve).",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/xai",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -1852,7 +1852,7 @@
       "description": "Grok-powered text-to-speech at a flat price per call.",
       "resource": "https://api.xona-agent.com/base-main/audio/x-text-to-speech",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice"

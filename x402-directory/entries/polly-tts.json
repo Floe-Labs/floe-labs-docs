@@ -6,7 +6,7 @@
   "description": "Text-to-speech (neural; standard and generative engines available) via Amazon Polly through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
   "resource": "https://marketplace.floelabs.xyz/v1/tts/polly",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "text-to-speech",
     "voice",

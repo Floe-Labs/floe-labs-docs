@@ -6,7 +6,7 @@
   "description": "Text-to-speech via xAI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64. Pick a voice with voice_id (e.g. eve).",
   "resource": "https://marketplace.floelabs.xyz/v1/tts/xai",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "text-to-speech",
     "voice",

@@ -1,6 +1,6 @@
 # Venice AI — metered model inference
 
-Run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per token** from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
+Run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per use** — tokens, characters, or audio seconds — from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
 
 Venice is the first model-inference provider in Floe's [vendor marketplace](../x402-directory/README.md). Access is **OpenAI-compatible**: point any OpenAI SDK at Floe with your Floe agent key — no Venice account, no Venice key, no wallet.
 
@@ -17,9 +17,9 @@ Floe keeps a single prepaid Venice balance funded from a pooled wallet. On every
 
 1. Checks your agent's [spend controls](spend-controls.md) (credit-line ceiling + session limit) before forwarding.
 2. Authenticates to Venice with the pooled wallet and forwards your request.
-3. Meters the response by token usage and debits your credit line at the metered cost.
+3. Meters the response by usage — tokens for text and embeddings, characters for TTS, audio seconds for transcription — and debits your credit line at the metered cost.
 
-You're billed the **metered cost of each call** — token usage priced from Venice's live catalog, plus a small Floe service margin and any per-search surcharge (web / X search) — never the pool top-up. The exact charge is returned on every response:
+You're billed the **metered cost of each call** — usage priced from Venice's live catalog, plus a small Floe service margin and any per-search surcharge (web / X search) — never the pool top-up. The exact charge is returned on every response:
 
 | Header | Meaning |
 |---|---|
@@ -100,6 +100,7 @@ A representative slice — **not** the full menu and **not** a fixed list. Price
 
 {% tabs %}
 {% tab title="cURL" %}
+
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/venice/chat/completions \
   -H "Authorization: Bearer $FLOE_KEY" \
@@ -109,9 +110,11 @@ curl -X POST https://credit-api.floelabs.xyz/v1/venice/chat/completions \
     "messages": [{ "role": "user", "content": "Hello from x402" }]
   }'
 ```
+
 {% endtab %}
 
 {% tab title="TypeScript" %}
+
 ```ts
 import OpenAI from "openai";
 
@@ -126,9 +129,11 @@ const res = await client.chat.completions.create({
 });
 console.log(res.choices[0].message.content);
 ```
+
 {% endtab %}
 
 {% tab title="Python" %}
+
 ```python
 import os
 from openai import OpenAI
@@ -144,6 +149,7 @@ res = client.chat.completions.create(
 )
 print(res.choices[0].message.content)
 ```
+
 {% endtab %}
 {% endtabs %}
 
@@ -151,6 +157,7 @@ print(res.choices[0].message.content)
 
 {% tabs %}
 {% tab title="TypeScript" %}
+
 ```ts
 const res = await client.embeddings.create({
   model: "text-embedding-bge-m3",
@@ -158,9 +165,11 @@ const res = await client.embeddings.create({
 });
 console.log(res.data[0].embedding.length);
 ```
+
 {% endtab %}
 
 {% tab title="Python" %}
+
 ```python
 res = client.embeddings.create(
     model="text-embedding-bge-m3",
@@ -168,6 +177,7 @@ res = client.embeddings.create(
 )
 print(len(res.data[0].embedding))
 ```
+
 {% endtab %}
 {% endtabs %}
 
@@ -182,6 +192,7 @@ curl "https://api.venice.ai/api/v1/models?type=asr"   # transcription models
 
 {% tabs %}
 {% tab title="TTS (TypeScript)" %}
+
 ```ts
 const audio = await client.audio.speech.create({
   model: "tts-kokoro", // cheapest; tts-inworld-1-5-max, tts-orpheus, … also work
@@ -189,14 +200,17 @@ const audio = await client.audio.speech.create({
   input: "Payments for agents, without the wallet.",
 });
 ```
+
 {% endtab %}
 
 {% tab title="STT (Python)" %}
+
 ```python
 with open("call.wav", "rb") as f:
     tr = client.audio.transcriptions.create(model="openai/whisper-large-v3", file=f)
 print(tr.text)
 ```
+
 {% endtab %}
 {% endtabs %}
 
