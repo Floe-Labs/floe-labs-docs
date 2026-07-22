@@ -3,7 +3,7 @@
   "name": "cnvrt.ing",
   "provider": "cnvrt.ing",
   "homepage": "https://cnvrt.ing",
-  "description": "Whisper transcription of any media URL at a flat price per call. Speaks the older x402 v1 protocol — confirm client compatibility before wiring it into a pipeline.",
+  "description": "Whisper transcription of any media URL at a flat price per call. Runs an older payment-protocol version — confirm Floe proxy compatibility before wiring into a pipeline.",
   "resource": "https://cnvrt.ing/api/transcribe",
   "method": "POST",
   "category": "llm-inference",

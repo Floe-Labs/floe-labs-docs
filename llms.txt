@@ -72,7 +72,7 @@ All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them th
 - [Spraay — TTS & STT](https://floe-labs.gitbook.io/docs/x402-directory/voice#spraay-text-to-speech-and-speech-to-text): `POST https://gateway.spraay.app/api/v1/compute/text-to-speech` · $0.02–$0.03/call
 - [Agent402 — TTS & transcription](https://floe-labs.gitbook.io/docs/x402-directory/voice#agent402-tts-and-transcription): `POST https://agent402.tools/api/tts` (+ tts-hd, transcribe) · $0.03–$0.10/call
 - [Xona Agent — Text-to-Speech (Grok)](https://floe-labs.gitbook.io/docs/x402-directory/voice#xona-agent-text-to-speech): `POST https://api.xona-agent.com/base-main/audio/x-text-to-speech` · $0.01/call
-- [cnvrt.ing — Transcription (x402 v1)](https://floe-labs.gitbook.io/docs/x402-directory/voice#cnvrt.ing-transcription): `POST https://cnvrt.ing/api/transcribe` · $0.025/call
+- [cnvrt.ing — Transcription (legacy protocol)](https://floe-labs.gitbook.io/docs/x402-directory/voice#cnvrt.ing-transcription): `POST https://cnvrt.ing/api/transcribe` · $0.025/call
 
 ### Image
 - [Venice AI — Image Generation](https://floe-labs.gitbook.io/docs/x402-directory/image#venice-ai-image-generation): `POST https://api.venice.ai/api/v1/image/generate` · metered/image

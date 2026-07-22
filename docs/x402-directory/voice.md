@@ -40,14 +40,14 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 
 ---
 
-For third-party services that speak x402 natively (paid per call, no Floe-held key), see [Direct x402 voice services](#direct-x402-voice-services) below.
+Some vendors price and charge each call themselves (no Floe-held key) — see [Direct pay-per-call voice services](#direct-pay-per-call-voice-services) below.
 
 ## STT (Speech-to-Text)
 
 ### Venice AI — Transcription
 
 **Endpoint:** `POST https://api.venice.ai/api/v1/audio/transcriptions`
-**Price:** metered per minute · Base mainnet · x402 v2
+**Price:** metered per minute
 
 > Transcribe speech to text with Whisper-class models.
 
@@ -61,7 +61,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Sarvam AI — Speech-to-Text
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/sarvam` (via the Floe marketplace shim)
-**Price:** metered per audio second · Base mainnet · x402 v2
+**Price:** metered per audio second
 
 > Saaras speech-to-text for Indian languages (`saaras:v3`, `saarika:v2.5`). Pass an `audioUrl`; Floe probes the true duration server-side and returns the transcript in `result.text`. ~₹30/hr ≈ $0.36/hr. For speech-in → English-out, use `/v1/stt-translate/sarvam` (`saaras:v2.5`).
 
@@ -75,7 +75,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Deepgram — Speech-to-Text
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/deepgram` (via the Floe marketplace shim)
-**Price:** metered per audio minute · Base mainnet · x402 v2
+**Price:** metered per audio minute
 
 > Transcribe audio to text. Pass an `audioUrl`; Floe probes the true duration server-side and bills whole minutes. Optional Deepgram `options` (model, language, …) pass through.
 
@@ -89,7 +89,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### AssemblyAI — Speech-to-Text
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/assemblyai` (via the Floe marketplace shim)
-**Price:** metered per audio second · Base mainnet · x402 v2
+**Price:** metered per audio second
 
 > Transcribe audio with AssemblyAI (Universal-3.5). Pass an `audioUrl`; Floe meters the true duration server-side and returns the transcript in `result.text`. Best for short clips — long audio may exceed the poll timeout.
 
@@ -110,7 +110,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### ElevenLabs — Speech-to-Text
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/elevenlabs` (via the Floe marketplace shim)
-**Price:** metered per audio second · Base mainnet · x402 v2
+**Price:** metered per audio second
 
 > Transcribe audio with Scribe v2. Pass an `audioUrl`; Floe meters the true duration server-side and returns the transcript in `result.text`. $0.22/hr (ElevenLabs list, before Floe's 5% margin).
 
@@ -124,7 +124,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Cartesia — Speech-to-Text
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/cartesia` (via the Floe marketplace shim)
-**Price:** metered per audio second · Base mainnet · x402 v2
+**Price:** metered per audio second
 
 > Transcribe audio with Ink-Whisper. Pass an `audioUrl`; Floe meters the true duration server-side and returns the transcript in `result.text`. ~$0.135/hr (Cartesia list, before Floe's 5% margin).
 
@@ -138,7 +138,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Azure AI Speech — Speech-to-Text
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/azure` (via the Floe marketplace shim)
-**Price:** metered per audio second · Base mainnet · x402 v2
+**Price:** metered per audio second
 
 > Azure fast transcription. Pass an `audioUrl`; Floe meters the true duration server-side and returns the transcript in `result.text`. $0.36/hr (Azure list, before Floe's 5% margin).
 
@@ -152,7 +152,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### xAI — Speech-to-Text
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/xai` (via the Floe marketplace shim)
-**Price:** metered per audio second · Base mainnet · x402 v2
+**Price:** metered per audio second
 
 > Transcribe audio with xAI STT. Pass an `audioUrl` (files up to 500 MB); Floe meters the true duration server-side and returns the transcript in `result.text`. $0.10/hr (xAI list, before Floe's 5% margin).
 
@@ -166,7 +166,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Speechmatics — Speech-to-Text
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/stt/speechmatics` (via the Floe marketplace shim)
-**Price:** metered per audio second · Base mainnet · x402 v2
+**Price:** metered per audio second
 
 > Transcribe audio with Speechmatics (`melia-1`). Pass an `audioUrl`; Floe meters the true duration server-side and returns the transcript in `result.text`. $0.24/hr (Speechmatics list, before Floe's 5% margin).
 
@@ -182,9 +182,9 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### dTelecom — Speech-to-Text
 
 **Endpoint:** `POST https://x402.dtelecom.org/v1/stt/session`
-**Price:** $0.006 USDC per minute (per-second billing) · Base mainnet · x402 v2
+**Price:** $0.006 USDC per minute (per-second billing)
 
-> Start a real-time speech-to-text session over dTelecom's decentralized infrastructure. This is a **two-step, session-based** flow, not a single audio-file call: first **purchase credits** via `POST https://x402.dtelecom.org/v1/credits/purchase` (paid with x402), then open a session with the request below. The session request requires `duration_minutes` (number); `language` is optional (defaults to `en`). dTelecom is a first-party x402 vendor — you reach it directly through the Floe proxy, not the marketplace shim, so pass only your Floe key: the proxy handles the x402 payment and wallet auth.
+> Start a real-time speech-to-text session over dTelecom's decentralized infrastructure. This is a **two-step, session-based** flow, not a single audio-file call: first **purchase credits** via `POST https://x402.dtelecom.org/v1/credits/purchase` (charged to your Floe balance), then open a session with the request below. The session request requires `duration_minutes` (number); `language` is optional (defaults to `en`). dTelecom is a direct vendor — you reach it through the Floe proxy, not the marketplace shim, so pass only your Floe key: the proxy handles payment and wallet auth.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
@@ -200,7 +200,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Venice AI — Text to Speech
 
 **Endpoint:** `POST https://api.venice.ai/api/v1/audio/speech`
-**Price:** metered per character · Base mainnet · x402 v2
+**Price:** metered per character
 
 > Generate natural speech audio from text across multiple voices.
 
@@ -214,7 +214,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Sarvam AI — Text to Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/sarvam` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Bulbul text-to-speech across 22+ Indian languages (`bulbul:v2`, `bulbul:v3`). Audio returns base64-encoded in `result.audioBase64`. Pass a `target_language_code` (e.g. `hi-IN`). ~₹30/10k chars ≈ $0.36/10k (Sarvam's INR list at ~₹83/$, before Floe's 5% margin).
 
@@ -228,7 +228,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### ElevenLabs — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/elevenlabs` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Synthesize speech from text. Default model is `eleven_flash_v2_5` at $0.05/1K chars (ElevenLabs list, before Floe's 5% margin); the Eleven v3 tier is available at $0.10/1K. Audio is returned base64-encoded in `result.audioBase64`. Optional `voice` and `model` fields.
 
@@ -242,7 +242,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Cartesia — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/cartesia` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Low-latency speech synthesis (default model `sonic-3`). Audio is returned base64-encoded in `result.audioBase64`. Optional `voice` and `model` fields.
 
@@ -256,7 +256,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Deepgram — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/deepgram` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Aura-2 speech synthesis (default `aura-2-thalia-en`). $0.030/1K chars (Deepgram list, before Floe's 5% margin). Up to 2,000 characters per request. Audio returns base64-encoded in `result.audioBase64`.
 
@@ -270,7 +270,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Google Cloud — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/google` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Synthesize speech with Google Cloud TTS (Chirp 3 HD voices). Audio is returned base64-encoded in `result.audioBase64`. Optional `voice` (voice name, e.g. `en-US-Chirp3-HD-Aoede`).
 
@@ -284,7 +284,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Hume AI — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/hume` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Expressive speech synthesis with Octave 2. ~$0.15/1K chars (Hume list, before Floe's 5% margin). Audio is returned base64-encoded in `result.audioBase64`.
 
@@ -298,7 +298,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Rime — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/rime` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Speech synthesis with Rime's `coda` model. $0.05/1K chars (Rime list, before Floe's 5% margin). Up to 3,000 characters per request. Audio is returned base64-encoded in `result.audioBase64`.
 
@@ -312,7 +312,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Inworld AI — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/inworld` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Speech synthesis with `inworld-tts-2`. $25/1M chars (Inworld list, before Floe's 5% margin). Up to 2,000 characters per request. Audio is returned base64-encoded in `result.audioBase64`.
 
@@ -326,7 +326,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### MiniMax — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/minimax` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Speech synthesis with `speech-2.8-turbo` (default) at $60/1M chars, or the HD tier at $100/1M (MiniMax list, before Floe's 5% margin). Audio is returned base64-encoded in `result.audioBase64`.
 
@@ -340,7 +340,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Azure AI Speech — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/azure` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Azure neural voices (default `en-US-JennyNeural`). $15/1M chars (Azure list, before Floe's 5% margin); output is capped at 10 minutes of audio. Audio is returned base64-encoded in `result.audioBase64`.
 
@@ -354,7 +354,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Amazon Polly — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/polly` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > Amazon Polly speech synthesis. Default `neural` engine at $16/1M chars; `standard` ($4/1M) and `generative` ($30/1M) engines available (AWS list, before Floe's 5% margin). Audio is returned base64-encoded in `result.audioBase64`.
 
@@ -368,7 +368,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### xAI — Text-to-Speech
 
 **Endpoint:** `POST https://marketplace.floelabs.xyz/v1/tts/xai` (via the Floe marketplace shim)
-**Price:** metered per input character · Base mainnet · x402 v2
+**Price:** metered per input character
 
 > xAI speech synthesis — pick a voice with `voice` (e.g. `eve`). $15/1M chars (xAI list, before Floe's 5% margin). Up to 15,000 characters per request. Audio is returned base64-encoded in `result.audioBase64`.
 
@@ -430,9 +430,9 @@ Realtime speech-to-speech over WebSocket / WebRTC, metered per completed turn.
 
 Realtime agent infrastructure (WebRTC transport, agent framework), payable with Floe credit. Not yet live — check the [changelog](../changelog.md) for availability.
 
-## Direct x402 voice services
+## Direct pay-per-call voice services
 
-These services speak x402 natively — Floe doesn't hold a key or meter the call; the vendor returns its own `402 PAYMENT-REQUIRED` and Floe settles the exact charge from your balance through the generic `/v1/proxy/fetch`.
+These vendors price and charge each call themselves — Floe doesn't hold a key or meter the call; the proxy settles the vendor's exact per-call charge from your Floe balance via `/v1/proxy/fetch`.
 
 | Service | Endpoints | Price | Chains | Status |
 |---------|-----------|-------|--------|--------|
@@ -443,12 +443,12 @@ These services speak x402 natively — Floe doesn't hold a key or meter the call
 | Spraay | Text-to-Speech, Speech-to-Text | $0.02–$0.03 / call | Base, Solana | Verified |
 | Agent402 | TTS, HD TTS, transcription | $0.03–$0.10 / call | Base, Solana + 3 more | Verified |
 | Xona Agent | Text-to-Speech (Grok) | $0.01 / call | Base | Verified |
-| cnvrt.ing | Transcription | $0.025 / call | Base | Preview (x402 v1) |
+| cnvrt.ing | Transcription | $0.025 / call | Base | Preview (legacy protocol) |
 
 ### dTelecom — Voice sessions
 
 **Endpoint:** `POST https://x402.dtelecom.org/v1/credits/purchase` (then per-session endpoints)
-**Price:** prepaid credits, minimum $0.10 purchase · Base, Solana, Tempo · x402 v2
+**Price:** prepaid credits, minimum $0.10 purchase · Base, Solana, Tempo
 
 > Full voice stack on a credits model: buy credits once, then open sessions against the balance — `/v1/stt/session` at $0.006/min (99+ languages), `/v1/tts/session` at $0.008/1K chars, `/v1/webrtc/token` at $0.001/participant-min, and managed `/v1/agent-session` at ~$0.015/min.
 
@@ -462,9 +462,9 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### ForgeMesh Voice — Text-to-Speech
 
 **Endpoint:** `POST https://voice.forgemesh.io/v1/audio/speech`
-**Price:** $0.001 per call · Base mainnet · x402 v2
+**Price:** $0.001 per call
 
-> OpenAI-compatible `/v1/audio/speech` at a flat $0.001 per call — the cheapest live x402 TTS.
+> OpenAI-compatible `/v1/audio/speech` at a flat $0.001 per call — the cheapest live pay-per-call TTS.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
@@ -476,7 +476,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### GEDX402 — TTS & ASR
 
 **Endpoint:** `POST https://media.gedx402.com/v1/tts/melotts` (and sibling routes)
-**Price:** $0.005–$1.49 per call · Base mainnet · x402 v2
+**Price:** $0.005–$1.49 per call
 
 > Voice media suite: `/v1/tts/melotts` ($0.005) and `/v1/tts/aura-2-en` ($0.0395) for TTS; `/v1/asr/whisper-large-v3-turbo` ($0.006) and `/v1/asr/nova-3` ($0.0085) for transcription; `/v1/voice/sessions` ($1.49) for full voice sessions.
 
@@ -490,9 +490,9 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### x402engine — Voice gateway
 
 **Endpoint:** `POST https://x402-gateway-production.up.railway.app/api/tts/openai` (and sibling routes)
-**Price:** $0.01–$0.10 per call · Base, Solana, MegaETH · x402 v2
+**Price:** $0.01–$0.10 per call · Base, Solana, MegaETH
 
-> One x402 host fronting several voice backends: `/api/tts/openai` ($0.01), `/api/tts/elevenlabs` ($0.02), and `/api/transcribe` ($0.10, Nova-3).
+> One host fronting several voice backends: `/api/tts/openai` ($0.01), `/api/tts/elevenlabs` ($0.02), and `/api/transcribe` ($0.10, Nova-3).
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
@@ -504,7 +504,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Spraay — Text-to-Speech & Speech-to-Text
 
 **Endpoint:** `POST https://gateway.spraay.app/api/v1/compute/text-to-speech` (STT at `/api/v1/compute/speech-to-text`)
-**Price:** TTS $0.03 · STT $0.02 per call · Base, Solana · x402 v2
+**Price:** TTS $0.03 · STT $0.02 per call · Base, Solana
 
 > XTTS-v2 text-to-speech ($0.03) and Whisper speech-to-text ($0.02).
 
@@ -518,7 +518,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Agent402 — TTS & transcription
 
 **Endpoint:** `POST https://agent402.tools/api/tts` (and sibling routes)
-**Price:** $0.03–$0.10 per call · Base, Solana, Polygon, Arbitrum, Stellar · x402 v2
+**Price:** $0.03–$0.10 per call · Base, Solana, Polygon, Arbitrum, Stellar
 
 > Agent voice tools: `/api/tts` ($0.05), `/api/tts-hd` ($0.10), and `/api/transcribe` ($0.03).
 
@@ -532,7 +532,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### Xona Agent — Text-to-Speech
 
 **Endpoint:** `POST https://api.xona-agent.com/base-main/audio/x-text-to-speech`
-**Price:** $0.01 per call · Base mainnet · x402 v2
+**Price:** $0.01 per call
 
 > Grok-powered text-to-speech at a flat price per call.
 
@@ -546,9 +546,9 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### cnvrt.ing — Transcription
 
 **Endpoint:** `POST https://cnvrt.ing/api/transcribe`
-**Price:** $0.025 per call · Base mainnet · **x402 v1**
+**Price:** $0.025 per call · legacy payment-protocol version
 
-> Whisper transcription of any media URL. Note: this service speaks the older **x402 v1** protocol — confirm your client (or the Floe proxy) settles v1 before wiring it into a pipeline.
+> Whisper transcription of any media URL. Note: this service runs an older payment-protocol version — confirm the Floe proxy settles it before wiring it into a pipeline.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
