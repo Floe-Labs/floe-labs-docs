@@ -133,7 +133,7 @@ index += `|----------|------|------------|\n`;
 
 const categoryOrder = [
   'web-search', 'social-news',
-  'llm-inference', 'media-generation', 'browser-compute', 'storage',
+  'llm-inference', 'voice', 'media-generation', 'browser-compute', 'storage',
   'identity-reputation', 'payments-commerce', 'infra-gateway', 'agent-tooling',
 ];
 

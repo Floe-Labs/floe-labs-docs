@@ -33,7 +33,7 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 
 ## x402 API Directory — verified services callable with Floe credit
 
-All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them through `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` with your Floe API key.
+All endpoints below are payable in USDC on Base mainnet through `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` with your Floe API key (exception: cnvrt.ing runs a legacy payment-protocol version — see its entry).
 
 ### Compute
 - [Venice AI — Models (90+ chat + embedding, pick by capability & price)](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-models): full catalog with per-token pricing; discover live at `GET https://api.venice.ai/api/v1/models`

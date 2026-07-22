@@ -6,7 +6,7 @@
   "description": "Speech-to-text via Deepgram through the Floe marketplace shim. Pass an audioUrl; Floe probes the true duration server-side and bills whole audio minutes.",
   "resource": "https://marketplace.floelabs.xyz/v1/stt/deepgram",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "speech-to-text",
     "transcription",

@@ -9,7 +9,7 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 * **[STT](#stt-speech-to-text)** — OpenAI (Whisper/Transcribe), Deepgram, AssemblyAI, ElevenLabs (Scribe v2), Cartesia (Ink-Whisper), Speechmatics, Azure, xAI, Sarvam (Saaras), Venice, dTelecom
 * **[TTS](#tts-text-to-speech)** — OpenAI (TTS-1), ElevenLabs, Cartesia, Deepgram (Aura-2), Hume, Rime, Inworld, MiniMax, Azure, Amazon Polly, xAI, Google Cloud TTS, Sarvam (Bulbul), Venice
 * **[Telephony](#telephony)** — Floe Phone (US numbers + live voice for agents)
-* **[WebRTC](#webrtc)** — OpenAI (GPT Realtime), Google Gemini Live, LiveKit (coming soon)
+* **[WebRTC](#webrtc)** — OpenAI (GPT Realtime), Google Gemini Live, xAI Grok Voice, Amazon Nova 2 Sonic (coming soon), LiveKit (coming soon)
 
 | Service | Category | Endpoints | Price | Status |
 |---------|----------|-----------|-------|--------|
@@ -23,6 +23,8 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 | Cartesia | TTS / STT | Sonic-3 TTS, Ink-Whisper STT | metered / character, audio-second | Verified |
 | Google Cloud TTS | TTS | Text-to-Speech | metered / character | Verified |
 | Google Gemini Live | WebRTC | Realtime | metered / turn | Verified |
+| xAI Grok Voice | WebRTC | Realtime voice agent | metered / minute | Verified |
+| Amazon Nova 2 Sonic | WebRTC | Bidirectional realtime | — | Coming soon |
 | Hume AI | TTS | Octave 2 | metered / character | Verified |
 | Rime | TTS | coda | metered / character | Verified |
 | Inworld AI | TTS | TTS-2 | metered / character | Verified |
@@ -426,13 +428,24 @@ Realtime speech-to-speech over WebSocket / WebRTC, metered per completed turn.
 
 > Google `gemini-live` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
 
+### xAI Grok Voice
+
+**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=xai/grok-voice` (Floe Inference gateway)
+**Price:** metered per minute of session time · Base mainnet
+
+> xAI's realtime voice agent (`grok-voice-latest`) over the keyless realtime WebSocket — OpenAI-Realtime-compatible events, billed on session time. No xAI key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
+
+### Amazon Nova 2 Sonic — Coming soon
+
+Bidirectional realtime voice on the keyless gateway (`amazon/nova-2-sonic`), billed per audio token. The catalog row is live in preview; serving starts once the gateway's AWS credentials land — see [Floe Inference](../developers/keyless-inference.md#realtime-voice).
+
 ### LiveKit — Coming soon
 
 Realtime agent infrastructure (WebRTC transport, agent framework), payable with Floe credit. Not yet live — check the [changelog](../changelog.md) for availability.
 
 ## Direct pay-per-call voice services
 
-These vendors price and charge each call themselves — Floe doesn't hold a key or meter the call; the proxy settles the vendor's exact per-call charge from your Floe balance via `/v1/proxy/fetch`.
+These vendors price and charge calls themselves — Floe doesn't hold a key or meter the call. Most bill **per call**: the proxy settles the vendor's exact charge from your Floe balance via `/v1/proxy/fetch`. **dTelecom is prepaid**: you buy a credit balance first (one proxy call), then STT/TTS/WebRTC sessions debit those credits — don't expect a per-call settlement on each session.
 
 | Service | Endpoints | Price | Chains | Status |
 |---------|-----------|-------|--------|--------|

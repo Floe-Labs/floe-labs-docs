@@ -16,7 +16,7 @@ Services with endpoints in the [Floe dashboard](https://dev-dashboard.floelabs.x
 | [STT](voice.md#stt-speech-to-text) | OpenAI (Whisper/Transcribe), Deepgram, AssemblyAI, ElevenLabs (Scribe v2), Cartesia (Ink-Whisper), Speechmatics, Azure, xAI, Sarvam (Saaras), Venice, dTelecom |
 | [TTS](voice.md#tts-text-to-speech) | OpenAI (TTS-1), ElevenLabs, Cartesia, Deepgram (Aura-2), Hume, Rime, Inworld, MiniMax, Azure, Amazon Polly, xAI, Google Cloud TTS, Sarvam (Bulbul), Venice, ForgeMesh + direct x402 services |
 | [Telephony](voice.md#telephony) | Twilio (coming soon) |
-| [WebRTC](voice.md#webrtc) | OpenAI (GPT Realtime), Google Gemini Live, xAI Grok Voice, Amazon Nova 2 Sonic, dTelecom, LiveKit (coming soon) |
+| [WebRTC](voice.md#webrtc) | OpenAI (GPT Realtime), Google Gemini Live, xAI Grok Voice, dTelecom, Amazon Nova 2 Sonic (coming soon), LiveKit (coming soon) |
 | [Image](image.md) | Venice AI — image generation |
 | [Search](search.md) | Exa, Parallel AI, Tavily Search, Firecrawl |
 | [Browser](browser.md) | Hyperbrowser, Browserbase, Anchor Browser |

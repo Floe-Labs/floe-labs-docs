@@ -6,6 +6,7 @@
     "web-search",
     "social-news",
     "llm-inference",
+    "voice",
     "media-generation",
     "browser-compute",
     "storage",
@@ -200,7 +201,7 @@
       "description": "Speech-to-text (Universal-3) via AssemblyAI through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
       "resource": "https://marketplace.floelabs.xyz/v1/stt/assemblyai",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "speech-to-text",
         "transcription",
@@ -399,7 +400,7 @@
       "description": "Low-latency text-to-speech (Sonic) via Cartesia through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/cartesia",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -488,7 +489,7 @@
       "description": "Speech-to-text via Deepgram through the Floe marketplace shim. Pass an audioUrl; Floe probes the true duration server-side and bills whole audio minutes.",
       "resource": "https://marketplace.floelabs.xyz/v1/stt/deepgram",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "speech-to-text",
         "transcription",
@@ -621,7 +622,7 @@
       "description": "Text-to-speech via ElevenLabs through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/elevenlabs",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -819,7 +820,7 @@
       "description": "Text-to-speech (Chirp 3 HD) via Google Cloud through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/google",
       "method": "POST",
-      "category": "llm-inference",
+      "category": "voice",
       "tags": [
         "text-to-speech",
         "voice",
@@ -1828,7 +1829,7 @@
       "name": "xAI TTS",
       "provider": "xAI",
       "homepage": "https://x.ai",
-      "description": "Text-to-speech via xAI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64. Pick a voice with voice_id (e.g. eve).",
+      "description": "Text-to-speech via xAI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64. Pick a voice with the voice field (e.g. eve).",
       "resource": "https://marketplace.floelabs.xyz/v1/tts/xai",
       "method": "POST",
       "category": "voice",

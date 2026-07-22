@@ -6,8 +6,12 @@
   "description": "Text-to-speech (Chirp 3 HD) via Google Cloud through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
   "resource": "https://marketplace.floelabs.xyz/v1/tts/google",
   "method": "POST",
-  "category": "llm-inference",
-  "tags": ["text-to-speech", "voice", "marketplace"],
+  "category": "voice",
+  "tags": [
+    "text-to-speech",
+    "voice",
+    "marketplace"
+  ],
   "x402Version": 2,
   "network": "eip155:8453",
   "asset": "USDC",
