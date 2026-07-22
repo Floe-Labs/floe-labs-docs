@@ -42,7 +42,7 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 
 ---
 
-Some vendors price and charge each call themselves (no Floe-held key) — see [Direct pay-per-call voice services](#direct-pay-per-call-voice-services) below.
+Some vendors price and charge calls themselves (no Floe-held key) — see [Direct voice services](#direct-voice-services) below.
 
 ## STT (Speech-to-Text)
 
@@ -412,7 +412,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/42/numbers \
 
 ## WebRTC
 
-Realtime speech-to-speech over WebSocket / WebRTC, metered per completed turn.
+Realtime speech-to-speech over WebSocket / WebRTC. Metering varies by provider — per completed turn (OpenAI, Gemini Live), per minute of session time (xAI Grok Voice), or per audio token (Nova 2 Sonic); each entry below states its meter.
 
 ### OpenAI — GPT Realtime
 
@@ -443,7 +443,7 @@ Bidirectional realtime voice on the keyless gateway (`amazon/nova-2-sonic`), bil
 
 Realtime agent infrastructure (WebRTC transport, agent framework), payable with Floe credit. Not yet live — check the [changelog](../changelog.md) for availability.
 
-## Direct pay-per-call voice services
+## Direct voice services
 
 These vendors price and charge calls themselves — Floe doesn't hold a key or meter the call. Most bill **per call**: the proxy settles the vendor's exact charge from your Floe balance via `/v1/proxy/fetch`. **dTelecom is prepaid**: you buy a credit balance first (one proxy call), then STT/TTS/WebRTC sessions debit those credits — don't expect a per-call settlement on each session.
 
