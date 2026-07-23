@@ -18,7 +18,7 @@ Attestations, identity, and trust scores. All payable with Floe credit on Base.
 
 **Provider:** [DJD](https://djd.xyz)
 **Endpoint:** `GET https://api.djd.xyz/v1/score`
-**Price:** $0.005 USDC per call · Base mainnet · x402 v2
+**Price:** $0.005 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Agent reputation scoring and identity verification.
@@ -35,7 +35,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [OOBE](https://oobe.xyz)
 **Endpoint:** `GET https://api.oobe.xyz/v1/score`
-**Price:** $0.005 USDC per call · Base mainnet · x402 v2
+**Price:** $0.005 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Decentralized identity and reputation scoring.
@@ -52,7 +52,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Trusta.AI](https://trusta.ai)
 **Endpoint:** `POST https://api.trusta.ai/v1/attest`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Pay USDC on Base to publish attestations.

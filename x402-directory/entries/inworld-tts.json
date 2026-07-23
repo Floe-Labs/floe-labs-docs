@@ -1,0 +1,22 @@
+{
+  "id": "inworld-tts",
+  "name": "Inworld TTS",
+  "provider": "Inworld AI",
+  "homepage": "https://inworld.ai",
+  "description": "Text-to-speech (inworld-tts-2) via Inworld AI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
+  "resource": "https://marketplace.floelabs.xyz/v1/tts/inworld",
+  "method": "POST",
+  "category": "voice",
+  "tags": [
+    "text-to-speech",
+    "voice",
+    "marketplace"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

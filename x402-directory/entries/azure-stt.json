@@ -1,0 +1,22 @@
+{
+  "id": "azure-stt",
+  "name": "Azure Speech STT",
+  "provider": "Microsoft Azure",
+  "homepage": "https://azure.microsoft.com/products/ai-services/ai-speech",
+  "description": "Speech-to-text (fast transcription) via Azure AI Speech through the Floe marketplace shim. Pass an audioUrl; billed per audio second; transcript in result.text.",
+  "resource": "https://marketplace.floelabs.xyz/v1/stt/azure",
+  "method": "POST",
+  "category": "voice",
+  "tags": [
+    "speech-to-text",
+    "transcription",
+    "marketplace"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

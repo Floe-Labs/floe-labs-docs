@@ -21,7 +21,7 @@ MCP servers, workflows, and agent orchestration. All payable with Floe credit on
 
 **Provider:** [Arch AI](https://arch.ai)
 **Endpoint:** `POST https://api.arch.ai/v1/tools`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Multi-tool MCP server with 53+ tools and x402.
@@ -38,7 +38,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Fluora](https://fluora.xyz)
 **Endpoint:** `POST https://api.fluora.xyz/v1/workflow`
-**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet
 **Floe compatible:** Yes
 
 > Agent workflow orchestration with x402 billing.
@@ -55,7 +55,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Latinum](https://latinum.xyz)
 **Endpoint:** `POST https://api.latinum.xyz/v1/orchestrate`
-**Price:** $0.005 USDC per call (dynamic) · Base mainnet · x402 v2
+**Price:** $0.005 USDC per call (dynamic) · Base mainnet
 **Floe compatible:** Yes
 
 > Agent-to-agent payment orchestration.
@@ -72,7 +72,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Locus](https://locus.xyz)
 **Endpoint:** `GET https://api.locus.xyz/v1/geo`
-**Price:** $0.005 USDC per call · Base mainnet · x402 v2
+**Price:** $0.005 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Geospatial data and location intelligence for agents.
@@ -89,7 +89,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [MCPay](https://mcpay.xyz)
 **Endpoint:** `POST https://api.mcpay.xyz/v1/pay`
-**Price:** $0.001 USDC per call (dynamic) · Base mainnet · x402 v2
+**Price:** $0.001 USDC per call (dynamic) · Base mainnet
 **Floe compatible:** Yes
 
 > Payment layer for MCP tool servers.
@@ -106,7 +106,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Obol](https://obol.dev)
 **Endpoint:** `POST https://api.obol.dev/v1/codegen`
-**Price:** $5.00 USDC per call · Base mainnet · x402 v2
+**Price:** $5.00 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > AI code generation that opens GitHub PRs.

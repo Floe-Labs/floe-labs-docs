@@ -1,6 +1,6 @@
 # Venice AI — metered model inference
 
-Run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per token** from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
+Floe is the spend layer for AI agents: fund with fiat, pay any vendor API with one key, and govern every call with programmable server-side spend controls. Through that one key, run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per use** — tokens, characters, or audio seconds — from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
 
 Venice is the first model-inference provider in Floe's [vendor marketplace](../x402-directory/README.md). Access is **OpenAI-compatible**: point any OpenAI SDK at Floe with your Floe agent key — no Venice account, no Venice key, no wallet.
 
@@ -17,9 +17,9 @@ Floe keeps a single prepaid Venice balance funded from a pooled wallet. On every
 
 1. Checks your agent's [spend controls](spend-controls.md) (credit-line ceiling + session limit) before forwarding.
 2. Authenticates to Venice with the pooled wallet and forwards your request.
-3. Meters the response by token usage and debits your credit line at the metered cost.
+3. Meters the response by usage — tokens for text and embeddings, characters for TTS, audio seconds for transcription — and debits your credit line at the metered cost.
 
-You're billed the **metered cost of each call** — token usage priced from Venice's live catalog, plus a small Floe service margin and any per-search surcharge (web / X search) — never the pool top-up. The exact charge is returned on every response:
+You're billed the **metered cost of each call** — usage priced from Venice's live catalog, plus a small Floe service margin and any per-search surcharge (web / X search) — never the pool top-up. The exact charge is returned on every response:
 
 | Header | Meaning |
 |---|---|
@@ -30,19 +30,21 @@ You're billed the **metered cost of each call** — token usage priced from Veni
 
 ## Supported endpoints
 
-These are served first-class and metered per token:
+These are served first-class — text and embeddings metered per token, voice per character (TTS) or per audio second (transcription):
 
 | Endpoint | Path | OpenAI SDK method |
 |---|---|---|
 | Chat Completions | `POST /v1/venice/chat/completions` | `chat.completions.create` |
 | Responses | `POST /v1/venice/responses` | `responses.create` |
 | Embeddings | `POST /v1/venice/embeddings` | `embeddings.create` |
+| Text-to-Speech | `POST /v1/venice/audio/speech` | `audio.speech.create` |
+| Transcription | `POST /v1/venice/audio/transcriptions` | `audio.transcriptions.create` |
 
 > **Streaming is not supported** — set `stream: false` (the default). Per-call metering needs the terminal usage block that a streamed response doesn't deliver. A `stream: true` request is refused with `400 streaming_not_supported`.
 
 ## Models
 
-Pass any Venice **text** or **embedding** model id straight through in the `model` field — a `venice/` prefix is accepted and stripped (`venice/kimi-k2-5` → `kimi-k2-5`). There's **no allowlist**: any model in Venice's catalog works. (Image, audio, and video models run through the [x402 proxy](#image-voice-and-video), not this endpoint.)
+Pass any Venice **text**, **embedding**, **TTS**, or **STT** model id straight through in the `model` field — a `venice/` prefix is accepted and stripped (`venice/kimi-k2-5` → `kimi-k2-5`). There's **no allowlist**: any model in Venice's catalog works. (Image and video models run through the [x402 proxy](#image-and-video), not this endpoint.)
 
 **Discover the full live catalog** — capabilities, context windows, and pricing — from Venice's public models endpoint (free, no key required):
 
@@ -98,6 +100,7 @@ A representative slice — **not** the full menu and **not** a fixed list. Price
 
 {% tabs %}
 {% tab title="cURL" %}
+
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/venice/chat/completions \
   -H "Authorization: Bearer $FLOE_KEY" \
@@ -107,9 +110,11 @@ curl -X POST https://credit-api.floelabs.xyz/v1/venice/chat/completions \
     "messages": [{ "role": "user", "content": "Hello from x402" }]
   }'
 ```
+
 {% endtab %}
 
 {% tab title="TypeScript" %}
+
 ```ts
 import OpenAI from "openai";
 
@@ -124,9 +129,11 @@ const res = await client.chat.completions.create({
 });
 console.log(res.choices[0].message.content);
 ```
+
 {% endtab %}
 
 {% tab title="Python" %}
+
 ```python
 import os
 from openai import OpenAI
@@ -142,6 +149,7 @@ res = client.chat.completions.create(
 )
 print(res.choices[0].message.content)
 ```
+
 {% endtab %}
 {% endtabs %}
 
@@ -149,6 +157,7 @@ print(res.choices[0].message.content)
 
 {% tabs %}
 {% tab title="TypeScript" %}
+
 ```ts
 const res = await client.embeddings.create({
   model: "text-embedding-bge-m3",
@@ -156,9 +165,11 @@ const res = await client.embeddings.create({
 });
 console.log(res.data[0].embedding.length);
 ```
+
 {% endtab %}
 
 {% tab title="Python" %}
+
 ```python
 res = client.embeddings.create(
     model="text-embedding-bge-m3",
@@ -166,12 +177,48 @@ res = client.embeddings.create(
 )
 print(len(res.data[0].embedding))
 ```
+
 {% endtab %}
 {% endtabs %}
 
-## Image, voice, and video
+## Voice
 
-Venice's image, text-to-speech, transcription, and video endpoints are **not** on the first-class OpenAI surface yet. Call them through Floe's generic [x402 proxy](x402-facilitator.md) — Floe pays Venice's exact x402 charge from your credit line:
+Venice's TTS and transcription models are served first-class on the OpenAI-compatible audio endpoints. **Text-to-speech** meters per input character; **transcription** meters per audio second (from the response `duration`). Discover the live voice catalog and prices — free, no key required:
+
+```bash
+curl "https://api.venice.ai/api/v1/models?type=tts"   # text-to-speech models
+curl "https://api.venice.ai/api/v1/models?type=asr"   # transcription models
+```
+
+{% tabs %}
+{% tab title="TTS (TypeScript)" %}
+
+```ts
+const audio = await client.audio.speech.create({
+  model: "tts-kokoro", // cheapest; tts-inworld-1-5-max, tts-orpheus, … also work
+  voice: "af_sky",
+  input: "Payments for agents, without the wallet.",
+});
+```
+
+{% endtab %}
+
+{% tab title="STT (Python)" %}
+
+```python
+with open("call.wav", "rb") as f:
+    tr = client.audio.transcriptions.create(model="openai/whisper-large-v3", file=f)
+print(tr.text)
+```
+
+{% endtab %}
+{% endtabs %}
+
+Representative models (USD, Venice list — you're billed the exact metered amount in `X-Floe-Cost-USDC`): TTS per 1M chars — `tts-kokoro` $3.50 · `tts-inworld-1-5-max` $12.50 · `tts-xai-v1` $18.75 · `tts-orpheus` $62.50 · `tts-elevenlabs-turbo-v2-5` $62.50. STT per second — `stt-xai-v1` $0.0000315 · `nvidia/parakeet-tdt-0.6b-v3`, `openai/whisper-large-v3`, `fal-ai/wizper` $0.0001 · `elevenlabs/scribe-v2` $0.000167.
+
+## Image and video
+
+Venice's image and video endpoints are **not** on the first-class OpenAI surface yet. Call them through Floe's generic [x402 proxy](x402-facilitator.md) — Floe pays Venice's exact x402 charge from your credit line:
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \

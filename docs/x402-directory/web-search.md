@@ -23,7 +23,7 @@ Web search, scraping, and data extraction. All payable with Floe credit on Base.
 
 **Provider:** [Apify](https://apify.com)
 **Endpoint:** `POST https://api.apify.com/v2/x402/run`
-**Price:** $0.01 USDC per call (dynamic) · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call (dynamic) · Base mainnet
 **Floe compatible:** Yes
 
 > Web data platform for scraping, crawling, and automation.
@@ -40,7 +40,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Bloomfilter](https://bloomfilter.io)
 **Endpoint:** `POST https://api.bloomfilter.io/v1/domains`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Domain registration and DNS management with no account.
@@ -57,7 +57,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Exa](https://exa.ai)
 **Endpoint:** `POST https://api.exa.ai/search`
-**Price:** $0.005 USDC per call · Base mainnet · x402 v2
+**Price:** $0.005 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > AI-native web search API with semantic understanding.
@@ -74,7 +74,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Firecrawl](https://firecrawl.dev)
 **Endpoint:** `POST https://api.firecrawl.dev/v1/x402/search`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Search the web and scrape results to LLM-ready markdown.
@@ -91,7 +91,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Minifetch](https://minifetch.dev)
 **Endpoint:** `POST https://api.minifetch.dev/fetch`
-**Price:** $0.001 USDC per call · Base mainnet · x402 v2
+**Price:** $0.001 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Token-efficient page metadata fetches for LLMs.
@@ -108,7 +108,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Robtex](https://www.robtex.com)
 **Endpoint:** `GET https://api.robtex.com/x402/dns`
-**Price:** $0.001 USDC per call · Base mainnet · x402 v2
+**Price:** $0.001 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > 50+ endpoints: DNS, IP reputation, BGP, passive DNS.
@@ -125,7 +125,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [twit.sh](https://twit.sh)
 **Endpoint:** `GET https://api.twit.sh/v1/x402/tweets`
-**Price:** $0.001 USDC per call · Base mainnet · x402 v2
+**Price:** $0.001 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Real-time Twitter/X data. No API keys needed.
@@ -142,7 +142,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 **Provider:** [Zyte](https://www.zyte.com)
 **Endpoint:** `POST https://api.zyte.com/v1/extract`
-**Price:** $0.01 USDC per call · Base mainnet · x402 v2
+**Price:** $0.01 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > Web scraping with anti-bot unblocking and data extraction.

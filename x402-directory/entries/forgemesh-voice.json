@@ -1,0 +1,22 @@
+{
+  "id": "forgemesh-voice",
+  "name": "ForgeMesh Voice",
+  "provider": "ForgeMesh",
+  "homepage": "https://forgemesh.io",
+  "description": "OpenAI-compatible text-to-speech (POST /v1/audio/speech) at a flat price per call — the cheapest live pay-per-call TTS.",
+  "resource": "https://voice.forgemesh.io/v1/audio/speech",
+  "method": "POST",
+  "category": "voice",
+  "tags": [
+    "text-to-speech",
+    "voice",
+    "openai-compatible"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

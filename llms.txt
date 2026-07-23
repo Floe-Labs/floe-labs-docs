@@ -33,7 +33,7 @@ This file is a structured map of the Floe documentation, optimized for LLM agent
 
 ## x402 API Directory — verified services callable with Floe credit
 
-All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them through `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` with your Floe API key.
+All endpoints below are payable in USDC on Base mainnet through `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` with your Floe API key (exception: cnvrt.ing runs a legacy payment-protocol version — see its entry).
 
 ### Compute
 - [Venice AI — Models (90+ chat + embedding, pick by capability & price)](https://floe-labs.gitbook.io/docs/x402-directory/compute#venice-models): full catalog with per-token pricing; discover live at `GET https://api.venice.ai/api/v1/models`
@@ -52,7 +52,27 @@ All endpoints below accept USDC on Base mainnet via x402 v2. Call any of them th
 - [Cartesia — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#cartesia-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/cartesia` (via /v1/proxy/fetch) · metered/char
 - [Google Cloud — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#google-cloud-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/google` (via /v1/proxy/fetch) · metered/char
 - [AssemblyAI — Speech-to-Text](https://floe-labs.gitbook.io/docs/x402-directory/voice#assemblyai-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/assemblyai` (via /v1/proxy/fetch) · metered/audio-sec
-- [dTelecom — STT Session](https://floe-labs.gitbook.io/docs/x402-directory/voice): `POST https://x402.dtelecom.org/v1/stt/session` · $0.025/req
+- [Deepgram — Text-to-Speech (Aura-2)](https://floe-labs.gitbook.io/docs/x402-directory/voice#deepgram-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/deepgram` (via /v1/proxy/fetch) · metered/char
+- [ElevenLabs — Speech-to-Text (Scribe v2)](https://floe-labs.gitbook.io/docs/x402-directory/voice#elevenlabs-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/elevenlabs` (via /v1/proxy/fetch) · metered/audio-sec
+- [Cartesia — Speech-to-Text (Ink-Whisper)](https://floe-labs.gitbook.io/docs/x402-directory/voice#cartesia-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/cartesia` (via /v1/proxy/fetch) · metered/audio-sec
+- [Hume AI — Text-to-Speech (Octave 2)](https://floe-labs.gitbook.io/docs/x402-directory/voice#hume-ai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/hume` (via /v1/proxy/fetch) · metered/char
+- [Rime — Text-to-Speech (coda)](https://floe-labs.gitbook.io/docs/x402-directory/voice#rime-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/rime` (via /v1/proxy/fetch) · metered/char
+- [Inworld AI — Text-to-Speech (TTS-2)](https://floe-labs.gitbook.io/docs/x402-directory/voice#inworld-ai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/inworld` (via /v1/proxy/fetch) · metered/char
+- [MiniMax — Text-to-Speech (speech-2.8)](https://floe-labs.gitbook.io/docs/x402-directory/voice#minimax-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/minimax` (via /v1/proxy/fetch) · metered/char
+- [Azure AI Speech — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#azure-ai-speech-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/azure` (via /v1/proxy/fetch) · metered/char
+- [Azure AI Speech — Speech-to-Text](https://floe-labs.gitbook.io/docs/x402-directory/voice#azure-ai-speech-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/azure` (via /v1/proxy/fetch) · metered/audio-sec
+- [Amazon Polly — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#amazon-polly-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/polly` (via /v1/proxy/fetch) · metered/char
+- [xAI — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#xai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/xai` (via /v1/proxy/fetch) · metered/char
+- [xAI — Speech-to-Text](https://floe-labs.gitbook.io/docs/x402-directory/voice#xai-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/xai` (via /v1/proxy/fetch) · metered/audio-sec
+- [Speechmatics — Speech-to-Text (melia-1)](https://floe-labs.gitbook.io/docs/x402-directory/voice#speechmatics-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/speechmatics` (via /v1/proxy/fetch) · metered/audio-sec
+- [dTelecom — Voice sessions (credits)](https://floe-labs.gitbook.io/docs/x402-directory/voice#dtelecom-voice-sessions): `POST https://x402.dtelecom.org/v1/credits/purchase` then STT $0.006/min · TTS $0.008/1K chars · WebRTC $0.001/min
+- [ForgeMesh Voice — Text-to-Speech](https://floe-labs.gitbook.io/docs/x402-directory/voice#forgemesh-voice-text-to-speech): `POST https://voice.forgemesh.io/v1/audio/speech` · $0.001/call
+- [GEDX402 — TTS & ASR](https://floe-labs.gitbook.io/docs/x402-directory/voice#gedx402-tts-and-asr): `POST https://media.gedx402.com/v1/tts/melotts` (+ aura-2, whisper, nova-3, sessions) · $0.005–$1.49/call
+- [x402engine — Voice gateway](https://floe-labs.gitbook.io/docs/x402-directory/voice#x402engine-voice-gateway): `POST https://x402-gateway-production.up.railway.app/api/tts/openai` (+ elevenlabs, transcribe) · $0.01–$0.10/call
+- [Spraay — TTS & STT](https://floe-labs.gitbook.io/docs/x402-directory/voice#spraay-text-to-speech-and-speech-to-text): `POST https://gateway.spraay.app/api/v1/compute/text-to-speech` · $0.02–$0.03/call
+- [Agent402 — TTS & transcription](https://floe-labs.gitbook.io/docs/x402-directory/voice#agent402-tts-and-transcription): `POST https://agent402.tools/api/tts` (+ tts-hd, transcribe) · $0.03–$0.10/call
+- [Xona Agent — Text-to-Speech (Grok)](https://floe-labs.gitbook.io/docs/x402-directory/voice#xona-agent-text-to-speech): `POST https://api.xona-agent.com/base-main/audio/x-text-to-speech` · $0.01/call
+- [cnvrt.ing — Transcription (legacy protocol)](https://floe-labs.gitbook.io/docs/x402-directory/voice#cnvrt.ing-transcription): `POST https://cnvrt.ing/api/transcribe` · $0.025/call
 
 ### Image
 - [Venice AI — Image Generation](https://floe-labs.gitbook.io/docs/x402-directory/image#venice-ai-image-generation): `POST https://api.venice.ai/api/v1/image/generate` · metered/image

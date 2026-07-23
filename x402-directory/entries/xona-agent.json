@@ -1,0 +1,20 @@
+{
+  "id": "xona-agent",
+  "name": "Xona Agent",
+  "provider": "Xona",
+  "description": "Grok-powered text-to-speech at a flat price per call.",
+  "resource": "https://api.xona-agent.com/base-main/audio/x-text-to-speech",
+  "method": "POST",
+  "category": "voice",
+  "tags": [
+    "text-to-speech",
+    "voice"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified"
+}

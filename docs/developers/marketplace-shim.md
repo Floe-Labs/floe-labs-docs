@@ -43,7 +43,7 @@ Shim-backed vendors bill the **same way** as the rest of the marketplace: one Fl
 |---|---|---|
 | Price source | Vendor's `402 PAYMENT-REQUIRED` response | The shim meters the request itself |
 | Settlement | Facilitator signs USDC on Base | Floe debits your credit line at the metered cost |
-| Pricing model | Per the vendor | Metered (Deepgram: per audio-minute); HydraDB is free |
+| Pricing model | Per the vendor | Metered per character / audio second / audio minute (see route table below); HydraDB is free |
 | Your key | Floe key | Floe key |
 
 You're charged the exact metered amount per request, deducted from the same prepaid balance governed by your [spend controls](spend-controls.md).
@@ -56,7 +56,22 @@ Inside your own tenant you still control namespacing: every HydraDB route accept
 
 ## Available shim vendors
 
-| Vendor | Routes | Directory page |
-|---|---|---|
-| Deepgram | `POST /v1/stt/deepgram` | [Voice](../x402-directory/voice.md#deepgram-speech-to-text) |
-| HydraDB | `POST /v1/db/hydradb/{query,ingest,status,list,delete,tenant/create,tenant/status,tenant/delete}` | [Memory](../x402-directory/database.md) |
+All routes are `POST`, called through `/v1/proxy/fetch` as above. Prices are the vendor's list rate, before Floe's 5% margin — you're billed the metered amount.
+
+| Vendor | Routes | Price (vendor list) | Directory page |
+|---|---|---|---|
+| Deepgram | `/v1/stt/deepgram` · `/v1/tts/deepgram` | STT $0.0077/min · TTS $0.030/1K chars (Aura-2) | [Voice](../x402-directory/voice.md#deepgram-speech-to-text) |
+| ElevenLabs | `/v1/tts/elevenlabs` · `/v1/stt/elevenlabs` | TTS $0.05/1K chars (`eleven_flash_v2_5`; v3 $0.10/1K) · STT $0.22/hr (Scribe v2) | [Voice](../x402-directory/voice.md#elevenlabs-text-to-speech) |
+| Cartesia | `/v1/tts/cartesia` · `/v1/stt/cartesia` | TTS metered/char (Sonic-3) · STT ~$0.135/hr (Ink-Whisper) | [Voice](../x402-directory/voice.md#cartesia-text-to-speech) |
+| Google Cloud TTS | `/v1/tts/google` | $30/1M chars (Chirp 3 HD) | [Voice](../x402-directory/voice.md#google-cloud-text-to-speech) |
+| AssemblyAI | `/v1/stt/assemblyai` | $0.21/hr (Universal-3.5) | [Voice](../x402-directory/voice.md#assemblyai-speech-to-text) |
+| Sarvam AI | `/v1/tts/sarvam` · `/v1/stt/sarvam` · `/v1/stt-translate/sarvam` | TTS ~$0.36/10k chars · STT ~$0.36/hr | [Voice](../x402-directory/voice.md#sarvam-ai-text-to-speech) |
+| Hume AI | `/v1/tts/hume` | ~$0.15/1K chars (Octave 2) | [Voice](../x402-directory/voice.md#hume-ai-text-to-speech) |
+| Rime | `/v1/tts/rime` | $0.05/1K chars (coda) | [Voice](../x402-directory/voice.md#rime-text-to-speech) |
+| Inworld AI | `/v1/tts/inworld` | $25/1M chars (inworld-tts-2) | [Voice](../x402-directory/voice.md#inworld-ai-text-to-speech) |
+| MiniMax | `/v1/tts/minimax` | $60/1M chars (speech-2.8-turbo; HD $100/1M) | [Voice](../x402-directory/voice.md#minimax-text-to-speech) |
+| Azure AI Speech | `/v1/tts/azure` · `/v1/stt/azure` | TTS $15/1M chars (neural) · STT $0.36/hr (fast transcription) | [Voice](../x402-directory/voice.md#azure-ai-speech-text-to-speech) |
+| Amazon Polly | `/v1/tts/polly` | $16/1M chars (neural; standard $4/1M, generative $30/1M) | [Voice](../x402-directory/voice.md#amazon-polly-text-to-speech) |
+| xAI | `/v1/tts/xai` · `/v1/stt/xai` | TTS $15/1M chars · STT $0.10/hr | [Voice](../x402-directory/voice.md#xai-text-to-speech) |
+| Speechmatics | `/v1/stt/speechmatics` | $0.24/hr (melia-1) | [Voice](../x402-directory/voice.md#speechmatics-speech-to-text) |
+| HydraDB | `/v1/db/hydradb/{query,ingest,status,list,delete,tenant/create,tenant/status,tenant/delete}` | free | [Memory](../x402-directory/database.md) |

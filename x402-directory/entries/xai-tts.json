@@ -1,0 +1,22 @@
+{
+  "id": "xai-tts",
+  "name": "xAI TTS",
+  "provider": "xAI",
+  "homepage": "https://x.ai",
+  "description": "Text-to-speech via xAI through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64. Pick a voice with the voice field (e.g. eve).",
+  "resource": "https://marketplace.floelabs.xyz/v1/tts/xai",
+  "method": "POST",
+  "category": "voice",
+  "tags": [
+    "text-to-speech",
+    "voice",
+    "marketplace"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "dynamic",
+  "floeCompatible": true,
+  "status": "verified"
+}

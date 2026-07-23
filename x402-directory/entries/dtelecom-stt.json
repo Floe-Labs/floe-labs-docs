@@ -1,21 +1,22 @@
 {
   "id": "dtelecom-stt",
-  "name": "dTelecom STT",
+  "name": "dTelecom Voice",
   "provider": "dTelecom",
   "homepage": "https://dtelecom.org",
-  "description": "Real-time speech-to-text in 99+ languages.",
-  "resource": "https://api.dtelecom.org/v1/transcribe",
+  "description": "Full voice stack on a prepaid-credits model — buy credits (min $0.10), then open STT sessions ($0.006/min, 99+ languages), TTS sessions ($0.008/1K chars), WebRTC tokens ($0.001/participant-min), or managed agent sessions (~$0.015/min). Also settles on Solana and Tempo.",
+  "resource": "https://x402.dtelecom.org/v1/credits/purchase",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "speech-to-text",
-    "transcription",
+    "text-to-speech",
+    "webrtc",
     "multilingual"
   ],
   "x402Version": 2,
   "network": "eip155:8453",
   "asset": "USDC",
-  "priceUsd": "0.01",
+  "priceUsd": "0.10",
   "pricingModel": "dynamic",
   "floeCompatible": true,
   "status": "verified"

@@ -6,7 +6,7 @@
   "description": "Low-latency text-to-speech (Sonic) via Cartesia through the Floe marketplace shim. Billed per input character; audio returns base64 in result.audioBase64.",
   "resource": "https://marketplace.floelabs.xyz/v1/tts/cartesia",
   "method": "POST",
-  "category": "llm-inference",
+  "category": "voice",
   "tags": [
     "text-to-speech",
     "voice",
