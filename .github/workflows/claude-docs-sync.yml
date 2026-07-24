@@ -46,6 +46,21 @@ jobs:
       BEFORE: ${{ github.event.client_payload.before || inputs.before }}
       AFTER: ${{ github.event.client_payload.after || inputs.after }}
     steps:
+      # Fail fast on malformed input: BEFORE/AFTER must be commit SHAs before
+      # they are used in git commands. Also derives a canonical compare URL
+      # from the validated values rather than trusting one from the payload.
+      - name: Validate commit range
+        run: |
+          if ! [[ "$BEFORE" =~ ^[0-9a-f]{7,40}$ ]] || [[ "$BEFORE" =~ ^0+$ ]]; then
+            echo "::error::BEFORE is not a usable commit SHA: '$BEFORE'"
+            exit 1
+          fi
+          if ! [[ "$AFTER" =~ ^[0-9a-f]{7,40}$ ]] || [[ "$AFTER" =~ ^0+$ ]]; then
+            echo "::error::AFTER is not a usable commit SHA: '$AFTER'"
+            exit 1
+          fi
+          echo "COMPARE_URL=https://github.com/Floe-Labs/floe-monorepo/compare/${BEFORE}...${AFTER}" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v4
 
       - uses: actions/checkout@v4
@@ -83,8 +98,7 @@ jobs:
                "docs-sync:", push, then open a DRAFT PR:
                gh pr create --draft \
                  --title "[docs-sync] <what changed>" \
-                 --body "<summary of edits + link to the monorepo compare view>"
-               Include the compare link from the dispatch payload if present.
+                 --body "<summary of edits + the compare link in $COMPARE_URL>"
           claude_args: |
             --max-turns 40
             --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git:*),Bash(gh pr create:*)"
