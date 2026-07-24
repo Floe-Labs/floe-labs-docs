@@ -54,6 +54,8 @@ jobs:
           token: ${{ secrets.DOCS_SYNC_TOKEN }}
           path: monorepo
           fetch-depth: 0
+          # Read-only checkout: don't leave the token on disk for later steps.
+          persist-credentials: false
 
       - uses: anthropics/claude-code-action@v1
         env:
