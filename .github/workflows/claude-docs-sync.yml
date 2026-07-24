@@ -1,0 +1,88 @@
+# Documentation sync — receiver.
+#
+# Triggered by floe-monorepo's notify-docs.yml whenever a change to Floe's
+# public surface merges there. This workflow checks out the monorepo
+# read-only, has Claude Code review the diff against these docs, and — only
+# if a page is actually invalidated — opens a draft pull request with the
+# minimal updates. Draft PRs are proposals: every change is reviewed and
+# merged by a person. If nothing is affected, the run ends without output.
+#
+# Can also be run manually (workflow_dispatch) with an explicit commit range,
+# which is useful for testing or for backfilling a missed change.
+#
+# Setup:
+#   - Secrets: ANTHROPIC_API_KEY, and DOCS_SYNC_TOKEN with Contents read
+#     access on Floe-Labs/floe-monorepo (used for the read-only checkout).
+#   - Repository setting: Actions → General → "Allow GitHub Actions to
+#     create and approve pull requests" must be enabled.
+name: Claude docs sync
+
+on:
+  repository_dispatch:
+    types: [monorepo-change]
+  workflow_dispatch:
+    inputs:
+      before:
+        description: 'Monorepo commit SHA before the change'
+        required: true
+        type: string
+      after:
+        description: 'Monorepo commit SHA after the change'
+        required: true
+        type: string
+
+concurrency:
+  group: claude-docs-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      BEFORE: ${{ github.event.client_payload.before || inputs.before }}
+      AFTER: ${{ github.event.client_payload.after || inputs.after }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: Floe-Labs/floe-monorepo
+          token: ${{ secrets.DOCS_SYNC_TOKEN }}
+          path: monorepo
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            A change merged to floe-monorepo main. The monorepo is checked out
+            READ-ONLY at ./monorepo (never edit anything under it; it is a
+            different repository).
+
+            1. Inspect the change:
+               git -C monorepo log --oneline $BEFORE..$AFTER
+               git -C monorepo diff $BEFORE..$AFTER
+            2. Decide which pages in THIS docs repo the change invalidates.
+               Follow CLAUDE.md strictly — especially the out-of-scope list
+               (on-chain lending is not documented here), the changelog
+               append-only rule, and SUMMARY.md navigation. Internal-only
+               changes (refactors, tests, monitoring) usually invalidate
+               nothing.
+            3. If nothing is invalidated: print a one-line reason and STOP.
+               Do not create a branch, commit, or PR.
+            4. Otherwise: create branch docs-sync/<first 7 chars of $AFTER>,
+               make the minimal edits, commit with a message starting
+               "docs-sync:", push, then open a DRAFT PR:
+               gh pr create --draft \
+                 --title "[docs-sync] <what changed>" \
+                 --body "<summary of edits + link to the monorepo compare view>"
+               Include the compare link from the dispatch payload if present.
+          claude_args: |
+            --max-turns 40
+            --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git:*),Bash(gh pr create:*)"
