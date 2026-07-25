@@ -1,0 +1,33 @@
+{
+  "id": "exa-contents",
+  "name": "Exa Contents",
+  "provider": "Exa",
+  "homepage": "https://exa.ai",
+  "description": "Extract clean text, highlights, or summaries from any URL. The cheapest verified endpoint in the directory — the standard first proof-of-life paid call.",
+  "resource": "https://api.exa.ai/contents",
+  "method": "POST",
+  "category": "web-search",
+  "tags": [
+    "scraping",
+    "extraction",
+    "contents"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "verified",
+  "requestExample": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"urls\":[\"https://example.com\"],\"text\":true}"
+  },
+  "responseExample": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\"requestId\":\"…\",\"results\":[{\"id\":\"https://example.com\",\"url\":\"https://example.com\",\"title\":\"Example Domain\",\"text\":\"This domain is for use in illustrative examples…\"}]}"
+  }
+}

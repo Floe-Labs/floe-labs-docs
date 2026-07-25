@@ -35,7 +35,7 @@ examples/               ← Runnable code snippets (TS + Python) linked from doc
 - **Relative links between docs** use Markdown-style `[text](../path/to/file.md)`. GitBook resolves these. Anchor links use `#heading-slug`.
 - **Code examples** should be in both TypeScript and Python where applicable (parity is a product requirement). Runnable examples go in `examples/`.
 - **Contract addresses and market data** are canonical in `developers/networks.md`. All other pages should link there, not duplicate addresses inline.
-- **Action counts**: 54 SDK actions today (30 Floe + 24 x402: delegation, x402 payment, agent-awareness, merchant-allowlist, Floe Inference); MCP tools: 43. Keep consistent across changelog, llms.txt, agentkit.md, agentkit-typescript/python.md, glossary, framework pages, and quickstart pages.
+- **Action counts**: 54 SDK actions today (30 Floe + 24 x402: delegation, x402 payment, agent-awareness, merchant-allowlist, Floe Inference); MCP tools: 65 (since @floelabs/mcp-server 0.3.0, 2026-07-24). Keep consistent across changelog, llms.txt, agentkit.md, agentkit-typescript/python.md, glossary, framework pages, and quickstart pages.
 - **The changelog is an append-only historical record.** Add new entries for new work; do not rewrite, re-scope, or delete past entries — even during a reorganization. Reorganizing the docs does not rewrite their history.
 
 ## Product context for writing

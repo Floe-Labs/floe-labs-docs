@@ -18,5 +18,16 @@
   "priceUsd": "0.005",
   "pricingModel": "dynamic",
   "floeCompatible": true,
-  "status": "verified"
+  "status": "verified",
+  "requestExample": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"text\":\"Payment settled.\",\"voice\":\"a0e99841-438c-4a64-b679-ae501e7d6091\",\"model\":\"sonic-3\"}"
+  },
+  "responseExample": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\"result\":{\"audioBase64\":\"SUQzB…\",\"contentType\":\"audio/mpeg\",\"characters\":16}}"
+  }
 }

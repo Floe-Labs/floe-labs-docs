@@ -4,7 +4,7 @@
   "provider": "Firecrawl",
   "homepage": "https://firecrawl.dev",
   "description": "Search the web and scrape results to LLM-ready markdown.",
-  "resource": "https://api.firecrawl.dev/v1/x402/search",
+  "resource": "https://api.firecrawl.dev/v2/x402/search",
   "method": "POST",
   "category": "web-search",
   "tags": [
@@ -18,5 +18,16 @@
   "priceUsd": "0.01",
   "pricingModel": "fixed-per-call",
   "floeCompatible": true,
-  "status": "verified"
+  "status": "verified",
+  "requestExample": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"query\":\"latest AI agent frameworks\",\"limit\":5}"
+  },
+  "responseExample": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\"success\":true,\"data\":{\"web\":[{\"title\":\"…\",\"url\":\"https://…\",\"description\":\"…\"}]}}"
+  }
 }

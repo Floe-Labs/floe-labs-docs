@@ -67,7 +67,7 @@ const tools = await getLangChainTools(agentkit);
 
 ### MCP Server (Claude Desktop / Cursor)
 
-Expose the Floe MCP tools (43 today) in Claude Desktop / Cursor:
+Wrap this provider's actions (30 with `floeActionProvider()` alone, 54 with `x402ActionProvider()` too) as MCP tools in Claude Desktop / Cursor. For the hosted server and its 65 tools — including agent lifecycle, key minting, and `x402_pay` — use [MCP Server](mcp-server.md) instead; it needs no wallet provider.
 
 ```bash
 npm install @coinbase/agentkit-model-context-protocol @modelcontextprotocol/sdk

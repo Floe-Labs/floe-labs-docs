@@ -51,4 +51,8 @@ The response includes one or more **unsigned transactions** — sign locally and
 
 ## OpenAPI
 
-A machine-readable OpenAPI spec for the Credit REST API is in `/api/openapi.yaml` (rendered in this site's API Reference section).
+The Credit API serves its own machine-readable OpenAPI 3.0.3 spec at [`https://credit-api.floelabs.xyz/.well-known/openapi.yaml`](https://credit-api.floelabs.xyz/.well-known/openapi.yaml) — fetch it to generate a client, or point a code agent at it. It is also linked from the API Reference section of this site.
+
+```bash
+curl https://credit-api.floelabs.xyz/.well-known/openapi.yaml
+```

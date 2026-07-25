@@ -4,7 +4,7 @@
   "provider": "Hyperbrowser",
   "homepage": "https://hyperbrowser.ai",
   "description": "Pay-per-use browser automation for agents.",
-  "resource": "https://api.hyperbrowser.ai/v1/browse",
+  "resource": "https://api.hyperbrowser.ai/x402/web/fetch",
   "method": "POST",
   "category": "browser-compute",
   "tags": [
@@ -18,5 +18,16 @@
   "priceUsd": "0.01",
   "pricingModel": "fixed-per-call",
   "floeCompatible": true,
-  "status": "verified"
+  "status": "verified",
+  "requestExample": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"url\":\"https://news.ycombinator.com\"}"
+  },
+  "responseExample": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\"url\":\"https://news.ycombinator.com\",\"markdown\":\"# Hacker News…\"}"
+  }
 }
