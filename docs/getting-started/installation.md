@@ -23,6 +23,7 @@ const agent = new FloeAgent({ apiKey: process.env.FLOE_API_KEY! });
 pip install floe-agentkit-actions
 ```
 ```python
+import os
 from floe_agentkit_actions import FloeAgent
 agent = FloeAgent(api_key=os.environ["FLOE_API_KEY"])
 ```
@@ -38,7 +39,7 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
   --header "Authorization: Bearer $FLOE_API_KEY"
 ```
 
-Or run it locally: `FLOE_API_KEY=... npx @floelabs/mcp-server`. See the [MCP Server](../developers/mcp-server.md) guide.
+Or run it locally: `FLOE_API_KEY=... npx -y @floelabs/mcp-server --stdio`. See the [MCP Server](../developers/mcp-server.md) guide.
 
 ## REST (any language)
 
