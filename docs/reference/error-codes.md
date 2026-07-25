@@ -188,16 +188,3 @@ These are thrown during server boot. Each has a clear fix.
 | `FATAL: failed to load @floe/protocol-services` | Workspace package import failed with a non-`MODULE_NOT_FOUND` error (e.g. syntax error in the package) | Rebuild workspace: `pnpm --filter @floe/protocol-services build`. If the package is genuinely absent the server will log a warning and disable agent features instead of crashing. |
 
 All startup errors are intentional — the alternative is silently booting with insecure defaults or a fresh empty database, which are worse outcomes than a crash-and-alert on deploy. See **[Environment Variables](environment-variables.md)** for the full list with recommended values.
-
----
-
-## Circuit breaker
-
-When the on-chain `PriceOracle` circuit breaker is tripped (stale, deviation, sequencer down), the facilitator fails closed: every paid request returns a 5xx until the breaker clears.
-
-| Status | `error` | Cause | Agent action |
-|---|---|---|---|
-| 503 | `circuit_breaker_active` | Protocol-wide halt due to oracle stale price / deviation > 15% / L2 sequencer down | Back off, poll `/v1/status`; do not retry blindly |
-| 503 | `circuit_breaker_stale` | Facilitator cannot reach its RPC provider, so it cannot verify the breaker state | Back off, alert operator — this is an infra issue |
-
-The breaker auto-clears when all conditions resolve; there is no manual reset for agents. See [Oracles & Circuit Breaker](../protocol/oracles-conditions.md) for the full list of trigger conditions.

@@ -60,7 +60,7 @@ Go to **Keys** in the sidebar, or see [API Keys](api-keys.md).
 
 ### Webhooks
 
-Register webhook endpoints to receive push notifications for loan events — health warnings, expiry alerts, liquidations, repayments, **credit utilization warnings**, and **delegation expiry alerts**.
+Register webhook endpoints to receive push notifications for account events — **credit utilization warnings** and **delegation expiry alerts**.
 
 Go to **Webhooks** in the sidebar, or see [Webhooks](webhooks.md).
 
@@ -70,7 +70,7 @@ The dashboard monitors your agents and fires alerts when:
 
 | Alert | Trigger | What to do |
 |---|---|---|
-| **Credit utilization warning** | Borrowed principal exceeds 80% of credit limit | Top up collateral or repay before API calls fail with `insufficient_balance` |
+| **Credit utilization warning** | Spend exceeds 80% of the agent's credit limit | Top up the agent's balance before API calls fail with `insufficient_balance` |
 | **Delegation expiry** | Operator delegation expires within 7 days (warning) or 24 hours (urgent) | Close the agent via `POST /v1/developer/agents/:agentId/close` (or the dashboard's **Close** button) and register a fresh one — re-running `floe-agent register` with the same name returns `409 name_conflict` since the original agent still exists. |
 
 Alerts are delivered via webhooks and shown in the dashboard.
@@ -89,6 +89,6 @@ Alerts are delivered via webhooks and shown in the dashboard.
 ## Next Steps
 
 - **[API Keys](api-keys.md)** — Create your first developer key.
-- **[Webhooks](webhooks.md)** — Set up push notifications for loan events and alerts.
-- **[Agent Quickstart](agent-quickstart.md)** — Full happy-path walkthrough from zero to first paid API call.
+- **[Webhooks](webhooks.md)** — Set up push notifications for account events and alerts.
+- **[Agent Quickstart](../agents/quickstart-agents.md)** — Full happy-path walkthrough from zero to first paid API call.
 - **[x402 Credit Facilitator](x402-facilitator.md)** — Delegate collateral and let your agent pay for APIs automatically.

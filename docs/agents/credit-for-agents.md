@@ -36,26 +36,9 @@ An agent calls x402-enabled APIs. The deployer provisions the agent once via `PO
 
 ---
 
-## Advanced (in development): on-chain working capital
-
-> **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral — and any associated rate — is **not generally available** as a product. The section below describes the intended self-custody, on-chain surface. The live way to give an agent money is the Floe-managed balance above. (Today, the facilitator already funds your payments on-chain for you — see [How Floe works under the hood](../getting-started/core-concepts.md) — but you don't borrow, set rates, or manage loans.)
-
-The planned model: an agent deposits USDC and borrows up to 95% back as working capital in the same-token USDC/USDC market — same token in, same token out, so no price-volatility risk. Volatile-collateral markets (WETH/USDC, cbBTC/USDC at 70% LTV) would let agents that already hold ETH or BTC borrow USDC at a fixed rate and term.
-
-Design intent:
-
-- **No liquidation risk from price movements** in the USDC/USDC market — collateral and loan are the same asset.
-- **No token swaps** — if you have USDC, you're ready.
-- **Custody by audited smart contracts**, not by Floe, on the self-custody path.
-- **Fixed rate, fixed term** — set at match time.
-
-Repayment history would feed the [Credit & trust bureau](../components/credit-bureau.md) as a portable on-chain signal.
-
----
-
 ## Next
 
 - **Get started:** [Quickstart](../getting-started/quickstart.md) — first paid API call in 5 minutes
-- **Integrate:** [AgentKit Integration](../developers/agentkit.md) — 54 actions across TypeScript + Python
+- **Integrate:** [AgentKit Integration](../frameworks/agentkit.md) — 54 actions across TypeScript + Python
 - **x402 proxy:** [x402 Credit Facilitator](../developers/x402-facilitator.md) — zero-touch API payments
 - **Dashboard:** [Developer Dashboard](../developers/developer-dashboard.md) — manage agents via web UI

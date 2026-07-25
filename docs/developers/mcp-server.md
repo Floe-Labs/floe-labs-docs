@@ -4,7 +4,7 @@ icon: plug
 
 # MCP Server
 
-Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **65 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
+Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). This reference covers the **40 spend-layer tools** across the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
 
 > **Payments are in MCP now.** `estimate_x402_cost` (or `x402_forecast` for a whole plan) prices the call; `x402_pay` makes it, settles the vendor from the agent's balance, and returns the vendor's response plus the `X-Floe-*` receipt headers. An agent no longer has to leave MCP to spend.
 >
@@ -61,33 +61,33 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 |---|---|---|---|
 | Developer key | `floe_live_…` | Developer-key surface (19 tools — lifecycle 12, observability 4, webhooks 3): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
 | Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe agents keys create <id>`, or the dashboard |
-| Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
-| None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
+| Either | — | 2 tools: `list_models` and `estimate_inference_cost` | — |
+| None | — | `check_x402_url`, `search_floe_docs` | — |
 
 Running both key types side by side is normal: give the lifecycle session a developer key and each runtime session its agent key (see [Multiple Agents](#multiple-agents)).
 
 ### Keyless tier
 
-The server starts and answers without any key. `get_markets`, `check_x402_url`, and `search_floe_docs` return live data; every other tool returns a structured error instead of failing at boot:
+The server starts and answers without any key. `check_x402_url` and `search_floe_docs` return live data; every other tool returns a structured error instead of failing at boot:
 
 ```json
 { "error": "AUTH_REQUIRED", "status": 401,
   "message": "get_credit_remaining was called without an API key. Requires an agent key (floe_...).",
-  "next": "Get a developer key at https://dev-dashboard.floelabs.xyz, then mint agent keys with create_agent_key. Keyless sessions can still use get_markets, check_x402_url, and search_floe_docs." }
+  "next": "Get a developer key at https://dev-dashboard.floelabs.xyz, then mint agent keys with create_agent_key. Keyless sessions can still use check_x402_url and search_floe_docs." }
 ```
 
-Use it to vet a vendor URL's price (`check_x402_url`) or search these docs before anyone signs up.
+Use it to vet a vendor URL's price (`check_x402_url`) or search these docs (`search_floe_docs`) before anyone signs up.
 
 ### Scope params
 
 Narrow what a session can do straight from the URL — useful for read-only reviewers or for keeping the tool list small in context-constrained clients:
 
 ```text
-https://mcp.floelabs.xyz/mcp?read_only=true          # 36 non-mutating tools
+https://mcp.floelabs.xyz/mcp?read_only=true          # 21 non-mutating tools
 https://mcp.floelabs.xyz/mcp?features=spend,pricing  # 19 tools — the decision loop only
 ```
 
-Capability groups: `lending`, `spend`, `pricing`, `lifecycle`, `observability`, `payments`, `webhooks`, `docs`. Both params combine, and an unknown feature name simply matches nothing.
+Capability groups: `spend`, `pricing`, `lifecycle`, `observability`, `payments`, `webhooks`, `docs`. Both params combine, and an unknown feature name simply matches nothing.
 
 ### Option 1: Remote Endpoint (recommended)
 
@@ -189,8 +189,8 @@ await client.connect(new StreamableHTTPClientTransport(
   { requestInit: { headers: { "Authorization": "Bearer floe_..." } } }
 ));
 
-const markets = await client.callTool("get_markets", {});
-console.log(markets);
+const result = await client.callTool("check_x402_url", { url: "https://api.example.com/data" });
+console.log(result);
 ```
 
 ### Multiple Agents
@@ -223,9 +223,9 @@ Each session is scoped to one agent — balances, spend limits, and webhook subs
 
 ---
 
-## Tools Reference (65)
+## Tools Reference (40)
 
-Sixty-five tools in eight capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
+Forty tools in seven capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
 
 | Group | Tools | What it's for |
 |---|---|---|
@@ -236,7 +236,6 @@ Sixty-five tools in eight capability groups. The **Group** name is what you pass
 | [`spend`](#spend-governance-and-awareness-14) | 14 | Caps, thresholds, merchant allowlist, reputation |
 | [`webhooks`](#webhooks-3) | 3 | Push notifications for account events |
 | [`docs`](#docs-1) | 1 | Search these docs from inside MCP |
-| [`lending`](#advanced-lending-protocol-25) | 25 | On-chain protocol layer (advanced / self-custody) |
 
 ### Agent lifecycle (12)
 
@@ -330,50 +329,6 @@ No key required.
 | Tool | Description |
 |------|-------------|
 | `search_floe_docs` | Search the Floe documentation index and return matching pages with titles, URLs, and descriptions, ranked by how many query terms hit |
-
-### Advanced lending protocol (25)
-
-> These are the **on-chain protocol layer** (markets, intents, loans), not the live spend product. Borrowing/lending as a developer-facing product is on the [roadmap](../components/secured-credit.md); these tools exist for teams running their own keys on the self-custody path. All write tools return **unsigned transactions** — the server never holds private keys. See [Transaction Flow](#transaction-flow) below.
-
-**Read:**
-
-| Tool | Description |
-|------|-------------|
-| `get_markets` | List active lending markets with rates and liquidity (**no key required**) |
-| `get_open_lend_intents` | Browse lend offers available for borrowing against |
-| `get_open_borrow_intents` | Browse borrow requests from borrowers seeking lenders |
-| `get_intent_details` | Full details of a specific intent by offer hash |
-| `get_loan` | Loan details by numeric ID |
-| `get_user_loans` | All loans for a wallet (as borrower and lender) |
-| `get_loan_health` | Loan LTV, health status, liquidation risk, early repayment terms |
-| `get_token_price` | Current oracle price for collateral tokens (Chainlink + Pyth) |
-| `get_wallet_balance` | Token balances for a wallet |
-| `get_accrued_interest` | Interest accrued on a loan with full status |
-
-**Write** (return unsigned transactions):
-
-| Tool | Description |
-|------|-------------|
-| `create_lend_intent` | Create a lending offer. Solver matches it with borrowers |
-| `create_borrow_intent` | Create a borrowing request with collateral. Solver matches with lenders |
-| `create_counter_intent` | Accept an existing offer by creating a matching counter-intent |
-| `repay_loan` | Repay a loan with automatic approval and slippage protection |
-| `add_collateral` | Add collateral to improve loan health |
-| `withdraw_collateral` | Withdraw excess collateral (enforces safety buffer) |
-| `liquidate_loan` | Liquidate an unhealthy or overdue loan |
-| `revoke_intent` | Cancel an active lend or borrow intent |
-| `approve_token` | Pre-approve a token for the protocol (usually automatic) |
-
-**Analysis & utility:**
-
-| Tool | Description |
-|------|-------------|
-| `check_compatibility` | Check if two intents (lend + borrow) can match |
-| `calculate_risk` | Risk metrics: LTV, liquidation price, buffer, price-drop tolerance |
-| `estimate_interest` | Estimate total interest for given loan terms |
-| `simulate_transaction` | Dry-run an unsigned transaction via `eth_call`. Returns success/revert and gas estimate |
-| `broadcast_transaction` | Submit a signed transaction to Base Mainnet. Returns hash and receipt |
-| `get_transaction_status` | Confirmation status of a previously submitted transaction |
 
 ---
 
@@ -506,161 +461,6 @@ On `401`/`403` the `next` field names the key type the tool actually wanted. Cro
 
 ---
 
-## Transaction Flow
-
-Write tools return unsigned transactions — your agent signs them locally and submits.
-
-```text
-1. Call write tool (e.g., create_counter_intent)
-   → { transactions: [...], summary, warnings, expiresAt }
-
-2. (Optional) simulate_transaction → dry-run each tx
-
-3. Sign each transaction with your wallet
-
-4. broadcast_transaction → submit signed hex, get receipt
-   — OR broadcast via your own RPC
-```
-
-### Response Format
-
-Every write tool returns this structure:
-
-```json
-{
-  "transactions": [
-    {
-      "step": 1,
-      "description": "Approve WETH collateral for Floe protocol",
-      "transaction": {
-        "to": "0x4200000000000000000000000000000000000006",
-        "data": "0x095ea7b3...",
-        "value": "0x0",
-        "chainId": 8453
-      },
-      "required": true,
-      "isApproval": true
-    },
-    {
-      "step": 2,
-      "description": "Create borrow intent: 1000 USDC at 8.00% max rate",
-      "transaction": {
-        "to": "0x17946cD3e180f82e632805e5549EC913330Bb175",
-        "data": "0xabcdef...",
-        "value": "0x0",
-        "chainId": 8453
-      },
-      "required": true,
-      "isApproval": false
-    }
-  ],
-  "summary": "Borrow 1000 USDC against WETH collateral at 8% rate",
-  "warnings": ["Collateral locked when solver matches"],
-  "expiresAt": 1712000600
-}
-```
-
-> **Tips:**
-> - Skip `isApproval: true` steps if you already have sufficient token allowance
-> - Check `expiresAt` — re-call the tool if transactions are stale
-> - Always `simulate_transaction` before broadcasting to catch reverts early
-> - Submit transactions in order — each must confirm before the next
-
-### Signing with TypeScript (viem)
-
-```typescript
-import { createWalletClient, http } from "viem";
-import { privateKeyToAccount } from "viem/accounts";
-import { base } from "viem/chains";
-
-const account = privateKeyToAccount("0x...");
-const wallet = createWalletClient({ account, chain: base, transport: http() });
-
-// response = result from a write tool
-for (const { transaction: tx } of response.transactions) {
-  const hash = await wallet.sendTransaction({
-    to: tx.to as `0x${string}`,
-    data: tx.data as `0x${string}`,
-    value: BigInt(tx.value),
-  });
-  // Wait for confirmation before next step
-}
-```
-
-### Signing with Python (web3.py)
-
-```python
-from web3 import Web3
-
-w3 = Web3(Web3.HTTPProvider("https://mainnet.base.org"))
-account = w3.eth.account.from_key("0x...")
-
-# response = result from a write tool
-for tx_data in response["transactions"]:
-    tx = {
-        "to": tx_data["transaction"]["to"],
-        "data": tx_data["transaction"]["data"],
-        "value": int(tx_data["transaction"]["value"], 16),
-        "chainId": tx_data["transaction"]["chainId"],
-        "gas": w3.eth.estimate_gas({
-            "to": tx_data["transaction"]["to"],
-            "data": tx_data["transaction"]["data"],
-            "from": account.address,
-        }),
-        "nonce": w3.eth.get_transaction_count(account.address),
-        "maxFeePerGas": w3.eth.gas_price * 2,
-        "maxPriorityFeePerGas": w3.eth.gas_price,
-    }
-    signed = account.sign_transaction(tx)
-    tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
-    receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-    assert receipt.status == 1, f"Transaction failed: {tx_hash.hex()}"
-```
-
----
-
-## End-to-End Example
-
-Here's how an AI agent borrows 1,000 USDC on Floe:
-
-```text
-Agent: "I want to borrow 1000 USDC on Floe"
-
-Step 1: Browse available offers
-→ get_open_lend_intents({ limit: 10 })
-→ Returns list of lend offers with rates, amounts, durations
-
-Step 2: Accept the best offer
-→ create_counter_intent({
-    offer_hash: "0xabc...",     // from step 1
-    wallet_address: "0x123..."  // agent's wallet
-  })
-→ Returns unsigned approval + borrow intent transactions
-
-Step 3: Simulate before signing
-→ simulate_transaction({
-    from: "0x123...",
-    to: "0x17946...",
-    data: "0x..."
-  })
-→ { success: true, gasEstimate: "185000" }
-
-Step 4: Sign and broadcast
-→ Agent signs transactions locally
-→ broadcast_transaction({ signed_transaction_hex: "0x..." })
-→ { transactionHash: "0xdef...", status: "confirmed" }
-
-Step 5: Solver matches automatically
-→ The Floe solver detects the compatible intent pair
-→ Loan is created on-chain
-
-Step 6: Monitor the loan
-→ get_loan_health({ loan_id: "42" })
-→ { currentLtvBps: 6500, isHealthy: true, bufferBps: 2000 }
-```
-
----
-
 ## Framework Integration
 
 ### LangChain / LangGraph
@@ -677,7 +477,7 @@ async with MultiServerMCPClient({
     tools = client.get_tools()
     agent = create_react_agent(model, tools)
     result = await agent.ainvoke({
-        "messages": [{"role": "user", "content": "Borrow 1000 USDC on Floe"}]
+        "messages": [{"role": "user", "content": "Pay for this x402 API call with Floe"}]
     })
 ```
 
@@ -693,7 +493,7 @@ floe = MCPServerAdapter(
 )
 
 agent = Agent(
-    role="DeFi Trader",
+    role="Spend Manager",
     tools=floe.tools,
     llm="gpt-4o",
 )
@@ -716,8 +516,8 @@ const { tools } = await client.listTools();
 console.log(`${tools.length} tools available`);
 
 // Call a tool
-const result = await client.callTool("get_markets", {});
-const markets = JSON.parse(result.content[0].text);
+const result = await client.callTool("check_x402_url", { url: "https://api.example.com/data" });
+const info = JSON.parse(result.content[0].text);
 ```
 
 ---
@@ -745,17 +545,7 @@ Your Agent → MCP Server → credit-api.floelabs.xyz → Envio Indexer / Base R
           (open source)        (holds secrets)
 ```
 
-The MCP server is a thin HTTP client. All protocol logic, indexer queries, and RPC calls happen in the private Floe API backend. The npm package contains only tool definitions and `fetch()` calls — no private keys, no tokens, no database.
-
----
-
-## Contract Addresses (Base Mainnet)
-
-| Contract | Address |
-|----------|---------|
-| LendingIntentMatcher | `0x17946cD3e180f82e632805e5549EC913330Bb175` |
-| PriceOracle | `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` |
-| LendingViews | `0x9101027166bE205105a9E0c68d6F14f21f6c5003` |
+The MCP server is a thin HTTP client. All spend-layer logic happens in the private Floe API backend. The npm package contains only tool definitions and `fetch()` calls — no private keys, no tokens, no database.
 
 ---
 

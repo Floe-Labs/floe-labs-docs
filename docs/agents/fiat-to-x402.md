@@ -82,12 +82,6 @@ Yes — the USDC is your agent's. Manage it from the dashboard.
 
 ---
 
-## Advanced (in development)
-
-Borrowing USDC working capital against on-chain collateral (instead of pre-funding the balance) is **in development** and not generally available. See [Working capital (on-chain)](../components/secured-credit.md).
-
----
-
 ## Next
 
 - [Quickstart](../getting-started/quickstart.md) — first paid API call in 5 minutes
