@@ -4,6 +4,8 @@
 
 ## Quickstart
 
+* [Set up with your AI tools](docs/getting-started/setup-with-ai-tools.md)
+* [Agent Quickstart](docs/agents/quickstart-agents.md)
 * [Quickstart (5 minutes)](docs/getting-started/quickstart.md)
 * [Funding your agent](docs/getting-started/funding.md)
 
@@ -55,6 +57,7 @@
 ## Developers
 
 * [Developer Dashboard](docs/developers/developer-dashboard.md)
+* [Floe CLI](docs/developers/cli.md)
 * [API Keys](docs/developers/api-keys.md)
 * [Agent Runtime Contract](docs/developers/agent-runtime-contract.md)
 * [Payment Facilitator](docs/developers/x402-facilitator.md)
@@ -65,6 +68,7 @@
 ## API Reference
 
 * [REST API](docs/developers/credit-api.md)
+* [OpenAPI Specification](https://credit-api.floelabs.xyz/.well-known/openapi.yaml)
 
 ## Reference
 

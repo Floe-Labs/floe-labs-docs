@@ -51,7 +51,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ## Hyperbrowser
 
 **Provider:** [Hyperbrowser](https://hyperbrowser.ai)
-**Endpoint:** `POST https://api.hyperbrowser.ai/v1/browse`
+**Endpoint:** `POST https://api.hyperbrowser.ai/x402/web/fetch`
 **Price:** $0.01 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
@@ -62,6 +62,12 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://api.hyperbrowser.ai/v1/browse", "method": "POST"}'
+  -d '{"url": "https://api.hyperbrowser.ai/x402/web/fetch", "method": "POST", "headers": {"Content-Type":"application/json"}, "body": "{\"url\":\"https://news.ycombinator.com\"}"}'
+```
+
+Returns `200` `application/json`:
+
+```json
+{"url":"https://news.ycombinator.com","markdown":"# Hacker News…"}
 ```
 

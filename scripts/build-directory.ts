@@ -12,6 +12,10 @@ interface Entry {
   description: string; resource: string; method: string; category: string;
   tags?: string[]; x402Version: number; network: string; asset: string;
   priceUsd: string; pricingModel: string; floeCompatible: boolean; status: string;
+  // Optional call examples (schema.json). `body` is the RAW string handed to
+  // /v1/proxy/fetch, so it can be dropped into the generated curl verbatim.
+  requestExample?: { headers?: Record<string, string>; body?: string; query?: string };
+  responseExample?: { status: number; contentType?: string; body: string };
 }
 
 const CATEGORY_META: Record<string, { title: string; icon: string; description: string }> = {
@@ -111,13 +115,30 @@ for (const [category, catEntries] of Object.entries(grouped)) {
     md += `**Floe compatible:** ${compat}\n\n`;
     md += `> ${e.description}\n\n`;
 
+    // Use the entry's requestExample when it has one, so the generated snippet
+    // is a call that actually works rather than a URL-only skeleton. Fields are
+    // joined by hand to keep the `"key": "value"` spacing the pages already use.
+    const resource = e.requestExample?.query
+      ? `${e.resource}${e.resource.includes('?') ? '&' : '?'}${e.requestExample.query}`
+      : e.resource;
+    const proxyFields = [`"url": ${JSON.stringify(resource)}`, `"method": ${JSON.stringify(e.method)}`];
+    if (e.requestExample?.headers) proxyFields.push(`"headers": ${JSON.stringify(e.requestExample.headers)}`);
+    if (e.requestExample?.body) proxyFields.push(`"body": ${JSON.stringify(e.requestExample.body)}`);
+
     md += '```bash\n';
     md += `# Call through Floe\n`;
     md += `curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \\\n`;
     md += `  -H "Authorization: Bearer $FLOE_API_KEY" \\\n`;
     md += `  -H "Content-Type: application/json" \\\n`;
-    md += `  -d '{"url": "${e.resource}", "method": "${e.method}"}'\n`;
+    md += `  -d '{${proxyFields.join(', ')}}'\n`;
     md += '```\n\n';
+
+    if (e.responseExample) {
+      md += `Returns \`${e.responseExample.status}\`${e.responseExample.contentType ? ` \`${e.responseExample.contentType}\`` : ''}:\n\n`;
+      md += '```json\n';
+      md += `${e.responseExample.body}\n`;
+      md += '```\n\n';
+    }
   }
 
   const filename = `${category}.md`;
@@ -125,52 +146,24 @@ for (const [category, catEntries] of Object.entries(grouped)) {
   console.log(`  Generated ${filename} (${catEntries.length} entries)`);
 }
 
-// Generate index README
-let index = `---\nicon: compass\n---\n\n# x402 API Directory\n\n`;
-index += `**${entries.length} x402 APIs** you can call with Floe credit. Every endpoint listed here accepts USDC on Base and works with \`x402_fetch\` or \`/v1/proxy/fetch\`.\n\n`;
-index += `| Category | APIs | Highlights |\n`;
-index += `|----------|------|------------|\n`;
-
 const categoryOrder = [
   'web-search', 'social-news',
   'llm-inference', 'voice', 'media-generation', 'browser-compute', 'storage',
   'identity-reputation', 'payments-commerce', 'infra-gateway', 'agent-tooling',
 ];
 
+// docs/x402-directory/README.md is HAND-CURATED (it is the in-nav "Vendor
+// Marketplace" landing page, whose table points at the 7 hand-written category
+// pages — not at the generated ones). This script used to overwrite it with a
+// generic index, which silently took the published marketplace index down.
+// Same rule as voice.md: report, never write. The per-category counts are
+// printed so a maintainer can reconcile the page by hand when they drift.
+console.log('  Skipped README.md (hand-curated marketplace index — never generated)');
 for (const cat of categoryOrder) {
   const catEntries = grouped[cat];
   if (!catEntries) continue;
-  const meta = CATEGORY_META[cat];
-  const highlights = catEntries.slice(0, 3).map(e => e.provider).join(', ');
-  index += `| [${meta.title}](${cat}.md) | ${catEntries.length} | ${highlights}... |\n`;
+  console.log(`    ${CATEGORY_META[cat].title.padEnd(28)} ${String(catEntries.length).padStart(3)} entries`);
 }
-
-index += `\n## Call Any Listed API\n\n`;
-index += '```bash\n';
-index += `curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \\\n`;
-index += `  -H "Authorization: Bearer $FLOE_API_KEY" \\\n`;
-index += `  -H "Content-Type: application/json" \\\n`;
-index += `  -d '{"url": "https://api.firecrawl.dev/v1/x402/search", "method": "POST"}'\n`;
-index += '```\n\n';
-index += `Or with AgentKit:\n\n`;
-index += '```typescript\n';
-index += `await agentkit.run("x402_fetch", { url: "https://api.firecrawl.dev/v1/x402/search", method: "POST" });\n`;
-index += '```\n\n';
-index += `## Browse the Full Ecosystem\n\n`;
-  index += `This directory is a curated subset verified to work with Floe credit. The broader x402 ecosystem has **46,000+ indexed endpoints** across multiple registries:\n\n`;
-  index += `| Directory | What it is | Link |\n`;
-  index += `|-----------|-----------|------|\n`;
-  index += `| **CDP Bazaar** | Coinbase's canonical index — 46,000+ endpoints | [Browse →](https://docs.cdp.coinbase.com/x402/bazaar) |\n`;
-  index += `| **x402scan** | Block-explorer-style analytics: servers, sellers, volume | [Browse →](https://x402scan.com) |\n`;
-  index += `| **x402list.fun** | Searchable directory with category and pricing filters | [Browse →](https://x402list.fun) |\n`;
-  index += `| **x402station** | Performance and reliability monitoring | [Browse →](https://x402station.com) |\n`;
-  index += `| **EntRoute** | Machine-first ranked discovery with semantic search | [Browse →](https://entroute.com) |\n`;
-  index += `| **x402.org Ecosystem** | Foundation-maintained provider and facilitator list | [Browse →](https://x402.org/ecosystem) |\n\n`;
-  index += `**Any USDC-on-Base x402 endpoint works with Floe credit** — even if it's not listed here. Just pass the URL to \`x402_fetch\` or \`/v1/proxy/fetch\`.\n\n`;
-  index += `## Submit an API\n\n[How to submit →](submit.md)\n`;
-
-writeFileSync(join(OUTPUT_DIR, 'README.md'), index);
-console.log(`  Generated README.md (index)`);
 
 // Generate submit page
 const submit = `---

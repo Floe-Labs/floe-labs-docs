@@ -51,7 +51,7 @@ The directory above is Floe-verified. The broader x402 ecosystem has **46,000+ i
 | **EntRoute** | Machine-first ranked discovery with semantic search | [Browse →](https://entroute.com) |
 | **x402.org Ecosystem** | Foundation-maintained provider and facilitator list | [Browse →](https://x402.org/ecosystem) |
 
-**Any USDC-on-Base x402 endpoint works with Floe credit** — even if it's not listed here. Just pass the URL to `x402_fetch` or `/v1/proxy/fetch`.
+**Most USDC-on-Base x402 endpoints work with Floe credit even when unlisted** — pass the URL to `x402_fetch` or `/v1/proxy/fetch`. Floe settles exact-scheme USDC offers on Base mainnet; the proxy still applies URL parsing, SSRF, and allowlist checks, so a non-conforming vendor fails closed rather than paying.
 
 ## Submit an API
 

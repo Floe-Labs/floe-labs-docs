@@ -6,9 +6,20 @@ icon: swap
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **43 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **65 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.16.0 — Agent-first setup: MCP lifecycle tools, the `floe` CLI, agents.md (July 2026)
+
+A human now does exactly two things — mint a developer key and fund the balance. Everything else is drivable by an AI agent.
+
+* **MCP server 0.3.0 — 65 tools (was 43).** New: agent lifecycle (`create_agent`, `pause_agent`, `close_agent`), key management (`create_agent_key`, `rotate_agent_key`, `revoke_agent_key`, `set_agent_key_budget`), funding + observability (`get_funding_instructions`, `get_balances`, `get_activity`, `get_usage_summary`), credit lines, webhooks, `search_floe_docs`, and — the gap that mattered — **`x402_pay`**, so an agent can execute a payment without leaving MCP. Removed the dead `get_market_details` and the duplicate `get_liquidation_quote`. Adds a **keyless tier** (`get_markets`, `check_x402_url`, `search_floe_docs` need no key) and **scope params** (`?read_only=true`, `?features=spend,pricing`).
+* **The `floe` CLI.** `npm i -g floe-agent` now installs both `floe` and `floe-agent` (v0.6.0): `status`, `agents`, `agents keys`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `estimate`, `forecast`, `pay`, `models`, `usage`, `activity`, `webhooks`, `skills install`, `mcp install`. `--json` on every command; exit codes `0` ok / `1` error / `2` usage / `4` auth required / `5` payment required.
+* **`agents.md` + copy-prompt.** *"Read https://dev-dashboard.floelabs.xyz/agents.md and set up Floe for this project."* — one prompt bootstraps Claude Code, Cursor, or Codex end-to-end, finishing with a settled $0.001 paid call.
+* **Docs for agents.** New [Set up with your AI tools](getting-started/setup-with-ai-tools.md), [Agent Quickstart](agents/quickstart-agents.md), and [Floe CLI](developers/cli.md) pages; the OpenAPI spec is in the nav; `llms.txt` rewritten credit/x402-first and joined by a full-corpus `llms-full.txt`; the x402 directory manifest gained per-vendor `requestExample` / `responseExample`.
+
+→ [Set up with your AI tools](getting-started/setup-with-ai-tools.md) · [Floe CLI](developers/cli.md) · [MCP Server](developers/mcp-server.md)
 
 ### v1.15.0 — Vendor marketplace restructure: the voice stack (July 2026)
 
@@ -135,7 +146,7 @@ New developer's first agent wallet receives $2 USDC from treasury. Strict Privy 
 
 ### v1.7.1 — x402 v2 Wire Protocol Support (May 2026)
 
-The facilitator now negotiates between **x402 v1 and x402 v2** per request based on what the merchant returns. Previously, only the v1 bare-requirement envelope was understood, which caused parse failures against modern `@x402/hono` and other v2-compliant servers — and which made the v2 entries already published in the [Floe x402 directory](../../x402-directory/directory.json) unreachable in practice.
+The facilitator now negotiates between **x402 v1 and x402 v2** per request based on what the merchant returns. Previously, only the v1 bare-requirement envelope was understood, which caused parse failures against modern `@x402/hono` and other v2-compliant servers — and which made the v2 entries already published in the [Floe x402 directory](../x402-directory/directory.json) unreachable in practice.
 
 **What changed:**
 
@@ -258,7 +269,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 
 * `setOperator` / `revokeOperator` / `getOperatorPermission` — scoped, revocable delegation with `borrowLimit`, `maxRateBps`, `expiry`, and `onBehalfOfRestriction`.
 * All constraints re-validated at every borrow match — the facilitator provably cannot exceed the agent's bounds.
-* Proxy address unchanged: `0x17946cD3e180f82e632805e5549EC913330Bb175`. See [Contract Addresses](../../developers/networks.md).
+* Proxy address unchanged: `0x17946cD3e180f82e632805e5549EC913330Bb175`. See [Contract Addresses](../developers/networks.md).
 
 **Security:**
 
@@ -365,6 +376,6 @@ Lets agents reason about their own credit before committing capital. Answers the
 
 ## Links
 
-* [Contract Addresses](../../developers/networks.md)
+* [Contract Addresses](../developers/networks.md)
 * [Agent Quickstart](developers/agent-quickstart.md)
 * [GitHub](https://github.com/Floe-Labs)

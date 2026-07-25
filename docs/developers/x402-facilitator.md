@@ -252,7 +252,7 @@ from floe_agentkit_actions import x402_action_provider, X402Config
 provider = x402_action_provider(X402Config(
     facilitator_url="https://credit-api.floelabs.xyz",
 ))
-# Register with AgentKit — 6 x402 actions available
+# Register with AgentKit — 24 x402 actions available
 ```
 
 Or use the REST API directly. `API_KEY` here is the agent's `floe_*` runtime key (not the `floe_live_*` developer key):
@@ -377,7 +377,7 @@ Proxy a request. Pays the vendor automatically when payment is required.
 
 | Header | Always set | Purpose |
 |--------|------------|---------|
-| `X-Floe-Cost-USDC` | on 2xx paid responses | Raw USDC units (6-decimal integer string) actually charged for this call. Set by the facilitator after a successful x402 settlement; absent on free passthrough responses. |
+| `X-Floe-Cost-USDC` | every 2xx | Raw USDC units (6-decimal integer string) actually charged for this call. Set by the facilitator after a successful x402 settlement; `0` on free passthrough responses. |
 | `X-Floe-Payment-Amount` | on 2xx paid responses | Human-readable decimal USDC amount (e.g. `0.005000`), derived from `X-Floe-Cost-USDC` (raw units ÷ 10⁶). Intended for display only. |
 | `X-Floe-Idempotent-Replay: true` | on replays only | Indicates the response body is a cached replay of a prior request with the same `Idempotency-Key`. Absent on the first attempt and on requests without a key. |
 

@@ -30,6 +30,31 @@
     "status": { "enum": ["verified", "unverified", "preview", "deprecated"] },
     "modelCount": { "type": "integer", "minimum": 0 },
     "modelCatalogUrl": { "type": "string", "format": "uri" },
+    "requestExample": {
+      "type": "object",
+      "description": "A minimal working request for this endpoint, so the manifest alone is enough to make the call — no prose page required. Field names and value types mirror the body of POST https://credit-api.floelabs.xyz/v1/proxy/fetch, so `body` is the RAW string the vendor receives (JSON-encode it yourself), not a parsed object.",
+      "additionalProperties": false,
+      "properties": {
+        "headers": {
+          "type": "object",
+          "description": "Headers to forward to the vendor. Payment and framing headers are added by Floe — never include an Authorization header for the vendor here.",
+          "additionalProperties": { "type": "string" }
+        },
+        "body": { "type": "string", "description": "Raw request body, exactly as passed to /v1/proxy/fetch." },
+        "query": { "type": "string", "description": "Query string for GET endpoints, without the leading '?'." }
+      }
+    },
+    "responseExample": {
+      "type": "object",
+      "description": "A trimmed example of a successful response, so an agent knows what shape to parse before it spends anything.",
+      "additionalProperties": false,
+      "required": ["status", "body"],
+      "properties": {
+        "status": { "type": "integer", "minimum": 100, "maximum": 599 },
+        "contentType": { "type": "string" },
+        "body": { "type": "string", "description": "Raw response body, truncated to the fields that matter. Long values may be elided with '…'." }
+      }
+    },
     "models": {
       "type": "array",
       "description": "Featured/representative models for vendors that expose a model menu (e.g. LLM inference). Not exhaustive — the full live catalog is at modelCatalogUrl. Lets agents pick a model by capability and price.",

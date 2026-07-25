@@ -1,7 +1,7 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "entryCount": 74,
+  "entryCount": 75,
   "categories": [
     "web-search",
     "social-news",
@@ -412,7 +412,18 @@
       "priceUsd": "0.005",
       "pricingModel": "dynamic",
       "floeCompatible": true,
-      "status": "verified"
+      "status": "verified",
+      "requestExample": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"text\":\"Payment settled.\",\"voice\":\"a0e99841-438c-4a64-b679-ae501e7d6091\",\"model\":\"sonic-3\"}"
+      },
+      "responseExample": {
+        "status": 200,
+        "contentType": "application/json",
+        "body": "{\"result\":{\"audioBase64\":\"SUQzB…\",\"contentType\":\"audio/mpeg\",\"characters\":16}}"
+      }
     },
     {
       "id": "cloudflare-x402",
@@ -634,7 +645,51 @@
       "priceUsd": "0.005",
       "pricingModel": "dynamic",
       "floeCompatible": true,
-      "status": "verified"
+      "status": "verified",
+      "requestExample": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"text\":\"Payment settled.\",\"voice\":\"JBFqnCBsd6RMkjVDRZzb\",\"model\":\"eleven_flash_v2_5\"}"
+      },
+      "responseExample": {
+        "status": 200,
+        "contentType": "application/json",
+        "body": "{\"result\":{\"audioBase64\":\"SUQzB…\",\"contentType\":\"audio/mpeg\",\"characters\":16}}"
+      }
+    },
+    {
+      "id": "exa-contents",
+      "name": "Exa Contents",
+      "provider": "Exa",
+      "homepage": "https://exa.ai",
+      "description": "Extract clean text, highlights, or summaries from any URL. The cheapest verified endpoint in the directory — the standard first proof-of-life paid call.",
+      "resource": "https://api.exa.ai/contents",
+      "method": "POST",
+      "category": "web-search",
+      "tags": [
+        "scraping",
+        "extraction",
+        "contents"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified",
+      "requestExample": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"urls\":[\"https://example.com\"],\"text\":true}"
+      },
+      "responseExample": {
+        "status": 200,
+        "contentType": "application/json",
+        "body": "{\"requestId\":\"…\",\"results\":[{\"id\":\"https://example.com\",\"url\":\"https://example.com\",\"title\":\"Example Domain\",\"text\":\"This domain is for use in illustrative examples…\"}]}"
+      }
     },
     {
       "id": "exa-search",
@@ -653,10 +708,21 @@
       "x402Version": 2,
       "network": "eip155:8453",
       "asset": "USDC",
-      "priceUsd": "0.005",
+      "priceUsd": "0.007",
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
-      "status": "verified"
+      "status": "verified",
+      "requestExample": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"query\":\"latest developments in AI agent frameworks\",\"type\":\"auto\",\"numResults\":5}"
+      },
+      "responseExample": {
+        "status": 200,
+        "contentType": "application/json",
+        "body": "{\"requestId\":\"…\",\"results\":[{\"title\":\"…\",\"url\":\"https://…\",\"publishedDate\":\"2026-07-01\",\"author\":\"…\",\"score\":0.19}]}"
+      }
     },
     {
       "id": "firecrawl-search",
@@ -664,7 +730,7 @@
       "provider": "Firecrawl",
       "homepage": "https://firecrawl.dev",
       "description": "Search the web and scrape results to LLM-ready markdown.",
-      "resource": "https://api.firecrawl.dev/v1/x402/search",
+      "resource": "https://api.firecrawl.dev/v2/x402/search",
       "method": "POST",
       "category": "web-search",
       "tags": [
@@ -678,7 +744,18 @@
       "priceUsd": "0.01",
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
-      "status": "verified"
+      "status": "verified",
+      "requestExample": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"query\":\"latest AI agent frameworks\",\"limit\":5}"
+      },
+      "responseExample": {
+        "status": 200,
+        "contentType": "application/json",
+        "body": "{\"success\":true,\"data\":{\"web\":[{\"title\":\"…\",\"url\":\"https://…\",\"description\":\"…\"}]}}"
+      }
     },
     {
       "id": "fluora",
@@ -862,7 +939,7 @@
       "provider": "Hyperbrowser",
       "homepage": "https://hyperbrowser.ai",
       "description": "Pay-per-use browser automation for agents.",
-      "resource": "https://api.hyperbrowser.ai/v1/browse",
+      "resource": "https://api.hyperbrowser.ai/x402/web/fetch",
       "method": "POST",
       "category": "browser-compute",
       "tags": [
@@ -876,7 +953,18 @@
       "priceUsd": "0.01",
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
-      "status": "verified"
+      "status": "verified",
+      "requestExample": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{\"url\":\"https://news.ycombinator.com\"}"
+      },
+      "responseExample": {
+        "status": 200,
+        "contentType": "application/json",
+        "body": "{\"url\":\"https://news.ycombinator.com\",\"markdown\":\"# Hacker News…\"}"
+      }
     },
     {
       "id": "imference",

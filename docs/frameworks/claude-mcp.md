@@ -8,34 +8,50 @@ Zero-install: point your MCP client at the hosted Floe endpoint.
 
 ## Configure
 
-**Claude Desktop / Claude Code:** add to `claude_desktop_config.json` (or via the `/mcp` UI):
+One line, any client:
+
+```bash
+npx -y add-mcp https://mcp.floelabs.xyz/mcp
+```
+
+**Claude Code:**
+
+```bash
+claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
+  --header "Authorization: Bearer YOUR_FLOE_KEY"
+```
+
+**Claude Desktop / Cursor:** add to `claude_desktop_config.json` or `.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "floe": {
+      "type": "http",
       "url": "https://mcp.floelabs.xyz/mcp",
       "headers": {
-        "Authorization": "Bearer floe_live_YOUR_API_KEY"
+        "Authorization": "Bearer YOUR_FLOE_KEY"
       }
     }
   }
 }
 ```
 
-**Cursor:** add to `.cursor/mcp.json` with the same shape.
+> **Which key?** Both formats work, and they unlock different tools. A **developer key** (`floe_live_…`) drives the lifecycle tools — create agents, mint and rotate keys, set budgets, read balances and usage, register webhooks. An **agent key** (`floe_…`) drives the runtime tools — `x402_pay`, cost estimates against real credit, spend limits, allowlist. Run one server entry per key if you want both. With **no key at all**, `get_markets`, `check_x402_url`, and `search_floe_docs` still work. See [API Keys](../developers/api-keys.md).
 
 ## What you get
 
-All 43 Floe MCP tools — wallet, secured working capital, x402 preflight, credit thresholds, transaction utilities. See the [MCP Server reference](../developers/mcp-server.md).
+All 65 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, and docs search. See the [MCP Server reference](../developers/mcp-server.md) for the full tool catalog.
+
+Narrow the set with scope params — `?read_only=true` or `?features=spend,pricing,payments` on the endpoint URL.
 
 ## Local install (optional)
 
 ```bash
-npx @floelabs/mcp-server
+FLOE_API_KEY=floe_YOUR_AGENT_KEY npx -y @floelabs/mcp-server --stdio
 ```
 
-Use this if you want to point the client at a locally running server (handy for development / debugging).
+Use this if you want the client to spawn the server locally (handy for development / debugging). **`--stdio` matters:** without it the server starts an HTTP listener instead of speaking MCP on stdout.
 
 ## Example
 

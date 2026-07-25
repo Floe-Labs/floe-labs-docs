@@ -15,8 +15,19 @@
   "x402Version": 2,
   "network": "eip155:8453",
   "asset": "USDC",
-  "priceUsd": "0.005",
+  "priceUsd": "0.007",
   "pricingModel": "fixed-per-call",
   "floeCompatible": true,
-  "status": "verified"
+  "status": "verified",
+  "requestExample": {
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"query\":\"latest developments in AI agent frameworks\",\"type\":\"auto\",\"numResults\":5}"
+  },
+  "responseExample": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\"requestId\":\"…\",\"results\":[{\"title\":\"…\",\"url\":\"https://…\",\"publishedDate\":\"2026-07-01\",\"author\":\"…\",\"score\":0.19}]}"
+  }
 }

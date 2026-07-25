@@ -10,7 +10,7 @@ The fastest way to give your agent spending money is to pay with a card. No exch
 
 ## Starting with the $3 Welcome Credit
 
-New agents get a **$3 Welcome Credit** to try paid APIs — no card needed. It lands in your agent's balance and is spent per call, just like money you add yourself.
+Your first agent gets a **$3 Welcome Credit** to try paid APIs — no card needed. It lands in that agent's balance and is spent per call, just like money you add yourself. The grant is once per account, not per agent.
 
 ---
 

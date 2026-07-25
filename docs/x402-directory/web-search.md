@@ -10,7 +10,8 @@ Web search, scraping, and data extraction. All payable with Floe credit on Base.
 |-----|----------|-------|--------|--------|
 | Apify | Apify | $0.01 | POST | Verified |
 | Bloomfilter | Bloomfilter | $0.01 | POST | Verified |
-| Exa Search | Exa | $0.005 | POST | Verified |
+| Exa Contents | Exa | $0.001 | POST | Verified |
+| Exa Search | Exa | $0.007 | POST | Verified |
 | Firecrawl Search | Firecrawl | $0.01 | POST | Verified |
 | Minifetch | Minifetch | $0.001 | POST | Verified |
 | Robtex | Robtex | $0.001 | GET | Verified |
@@ -53,11 +54,34 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "https://api.bloomfilter.io/v1/domains", "method": "POST"}'
 ```
 
+## Exa Contents
+
+**Provider:** [Exa](https://exa.ai)
+**Endpoint:** `POST https://api.exa.ai/contents`
+**Price:** $0.001 USDC per call · Base mainnet
+**Floe compatible:** Yes
+
+> Extract clean text, highlights, or summaries from any URL. The cheapest verified endpoint in the directory — the standard first proof-of-life paid call.
+
+```bash
+# Call through Floe
+curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://api.exa.ai/contents", "method": "POST", "headers": {"Content-Type":"application/json"}, "body": "{\"urls\":[\"https://example.com\"],\"text\":true}"}'
+```
+
+Returns `200` `application/json`:
+
+```json
+{"requestId":"…","results":[{"id":"https://example.com","url":"https://example.com","title":"Example Domain","text":"This domain is for use in illustrative examples…"}]}
+```
+
 ## Exa Search
 
 **Provider:** [Exa](https://exa.ai)
 **Endpoint:** `POST https://api.exa.ai/search`
-**Price:** $0.005 USDC per call · Base mainnet
+**Price:** $0.007 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
 > AI-native web search API with semantic understanding.
@@ -67,13 +91,19 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://api.exa.ai/search", "method": "POST"}'
+  -d '{"url": "https://api.exa.ai/search", "method": "POST", "headers": {"Content-Type":"application/json"}, "body": "{\"query\":\"latest developments in AI agent frameworks\",\"type\":\"auto\",\"numResults\":5}"}'
+```
+
+Returns `200` `application/json`:
+
+```json
+{"requestId":"…","results":[{"title":"…","url":"https://…","publishedDate":"2026-07-01","author":"…","score":0.19}]}
 ```
 
 ## Firecrawl Search
 
 **Provider:** [Firecrawl](https://firecrawl.dev)
-**Endpoint:** `POST https://api.firecrawl.dev/v1/x402/search`
+**Endpoint:** `POST https://api.firecrawl.dev/v2/x402/search`
 **Price:** $0.01 USDC per call · Base mainnet
 **Floe compatible:** Yes
 
@@ -84,7 +114,13 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://api.firecrawl.dev/v1/x402/search", "method": "POST"}'
+  -d '{"url": "https://api.firecrawl.dev/v2/x402/search", "method": "POST", "headers": {"Content-Type":"application/json"}, "body": "{\"query\":\"latest AI agent frameworks\",\"limit\":5}"}'
+```
+
+Returns `200` `application/json`:
+
+```json
+{"success":true,"data":{"web":[{"title":"…","url":"https://…","description":"…"}]}}
 ```
 
 ## Minifetch
