@@ -6,8 +6,8 @@ icon: rocket
 
 Create an agent, give it a Floe-managed balance, then let it pay for any x402 API — every call governed by spend controls you set. That's the whole product: **a budget, not a balance.** No wallets to install, no keys to manage, no tokens to buy, no gas to pay.
 
-> **$3 Welcome Credit (~300 API calls).** Your first agent can start paying for APIs today — no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
-
+> **$3 Welcome Credit.** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
+>
 > **Want your coding agent to do this instead?** Paste one prompt into Claude Code, Cursor, or Codex and it installs a client, provisions the agent, sets the guardrails, and makes the first paid call — see [Set up with your AI tools](setup-with-ai-tools.md) and the [Agent Quickstart](../agents/quickstart-agents.md).
 
 ---

@@ -28,7 +28,7 @@ Maps to MCP tools: `get_wallet_balance`, `get_spend_limit`.
 ## Manage spend caps
 
 ```typescript
-await agentkit.run("set_spend_limit", { usdcAmount: "100000000" }); // $100 session cap
+await agentkit.run("set_spend_limit", { limitRaw: "100000000" }); // $100 session cap
 await agentkit.run("clear_spend_limit", {});
 ```
 

@@ -43,6 +43,7 @@ Pick one. All three hit the same API.
 
 {% tabs %}
 {% tab title="MCP" %}
+
 ```bash
 npx -y add-mcp https://mcp.floelabs.xyz/mcp
 ```
@@ -63,6 +64,7 @@ npx -y @floelabs/mcp-server --stdio
 65 tools — see [MCP Server](../developers/mcp-server.md).
 {% endtab %}
 {% tab title="CLI" %}
+
 ```bash
 npm i -g floe-agent    # installs BOTH bins: `floe` and `floe-agent`
 ```
@@ -96,20 +98,20 @@ A `401` means the key is missing or wrong — go back to human step 1. To find o
 ## Agent step 3 — provision an agent and its runtime key
 
 ```bash
-floe agents create --name research-bot   # → agentId (12 in the examples below)
-floe agents keys create 12 --budget 5    # → floe_... agent key, shown once
+AGENT_ID=$(floe agents create --name research-bot --json | jq -r .agentId)
+floe agents keys create "$AGENT_ID" --budget 5   # → floe_... agent key, shown once
 ```
 
 REST equivalent:
 
 ```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents \
+AGENT_ID=$(curl -sX POST https://credit-api.floelabs.xyz/v1/developer/agents \
   -H "Authorization: Bearer $FLOE_API_KEY" -H "Content-Type: application/json" \
-  -d '{"name": "research-bot"}'
-# → { "agentId": 12, "privyWalletAddress": "0x...", ... }
+  -d '{"name": "research-bot"}' | jq -r .agentId)
+# response: { "agentId": 12, "privyWalletAddress": "0x...", ... }
 
 # budgetRaw is raw 6-decimal USDC: 5000000 = $5
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/12/keys \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/keys" \
   -H "Authorization: Bearer $FLOE_API_KEY" -H "Content-Type: application/json" \
   -d '{"label": "runtime", "budgetRaw": "5000000"}'
 ```
@@ -121,19 +123,19 @@ Creating the agent provisions a managed wallet and an on-chain operator delegati
 ## Agent step 4 — set guardrails before spending
 
 ```bash
-floe limit set 5 --agent 12                          # session spend cap, USD
+floe limit set 5 --agent "$AGENT_ID"                 # session spend cap, USD
 floe policy set --kind api --match api.exa.ai --limit 2 \
-  --window-kind rolling --window-seconds 86400 --agent 12   # rolling daily cap for one vendor
+  --window-kind rolling --window-seconds 86400 --agent "$AGENT_ID"   # rolling daily cap for one vendor
 ```
 
 REST equivalent (amounts are raw 6-decimal USDC):
 
 ```bash
-curl -X PUT https://credit-api.floelabs.xyz/v1/developer/agents/12/spend-limit \
+curl -X PUT "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/spend-limit" \
   -H "Authorization: Bearer $FLOE_API_KEY" -H "Content-Type: application/json" \
   -d '{"limitRaw": "5000000"}'
 
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/12/policies \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/policies" \
   -H "Authorization: Bearer $FLOE_API_KEY" -H "Content-Type: application/json" \
   -d '{"kind": "api", "matchKey": "api.exa.ai", "matchKind": "host_exact", "limitRaw": "2000000", "windowKind": "rolling", "windowSeconds": 86400}'
 ```
@@ -167,7 +169,7 @@ curl -i -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 A settled call returns `200` with the vendor's payload as the body and the receipt in the headers:
 
-```
+```http
 HTTP/2 200
 X-Floe-Cost-USDC: 1000        ← raw 6-decimal USDC: 1000 = $0.001
 ```
@@ -181,13 +183,13 @@ That header is the proof the whole rail works: your agent just bought something.
 Funding is the one step an agent cannot do alone.
 
 ```bash
-floe fund 12
+floe fund "$AGENT_ID"
 ```
 
 REST equivalent:
 
 ```bash
-curl https://credit-api.floelabs.xyz/v1/developer/agents/12/funding \
+curl "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/funding" \
   -H "Authorization: Bearer $FLOE_API_KEY"
 # → { "depositAddress": "0x...", "chainId": 8453, "token": "USDC", ... }
 ```

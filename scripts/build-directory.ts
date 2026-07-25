@@ -118,7 +118,10 @@ for (const [category, catEntries] of Object.entries(grouped)) {
     // Use the entry's requestExample when it has one, so the generated snippet
     // is a call that actually works rather than a URL-only skeleton. Fields are
     // joined by hand to keep the `"key": "value"` spacing the pages already use.
-    const proxyFields = [`"url": ${JSON.stringify(e.resource)}`, `"method": ${JSON.stringify(e.method)}`];
+    const resource = e.requestExample?.query
+      ? `${e.resource}${e.resource.includes('?') ? '&' : '?'}${e.requestExample.query}`
+      : e.resource;
+    const proxyFields = [`"url": ${JSON.stringify(resource)}`, `"method": ${JSON.stringify(e.method)}`];
     if (e.requestExample?.headers) proxyFields.push(`"headers": ${JSON.stringify(e.requestExample.headers)}`);
     if (e.requestExample?.body) proxyFields.push(`"body": ${JSON.stringify(e.requestExample.body)}`);
 

@@ -204,7 +204,7 @@ URL: https://floe-labs.gitbook.io/docs/quickstart/setup-with-ai-tools.md
 
 # Set up with your AI tools
 
-Floe is built so your coding agent does the setup. Paste one prompt into Claude Code, Cursor, or Codex and it installs the MCP server or the CLI, provisions an agent, sets guardrails, and makes a real paid call.
+Floe is the spend layer for AI agents — one funded balance and one key that pays for search, scrape, voice, and LLM calls, all governed by server-side spend caps. And it's built so your coding agent does the setup: paste one prompt into Claude Code, Cursor, or Codex and it installs the MCP server or the CLI, provisions an agent, sets guardrails, and makes a real paid call.
 
 > **You do two things.** Sign in and mint a developer key; fund the balance when the welcome credit runs out. Your agent does everything else — see the [Agent Quickstart](../agents/quickstart-agents.md).
 
@@ -293,14 +293,15 @@ One-click install links — the config carries the endpoint URL only, never a ke
 65 tools, full reference: [MCP Server](../developers/mcp-server.md).
 {% endtab %}
 {% tab title="CLI" %}
+
 ```bash
 npm i -g floe-agent      # installs BOTH bins: `floe` and `floe-agent`
 floe status --json       # auth + capabilities + balance in one call
 ```
 
 ```bash
-floe agents create --name research-bot     # → agentId
-floe agents keys create 12 --budget 5      # → floe_... runtime key (shown once)
+AGENT_ID=$(floe agents create --name research-bot --json | jq -r .agentId)
+floe agents keys create "$AGENT_ID" --budget 5   # → floe_... runtime key (shown once)
 floe pay https://api.exa.ai/contents --method POST \
   --body '{"urls":["https://example.com"],"text":true}'
 ```
@@ -350,6 +351,7 @@ result = agent.fetch(
 )
 print(result.body, result.cost)
 ```
+
 {% endtab %}
 {% tab title="REST" %}
 No install. Every endpoint takes `Authorization: Bearer <key>` — the developer key for `/v1/developer/*`, the agent key for payments:
@@ -450,6 +452,7 @@ Pick one. All three hit the same API.
 
 {% tabs %}
 {% tab title="MCP" %}
+
 ```bash
 npx -y add-mcp https://mcp.floelabs.xyz/mcp
 ```
@@ -470,6 +473,7 @@ npx -y @floelabs/mcp-server --stdio
 65 tools — see [MCP Server](../developers/mcp-server.md).
 {% endtab %}
 {% tab title="CLI" %}
+
 ```bash
 npm i -g floe-agent    # installs BOTH bins: `floe` and `floe-agent`
 ```
@@ -503,20 +507,20 @@ A `401` means the key is missing or wrong — go back to human step 1. To find o
 ## Agent step 3 — provision an agent and its runtime key
 
 ```bash
-floe agents create --name research-bot   # → agentId (12 in the examples below)
-floe agents keys create 12 --budget 5    # → floe_... agent key, shown once
+AGENT_ID=$(floe agents create --name research-bot --json | jq -r .agentId)
+floe agents keys create "$AGENT_ID" --budget 5   # → floe_... agent key, shown once
 ```
 
 REST equivalent:
 
 ```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents \
+AGENT_ID=$(curl -sX POST https://credit-api.floelabs.xyz/v1/developer/agents \
   -H "Authorization: Bearer $FLOE_API_KEY" -H "Content-Type: application/json" \
-  -d '{"name": "research-bot"}'
-# → { "agentId": 12, "privyWalletAddress": "0x...", ... }
+  -d '{"name": "research-bot"}' | jq -r .agentId)
+# response: { "agentId": 12, "privyWalletAddress": "0x...", ... }
 
 # budgetRaw is raw 6-decimal USDC: 5000000 = $5
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/12/keys \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/keys" \
   -H "Authorization: Bearer $FLOE_API_KEY" -H "Content-Type: application/json" \
   -d '{"label": "runtime", "budgetRaw": "5000000"}'
 ```
@@ -528,19 +532,19 @@ Creating the agent provisions a managed wallet and an on-chain operator delegati
 ## Agent step 4 — set guardrails before spending
 
 ```bash
-floe limit set 5 --agent 12                          # session spend cap, USD
+floe limit set 5 --agent "$AGENT_ID"                 # session spend cap, USD
 floe policy set --kind api --match api.exa.ai --limit 2 \
-  --window-kind rolling --window-seconds 86400 --agent 12   # rolling daily cap for one vendor
+  --window-kind rolling --window-seconds 86400 --agent "$AGENT_ID"   # rolling daily cap for one vendor
 ```
 
 REST equivalent (amounts are raw 6-decimal USDC):
 
 ```bash
-curl -X PUT https://credit-api.floelabs.xyz/v1/developer/agents/12/spend-limit \
+curl -X PUT "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/spend-limit" \
   -H "Authorization: Bearer $FLOE_API_KEY" -H "Content-Type: application/json" \
   -d '{"limitRaw": "5000000"}'
 
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/12/policies \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/policies" \
   -H "Authorization: Bearer $FLOE_API_KEY" -H "Content-Type: application/json" \
   -d '{"kind": "api", "matchKey": "api.exa.ai", "matchKind": "host_exact", "limitRaw": "2000000", "windowKind": "rolling", "windowSeconds": 86400}'
 ```
@@ -574,7 +578,7 @@ curl -i -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 A settled call returns `200` with the vendor's payload as the body and the receipt in the headers:
 
-```
+```http
 HTTP/2 200
 X-Floe-Cost-USDC: 1000        ← raw 6-decimal USDC: 1000 = $0.001
 ```
@@ -588,13 +592,13 @@ That header is the proof the whole rail works: your agent just bought something.
 Funding is the one step an agent cannot do alone.
 
 ```bash
-floe fund 12
+floe fund "$AGENT_ID"
 ```
 
 REST equivalent:
 
 ```bash
-curl https://credit-api.floelabs.xyz/v1/developer/agents/12/funding \
+curl "https://credit-api.floelabs.xyz/v1/developer/agents/$AGENT_ID/funding" \
   -H "Authorization: Bearer $FLOE_API_KEY"
 # → { "depositAddress": "0x...", "chainId": 8453, "token": "USDC", ... }
 ```
@@ -640,8 +644,8 @@ URL: https://floe-labs.gitbook.io/docs/quickstart/quickstart.md
 
 Create an agent, give it a Floe-managed balance, then let it pay for any x402 API — every call governed by spend controls you set. That's the whole product: **a budget, not a balance.** No wallets to install, no keys to manage, no tokens to buy, no gas to pay.
 
-> **$3 Welcome Credit (~300 API calls).** Your first agent can start paying for APIs today — no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
-
+> **$3 Welcome Credit.** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
+>
 > **Want your coding agent to do this instead?** Paste one prompt into Claude Code, Cursor, or Codex and it installs a client, provisions the agent, sets the guardrails, and makes the first paid call — see [Set up with your AI tools](setup-with-ai-tools.md) and the [Agent Quickstart](../agents/quickstart-agents.md).
 
 ---
@@ -1023,7 +1027,7 @@ Maps to MCP tools: `get_wallet_balance`, `get_spend_limit`.
 ## Manage spend caps
 
 ```typescript
-await agentkit.run("set_spend_limit", { usdcAmount: "100000000" }); // $100 session cap
+await agentkit.run("set_spend_limit", { limitRaw: "100000000" }); // $100 session cap
 await agentkit.run("clear_spend_limit", {});
 ```
 
@@ -1556,7 +1560,7 @@ The directory above is Floe-verified. The broader x402 ecosystem has **46,000+ i
 | **EntRoute** | Machine-first ranked discovery with semantic search | [Browse →](https://entroute.com) |
 | **x402.org Ecosystem** | Foundation-maintained provider and facilitator list | [Browse →](https://x402.org/ecosystem) |
 
-**Any USDC-on-Base x402 endpoint works with Floe credit** — even if it's not listed here. Just pass the URL to `x402_fetch` or `/v1/proxy/fetch`.
+**Most USDC-on-Base x402 endpoints work with Floe credit even when unlisted** — pass the URL to `x402_fetch` or `/v1/proxy/fetch`. Floe settles exact-scheme USDC offers on Base mainnet; the proxy still applies URL parsing, SSRF, and allowlist checks, so a non-conforming vendor fails closed rather than paying.
 
 ## Submit an API
 
@@ -4499,7 +4503,7 @@ npm install -g floe-agent     # or: npm run build && npm link
 | `floe-agent use <name>` | Set the active agent (persisted in `.floe-agent.json`). |
 | `floe-agent rotate <name>` | Atomically rotate the agent's API key — old key revoked + new key minted in one transaction. New key replaces the keychain entry. |
 | `floe-agent revoke <name>` | Revoke the agent's API key server-side and remove the local keychain entry. |
-| `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Required AFTER `register` before paid `/proxy/fetch` calls can succeed. |
+| `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Optional — only for agents on credit-line funding. Pay-as-you-go agents (the default) pay through `/proxy/fetch` from their funded balance without opening a credit line. |
 
 ### Setup flow (for `run`)
 
@@ -5198,7 +5202,7 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
 
 ## What you get
 
-All 65 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, docs search, and the on-chain protocol tools. See the [MCP Server reference](../developers/mcp-server.md).
+All 65 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, and docs search. See the [MCP Server reference](../developers/mcp-server.md) for the full tool catalog.
 
 Narrow the set with scope params — `?read_only=true` or `?features=spend,pricing,payments` on the endpoint URL.
 
@@ -5226,11 +5230,14 @@ Not using a framework? Call the Floe Credit REST API directly. Any HTTP client w
 
 ## Authenticate
 
-```
-Authorization: Bearer floe_live_YOUR_API_KEY
+Two key planes share one header:
+
+```text
+Authorization: Bearer floe_live_...   # developer key — lifecycle: /v1/developer/*
+Authorization: Bearer floe_...        # agent key — payments: /v1/proxy/fetch, /v1/x402/*
 ```
 
-Get a key at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz).
+Get both at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz). The payment call below takes the **agent** key — a `floe_live_` developer key is rejected with `wrong_credential_type`.
 
 ## Pay an x402 API (the live path)
 
@@ -5466,7 +5473,7 @@ floe auth set-key floe_live_...  # store the developer key in the OS keychain
 | `floe agents keys rotate <agentId\|name> [--key-id <id>] [--label <l>] [--json]` | Atomic revoke + mint. The replacement key is shown once. |
 | `floe agents keys revoke <agentId\|name> [--key-id <id>] [--json]` | Revokes a runtime key immediately. |
 | `floe keys create\|list\|rotate\|revoke [keyId] [--label <l>] [--permissions read\|read_write] [--json]` | Developer (`floe_live_…`) keys on `/v1/developer/keys`. |
-| `floe fund <agentId> [--json]` | Prints machine-readable funding instructions — deposit address, chain `8453`, `USDC` — plus the dashboard link. The agent hands this to a human; it never moves money itself. |
+| `floe fund <agentId> [--json]` | The walletless funding handoff: prints the dashboard link where the human adds money by card, Apple Pay, Google Pay, or bank transfer, plus the machine-readable settlement contract (deposit address, chain `8453`, `USDC`) for programmatic treasuries. The agent hands this to a human; it never moves money itself. |
 
 ### Guardrails
 
@@ -6235,7 +6242,7 @@ from floe_agentkit_actions import x402_action_provider, X402Config
 provider = x402_action_provider(X402Config(
     facilitator_url="https://credit-api.floelabs.xyz",
 ))
-# Register with AgentKit — 6 x402 actions available
+# Register with AgentKit — 24 x402 actions available
 ```
 
 Or use the REST API directly. `API_KEY` here is the agent's `floe_*` runtime key (not the `floe_live_*` developer key):
@@ -6360,7 +6367,7 @@ Proxy a request. Pays the vendor automatically when payment is required.
 
 | Header | Always set | Purpose |
 |--------|------------|---------|
-| `X-Floe-Cost-USDC` | on 2xx paid responses | Raw USDC units (6-decimal integer string) actually charged for this call. Set by the facilitator after a successful x402 settlement; absent on free passthrough responses. |
+| `X-Floe-Cost-USDC` | every 2xx | Raw USDC units (6-decimal integer string) actually charged for this call. Set by the facilitator after a successful x402 settlement; `0` on free passthrough responses. |
 | `X-Floe-Payment-Amount` | on 2xx paid responses | Human-readable decimal USDC amount (e.g. `0.005000`), derived from `X-Floe-Cost-USDC` (raw units ÷ 10⁶). Intended for display only. |
 | `X-Floe-Idempotent-Replay: true` | on replays only | Indicates the response body is a cached replay of a prior request with the same `Idempotency-Key`. Absent on the first attempt and on requests without a key. |
 
@@ -6577,7 +6584,7 @@ URL: https://floe-labs.gitbook.io/docs/developers/mcp-server.md
 Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **65 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
 
 > **Payments are in MCP now.** `estimate_x402_cost` (or `x402_forecast` for a whole plan) prices the call; `x402_pay` makes it, settles the vendor from the agent's balance, and returns the vendor's response plus the `X-Floe-*` receipt headers. An agent no longer has to leave MCP to spend.
-
+>
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [Floe CLI](cli.md) | [Credit REST API](credit-api.md) | [API Keys](api-keys.md)
 
 **npm:** `@floelabs/mcp-server` (v0.3.0)\
@@ -6621,7 +6628,7 @@ One-click install links — the config carries the endpoint URL **only, never a 
 - Cursor — `cursor://anysphere.cursor-deeplink/mcp/install?name=floe&config=eyJ1cmwiOiJodHRwczovL21jcC5mbG9lbGFicy54eXovbWNwIn0`
 - VS Code — [`https://vscode.dev/redirect/mcp/install?name=floe&config=…`](https://vscode.dev/redirect/mcp/install?name=floe&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.floelabs.xyz%2Fmcp%22%7D)
 
-Add the key afterwards in the client's own config or environment.
+Add the key afterward in the client's own config or environment.
 
 ### Which key?
 
@@ -6629,7 +6636,7 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 
 | Key | Format | Unlocks | Get one |
 |---|---|---|---|
-| Developer key | `floe_live_…` | Lifecycle (19 tools): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
+| Developer key | `floe_live_…` | Developer-key surface (19 tools — lifecycle 12, observability 4, webhooks 3): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
 | Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe agents keys create <id>`, or the dashboard |
 | Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
 | None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
@@ -6652,7 +6659,7 @@ Use it to vet a vendor URL's price (`check_x402_url`) or search these docs befor
 
 Narrow what a session can do straight from the URL — useful for read-only reviewers or for keeping the tool list small in context-constrained clients:
 
-```
+```text
 https://mcp.floelabs.xyz/mcp?read_only=true          # 36 non-mutating tools
 https://mcp.floelabs.xyz/mcp?features=spend,pricing  # 19 tools — the decision loop only
 ```
@@ -6833,7 +6840,7 @@ Developer key.
 
 | Tool | Description |
 |------|-------------|
-| `get_funding_instructions` | Machine-readable deposit instructions: address, chain `8453`, `USDC`, minimums, warnings. Hand this to the human — funding is the one step an agent can't do alone |
+| `get_funding_instructions` | The funding handoff: the dashboard link where the human adds money by card, Apple Pay, Google Pay, or bank, plus the machine-readable settlement contract (address, chain `8453`, `USDC`, minimums, warnings). Funding is the one step an agent can't do alone |
 | `get_balances` | USDC across the developer wallet, every agent wallet, and API credits |
 | `get_activity` | Unified activity feed — proxy calls, onramps, transfers, loan events — newest first, cursor-paginated |
 | `get_usage_summary` | Spend/usage rollup: KPIs, daily series, top endpoints over a window |
@@ -6953,7 +6960,7 @@ Every argument the lifecycle, funding, payment, webhook, and docs tools accept. 
 
 ### Lifecycle
 
-```
+```text
 create_agent            name             string   required  1-64 chars, [A-Za-z0-9 _-]
                         borrow_limit_raw string   optional  raw USDC; omit for pay-as-you-go
                         max_rate_bps     integer  default 1500   1-10000
@@ -6993,7 +7000,7 @@ get_credit_line_bounds  agent_id         string   required
 
 ### Funding & observability
 
-```
+```text
 get_funding_instructions  agent_id  string  required
 
 get_balances              — no arguments —
@@ -7017,7 +7024,7 @@ get_usage_summary         window    string    optional  24h | 7d | 30d | all  (s
 
 ### Payment & preflight
 
-```
+```text
 x402_pay          url              string   required  http/https
                   method           string   optional  GET | POST | PUT | PATCH | DELETE | HEAD | OPTIONS (default GET)
                   headers          object   optional  string→string, forwarded to the vendor
@@ -7037,7 +7044,7 @@ check_x402_url    url              string   required  http/https  (no key requir
 
 ### Webhooks
 
-```
+```text
 create_webhook    url          string    required  https endpoint, ≤2048 chars
                   events       string[]  required  ≥1 event name, validated server-side. Catalog:
                                                    loan.health_warning, loan.expiry_warning,
@@ -7055,7 +7062,7 @@ test_webhook      webhook_id   integer   required  positive, from list_webhooks
 
 ### Docs
 
-```
+```text
 search_floe_docs  query  string   required  1-200 chars, e.g. "spend limit webhook"
                   limit  integer  default 10   1-25
 ```

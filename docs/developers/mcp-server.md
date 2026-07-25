@@ -7,7 +7,7 @@ icon: plug
 Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **65 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
 
 > **Payments are in MCP now.** `estimate_x402_cost` (or `x402_forecast` for a whole plan) prices the call; `x402_pay` makes it, settles the vendor from the agent's balance, and returns the vendor's response plus the `X-Floe-*` receipt headers. An agent no longer has to leave MCP to spend.
-
+>
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [Floe CLI](cli.md) | [Credit REST API](credit-api.md) | [API Keys](api-keys.md)
 
 **npm:** `@floelabs/mcp-server` (v0.3.0)\
@@ -51,7 +51,7 @@ One-click install links — the config carries the endpoint URL **only, never a 
 - Cursor — `cursor://anysphere.cursor-deeplink/mcp/install?name=floe&config=eyJ1cmwiOiJodHRwczovL21jcC5mbG9lbGFicy54eXovbWNwIn0`
 - VS Code — [`https://vscode.dev/redirect/mcp/install?name=floe&config=…`](https://vscode.dev/redirect/mcp/install?name=floe&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.floelabs.xyz%2Fmcp%22%7D)
 
-Add the key afterwards in the client's own config or environment.
+Add the key afterward in the client's own config or environment.
 
 ### Which key?
 
@@ -59,7 +59,7 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 
 | Key | Format | Unlocks | Get one |
 |---|---|---|---|
-| Developer key | `floe_live_…` | Lifecycle (19 tools): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
+| Developer key | `floe_live_…` | Developer-key surface (19 tools — lifecycle 12, observability 4, webhooks 3): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
 | Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe agents keys create <id>`, or the dashboard |
 | Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
 | None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
@@ -82,7 +82,7 @@ Use it to vet a vendor URL's price (`check_x402_url`) or search these docs befor
 
 Narrow what a session can do straight from the URL — useful for read-only reviewers or for keeping the tool list small in context-constrained clients:
 
-```
+```text
 https://mcp.floelabs.xyz/mcp?read_only=true          # 36 non-mutating tools
 https://mcp.floelabs.xyz/mcp?features=spend,pricing  # 19 tools — the decision loop only
 ```
@@ -263,7 +263,7 @@ Developer key.
 
 | Tool | Description |
 |------|-------------|
-| `get_funding_instructions` | Machine-readable deposit instructions: address, chain `8453`, `USDC`, minimums, warnings. Hand this to the human — funding is the one step an agent can't do alone |
+| `get_funding_instructions` | The funding handoff: the dashboard link where the human adds money by card, Apple Pay, Google Pay, or bank, plus the machine-readable settlement contract (address, chain `8453`, `USDC`, minimums, warnings). Funding is the one step an agent can't do alone |
 | `get_balances` | USDC across the developer wallet, every agent wallet, and API credits |
 | `get_activity` | Unified activity feed — proxy calls, onramps, transfers, loan events — newest first, cursor-paginated |
 | `get_usage_summary` | Spend/usage rollup: KPIs, daily series, top endpoints over a window |
@@ -383,7 +383,7 @@ Every argument the lifecycle, funding, payment, webhook, and docs tools accept. 
 
 ### Lifecycle
 
-```
+```text
 create_agent            name             string   required  1-64 chars, [A-Za-z0-9 _-]
                         borrow_limit_raw string   optional  raw USDC; omit for pay-as-you-go
                         max_rate_bps     integer  default 1500   1-10000
@@ -423,7 +423,7 @@ get_credit_line_bounds  agent_id         string   required
 
 ### Funding & observability
 
-```
+```text
 get_funding_instructions  agent_id  string  required
 
 get_balances              — no arguments —
@@ -447,7 +447,7 @@ get_usage_summary         window    string    optional  24h | 7d | 30d | all  (s
 
 ### Payment & preflight
 
-```
+```text
 x402_pay          url              string   required  http/https
                   method           string   optional  GET | POST | PUT | PATCH | DELETE | HEAD | OPTIONS (default GET)
                   headers          object   optional  string→string, forwarded to the vendor
@@ -467,7 +467,7 @@ check_x402_url    url              string   required  http/https  (no key requir
 
 ### Webhooks
 
-```
+```text
 create_webhook    url          string    required  https endpoint, ≤2048 chars
                   events       string[]  required  ≥1 event name, validated server-side. Catalog:
                                                    loan.health_warning, loan.expiry_warning,
@@ -485,7 +485,7 @@ test_webhook      webhook_id   integer   required  positive, from list_webhooks
 
 ### Docs
 
-```
+```text
 search_floe_docs  query  string   required  1-200 chars, e.g. "spend limit webhook"
                   limit  integer  default 10   1-25
 ```

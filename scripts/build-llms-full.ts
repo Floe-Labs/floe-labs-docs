@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'fs';
-import { join, dirname, basename } from 'path';
+import { join, dirname, basename, resolve, sep } from 'path';
 import { fileURLToPath } from 'url';
 
 /**
@@ -84,9 +84,17 @@ const rendered: string[] = [];
 let errors = 0;
 
 for (const page of pages) {
+  // A SUMMARY.md entry with `../` segments could otherwise pull files from
+  // outside the checkout into the published corpus.
+  const abs = resolve(ROOT, page.path);
+  if (!abs.startsWith(resolve(ROOT) + sep)) {
+    console.error(`  ERROR: ${page.path} resolves outside the repo root`);
+    errors++;
+    continue;
+  }
   let body: string;
   try {
-    body = readFileSync(join(ROOT, page.path), 'utf-8');
+    body = readFileSync(abs, 'utf-8');
   } catch {
     console.error(`  ERROR: ${page.path} is in SUMMARY.md but does not exist`);
     errors++;

@@ -8,11 +8,14 @@ Not using a framework? Call the Floe Credit REST API directly. Any HTTP client w
 
 ## Authenticate
 
-```
-Authorization: Bearer floe_live_YOUR_API_KEY
+Two key planes share one header:
+
+```text
+Authorization: Bearer floe_live_...   # developer key — lifecycle: /v1/developer/*
+Authorization: Bearer floe_...        # agent key — payments: /v1/proxy/fetch, /v1/x402/*
 ```
 
-Get a key at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz).
+Get both at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz). The payment call below takes the **agent** key — a `floe_live_` developer key is rejected with `wrong_credential_type`.
 
 ## Pay an x402 API (the live path)
 

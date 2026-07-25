@@ -4,7 +4,7 @@ icon: robot
 
 # Set up with your AI tools
 
-Floe is built so your coding agent does the setup. Paste one prompt into Claude Code, Cursor, or Codex and it installs the MCP server or the CLI, provisions an agent, sets guardrails, and makes a real paid call.
+Floe is the spend layer for AI agents — one funded balance and one key that pays for search, scrape, voice, and LLM calls, all governed by server-side spend caps. And it's built so your coding agent does the setup: paste one prompt into Claude Code, Cursor, or Codex and it installs the MCP server or the CLI, provisions an agent, sets guardrails, and makes a real paid call.
 
 > **You do two things.** Sign in and mint a developer key; fund the balance when the welcome credit runs out. Your agent does everything else — see the [Agent Quickstart](../agents/quickstart-agents.md).
 
@@ -93,14 +93,15 @@ One-click install links — the config carries the endpoint URL only, never a ke
 65 tools, full reference: [MCP Server](../developers/mcp-server.md).
 {% endtab %}
 {% tab title="CLI" %}
+
 ```bash
 npm i -g floe-agent      # installs BOTH bins: `floe` and `floe-agent`
 floe status --json       # auth + capabilities + balance in one call
 ```
 
 ```bash
-floe agents create --name research-bot     # → agentId
-floe agents keys create 12 --budget 5      # → floe_... runtime key (shown once)
+AGENT_ID=$(floe agents create --name research-bot --json | jq -r .agentId)
+floe agents keys create "$AGENT_ID" --budget 5   # → floe_... runtime key (shown once)
 floe pay https://api.exa.ai/contents --method POST \
   --body '{"urls":["https://example.com"],"text":true}'
 ```
@@ -150,6 +151,7 @@ result = agent.fetch(
 )
 print(result.body, result.cost)
 ```
+
 {% endtab %}
 {% tab title="REST" %}
 No install. Every endpoint takes `Authorization: Bearer <key>` — the developer key for `/v1/developer/*`, the agent key for payments:

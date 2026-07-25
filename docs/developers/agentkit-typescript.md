@@ -142,7 +142,7 @@ npm install -g floe-agent     # or: npm run build && npm link
 | `floe-agent use <name>` | Set the active agent (persisted in `.floe-agent.json`). |
 | `floe-agent rotate <name>` | Atomically rotate the agent's API key — old key revoked + new key minted in one transaction. New key replaces the keychain entry. |
 | `floe-agent revoke <name>` | Revoke the agent's API key server-side and remove the local keychain entry. |
-| `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Required AFTER `register` before paid `/proxy/fetch` calls can succeed. |
+| `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Optional — only for agents on credit-line funding. Pay-as-you-go agents (the default) pay through `/proxy/fetch` from their funded balance without opening a credit line. |
 
 ### Setup flow (for `run`)
 
