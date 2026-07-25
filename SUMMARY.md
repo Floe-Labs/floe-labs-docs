@@ -5,9 +5,13 @@
 ## Quickstart
 
 * [Set up with your AI tools](docs/getting-started/setup-with-ai-tools.md)
-* [Agent Quickstart](docs/agents/quickstart-agents.md)
+* [Installation](docs/getting-started/installation.md)
+* [Authentication](docs/getting-started/authentication.md)
 * [Quickstart (5 minutes)](docs/getting-started/quickstart.md)
+* [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md)
+* [Pricing & cost](docs/getting-started/pricing.md)
 * [Funding your agent](docs/getting-started/funding.md)
+* [Agent Quickstart](docs/agents/quickstart-agents.md)
 
 ## Build
 

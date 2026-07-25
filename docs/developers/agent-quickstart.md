@@ -6,6 +6,8 @@ icon: rocket
 
 > **Status: in development / roadmap.** Borrowing USDC working capital against on-chain collateral — and any associated rate — is **not generally available**. The code below describes the **planned** self-custody on-chain credit surface; it is not a live quickstart. The live way to give an agent money is the walletless [$3 Welcome Credit + funded balance](../getting-started/quickstart.md).
 
+> **Already have an STT→LLM→TTS pipeline?** You don't need any of this — see [Add Floe to your existing pipeline](../getting-started/integrate-existing-pipeline.md) for the one-line integration.
+
 The planned flow would give your agent a balance sheet in under a minute.
 
 ## Check Live Offers First
