@@ -28,6 +28,8 @@ const cost = res.headers.get("X-Floe-Payment-Amount"); // "0.0125"
 {% endtab %}
 {% tab title="Python" %}
 ```python
+import httpx
+
 res = httpx.post(
     "https://credit-api.floelabs.xyz/v1/chat/completions",
     headers={"Authorization": f"Bearer {FLOE_API_KEY}"},
@@ -44,7 +46,7 @@ Tag calls with `X-Floe-Task-Id` and every leg of one conversation rolls into a s
 
 Gate expensive work without spending:
 
-- **LLM / voice models** — `POST /v1/estimate` prices a usage vector (tokens, TTS characters, STT audio-seconds) without touching your balance. See [Floe Inference](../developers/keyless-inference.md#estimate).
+- **LLM / voice models** — `POST /v1/estimate` prices a usage vector (tokens, TTS characters, STT audio-seconds) without touching your balance. See [Floe Inference](../developers/keyless-inference.md#estimate-before-you-spend).
 - **x402 vendor calls** — `POST /v1/x402/estimate` preflights a URL and returns its USDC cost against your remaining budget in one round-trip.
 - **A batch** — `POST /v1/x402/forecast` projects the cost of many planned calls at once, with a per-policy breach check. See [Budget-Aware Routing](../build/budget-aware-routing.md).
 
