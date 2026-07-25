@@ -10,6 +10,18 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.17.0 — Docs navigation reorg: LLM, marketplace, and Floe Phone surfaced (July 2026)
+
+The docs navigation was restructured around the voice-operator journey so the core surfaces stop hiding three levels deep.
+
+* **Floe Inference (keyless LLM & voice) and Floe Phone are now top-level** under a new **The voice stack** section — previously buried as sub-items under the vendor-marketplace list.
+* **Vendor Marketplace is its own top-level section** with the live taxonomy: Compute · STT · TTS · Telephony · WebRTC · Image · Search · Browser · Memory · Agent Tools.
+* **Linear onboarding.** The old "Quickstart" section is now **Start here** (Set up → Install → Auth → Quickstart → Integrate existing pipeline → Fund → Pricing); Agent Quickstart moved to **Guides**.
+* **Telephony is live.** Floe Phone (US numbers + inbound/outbound calls) replaces the "Twilio (coming soon)" marketplace row.
+* **Housekeeping.** Deduplicated the funding page (one **Funding** page), archived off-taxonomy vendor-category leftovers, and refreshed the homepage to surface Floe Inference, Floe Phone, and the marketplace.
+
+→ [The Voice Stack](build/voice-stack.md) · [Floe Inference](developers/keyless-inference.md) · [Floe Phone](developers/floe-phone.md) · [Vendor Marketplace](x402-directory/README.md)
+
 ### v1.16.0 — Agent-first setup: MCP lifecycle tools, the `floe` CLI, agents.md (July 2026)
 
 A human now does exactly two things — mint a developer key and fund the balance. Everything else is drivable by an AI agent.
