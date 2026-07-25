@@ -8,7 +8,7 @@ A single spoken turn touches four vendors. With Floe, all four bill to the same 
 
 | Leg | Vendor | Typical cost | Status |
 |-----|--------|--------------|--------|
-| Telephony | Twilio | ~$0.014 / min | Coming soon |
+| Telephony | Twilio | ~$0.014 / min | Live |
 | Speech-to-Text | Deepgram | ~$0.007 / min | Live |
 | Reasoning | LLM (any) | ~$0.020 / turn | Live |
 | Text-to-Speech | ElevenLabs | ~$0.007 / turn | Live |
@@ -31,13 +31,14 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 ### 2. Reason (LLM, OpenAI-compatible)
 
 ```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
+curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
   -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "X-Floe-Provider-Key: $OPENAI_API_KEY" \
   -H "Content-Type: application/json" \
   -H "X-Floe-Task-Id: call-8842" \
-  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Caller asked to reschedule to Friday. Confirm."}]}'
+  -d '{"model": "openai/gpt-4o", "messages": [{"role": "user", "content": "Caller asked to reschedule to Friday. Confirm."}]}'
 ```
+
+Just the Floe key — no OpenAI key. Floe holds the provider credential and bills the tokens to the same balance as the other legs. To keep your own provider key instead, use the BYOK endpoint — see [Add Floe to your existing pipeline](../getting-started/integrate-existing-pipeline.md).
 
 ### 3. Speak (ElevenLabs, via the proxy)
 
@@ -61,7 +62,7 @@ All three legs share `X-Floe-Task-Id: call-8842`, so a single task budget caps t
 | Cartesia | Text-to-Speech | Live |
 | Google Cloud TTS | Text-to-Speech | Live |
 | AssemblyAI | Speech-to-Text | Live |
-| Twilio | Telephony | Coming soon |
+| Twilio | Telephony | Live |
 
 See the [Voice vendor directory](../x402-directory/voice.md) for endpoints, request shapes, and per-vendor pricing.
 
