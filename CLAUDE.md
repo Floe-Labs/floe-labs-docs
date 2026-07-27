@@ -70,6 +70,10 @@ When updating docs for a new feature, check the source repo first to get accurat
 
 This repo participates in a shared agent team (see `.claude/README.md`). The `frontend-dev` agent handles doc authoring. The `orchestrator` can delegate docs updates after code changes in other repos.
 
+## Automated sync PRs
+
+The `claude-docs-sync.yml` workflow runs when floe-monorepo merges a docs-relevant change (the monorepo is checked out read-only at `./monorepo` during these runs). It opens **draft** PRs titled `[docs-sync] …` — proposals for human review, never auto-merged. Sync edits must be minimal: only pages the diff actually invalidates, respecting the out-of-scope list, the append-only changelog rule, and SUMMARY.md navigation. When in doubt whether a monorepo change is public-surface or internal, err on the side of no PR.
+
 ## Common tasks
 
 **Add a new page**: Create the `.md` file in the appropriate `docs/` subdirectory, then add it to `SUMMARY.md` in the right section.
