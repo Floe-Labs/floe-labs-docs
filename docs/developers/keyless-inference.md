@@ -95,31 +95,19 @@ All are drop-in OpenAI-compatible:
 
 Browse the live catalog — ids, modality, and context windows — from `GET /v1/models`. Each id is `provider/model` (e.g. `openai/gpt-4o`, `google/gemini-2.5-pro`, `venice/llama-3.3-70b`).
 
-| Model | Modality | Notes |
-|---|---|---|
-| `openai/gpt-4o` · `openai/gpt-4o-mini` | text | OpenAI, direct-account |
-| `anthropic/claude-sonnet-5` · `anthropic/claude-haiku-4-5` | text | Anthropic |
-| `google/gemini-2.5-flash` · `google/gemini-2.5-pro` | text | Google |
-| `xai/grok-4.3` · `xai/grok-3-mini` · `xai/grok-build-0.1` | text | xAI |
-| `mistral/mistral-large` · `mistral/mistral-medium` · `mistral/mistral-small` | text | Mistral |
-| `cohere/command-a` · `cohere/command-r` · `cohere/command-r7b` | text | Cohere |
-| `deepseek/deepseek-v4-pro` · `deepseek/deepseek-v4-flash` | text | DeepSeek |
-| `zai/glm-5.2` · `zai/glm-4.6` · `zai/glm-4.5-air` | text | Z.AI / Zhipu (GLM) |
-| `moonshot/kimi-k2.6` · `moonshot/kimi-k2.7-code` | text | Moonshot (Kimi) |
-| `perplexity/sonar-pro` · `perplexity/sonar` | text | Perplexity (web-search) |
-| `qwen/qwen3-235b-a22b-instruct` · `deepseek/deepseek-r1-0528` · `meta/llama-4-maverick` · `google/gemma-3-27b` · `moonshot/kimi-k2.5` · `mistral/mistral-nemo` · `microsoft/phi-4` … | text | open-weight, self-host (DeepInfra/Together) |
-| `venice/llama-3.3-70b` · `venice/qwen3-235b` | text | open-weight & uncensored via Venice |
-| `sarvam/sarvam-105b` · `sarvam/sarvam-30b` | text | sovereign Indic LLMs (22+ Indian languages) via Sarvam |
-| `openai/text-embedding-3-small` | embedding | |
-| `openai/tts-1` · `openai/tts-1-hd` · `openai/gpt-4o-mini-tts` | tts | OpenAI, metered per character |
-| `hexgrad/kokoro-82m` · `resembleai/chatterbox-turbo` · `canopylabs/orpheus-3b` · `qwen/qwen3-tts` · `cartesia/sonic-3` · `groq/orpheus-v1-english` | tts | open-weight + hosted, self-host (DeepInfra/Together/Groq), metered per character |
-| `google/gemini-2.5-flash-tts` · `google/gemini-3.1-flash-tts` | tts | Google, preview, metered per audio token |
-| `openai/whisper-1` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` | stt | OpenAI, metered per audio second |
-| `openai/whisper-large-v3-turbo` · `nvidia/parakeet-tdt-0.6b-v3` · `mistral/voxtral-mini-transcribe` · `groq/whisper-large-v3-turbo` | stt | self-host (DeepInfra/Together/Groq) + Mistral, metered per audio second |
-| `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime` · `google/gemini-live-3.1` | realtime | metered per token, per turn |
-| `openai/gpt-realtime-whisper` · `openai/gpt-realtime-translate` · `xai/grok-voice` | realtime | metered per minute |
+The set below is a **flagship sample** — the catalog is larger and changes over time, so **always resolve ids from `GET /v1/models` at runtime** rather than hard-coding this list.
 
-> **The live catalog is `GET /v1/models`** (keyless — no key required). The table above lists flagship models per modality and grows over time; always resolve ids from `GET /v1/models` at runtime rather than hard-coding a fixed list. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, Inworld, MiniMax, Azure, Amazon Polly, xAI, Speechmatics) live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`. **Sarvam** voice & language models (TTS, STT, translate, transliterate, language-ID, doc digitization) also run through the marketplace via `/v1/proxy/fetch` — see [Sarvam](sarvam.md).
+| Modality | Flagship models (sample) |
+|---|---|
+| Chat / reasoning | `openai/gpt-4o` · `openai/gpt-4o-mini` · `anthropic/claude-sonnet-5` · `anthropic/claude-haiku-4-5` · `google/gemini-2.5-flash` · `google/gemini-2.5-pro` · `meta/llama-3.3-70b` · `deepseek/deepseek-v3` · `mistral/mistral-large` · `qwen/qwen3-next-80b` |
+| Indic (22+ Indian languages), via Sarvam | `sarvam/sarvam-105b` · `sarvam/sarvam-30b` |
+| Uncensored / open-weight, via Venice | `venice/llama-3.3-70b` · `venice/qwen3-235b` |
+| Embeddings | `openai/text-embedding-3-small` · `openai/text-embedding-3-large` |
+| Text-to-Speech | `openai/tts-1` · `openai/tts-1-hd` |
+| Speech-to-Text | `openai/whisper-1` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` |
+| Realtime voice | `openai/gpt-realtime` · `google/gemini-live` |
+
+> **The live catalog is `GET /v1/models`** (keyless — no key required). Venice and Sarvam are two of the inference providers above — not separate integrations. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, …) live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`; Sarvam's proprietary voice/language endpoints (TTS, STT, translate, transliterate) also run through the marketplace via `/v1/proxy/fetch`.
 
 ## Chat completions
 
