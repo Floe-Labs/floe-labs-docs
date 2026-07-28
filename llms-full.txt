@@ -64,11 +64,19 @@ Source: README.md
 URL: https://floe-labs.gitbook.io/docs/readme.md
 ==============================================================================
 
+<p align="center"><img src="https://raw.githubusercontent.com/Floe-Labs/.github/main/profile/banner.png" alt="Floe" width="100%" /></p>
+
 # Floe — FinOps for voice AI builders
 
-**One key. Every voice primitive. Every model.** Your agent's entire bill — LLM, voice, telephony, data — on one key. Every voice-agent call spends across 5–10 vendors in real time. Floe pays all of them per call through a single key, enforces per-agent and per-task budgets, and puts the whole bill on one ledger.
+**One key for your voice agent's entire bill — LLM, voice, telephony, data.** Every voice-agent call spends across 5–10 vendors in real time. Floe pays all of them per call through a single key, enforces per-agent and per-task budgets, and puts the whole bill on one ledger. Walletless.
+
+[Website](https://floelabs.xyz) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen)](LICENSE)
 
 No crypto, no wallets to manage. Works with **Pipecat, Vapi, Retell, ElevenLabs, LiveKit, Bland, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP.**
+
+> This repository is the source for the documentation at **[floe-labs.gitbook.io/docs](https://floe-labs.gitbook.io/docs)** — the published site is the best way to read it. Corrections and improvements are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
@@ -139,49 +147,20 @@ When the Welcome Credit runs low, add money with a card, Apple Pay, Google Pay, 
 
 ## Integrate with your framework
 
-Works with **Pipecat, Vapi, Retell, ElevenLabs, LiveKit, Bland, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP.** Every one follows the same payment flow — create an agent, get an API key, call the proxy.
+Works with **Pipecat, Vapi, Retell, ElevenLabs, LiveKit, Bland, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP.** Every one follows the same flow — create an agent, get an API key, call the proxy.
 
-{% tabs %}
-{% tab title="Voice frameworks" %}
-Vapi, Retell, Pipecat, LiveKit, Bland, ElevenLabs — drop Floe in as the payment layer for your existing pipeline. Route each leg (telephony, STT, LLM, TTS) through Floe so it lands on one key and one budget.
+| Framework | How |
+|---|---|
+| **Voice pipelines** (Vapi, Retell, Pipecat, LiveKit, Bland, ElevenLabs) | Drop Floe in as the payment layer — route each leg through Floe so it lands on one key and one budget. → [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md) |
+| **Claude / Cursor / MCP** | [MCP Server](docs/developers/mcp-server.md) — one line to connect any MCP client |
+| **LangChain** | [`getLangChainTools` adapter](docs/frameworks/langchain.md) |
+| **CrewAI** | [via MCP server](docs/frameworks/crewai.md) |
+| **OpenAI Agents SDK** | [adapter](docs/frameworks/openai.md) |
+| **Vercel AI SDK** | [`getVercelAITools` adapter](docs/frameworks/vercel-ai.md) |
+| **Coinbase AgentKit** | [`floeActionProvider`](docs/frameworks/agentkit.md) |
+| **Plain HTTP / REST** | [anything that speaks HTTP](docs/frameworks/http.md) |
 
-→ [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md) · real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookbook)
-{% endtab %}
-
-{% tab title="REST / any language" %}
-```bash
-curl -H "Authorization: Bearer $FLOE_API_KEY" \
-  https://credit-api.floelabs.xyz/v1/agents/balance
-```
-→ [REST API guide](docs/frameworks/http.md)
-{% endtab %}
-
-{% tab title="Claude / MCP" %}
-Add to your MCP config:
-```json
-{ "mcpServers": { "floe": { "command": "npx", "args": ["-y", "@floelabs/mcp-server", "--stdio"] } } }
-```
-→ [Full guide](docs/frameworks/claude-mcp.md) · [MCP Server docs](docs/developers/mcp-server.md)
-{% endtab %}
-
-{% tab title="LangChain" %}
-```python
-from floe_agentkit_actions import FloeAgentToolkit
-tools = FloeAgentToolkit(api_key="floe_...").get_tools()
-```
-→ [Full guide](docs/frameworks/langchain.md)
-{% endtab %}
-
-{% tab title="OpenAI Agents SDK" %}
-```python
-from floe_agentkit_actions import FloeAgent
-agent = FloeAgent(api_key="floe_...")
-```
-→ [Full guide](docs/frameworks/openai.md)
-{% endtab %}
-{% endtabs %}
-
-Also supported: [CrewAI](docs/frameworks/crewai.md) · [Vercel AI SDK](docs/frameworks/vercel-ai.md) · [Coinbase AgentKit](docs/frameworks/agentkit.md) ([TypeScript](docs/developers/agentkit-typescript.md) · [Python](docs/developers/agentkit-python.md)). See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookbook) and [Eve](https://github.com/Floe-Labs/eve-floe), Floe's reference voice agent.
+See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookbook) and [Eve](https://github.com/Floe-Labs/eve-floe), Floe's reference voice agent.
 
 ---
 
