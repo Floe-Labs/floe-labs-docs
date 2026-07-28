@@ -6,17 +6,17 @@ icon: gauge
 
 Floe sits between your agent and the vendor, so the only latency question that matters is: **how much does Floe add** versus calling the vendor directly? We measure that on every production call and publish it here.
 
-{% hint style="warning" %}
-**Draft — pending measurement.** The numbers below are filled from production percentiles once real traffic has accrued. No placeholder or guessed number ships; the `__ ms` cells are intentional until they're real.
+{% hint style="info" %}
+**Non-streaming keyless is measured and live.** Streaming (to first token) and x402-proxy percentiles are still pending their own measurement. Every number here comes from production percentiles over real traffic — no placeholder or guessed values — so the remaining `__ ms` cells stay empty until they're measured the same way.
 {% endhint %}
 
 ## Added latency (p50 / p99)
 
 | Path | p50 added | p99 added |
 |---|---|---|
-| **Keyless LLM — streaming** (to first token) | `__ ms` | `__ ms` |
-| Keyless LLM — non-streaming | `__ ms` | `__ ms` |
-| x402 proxy — per paid call | `__ ms` | `__ ms` |
+| **Keyless LLM — non-streaming** | **39 ms** | **181 ms** |
+| Keyless LLM — streaming (to first token) | `__ ms` _(pending)_ | `__ ms` _(pending)_ |
+| x402 proxy — per paid call | `__ ms` _(pending)_ | `__ ms` _(pending)_ |
 
 ## What "added latency" means
 
@@ -35,7 +35,7 @@ Per path, that is:
 ## How we measure it
 
 - **Source:** production real-traffic percentiles, computed database-side over **every** recorded call in the window — not a sampled or synthetic benchmark.
-- **Window / sample size / concurrency:** `__` _(filled at publish)_.
+- **Window / sample size:** the non-streaming keyless figures are `percentile_disc` (nearest-rank) over a rolling **1-hour window**, **n = 2,141** production calls, on the keyless (Floe-fronted) rail. Because `floe_overhead_ms` excludes the upstream call, the specific provider behind the keyless rail doesn't change what's measured. Streaming and x402-proxy percentiles are pending a dedicated measurement.
 - Floe's added latency is recorded per call as `floe_overhead_ms`, separately from `upstream_latency_ms` (the vendor/model call itself).
 - `upstream_latency_ms` is time-to-first-**byte** — it may precede the first content token when a provider emits an early SSE keep-alive or role delta — so it's a diagnostic, not the headline.
 
