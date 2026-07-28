@@ -70,11 +70,20 @@ for (const line of summary.split('\n')) {
   // an existing page — and dedupe so a page referenced by several anchor entries
   // is included in the corpus exactly once.
   const path = target.split('#')[0];
-  if (!path || seen.has(path)) continue;
-  seen.add(path);
+  if (!path) continue;
 
+  // Compute nesting/slug BEFORE the dedupe check: a duplicated top-level page is
+  // still a parent for the nested entries that follow it, so parentSlug must be
+  // updated even when the page itself is skipped from the corpus.
   const slug = pageSlug(path);
   const nested = indent.length > 0;
+
+  if (seen.has(path)) {
+    if (!nested) parentSlug = slug;
+    continue;
+  }
+  seen.add(path);
+
   if (!nested) {
     const segments = [section, slug].filter(Boolean);
     pages.push({ title, path, url: `${SITE_BASE}/${segments.join('/')}.md` });

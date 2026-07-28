@@ -1,34 +1,33 @@
 # From Bank Account to First API Call
 
-Fund your agent with a bank account or card. Call any x402 API. No crypto experience needed.
+Fund your agent with a card or bank transfer, then let it pay for any API. Everything is in dollars — no wallet to set up, no crypto to buy.
 
 ---
 
 ## The flow
 
 ```
-Bank account / card
-  → Buy USDC via Coinbase (in the Floe dashboard)
-  → USDC lands in your agent's Floe-managed balance on Base
-  → Agent calls x402 APIs — Floe funds each payment from the balance automatically
+Card / Apple Pay / Google Pay / bank transfer
+  → Add funds in the Floe dashboard (a dollar balance for your agent)
+  → Agent calls any API — Floe pays each one from the balance automatically
   → Top up when the balance runs low
 ```
 
-Your agent never touches crypto directly. Floe handles all blockchain transactions — gas-free.
+Your agent never manages a wallet or touches crypto. Floe settles every payment behind the scenes — nothing to sign, no network fees to cover.
 
 ---
 
 ## Step 1 — Sign in to the dashboard
 
-Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with email, Google, or a wallet. Create an agent — Floe provisions a custodial wallet for it. No seed phrase, no MetaMask.
+Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with email, Google, or a wallet. Create an agent — Floe provisions everything it needs in the background. No seed phrase, no MetaMask.
 
 ---
 
-## Step 2 — Fund with fiat
+## Step 2 — Add funds
 
-Click **Fund Wallet** in the dashboard. Coinbase processes the purchase — credit card, debit card, Apple Pay, Google Pay, or bank transfer. USDC arrives in your agent's balance on Base within minutes.
+Click **Fund Wallet** in the dashboard and pay with **card, Apple Pay, Google Pay, or bank transfer**. The balance shows in dollars and arrives within seconds — ready to spend on the next call.
 
-No crypto exchange account needed. No bridging. No gas tokens.
+No exchange account, no setup, nothing to convert.
 
 ---
 
@@ -40,12 +39,12 @@ Cap what the agent can spend before it makes its first call — per call, per da
 
 ---
 
-## Step 4 — Call any x402 API
+## Step 4 — Call any API
 
-Your agent calls `POST /v1/proxy/fetch` with any URL. Floe funds the payment from the agent's Floe-managed balance, signs it, and returns the API response. The agent never sees USDC, never signs a transaction, never pays gas.
+Your agent calls `POST /v1/proxy/fetch` with any URL. Floe pays the vendor from the agent's balance and returns the API response. The agent only ever sees dollars and the response — nothing to sign, no network fees.
 
 ```typescript
-// Every call — zero transactions, zero gas
+// Every call — one request, priced in dollars
 await agent.run("x402_fetch", {
   url: "https://api.example.com/premium/data",
 });
@@ -63,22 +62,22 @@ When the balance runs low, top up from the dashboard. You can wire a low-balance
 
 | Item | Cost |
 |---|---|
-| Fiat → USDC | Coinbase fees (typically ~1.5%) |
-| x402 API calls | Whatever the API charges (deducted from your balance) |
-| Gas | **Free** — Floe sponsors all blockchain transactions |
+| Adding funds | A small processing fee on card/bank funding (typically ~1.5%) |
+| API calls | Whatever the API charges (deducted from your balance) |
+| Network fees | **None** — Floe covers settlement for you |
 
 ---
 
 ## FAQ
 
-**Do I need ETH for gas?**
-No. Floe sponsors all gas for agents using the facilitator.
+**Do I need to hold any crypto or cover network fees?**
+No. Floe settles every payment for you — you only ever fund and spend in dollars.
 
 **What if my agent runs out of money?**
-The facilitator returns `402 insufficient_balance` with the available and required amounts. Top up the balance from the dashboard.
+The proxy returns `402 insufficient_balance` with the available and required amounts. Top up the balance from the dashboard.
 
 **Can I withdraw my balance?**
-Yes — the USDC is your agent's. Manage it from the dashboard.
+Yes — the balance is your agent's. Manage or withdraw it from the dashboard.
 
 ---
 
