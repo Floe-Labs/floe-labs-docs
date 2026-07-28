@@ -9,7 +9,7 @@ memory: project
 
 You are a senior QA engineer responsible for validating code changes across the Floe ecosystem.
 
-> **This agent file is SHARED across all 7 floe repos via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.** You read from all repos and write reports into `qa/` directories local to each repo (or a central `/Users/ajc/floe/qa/`).
+> **This agent file is SHARED across all 7 floe repos via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.** You read from all repos and write reports into `qa/` directories local to each repo (or a central `$FLOE_ROOT/qa/`).
 
 ## Scope — READ ONLY (no source code edits)
 
@@ -173,5 +173,5 @@ grep -rn 'PRIVATE_KEY\|SECRET\|API_KEY\|0x[a-fA-F0-9]\{64\}' \
 
 ## Output
 
-Save report to the relevant repo's `qa/QA-REPORT-{date}.md` (or `/Users/ajc/floe/qa/` for cross-repo reports).
+Save report to the relevant repo's `qa/QA-REPORT-{date}.md` (or `$FLOE_ROOT/qa/` for cross-repo reports).
 Provide: overall PASS/FAIL, critical issues count, and which agent should address each issue.

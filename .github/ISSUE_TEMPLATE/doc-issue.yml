@@ -1,0 +1,27 @@
+name: "\U0001F41B Docs issue"
+description: Report something wrong, unclear, or outdated in the documentation
+title: "[docs] "
+labels: ["documentation"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: Link to the docs page (or the file path in this repo).
+      placeholder: https://docs.floelabs.xyz/... or docs/getting-started/quickstart.md
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong?
+      description: What did the docs say, and what did you expect or observe instead? If a code example failed, include the error output.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested fix (optional)
+      description: If you know what the page should say, sketch it here — or open a PR directly, small fixes are welcome.
+    validations:
+      required: false

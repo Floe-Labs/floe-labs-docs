@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Floe-Labs/floe-labs-docs/blob/main/SECURITY.md
+    about: Please report security issues privately — never in a public issue.
+  - name: Product support
+    url: mailto:hello@floelabs.xyz
+    about: Questions about your account, funding, or the dashboard.
+  - name: Floe Dashboard
+    url: https://dev-dashboard.floelabs.xyz
+    about: Sign in to manage agents, keys, and budgets.

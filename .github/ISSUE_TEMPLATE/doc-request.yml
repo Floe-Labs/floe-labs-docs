@@ -1,0 +1,26 @@
+name: "\U0001F4A1 Docs request"
+description: Request documentation that doesn't exist yet
+title: "[request] "
+labels: ["documentation", "enhancement"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: What were you trying to do?
+      description: Describe the task you were working on when you couldn't find what you needed.
+    validations:
+      required: true
+  - type: textarea
+    id: missing
+    attributes:
+      label: What's missing?
+      description: What guide, reference, or example would have unblocked you?
+    validations:
+      required: true
+  - type: input
+    id: framework
+    attributes:
+      label: Framework / language (optional)
+      placeholder: e.g. LangChain + Python, Vercel AI SDK, plain REST
+    validations:
+      required: false

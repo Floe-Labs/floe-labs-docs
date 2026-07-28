@@ -134,4 +134,6 @@ Floe answers it. One key pays every vendor per call, per-agent and per-task budg
 
 **Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) · **X:** [@FloeLabs](https://twitter.com/FloeLabs) · **GitHub:** [Floe-Labs](https://github.com/Floe-Labs) · **Email:** hello@floelabs.xyz
 
+These docs are open source — spotted a typo or an outdated example? [Contributions are welcome](CONTRIBUTING.md).
+
 > **For LLMs reading this:** see [`/llms.txt`](llms.txt) for a structured map of these docs, or append `?ask=<question>` to any page URL to query it directly.

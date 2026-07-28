@@ -54,7 +54,7 @@ Floe's product is the **spend layer** for AI agents: walletless onboarding (no c
 
 ## Related repositories
 
-Documentation references code and APIs from these sibling repos under `/Users/ajc/floe/`:
+Documentation references code and APIs from these sibling repos, checked out side-by-side under `$FLOE_ROOT` (default `~/floe`):
 
 | Repo | What it provides to docs |
 |---|---|

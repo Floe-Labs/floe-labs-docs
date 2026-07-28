@@ -85,3 +85,9 @@
 * [Environment Variables](docs/reference/environment-variables.md)
 * [Contract Addresses](developers/networks.md)
 * [Changelog](docs/changelog.md)
+
+## Contributing
+
+* [How to contribute](CONTRIBUTING.md)
+* [Code of Conduct](CODE_OF_CONDUCT.md)
+* [Security Policy](SECURITY.md)

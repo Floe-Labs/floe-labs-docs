@@ -1,6 +1,6 @@
 # Floe Ecosystem — Shared Agent Team
 
-This directory defines a **shared agent team** used across all 7 Floe repositories under `/Users/ajc/floe/`.
+This directory defines a **shared agent team** used across all 7 Floe repositories, checked out side-by-side under `$FLOE_ROOT` (default `~/floe`).
 
 ## How the sharing works
 
@@ -80,10 +80,10 @@ Check `stat -f "%i" /path/to/agent.md` in both repos. If the inodes differ, the 
 You (or a tool) probably `rm`'d them across repos and decremented the link count to zero. Recover from git: `git restore .claude/agents/` in any repo where they were committed, then run `scripts/sync-agents.sh`.
 
 **Problem: An agent complains about file permissions when trying to modify sibling repos.**
-Sub-agents inherit the primary working directory of the parent Claude session. If you launched from `/Users/ajc/floe`, they can see all repos but may hit per-agent scope rules. Launch Claude from inside the specific repo when you want per-repo sandboxing.
+Sub-agents inherit the primary working directory of the parent Claude session. If you launched from `$FLOE_ROOT`, they can see all repos but may hit per-agent scope rules. Launch Claude from inside the specific repo when you want per-repo sandboxing.
 
 ## Related config
 
 - `~/.claude/settings.json` — contains `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
-- `/Users/ajc/floe/.claude/settings.local.json` — per-project Claude permissions
-- `/Users/ajc/floe/scripts/sync-agents.sh` — manual hardlink sync fallback
+- `$FLOE_ROOT/.claude/settings.local.json` — per-project Claude permissions
+- `$FLOE_ROOT/scripts/sync-agents.sh` — manual hardlink sync fallback
