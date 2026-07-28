@@ -19,6 +19,7 @@
 * [Floe Inference — keyless LLM & voice](docs/developers/keyless-inference.md)
 * [Unified Billing & Ledger](docs/build/unified-ledger.md)
 * [Budget-Aware Routing](docs/build/budget-aware-routing.md)
+* [Latency & overhead](docs/build/latency-overhead.md)
 
 ## Vendor Marketplace
 
