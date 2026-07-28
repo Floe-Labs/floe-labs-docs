@@ -5,9 +5,9 @@
 ## Start here
 
 * [Set up with your AI tools](docs/getting-started/setup-with-ai-tools.md)
+* [Quickstart (5 minutes)](docs/getting-started/quickstart.md)
 * [Installation](docs/getting-started/installation.md)
 * [Authentication](docs/getting-started/authentication.md)
-* [Quickstart (5 minutes)](docs/getting-started/quickstart.md)
 * [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md)
 * [Funding your agent](docs/getting-started/funding.md)
 * [Pricing & cost](docs/getting-started/pricing.md)
@@ -15,8 +15,8 @@
 ## The voice stack
 
 * [The Voice Stack — overview](docs/build/voice-stack.md)
-* [Floe Inference — keyless LLM & voice](docs/developers/keyless-inference.md)
 * [Floe Phone — numbers & telephony](docs/developers/floe-phone.md)
+* [Floe Inference — keyless LLM & voice](docs/developers/keyless-inference.md)
 * [Unified Billing & Ledger](docs/build/unified-ledger.md)
 * [Budget-Aware Routing](docs/build/budget-aware-routing.md)
 
@@ -33,8 +33,6 @@
 * [Browser](docs/x402-directory/browser.md)
 * [Memory](docs/x402-directory/database.md)
 * [Agent Tools](docs/x402-directory/agent-tools-verified.md)
-* [Venice AI — Model Inference](docs/developers/venice.md)
-* [Sarvam AI — Indic Inference](docs/developers/sarvam.md)
 * [Submit an API](docs/x402-directory/submit.md)
 
 ## Core concepts
@@ -43,31 +41,30 @@
 * [Spend Controls](docs/developers/spend-controls.md)
 * [Agent Awareness](docs/developers/agent-awareness.md)
 
-## Guides
+## Cookbook
 
-* [Agent Quickstart](docs/agents/quickstart-agents.md)
-* [Agent Operators — From Bank Account to First API Call](docs/agents/fiat-to-x402.md)
-* [Agent Operators — How Agents Pay With Floe](docs/agents/credit-for-agents.md)
+* [Floe Cookbook — example agents](https://github.com/Floe-Labs/floe-cookbook)
+* [Eve — reference voice agent](https://github.com/Floe-Labs/eve-floe)
 
 ## Frameworks
 
-* [Coinbase AgentKit](docs/frameworks/agentkit.md)
-  * [TypeScript SDK](docs/developers/agentkit-typescript.md)
-  * [Python SDK](docs/developers/agentkit-python.md)
+* [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md)
+* [Plain HTTP / REST](docs/frameworks/http.md)
 * [LangChain](docs/frameworks/langchain.md)
-* [Vercel AI SDK](docs/frameworks/vercel-ai.md)
 * [CrewAI](docs/frameworks/crewai.md)
 * [OpenAI Agents SDK](docs/frameworks/openai.md)
 * [Claude Desktop / Claude Code / Cursor (MCP)](docs/frameworks/claude-mcp.md)
-* [Plain HTTP / REST](docs/frameworks/http.md)
-* [Floe Cookbook — example agents](https://github.com/Floe-Labs/floe-cookbook)
-* [Eve — reference voice agent](https://github.com/Floe-Labs/eve-floe)
+* [Vercel AI SDK](docs/frameworks/vercel-ai.md)
+* [Coinbase AgentKit](docs/frameworks/agentkit.md)
+  * [TypeScript SDK](docs/developers/agentkit-typescript.md)
+  * [Python SDK](docs/developers/agentkit-python.md)
 
 ## Developers
 
 * [Developer Dashboard](docs/developers/developer-dashboard.md)
 * [Floe CLI](docs/developers/cli.md)
 * [API Keys](docs/developers/api-keys.md)
+* [From Bank Account to First API Call](docs/agents/fiat-to-x402.md)
 * [Agent Runtime Contract](docs/developers/agent-runtime-contract.md)
 * [Payment Facilitator](docs/developers/x402-facilitator.md)
 * [Marketplace Shim](docs/developers/marketplace-shim.md)
@@ -83,5 +80,4 @@
 
 * [Error Codes](docs/reference/error-codes.md)
 * [Environment Variables](docs/reference/environment-variables.md)
-* [Contract Addresses](developers/networks.md)
 * [Changelog](docs/changelog.md)

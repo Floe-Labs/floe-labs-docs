@@ -48,6 +48,7 @@ const pages: Page[] = [];
 let section = '';
 let parentSlug = '';
 let skippedExternal = 0;
+const seen = new Set<string>();
 
 for (const line of summary.split('\n')) {
   const heading = line.match(/^##\s+(.*)$/);
@@ -65,15 +66,31 @@ for (const line of summary.split('\n')) {
     continue;
   }
 
-  const slug = pageSlug(target);
+  // Strip any #fragment — anchor-only nav entries (e.g. voice.md#stt) point INTO
+  // an existing page — and dedupe so a page referenced by several anchor entries
+  // is included in the corpus exactly once.
+  const path = target.split('#')[0];
+  if (!path) continue;
+
+  // Compute nesting/slug BEFORE the dedupe check: a duplicated top-level page is
+  // still a parent for the nested entries that follow it, so parentSlug must be
+  // updated even when the page itself is skipped from the corpus.
+  const slug = pageSlug(path);
   const nested = indent.length > 0;
+
+  if (seen.has(path)) {
+    if (!nested) parentSlug = slug;
+    continue;
+  }
+  seen.add(path);
+
   if (!nested) {
     const segments = [section, slug].filter(Boolean);
-    pages.push({ title, path: target, url: `${SITE_BASE}/${segments.join('/')}.md` });
+    pages.push({ title, path, url: `${SITE_BASE}/${segments.join('/')}.md` });
     parentSlug = slug;
   } else {
     const segments = [section, parentSlug, slug].filter(Boolean);
-    pages.push({ title, path: target, url: `${SITE_BASE}/${segments.join('/')}.md` });
+    pages.push({ title, path, url: `${SITE_BASE}/${segments.join('/')}.md` });
   }
 }
 

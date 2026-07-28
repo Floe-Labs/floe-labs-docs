@@ -94,7 +94,6 @@ The private key for the **facilitator EOA** — a purpose-built wallet that subm
 **Key ↔ address relationship.** The facilitator EOA address is the public half of this private key, derived via `address = keccak256(publicKey)[12:]`. The **address must be published** because every deployer passes it as the `operator` argument to `setOperator` when granting `OperatorPermission`. The **private key must stay secret** because it signs match and repay transactions.
 
 - **Floe-hosted mainnet facilitator EOA:** `0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1`
-  (see [Contract Addresses → x402 Credit Facilitator](../../developers/networks.md#x402-credit-facilitator))
 - **Generate for a private deployment:** `cast wallet new` — use a single-purpose wallet, never reuse an existing hot wallet.
 
 **What the EOA holds.** The facilitator EOA is a delegated *signer*, not a custodian. It should hold:

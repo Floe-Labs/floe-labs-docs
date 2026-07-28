@@ -6,7 +6,7 @@ icon: robot
 
 Floe is the spend layer for AI agents — one funded balance and one key that pays for search, scrape, voice, and LLM calls, all governed by server-side spend caps. And it's built so your coding agent does the setup: paste one prompt into Claude Code, Cursor, or Codex and it installs the MCP server or the CLI, provisions an agent, sets guardrails, and makes a real paid call.
 
-> **You do two things.** Sign in and mint a developer key; fund the balance when the welcome credit runs out. Your agent does everything else — see the [Agent Quickstart](../agents/quickstart-agents.md).
+> **You do two things.** Sign in and mint a developer key; fund the balance when the Welcome Credit runs out. Your agent does everything else — see the [Quickstart](quickstart.md).
 
 ---
 
@@ -196,7 +196,7 @@ That is **$0.001** against the **$3 welcome credit** your first agent starts wit
 
 ## Next steps
 
-- [Agent Quickstart](../agents/quickstart-agents.md) — the full human-does-two-things walkthrough
+- [Quickstart](quickstart.md) — create an agent, connect your tools, first paid call
 - [MCP Server](../developers/mcp-server.md) — all 65 tools with input schemas
 - [Floe CLI](../developers/cli.md) — every command, flag, and exit code
 - [Spend Controls](../developers/spend-controls.md) — the guardrails to set before you let it run

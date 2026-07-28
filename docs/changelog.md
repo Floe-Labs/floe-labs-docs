@@ -10,6 +10,19 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.18.0 — ICP restructure: one Quickstart, welcome-credit-first, Floe Phone up top (July 2026)
+
+The docs were restructured around the voice-operator ICP and the first-paid-call-via-Welcome-Credit journey.
+
+* **One Quickstart.** The separate "Agent Quickstart" was merged into [Quickstart](getting-started/quickstart.md), moved high in **Start here**, and reordered so the first paid call runs on the **$3 Welcome Credit (300 API credits)** — no card, no funding. Funding and budgets moved to a later step. The invalid "auto-recharge / topping up automatically" step was removed.
+* **Homepage aligned to the first payment.** The "4 steps" section now leads with the Welcome Credit; step 2 surfaces the copy-paste AI-tools prompts (`agents.md`, `claude mcp add …`, `npm i -g floe-agent`). The framework line reads *Pipecat, Vapi, Retell, ElevenLabs, LiveKit, Bland, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP* — no longer led by AgentKit.
+* **Floe Phone surfaced.** Floe Phone is now the first product under **The voice stack**.
+* **Vendor Marketplace tidied.** The standalone **Venice AI** and **Sarvam AI** nav entries were removed; both are now documented as providers under [Floe Inference](developers/keyless-inference.md), with the live model list at `GET /v1/models` (no upstream provider key needed; call it with your Floe agent key).
+* **Cookbook, not Guides.** The **Guides** section became **Cookbook** ([Floe Cookbook](https://github.com/Floe-Labs/floe-cookbook) + [Eve](https://github.com/Floe-Labs/eve-floe)). **Frameworks** was reorganized around the voice-first list; AgentKit remains reachable but is no longer the headline.
+* **Reference trimmed.** The **Contract Addresses** page was archived out of the nav — it doesn't serve the voice-operator ICP.
+
+→ [Quickstart](getting-started/quickstart.md) · [Set up with your AI tools](getting-started/setup-with-ai-tools.md) · [Floe Phone](developers/floe-phone.md) · [Floe Inference](developers/keyless-inference.md)
+
 ### v1.17.0 — Docs navigation reorg: LLM, marketplace, and Floe Phone surfaced (July 2026)
 
 The docs navigation was restructured around the voice-operator journey so the core surfaces stop hiding three levels deep.

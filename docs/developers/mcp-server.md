@@ -762,7 +762,7 @@ The MCP server is a thin HTTP client. All protocol logic, indexer queries, and R
 ## Next Steps
 
 - [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) — the copy-prompt, deep links, and per-client configs in one place
-- [Agent Quickstart](../agents/quickstart-agents.md) — the full bootstrap: provision, govern, pay
+- [Quickstart](../getting-started/quickstart.md) — the full bootstrap: provision, govern, pay
 - [Floe CLI](cli.md) — the same surface from a shell, with `--json` and semantic exit codes
 - [Credit REST API](credit-api.md) — direct HTTP integration without MCP
 - [Webhooks](webhooks.md) — get notified when spend, keys, or loans change state
