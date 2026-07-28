@@ -93,7 +93,7 @@ All are drop-in OpenAI-compatible:
 
 ## Models
 
-Every id is `provider/model`. **The live catalog is `GET /v1/models`** (keyless — no key required) — always resolve ids there at runtime. The full set below is what's live today: **121 models across 29 providers**.
+Every id is `provider/model`. **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key) — always resolve ids there at runtime. The full set below is what's live today: **121 models across 29 providers**.
 
 ### Text / reasoning
 
@@ -129,7 +129,7 @@ Every id is `provider/model`. **The live catalog is `GET /v1/models`** (keyless 
 ### Realtime voice
 `openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
 
-> **The live catalog is `GET /v1/models`** (keyless — no key required); it grows over time, so resolve ids there rather than pinning this list. Venice and Sarvam are inference providers above, not separate integrations. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, …) also live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`.
+> **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key); it grows over time, so resolve ids there rather than pinning this list. Venice and Sarvam are inference providers above, not separate integrations. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, …) also live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`.
 
 ## Chat completions
 
