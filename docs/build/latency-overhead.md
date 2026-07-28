@@ -2,43 +2,74 @@
 icon: gauge
 ---
 
-# Latency & overhead
+# Latency
 
-Floe sits between your agent and the vendor, so the only latency question that matters is: **how much does Floe add** versus calling the vendor directly? We measure that on every production call and publish it here.
+Floe sits in the request path between your agent and its vendors: one key routes calls to the model, STT, TTS, and telephony providers you already use, with spend controls enforced before the request goes out.
 
-{% hint style="info" %}
-**Non-streaming keyless is measured and live.** Streaming (to first token) and x402-proxy percentiles are still pending their own measurement. Every number here comes from production percentiles over real traffic — no placeholder or guessed values — so the remaining `__ ms` cells stay empty until they're measured the same way.
-{% endhint %}
+This page covers Floe's own overhead only — the added time on top of the vendor call itself — plus how we measured it and where it sits relative to the rest of a voice agent's latency budget.
 
-## Added latency (p50 / p99)
+## Headline numbers
 
-| Path | p50 added | p99 added |
+| Percentile | Overhead | What it means |
 |---|---|---|
-| **Keyless LLM — non-streaming** | **39 ms** | **181 ms** |
-| Keyless LLM — streaming (to first token) | `__ ms` _(pending)_ | `__ ms` _(pending)_ |
-| x402 proxy — per paid call | `__ ms` _(pending)_ | `__ ms` _(pending)_ |
+| p50 (median) | 38ms | Typical turn. Half of all calls come in under this. |
+| p99 (tail) | ~180ms | Worst-case turn. 99 out of 100 calls come in under this. |
 
-## What "added latency" means
+**Scope:** these figures measure only the routing, metering, and pre-transaction spend-control check Floe performs. They exclude:
 
-Floe's overhead is the wall-clock time Floe adds **on the critical path before your agent gets the response** — excluding the upstream vendor/model call itself and any settlement that happens after the response is already flowing. It's the number an evaluator measures with a stopwatch:
+- Model inference time
+- STT/TTS synthesis time
+- Telephony transport time
+- Network time between your infra and the vendor
 
-```
-Floe overhead = (time through Floe) − (time calling the vendor directly)
-```
+## Methodology
 
-Per path, that is:
+- **Metric:** `floe_overhead_ms` — wall-clock time added on the caller's critical path. Upstream provider latency is tracked separately as `upstream_latency_ms` and is not included. Asynchronous post-response settlement is also excluded, since it happens off the caller's critical path.
+- **Instrumentation point:** measured inside the gateway across the path Floe owns — authenticate and gate the spend → resolve and route the model → stream the response → settle the debit.
+- **Aggregation:** persisted per call on the request ledger (one row per settled call), aggregated with `percentile_disc` (nearest-rank) rather than interpolation.
+- **Rail scope:** measured on the **keyless rail** — where Floe fronts the upstream provider from a pooled credential. The proxy, BYOK, and x402-router paths have different overhead profiles and are reported separately; mixing rails would blur the number. Because the metric excludes upstream latency, which provider Floe fronts on the keyless rail doesn't change what's being measured.
+- **Window and sample:** rolling 1-hour window over live production traffic — keyless `/v1/chat/completions` calls, non-streaming. Two independent reads in the window: n=1,634 → p50 38ms / p99 166ms; n=2,141 → p50 39ms / p99 181ms. p50 is stable at 38–39ms; p99 varies within a 166–181ms band, reported as ~180ms.
 
-- **Keyless LLM (streaming):** gate + route + the pass-through of the first token. The model's own time-to-first-token is **upstream**, not Floe, and is excluded.
-- **Keyless LLM (non-streaming):** gate + route + metering and debit before the response returns.
-- **x402 proxy:** balance reserve + the EIP-3009 payment signing + the response hand-off. Persistence and settlement are deferred off the response path, so they don't count against you.
+This is a single-window snapshot on one rail, not a claim spanning every path through Floe. We'll widen the window and publish per-rail figures as volume grows on proxy, BYOK, and x402 traffic.
 
-## How we measure it
+## Why p99, not just p50
 
-- **Source:** production real-traffic percentiles, computed database-side over **every** recorded call in the window — not a sampled or synthetic benchmark.
-- **Window / sample size:** the non-streaming keyless figures are `percentile_disc` (nearest-rank) over a rolling **1-hour window**, **n = 2,141** production calls, on the keyless (Floe-fronted) rail. Because `floe_overhead_ms` excludes the upstream call, the specific provider behind the keyless rail doesn't change what's measured. Streaming and x402-proxy percentiles are pending a dedicated measurement.
-- Floe's added latency is recorded per call as `floe_overhead_ms`, separately from `upstream_latency_ms` (the vendor/model call itself).
-- `upstream_latency_ms` is time-to-first-**byte** — it may precede the first content token when a provider emits an early SSE keep-alive or role delta — so it's a diagnostic, not the headline.
+Median latency describes the typical request. It says nothing about the tail — and in voice, the tail is where users notice. A slow turn once every hundred calls is exactly the failure mode that makes an otherwise-solid voice agent feel broken. We report p99 alongside p50 because a bounded, measured tail is what makes a gateway safe to stop thinking about.
 
-## Why it's low
+<!-- PENDING SOURCES — do not publish until each figure has a citation.
+     Removed from the rendered page because these are unverified third-party
+     performance claims, which this page's own standard ("no guessed number
+     ships") disallows. Restore with a source link per row.
 
-One key, one hop. Floe's own work is arithmetic plus an in-memory affordability gate; nothing on the keyless path signs or waits on-chain. On the x402 proxy path the dominant cost is the payment-signing round-trip, which we continue to optimize.
+## How this compares to other gateways
+
+| Layer | Reported overhead | Basis |
+|---|---|---|
+| LiteLLM (proxy) | ~7.5ms | vendor-reported, mock upstream, median only |
+| Helicone (edge) | ~8ms p50 | vendor-reported, mock upstream |
+| Portkey | ~20–40ms | vendor + community-reported, real-world with routing/guardrails enabled |
+| OpenRouter | ~40ms | vendor's own "typical production" figure |
+| Floe (keyless rail) | 38ms p50 / ~180ms p99 | live production traffic, includes spend-control enforcement |
+
+Floe's median lands in the same range as Portkey and OpenRouter once routing and controls are active — not the bare pass-through numbers from LiteLLM or Helicone, which don't enforce spend limits at all.
+-->
+
+## Where this fits in your total budget
+
+Voice-infra teams generally target a **500–1,500ms voice-to-voice budget** (caller stops speaking → agent's audio starts) for a call that still feels conversational. That budget is spent mostly on:
+
+| Stage | Typical latency |
+|---|---|
+| STT (streaming) | ~150ms |
+| LLM response (time to first token, varies by model) | ~200–800ms+ |
+| TTS (low-latency "flash"-class) | ~75–85ms |
+| **Floe gateway overhead** | **38ms p50 / ~180ms p99** |
+
+At p50, Floe's overhead is roughly 2.5–7.6% of a 500–1,500ms budget. At p99, it's a minority share even of the tightest 500ms target. Against the LLM leg alone, 38ms is small relative to the 200–800ms+ that leg typically takes on its own.
+
+Human turn-taking gives useful context for why this budget exists at all: research on conversational timing across ten languages (Stivers et al., *PNAS*, 2009) found natural turn-transition gaps ranging from a few milliseconds up to roughly half a second depending on the language, with most languages' most common gap falling between 0 and 200ms. That's the reflex a voice agent is competing with — not an arbitrary UX target.
+
+## Related
+
+- [Spend controls](../developers/spend-controls.md) — what gets enforced pre-transaction and how
+- [Vendor marketplace](../x402-directory/README.md) — endpoints Floe routes today
