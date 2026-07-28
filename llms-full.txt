@@ -423,7 +423,7 @@ URL: https://floe-labs.gitbook.io/docs/start-here/quickstart.md
 
 # Quickstart (5 minutes)
 
-Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap every call with spend controls you set — per call, day, vendor, or team (set them once you've seen it work). That's the whole product: **a budget, not a balance.** No wallets to install, no keys to manage, no tokens to buy, no gas to pay.
+Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap every call with spend controls you set — per call, day, vendor, or team (set them once you've seen it work). That's the whole product: **a budget, not a balance.** No wallets to install, no provider or wallet keys to manage, no tokens to buy, no gas to pay.
 
 > **$3 Welcome Credit (300 API credits).** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. The grant is once per account, not per agent. [Get started →](https://dev-dashboard.floelabs.xyz)
 
@@ -3714,7 +3714,7 @@ One Floe spend ceiling caps your crew's **paid tool calls** — and, **when you 
 
 > Your 3 AM infinite loop dies at **$1**, not $414.
 
-CrewAI's most common production complaint is a runaway agentic loop quietly burning through tokens until you notice the bill. `crewai-floe` puts a real dollar ceiling around the whole crew. The cap is enforced by the Floe facilitator, not by the agent — so a confused or adversarial model can't talk its way past it. When you enable an allowlist, the agent can also only pay vendors you've named.
+CrewAI's most common production complaint is a runaway agentic loop quietly burning through tokens until you notice the bill. Floe puts a real dollar ceiling around the whole crew: a **server-side [spend control](../developers/spend-controls.md)** on your agent key. The cap is enforced by the Floe facilitator, not by the agent — so a confused or adversarial model can't talk its way past it. Scope the same policy to named vendors and the agent can only pay who you've allowed.
 
 ## Install
 
@@ -3732,23 +3732,30 @@ The same surface is available under `floe_agentkit_actions.integrations.crewai`.
 {% endtab %}
 {% endtabs %}
 
-You'll need a Floe API key from [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) — that's it. Floe manages the wallet, so there's no wallet provider or private key to configure ([Quickstart](../getting-started/quickstart.md)).
+You'll need a Floe agent key (`floe_…`) from [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) — that's it. Floe manages the wallet, so there's no wallet provider, private key, or gas to configure ([Quickstart](../getting-started/quickstart.md)).
 
 ## Quickstart
 
-`budget_enabled_agent()` provisions a credit line, wires in Floe's payment tools, and returns a **plain `crewai.Agent`** — no subclass, nothing that breaks when CrewAI bumps versions.
+Two Floe pieces wire into a plain `crewai.Agent`: **`Floe402Tool`** pays for x402 vendor APIs, and **`FloeLLM`** routes model tokens through Floe. Both draw on the **same prepaid balance** behind your one agent key, so a single spend control caps them together.
 
 ```python
-from crewai import Crew, Task
-from crewai_floe import budget_enabled_agent, FloeBudget, Floe402Tool
+import os
+from crewai import Agent, Crew, Task
+from crewai_floe import Floe402Tool, FloeLLM
 
-researcher = budget_enabled_agent(
+FLOE_API_KEY = os.environ["FLOE_API_KEY"]   # your floe_… agent key
+
+researcher = Agent(
     role="Market Researcher",
     goal="Pull pricing data from paid APIs and summarize it",
-    budget=FloeBudget(usd_limit=5),          # hard ceiling for this agent
-    wallet_provider=wallet_provider,
-    provider_key=OPENAI_API_KEY,             # your key, pass-through only
-    tools=[Floe402Tool(url="https://api.somevendor.com/quote")],
+    backstory="Finds and summarizes live quotes.",
+    tools=[Floe402Tool(url="https://api.somevendor.com/quote", api_key=FLOE_API_KEY)],
+    llm=FloeLLM(
+        model="openai/gpt-4o",
+        proxy_base_url="https://credit-api.floelabs.xyz/v1/llm",
+        credit_key=FLOE_API_KEY,                     # authenticates + identifies your balance
+        provider_key=os.environ["OPENAI_API_KEY"],   # pass-through to OpenAI, never persisted
+    ),
 )
 
 crew = Crew(agents=[researcher], tasks=[Task(
@@ -3760,23 +3767,23 @@ crew = Crew(agents=[researcher], tasks=[Task(
 crew.kickoff()
 ```
 
-The crew spends real USDC against the Floe credit line — but never more than `$5`, total, across every tool call and every token.
+Every tool call and every token is paid from the balance behind `FLOE_API_KEY`. Set a spend control on that key (see [The ceiling](#the-ceiling-a-server-side-spend-control) below) and the crew can never spend past it.
 
 ### Paying for tools — `Floe402Tool`
 
-`Floe402Tool(url=...)` is a `crewai.tools.BaseTool` that calls any of the **2,000+ vendor API services** reachable through [x402](../developers/x402-facilitator.md). Each call routes through the Floe facilitator, which funds the payment from your agent's Floe-managed balance, signs the EIP-3009 payment, and returns the response.
+`Floe402Tool` is a `crewai.tools.BaseTool` that calls any of the **2,000+ vendor API services** reachable through [x402](../developers/x402-facilitator.md). Each call routes through the Floe facilitator, which funds the payment from your prepaid balance, signs the payment, and returns the response. The agent never holds USDC or an API key, never signs a transaction, never pays gas.
 
 ```python
 from crewai_floe import Floe402Tool
 
-quote_tool = Floe402Tool(url="https://api.somevendor.com/quote")
+quote_tool = Floe402Tool(url="https://api.somevendor.com/quote", api_key=FLOE_API_KEY)
 ```
 
-No API key on the tool, no USDC in the agent's hands. The agent never signs a transaction or pays gas.
+Pass a `ledger=[]` list to record each call's cost as structured data (`{"url", "cost", "cost_raw", "tool"}`) instead of parsing it out of the response.
 
 ### Paying for LLM tokens — `FloeLLM`
 
-`FloeLLM` is a thin `crewai.LLM` that routes model calls through Floe so token spend is debited from the **same** credit line as your tool calls. That's how one ceiling covers both planes.
+`FloeLLM` is a thin `crewai.LLM` that routes model calls through Floe's metered proxy so token spend is debited from the **same** balance as your tool calls. That's how one ceiling covers both planes.
 
 ```python
 from crewai_floe import FloeLLM
@@ -3784,86 +3791,36 @@ from crewai_floe import FloeLLM
 llm = FloeLLM(
     model="openai/gpt-4o",
     proxy_base_url="https://credit-api.floelabs.xyz/v1/llm",
-    credit_key=FLOE_API_KEY,     # authenticates + identifies the credit line
-    provider_key=OPENAI_API_KEY, # pass-through to OpenAI, never persisted
-)
-
-agent = budget_enabled_agent(
-    role="Analyst", goal="...", budget=FloeBudget(usd_limit=5),
-    wallet_provider=wallet_provider, llm=llm,
+    credit_key=FLOE_API_KEY,                     # authenticates + identifies your balance
+    provider_key=os.environ["OPENAI_API_KEY"],   # pass-through to OpenAI, never persisted
 )
 ```
 
-If you don't pass `llm`, `budget_enabled_agent()` builds one for you from `provider_key`.
+Floe holds no provider keys: your `provider_key` is supplied per request, used to reach the provider, and **never persisted**. Tokens are priced at **provider cost** (from the LiteLLM cost map) plus roughly a **5% safety buffer** — at-cost, Floe takes no margin on tokens.
 
-## Merchant allowlist (opt-in)
+> **Open-weight models, zero extra infra.** Some providers (e.g. Venice) are already x402 vendors, so calls to them are just paid tool calls through `Floe402Tool` — every Floe control governs them with nothing extra to run. The honest caveat: the x402-native models available today are open-weight (Llama, Qwen, etc.). For GPT-4o and Claude, route through `FloeLLM`.
 
-By default, the agent can pay **any** vendor — no enumeration, no setup. This keeps onboarding frictionless.
+## The ceiling — a server-side spend control
 
-Supplying `allow={...}` flips the agent to **default-deny**: it may only pay the hosts and payees you list, each with its own sub-cap. Enforcement is **server-side at two points**:
+The hard dollar limit is a **[spend control](../developers/spend-controls.md)** on your agent key, not anything in the agent's code. Set it once (dashboard or API) and Floe enforces it on every call it settles:
 
-- **Host check (pre-fetch):** before Floe fetches the URL, the destination host must be on the list, or the request fails `403 host_not_allowlisted`.
-- **Payee check (post-402, pre-sign):** after the merchant returns its payment requirement, the actual payee address must be on the list, or Floe refuses to sign — `403 vendor_not_allowlisted`. This blocks the "allowlisted host redirects payment to an attacker" attack.
+- **Per-task, per-day, or per-team caps** — bound a single run, a rolling day, or your whole team.
+- **Per-vendor caps** — cap what any one x402 vendor can be paid; a vendor policy set to default-deny becomes an allowlist, so the crew can only pay hosts and payees you've named.
+- **Policy kill-switch** — when a cap is breached, the call is refused (`402` / `429`), `crewai.LLM.call()` raises, and **the crew halts.** This is the actual stop: the 3 AM loop dies at your cap, server-side, no matter what the model does.
 
-```python
-budget = FloeBudget(
-    usd_limit=5,
-    allow={
-        "api.venice.ai": "$2",         # at most $2 to this x402 vendor host/payee
-        "api.somevendor.com": "$1",
-    },
-)
-```
+Because both `Floe402Tool` and `FloeLLM` route through Floe, one policy bounds the entire crew — tool spend and token spend on one ledger. See [Spend Controls](../developers/spend-controls.md) for policy types, time windows, and value-aware caps.
 
-Both checks run inside the Floe facilitator, so they hold even if a tool is misconfigured or bypassed on the client. `allow=None` (the default) means allow-any.
+> **Per-role caps.** Want a Researcher capped at $1 and a Buyer at $5, independently? Give each crew member its own agent key — Floe allows up to 5 managed agents per developer, each with its own key and its own spend control — and pass that key to the role's `Floe402Tool` and `FloeLLM`.
 
-> **Allowlist scope.** Hosts on this list are matched against x402 payments routed through the Floe proxy. A direct call to a model provider with your own key (e.g. `api.openai.com`, not routed through `FloeLLM`) never reaches Floe, so listing it here has no effect. To cap frontier-model token spend, route through `FloeLLM` — the host then becomes `credit-api.floelabs.xyz`.
+## Budget awareness (optional)
 
-## LLM cost control
+Beyond the hard cap, a crew can *see* how much room it has left and plan accordingly. When your operator enables it, every paid response carries an **`X-Floe-Budget-Advisory`** header reporting remaining headroom on the tightest active cap — so an agent can downgrade to a cheaper model or change path **before** it hits a hard `402`. It's off by default; see the [Agent Runtime Contract](../developers/agent-runtime-contract.md#context-aware-spend-advisory).
 
-The runaway-loop problem lives in the **LLM plane**. Floe brings it under the credit-line ceiling two ways — and the boundary between them is worth stating plainly.
-
-**Path A — x402-native LLMs (zero extra infra, today).**
-Some model providers (e.g. Venice) are already x402 vendors. Calls to them are just paid tool calls, so every Floe control — the credit-line ceiling, the allowlist, spend limits — governs them with **nothing extra to run**. The honest caveat: the x402-native models available today are open-weight models (Llama, Qwen, etc.), not GPT-4o or Claude.
-
-**Path B — GPT-4o / Claude via the metered proxy.**
-For the closed frontier models, route through the Floe-metered LiteLLM proxy (`FloeLLM` above). It:
-
-- Checks credit-line headroom **before** each call. If the ceiling is reached, it refuses (`402` / `429`), the `crewai.LLM.call()` raises, and **the crew halts.** This is the actual kill-switch.
-- Meters token usage **after** each call and debits the credit line — the same USDC envelope as tools, so one ceiling covers both.
-- Prices at **provider cost** (from the LiteLLM cost map) plus roughly a **5% safety buffer**. At-cost — Floe takes no margin on tokens.
-- Treats your `provider_key` as **pass-through**: it's supplied per request, used to call the provider, and **never persisted**. Floe holds no provider keys.
-
-So: open models get a hard cap today with zero new infra; GPT-4o and Claude get a hard cap through the proxy. Either way the dollar ceiling is real and server-enforced.
-
-## Budget awareness
-
-Beyond the hard cap, a crew can *see* how much room it has left and plan accordingly:
-
-- **`X-Floe-Budget-Advisory` header** — every paid response carries the tightest current cap's remaining headroom and utilization.
-- **`floe_budget_status` tool** — added automatically when `budget_aware=True`; lets an agent query its remaining budget mid-run.
-- **Budget-aware backstory** — `budget_enabled_agent(budget_aware=True)` injects instructions telling the agent to taper work and finish within budget.
-
-```python
-agent = budget_enabled_agent(
-    role="Analyst", goal="...",
-    budget=FloeBudget(usd_limit=5),
-    wallet_provider=wallet_provider,
-    provider_key=OPENAI_API_KEY,
-    budget_aware=True,   # adds floe_budget_status + budget-aware backstory
-)
-```
-
-**This is a soft signal.** LLMs honor it unreliably — a model can ignore its own backstory. Budget awareness is upside for cleaner planning; the **hard cap is the real protection**. Don't rely on the advisory to stop a loop. Rely on the ceiling.
+**This is a soft signal.** LLMs honor it unreliably — a model can ignore its own instructions. Budget awareness is upside for cleaner planning; the **spend control is the real protection**. Don't rely on the advisory to stop a loop. Rely on the cap.
 
 ## Demos
 
-Two runnable crews live in [`floe-cookbook/crewai-demo`](https://github.com/Floe-Labs/floe-cookbook/tree/main/crewai-demo):
-
-- **`loop_kill.py`** — the headline. A crew rigged to infinite-loop on GPT/Claude through the metered proxy with `FloeBudget(usd_limit=1)`. Without Floe it would burn money until you noticed; with Floe the proxy refuses past `$1` and the crew stops dead. It prints total spend at the halt.
-- **`procurement_crew.py`** — a Researcher → Buyer → Manager crew with an allowlist. The Buyer tries an off-allowlist host (hard-stopped with `host_not_allowlisted`) and tries to overspend its sub-cap (hard-stopped). The per-agent spend ledger is printed at the end.
-
-Both demos and their environment setup are documented in the example's `README.md`.
+Runnable crews live in [`floe-cookbook/crewai-demo`](https://github.com/Floe-Labs/floe-cookbook/tree/main/crewai-demo): a `loop_kill.py` that rigs an infinite loop and shows Floe refuse the call past the cap, and a `procurement_crew.py` Researcher → Buyer → Manager crew with per-vendor allowlisting. Setup is in the example's `README.md`.
 
 ==============================================================================
 # OpenAI Agents SDK
