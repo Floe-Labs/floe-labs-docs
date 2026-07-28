@@ -45,7 +45,7 @@ Your agent calls `POST /v1/proxy/fetch` with any URL. Floe pays the vendor from 
 
 ```typescript
 // Every call — one request, priced in dollars
-await agent.run("x402_fetch", {
+await agentkit.run("x402_fetch", {
   url: "https://api.example.com/premium/data",
 });
 ```
