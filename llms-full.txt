@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 47 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 48 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -22,6 +22,7 @@
 - Floe Inference — keyless LLM & voice — https://floe-labs.gitbook.io/docs/the-voice-stack/keyless-inference.md
 - Unified Billing & Ledger — https://floe-labs.gitbook.io/docs/the-voice-stack/unified-ledger.md
 - Budget-Aware Routing — https://floe-labs.gitbook.io/docs/the-voice-stack/budget-aware-routing.md
+- Latency & overhead — https://floe-labs.gitbook.io/docs/the-voice-stack/latency-overhead.md
 - Overview — 2,000+ services — https://floe-labs.gitbook.io/docs/vendor-marketplace/x402-directory.md
 - Compute — https://floe-labs.gitbook.io/docs/vendor-marketplace/compute.md
 - STT — Speech-to-Text — https://floe-labs.gitbook.io/docs/vendor-marketplace/voice.md
@@ -1640,6 +1641,82 @@ Run it standalone when you have no Floe account yet, or alongside server-side Fl
 ## Next
 
 Once routing decisions are made, every call — downgraded, finished, or stopped — lands in one place. See [Unified Billing & Ledger](unified-ledger.md).
+
+==============================================================================
+# Latency & overhead
+Source: docs/build/latency-overhead.md
+URL: https://floe-labs.gitbook.io/docs/the-voice-stack/latency-overhead.md
+==============================================================================
+
+# Latency
+
+Floe sits in the request path between your agent and its vendors: one key routes calls to the model, STT, TTS, and telephony providers you already use, with spend controls enforced before the request goes out.
+
+This page covers Floe's own overhead only — the added time on top of the vendor call itself — plus how we measured it and where it sits relative to the rest of a voice agent's latency budget.
+
+## Headline numbers
+
+| Percentile | Overhead | What it means |
+|---|---|---|
+| p50 (median) | 38ms | Typical turn. Half of all calls come in under this. |
+| p99 (tail) | ~180ms | 99th-percentile turn. 99 out of 100 calls come in under this. |
+
+**Scope:** these figures measure only the routing, metering, and pre-transaction spend-control check Floe performs. They exclude:
+
+- Model inference time
+- STT/TTS synthesis time
+- Telephony transport time
+- Network time between your infra and the vendor
+
+## Methodology
+
+- **Metric:** `floe_overhead_ms` — the wall-clock time on Floe's critical path **minus** the upstream call it wraps (tracked separately as `upstream_latency_ms`). It is the *added* time, computed per call by subtracting upstream — not gateway time measured in isolation — so no separate "direct-to-vendor" control run is needed; upstream is subtracted on every call. Asynchronous post-response settlement is also excluded, since it happens off the caller's critical path.
+- **Instrumentation point:** measured inside the gateway across the path Floe owns — authenticate → gate the spend → resolve and route the model → return the response. The debit write is deferred until after the response is already flowing, so it falls outside this span (and this sample is non-streaming).
+- **Aggregation:** persisted per call on the request ledger (one row per settled call), aggregated with `percentile_disc` (nearest-rank) rather than interpolation.
+- **Rail scope:** measured on the **keyless rail** — where Floe fronts the upstream provider from a pooled credential. The proxy, BYOK, and x402-router paths have different overhead profiles and are reported separately; mixing rails would blur the number. Because the metric excludes upstream latency, which provider Floe fronts on the keyless rail doesn't change what's being measured.
+- **Window and sample:** rolling 1-hour window over live production traffic — keyless `/v1/chat/completions` calls, non-streaming. Two independent reads in the window: n=1,634 → p50 38ms / p99 166ms; n=2,141 → p50 39ms / p99 181ms. p50 is stable at 38–39ms; p99 varies within a 166–181ms band, reported as ~180ms.
+
+This is a single-window snapshot on one rail, not a claim spanning every path through Floe. We'll widen the window and publish per-rail figures as volume grows on proxy, BYOK, and x402 traffic.
+
+## Why p99, not just p50
+
+Median latency describes the typical request. It says nothing about the tail — and in voice, the tail is where users notice. A slow turn once every hundred calls is exactly the failure mode that makes an otherwise-solid voice agent feel broken. We report p99 alongside p50 because a bounded, measured tail is what lets a team judge whether the gateway fits their latency budget.
+
+## How this compares to other gateways
+
+Published overhead numbers for LLM gateways and proxies range from single-digit to triple-digit milliseconds — mostly because they measure different things. Most benchmarks run a bare proxy against a mocked upstream and report a median only, which removes both the largest real-world variable (actual provider response time) and the tail entirely.
+
+| Layer | Reported overhead | Basis |
+|---|---|---|
+| LiteLLM (proxy) | ~7.5ms | vendor-reported, mock upstream, median only |
+| Helicone (edge) | ~8ms p50 | vendor-reported, mock upstream |
+| Portkey | ~20–40ms | vendor + community-reported, real-world with routing/guardrails enabled |
+| OpenRouter | ~40ms | vendor's own "typical production" figure |
+| **Floe (keyless rail)** | **38ms p50 / ~180ms p99** | **live production traffic, includes spend-control enforcement** |
+
+Floe's median lands in the same range as Portkey and OpenRouter once routing and controls are active — not the bare pass-through numbers from LiteLLM or Helicone, which don't enforce spend limits at all. That's the fair comparison: Floe does more per call than a pure proxy, and the number reflects it. We're not aware of a published p99 from any of the above on live (non-mocked) traffic.
+
+## Where this fits in your total budget
+
+Voice-infra vendors generally target a **500–1,500ms voice-to-voice budget** (caller stops speaking → agent's audio starts) for a call that still feels conversational; independent production telemetry has put real deployments around p50 ~680ms / p95 ~1,180ms end-to-end. That budget is spent mostly on:
+
+| Stage | Typical latency |
+|---|---|
+| STT (e.g. Deepgram-class streaming) | ~150ms |
+| LLM response (time to first token, varies by model) | ~200–800ms+ |
+| TTS (e.g. Cartesia, ElevenLabs Flash-class) | ~75–85ms |
+| **Floe gateway overhead** | **38ms p50 / ~180ms p99** |
+
+_Per-stage figures are illustrative industry ranges (vendor docs and public benchmarks), not Floe measurements — your numbers vary by provider and model._
+
+At p50, Floe's overhead is roughly 2.5–7.6% of a 500–1,500ms budget. At p99, it's a minority share even of the tightest 500ms target. Against the LLM leg alone, 38ms is small relative to the 200–800ms+ that leg typically takes on its own.
+
+Human turn-taking gives useful context for why this budget exists at all: research on conversational timing across ten languages (Stivers et al., *PNAS*, 2009) found natural turn-transition gaps as tight as 7ms and as loose as ~470–490ms depending on the language, with most languages' most common gap falling between 0 and 200ms. That's the reflex a voice agent is competing with — not an arbitrary UX target.
+
+## Related
+
+- [Spend controls](../developers/spend-controls.md) — what gets enforced pre-transaction and how
+- [Vendor marketplace](../x402-directory/README.md) — endpoints Floe routes today
 
 ==============================================================================
 # Overview — 2,000+ services
