@@ -13,7 +13,7 @@ This page covers Floe's own overhead only — the added time on top of the vendo
 | Percentile | Overhead | What it means |
 |---|---|---|
 | p50 (median) | 38ms | Typical turn. Half of all calls come in under this. |
-| p99 (tail) | ~180ms | Worst-case turn. 99 out of 100 calls come in under this. |
+| p99 (tail) | ~180ms | 99th-percentile turn. 99 out of 100 calls come in under this. |
 
 **Scope:** these figures measure only the routing, metering, and pre-transaction spend-control check Floe performs. They exclude:
 
@@ -24,8 +24,8 @@ This page covers Floe's own overhead only — the added time on top of the vendo
 
 ## Methodology
 
-- **Metric:** `floe_overhead_ms` — wall-clock time added on the caller's critical path. Upstream provider latency is tracked separately as `upstream_latency_ms` and is not included. Asynchronous post-response settlement is also excluded, since it happens off the caller's critical path.
-- **Instrumentation point:** measured inside the gateway across the path Floe owns — authenticate and gate the spend → resolve and route the model → stream the response → settle the debit.
+- **Metric:** `floe_overhead_ms` — the wall-clock time on Floe's critical path **minus** the upstream call it wraps (tracked separately as `upstream_latency_ms`). It is the *added* time, computed per call by subtracting upstream — not gateway time measured in isolation — so no separate "direct-to-vendor" control run is needed; upstream is subtracted on every call. Asynchronous post-response settlement is also excluded, since it happens off the caller's critical path.
+- **Instrumentation point:** measured inside the gateway across the path Floe owns — authenticate → gate the spend → resolve and route the model → return the response. The debit write is deferred until after the response is already flowing, so it falls outside this span (and this sample is non-streaming).
 - **Aggregation:** persisted per call on the request ledger (one row per settled call), aggregated with `percentile_disc` (nearest-rank) rather than interpolation.
 - **Rail scope:** measured on the **keyless rail** — where Floe fronts the upstream provider from a pooled credential. The proxy, BYOK, and x402-router paths have different overhead profiles and are reported separately; mixing rails would blur the number. Because the metric excludes upstream latency, which provider Floe fronts on the keyless rail doesn't change what's being measured.
 - **Window and sample:** rolling 1-hour window over live production traffic — keyless `/v1/chat/completions` calls, non-streaming. Two independent reads in the window: n=1,634 → p50 38ms / p99 166ms; n=2,141 → p50 39ms / p99 181ms. p50 is stable at 38–39ms; p99 varies within a 166–181ms band, reported as ~180ms.
@@ -34,11 +34,11 @@ This is a single-window snapshot on one rail, not a claim spanning every path th
 
 ## Why p99, not just p50
 
-Median latency describes the typical request. It says nothing about the tail — and in voice, the tail is where users notice. A slow turn once every hundred calls is exactly the failure mode that makes an otherwise-solid voice agent feel broken. We report p99 alongside p50 because a bounded, measured tail is what makes a gateway safe to stop thinking about.
+Median latency describes the typical request. It says nothing about the tail — and in voice, the tail is where users notice. A slow turn once every hundred calls is exactly the failure mode that makes an otherwise-solid voice agent feel broken. We report p99 alongside p50 because a bounded, measured tail is what lets a team judge whether the gateway fits their latency budget.
 
 ## How this compares to other gateways
 
-Published overhead numbers for LLM gateways and proxies span several orders of magnitude — mostly because they measure different things. Most benchmarks run a bare proxy against a mocked upstream and report a median only, which removes both the largest real-world variable (actual provider response time) and the tail entirely.
+Published overhead numbers for LLM gateways and proxies range from single-digit to triple-digit milliseconds — mostly because they measure different things. Most benchmarks run a bare proxy against a mocked upstream and report a median only, which removes both the largest real-world variable (actual provider response time) and the tail entirely.
 
 | Layer | Reported overhead | Basis |
 |---|---|---|
@@ -60,6 +60,8 @@ Voice-infra vendors generally target a **500–1,500ms voice-to-voice budget** (
 | LLM response (time to first token, varies by model) | ~200–800ms+ |
 | TTS (e.g. Cartesia, ElevenLabs Flash-class) | ~75–85ms |
 | **Floe gateway overhead** | **38ms p50 / ~180ms p99** |
+
+_Per-stage figures are illustrative industry ranges (vendor docs and public benchmarks), not Floe measurements — your numbers vary by provider and model._
 
 At p50, Floe's overhead is roughly 2.5–7.6% of a 500–1,500ms budget. At p99, it's a minority share even of the tightest 500ms target. Against the LLM leg alone, 38ms is small relative to the 200–800ms+ that leg typically takes on its own.
 
