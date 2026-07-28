@@ -204,6 +204,6 @@ New markets are added by governance and have their own default rate, default LTV
 
 ## Next
 
-- [How Agents Pay With Floe](../agents/credit-for-agents.md) — fund a balance, pay for APIs
-- [Working capital (on-chain)](../components/secured-credit.md) — the in-development credit path
+- [Quickstart](quickstart.md) — create an agent, connect your tools, first paid call
+- [From Bank Account to First API Call](../agents/fiat-to-x402.md) — fund a balance, pay for APIs
 - [Architecture](../protocol/architecture.md) — contracts and flow

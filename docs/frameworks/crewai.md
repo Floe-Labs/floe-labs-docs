@@ -28,7 +28,7 @@ The same surface is available under `floe_agentkit_actions.integrations.crewai`.
 {% endtab %}
 {% endtabs %}
 
-You'll need a Floe API key from [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and a wallet provider (see [Agent Quickstart](../agents/quickstart-agents.md)).
+You'll need a Floe API key from [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and a wallet provider (see [Quickstart](../getting-started/quickstart.md)).
 
 ## Quickstart
 

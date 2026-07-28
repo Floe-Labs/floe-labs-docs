@@ -169,7 +169,7 @@ Exit `5` from that last command means the balance is exhausted — run `floe fun
 
 ## Next steps
 
-- [Agent Quickstart](../agents/quickstart-agents.md) — the same flow with REST equivalents
+- [Quickstart](../getting-started/quickstart.md) — the same flow with REST equivalents
 - [MCP Server](mcp-server.md) — the same surface as MCP tools, for clients that prefer tool calls
 - [Agent Runtime Contract](agent-runtime-contract.md) — error matrix and retry rules
 - [TypeScript SDK](agentkit-typescript.md) — the same package's `FloeAgent` client and AgentKit actions

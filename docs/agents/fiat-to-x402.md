@@ -55,7 +55,7 @@ await agent.run("x402_fetch", {
 
 ## Step 5 — Top up
 
-When the balance runs low, top up from the dashboard or set auto-recharge (e.g. "add $50 when balance falls below $10"). You can also wire a webhook to be notified before the agent runs dry.
+When the balance runs low, top up from the dashboard. You can wire a low-balance webhook to be notified before the agent runs dry — see [Webhooks](../developers/webhooks.md).
 
 ---
 
@@ -82,15 +82,9 @@ Yes — the USDC is your agent's. Manage it from the dashboard.
 
 ---
 
-## Advanced (in development)
-
-Borrowing USDC working capital against on-chain collateral (instead of pre-funding the balance) is **in development** and not generally available. See [Working capital (on-chain)](../components/secured-credit.md).
-
----
-
 ## Next
 
 - [Quickstart](../getting-started/quickstart.md) — first paid API call in 5 minutes
-- [How Agents Pay With Floe](credit-for-agents.md) — full overview
-- [x402 Credit Facilitator](../developers/x402-facilitator.md) — facilitator API reference
+- [Funding your agent](../getting-started/funding.md) — every funding method and low-balance alerts
+- [Payment Facilitator](../developers/x402-facilitator.md) — facilitator API reference
 - [Developer Dashboard](../developers/developer-dashboard.md) — manage agents, keys, webhooks

@@ -4,33 +4,76 @@ icon: rocket
 
 # Quickstart (5 minutes)
 
-Create an agent, give it a Floe-managed balance, then let it pay for any x402 API — every call governed by spend controls you set. That's the whole product: **a budget, not a balance.** No wallets to install, no keys to manage, no tokens to buy, no gas to pay.
+Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Every call is governed by spend controls you set. That's the whole product: **a budget, not a balance.** No wallets to install, no keys to manage, no tokens to buy, no gas to pay.
 
-> **$3 Welcome Credit.** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. [Get started →](https://dev-dashboard.floelabs.xyz)
->
-> **Want your coding agent to do this instead?** Paste one prompt into Claude Code, Cursor, or Codex and it installs a client, provisions the agent, sets the guardrails, and makes the first paid call — see [Set up with your AI tools](setup-with-ai-tools.md) and the [Agent Quickstart](../agents/quickstart-agents.md).
+> **$3 Welcome Credit (300 API credits).** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. The grant is once per account, not per agent. [Get started →](https://dev-dashboard.floelabs.xyz)
 
 ---
 
 ## 1. Create an agent
 
-Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once.
+Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email, Google, or a wallet, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once.
 
-That's it. No "connect wallet" step. We provision everything your agent needs in the background.
+Floe provisions everything your agent needs in the background — a managed wallet and the **$3 Welcome Credit**. No "connect wallet" step, no MetaMask, no seed phrase.
 
-## 2. Fund it
+## 2. Connect to your AI tools & models
 
-In the dashboard, click **Fund Wallet** on the agent and pay with **card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds.
+Point your coding agent at Floe and it does the setup for you — installs a client, provisions an agent, sets guardrails, and makes a real paid call. Paste this into Claude Code, Cursor, or Codex:
 
-Suggested first amount: **$10**. That's enough to test the loop and call a few hundred x402 APIs at typical $0.001–$0.05 prices.
+```text
+Read https://dev-dashboard.floelabs.xyz/agents.md and set up Floe for this project.
+```
 
-## 3. Set a spend control (optional but recommended)
+`agents.md` is an executable runbook written for agents: it triages what you already have, installs the right client, states the key-handling rules, provisions an agent, and ends with a settled paid call.
 
-Cap what the agent can spend — per call, per day, per vendor, or across your whole team — before it makes its first call. Enforced server-side, so a runaway loop can't blow your budget. See [Spend Controls](../developers/spend-controls.md). (Scope note: Floe caps x402 payments made through the proxy, not LLM token bills you pay with your own provider key — see that page.)
+Prefer to wire it up yourself? Pick one client:
 
-## 4. Call any API
+{% tabs %}
+{% tab title="MCP" %}
+Claude Code, one line:
 
-Install the SDK and call `fetch`. If the API is x402-gated, payment happens automatically; if it's free, the request passes through. Either way, your agent's balance updates.
+```bash
+claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
+  --header "Authorization: Bearer YOUR_FLOE_KEY"
+```
+
+Any client that takes JSON (Cursor `.cursor/mcp.json`, VS Code):
+
+```json
+{
+  "mcpServers": {
+    "floe": {
+      "type": "http",
+      "url": "https://mcp.floelabs.xyz/mcp",
+      "headers": { "Authorization": "Bearer YOUR_FLOE_KEY" }
+    }
+  }
+}
+```
+
+Full reference: [MCP Server](../developers/mcp-server.md). Deep links and per-client configs: [Set up with your AI tools](setup-with-ai-tools.md).
+{% endtab %}
+{% tab title="CLI" %}
+```bash
+npm i -g floe-agent      # installs BOTH bins: `floe` and `floe-agent`
+floe status --json       # auth + capabilities + balance in one call
+```
+
+Full reference: [Floe CLI](../developers/cli.md).
+{% endtab %}
+{% tab title="SDK" %}
+```bash
+pip install floe-agentkit-actions      # Python
+npm install floe-agent                 # TypeScript
+```
+
+The SDK takes an **agent** key (`floe_…`), not a `floe_live_…` developer key. See [Set up with your AI tools](setup-with-ai-tools.md).
+{% endtab %}
+{% endtabs %}
+
+## 3. Make your first paid call
+
+Spend the **$3 Welcome Credit** — no card needed. Install the SDK and call `fetch`. If the API is x402-gated, payment happens automatically; if it's free, the request passes through. Either way, your agent's balance updates.
 
 {% tabs %}
 {% tab title="Python" %}
@@ -72,25 +115,32 @@ console.log(`Spent $${result.cost.toFixed(4)} on this call.`);
 console.log(`Balance: $${(await agent.balance()).toFixed(2)}`);
 ```
 {% endtab %}
+{% tab title="CLI" %}
+```bash
+floe pay https://api.exa.ai/contents --method POST \
+  --body '{"urls":["https://example.com"],"text":true}'
+```
+
+That's **$0.001** against the **$3 Welcome Credit** — the response carries the settled receipt in `X-Floe-Cost-USDC`.
+{% endtab %}
 {% endtabs %}
 
 That's the entire happy path. No `instant_borrow`, no `marketId`, no LTV, no signing, no `viem`, no `web3.py`, no `PRIVATE_KEY`, no RPC URL, no gas token.
 
-## 5. Topping up automatically
+## 4. Fund & set budgets (later)
 
-Production agents shouldn't sleep on a low balance. Two options:
+You don't need any of this to make your first call — the Welcome Credit covers it. Come back once you've seen the loop work.
 
-- **Webhook**: in the dashboard, set a low-balance threshold (e.g., "alert when below $5"). Floe POSTs to your webhook URL so you can top up programmatically or page a human.
-- **Auto-recharge**: connect a card and set "auto-recharge $50 when balance falls below $10". Floe handles the rest.
+- **Fund it.** When the Welcome Credit runs low, click **Fund Wallet** on the agent and pay with **card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds. Suggested first amount: **$10**. See [Funding your agent](funding.md).
+- **Set a spend control.** Cap what the agent can spend — per call, per day, per vendor, or across your whole team. Enforced server-side, so a runaway loop can't blow your budget. See [Spend Controls](../developers/spend-controls.md). (Scope note: Floe caps x402 payments made through the proxy, not LLM token bills you pay with your own provider key.)
 
-Both are in the dashboard under your agent's settings.
+## What's next
 
-## 6. What's next
-
-- [How my agent gets paid](../agents/credit-for-agents.md) — the same mechanics in reverse: receive x402 payments from other agents
-- [Frameworks](../frameworks/agentkit.md) — drop FloeAgent into LangChain, CrewAI, Claude Desktop / MCP, OpenAI Agents SDK
+- [Set up with your AI tools](setup-with-ai-tools.md) — deep links and per-client MCP configs
+- [Add Floe to your existing pipeline](integrate-existing-pipeline.md) — drop Floe into Vapi, Retell, Pipecat, LiveKit, and more
 - [The Voice Stack](../build/voice-stack.md) — run a full voice turn — STT, LLM, TTS, telephony — on one key, one budget
+- [Floe CLI](../developers/cli.md) — every command, flag, and exit code
 
 ---
 
-That's it — you funded an agent and made a paid API call, all in dollars.
+That's it — you made a paid API call on the Welcome Credit, all in dollars.

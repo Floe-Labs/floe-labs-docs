@@ -9,7 +9,7 @@ Auth:      Authorization: Bearer <your floe agent key>   (prefix floe_…)
 
 > Use an **agent key** (`floe_…`), not a publishable key (`floe_live_…`). Mint one in the [Developer Dashboard](developer-dashboard.md) or via `POST /v1/developer/agents/:agentId/keys`.
 
-This is the **keyless** counterpart to [Venice](venice.md): where Venice fronts one provider from a pooled wallet, Floe Inference spans **many** providers (OpenAI, Google, Anthropic-compatible, open-weight hosts, keyless x402 routers, and Venice) behind a single catalog and a single bill.
+Floe Inference spans **many** providers behind a single catalog and a single bill — OpenAI, Anthropic, Google, Meta, DeepSeek, Mistral, Cohere, z.ai (GLM), Moonshot (Kimi), Perplexity, Qwen, xAI (Grok), plus open-weight self-hosts, keyless x402 routers, **Venice** (open-source & uncensored models), and **Sarvam** (sovereign Indic models across 22+ Indian languages). You never hold an account or key with any of them — Floe fronts the upstream relationship from a pooled wallet and bills you the metered cost per call.
 
 ## How it works
 
@@ -108,7 +108,8 @@ Browse the live catalog — ids, modality, and context windows — from `GET /v1
 | `moonshot/kimi-k2.6` · `moonshot/kimi-k2.7-code` | text | Moonshot (Kimi) |
 | `perplexity/sonar-pro` · `perplexity/sonar` | text | Perplexity (web-search) |
 | `qwen/qwen3-235b-a22b-instruct` · `deepseek/deepseek-r1-0528` · `meta/llama-4-maverick` · `google/gemma-3-27b` · `moonshot/kimi-k2.5` · `mistral/mistral-nemo` · `microsoft/phi-4` … | text | open-weight, self-host (DeepInfra/Together) |
-| `venice/llama-3.3-70b` · `venice/qwen3-235b` | text | open-weight via Venice |
+| `venice/llama-3.3-70b` · `venice/qwen3-235b` | text | open-weight & uncensored via Venice |
+| `sarvam/sarvam-105b` · `sarvam/sarvam-30b` | text | sovereign Indic LLMs (22+ Indian languages) via Sarvam |
 | `openai/text-embedding-3-small` | embedding | |
 | `openai/tts-1` · `openai/tts-1-hd` · `openai/gpt-4o-mini-tts` | tts | OpenAI, metered per character |
 | `hexgrad/kokoro-82m` · `resembleai/chatterbox-turbo` · `canopylabs/orpheus-3b` · `qwen/qwen3-tts` · `cartesia/sonic-3` · `groq/orpheus-v1-english` | tts | open-weight + hosted, self-host (DeepInfra/Together/Groq), metered per character |
@@ -118,7 +119,7 @@ Browse the live catalog — ids, modality, and context windows — from `GET /v1
 | `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime` · `google/gemini-live-3.1` | realtime | metered per token, per turn |
 | `openai/gpt-realtime-whisper` · `openai/gpt-realtime-translate` · `xai/grok-voice` | realtime | metered per minute |
 
-> The catalog is representative and grows over time — always resolve ids from `GET /v1/models` at runtime rather than hard-coding a fixed list. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, Inworld, MiniMax, Azure, Amazon Polly, xAI, Speechmatics) live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`.
+> **The live catalog is `GET /v1/models`** (keyless — no key required). The table above lists flagship models per modality and grows over time; always resolve ids from `GET /v1/models` at runtime rather than hard-coding a fixed list. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, Inworld, MiniMax, Azure, Amazon Polly, xAI, Speechmatics) live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`. **Sarvam** voice & language models (TTS, STT, translate, transliterate, language-ID, doc digitization) also run through the marketplace via `/v1/proxy/fetch` — see [Sarvam](sarvam.md).
 
 ## Chat completions
 
