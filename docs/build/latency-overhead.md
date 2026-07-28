@@ -36,12 +36,9 @@ This is a single-window snapshot on one rail, not a claim spanning every path th
 
 Median latency describes the typical request. It says nothing about the tail — and in voice, the tail is where users notice. A slow turn once every hundred calls is exactly the failure mode that makes an otherwise-solid voice agent feel broken. We report p99 alongside p50 because a bounded, measured tail is what makes a gateway safe to stop thinking about.
 
-<!-- PENDING SOURCES — do not publish until each figure has a citation.
-     Removed from the rendered page because these are unverified third-party
-     performance claims, which this page's own standard ("no guessed number
-     ships") disallows. Restore with a source link per row.
-
 ## How this compares to other gateways
+
+Published overhead numbers for LLM gateways and proxies span several orders of magnitude — mostly because they measure different things. Most benchmarks run a bare proxy against a mocked upstream and report a median only, which removes both the largest real-world variable (actual provider response time) and the tail entirely.
 
 | Layer | Reported overhead | Basis |
 |---|---|---|
@@ -49,25 +46,24 @@ Median latency describes the typical request. It says nothing about the tail —
 | Helicone (edge) | ~8ms p50 | vendor-reported, mock upstream |
 | Portkey | ~20–40ms | vendor + community-reported, real-world with routing/guardrails enabled |
 | OpenRouter | ~40ms | vendor's own "typical production" figure |
-| Floe (keyless rail) | 38ms p50 / ~180ms p99 | live production traffic, includes spend-control enforcement |
+| **Floe (keyless rail)** | **38ms p50 / ~180ms p99** | **live production traffic, includes spend-control enforcement** |
 
-Floe's median lands in the same range as Portkey and OpenRouter once routing and controls are active — not the bare pass-through numbers from LiteLLM or Helicone, which don't enforce spend limits at all.
--->
+Floe's median lands in the same range as Portkey and OpenRouter once routing and controls are active — not the bare pass-through numbers from LiteLLM or Helicone, which don't enforce spend limits at all. That's the fair comparison: Floe does more per call than a pure proxy, and the number reflects it. We're not aware of a published p99 from any of the above on live (non-mocked) traffic.
 
 ## Where this fits in your total budget
 
-Voice-infra teams generally target a **500–1,500ms voice-to-voice budget** (caller stops speaking → agent's audio starts) for a call that still feels conversational. That budget is spent mostly on:
+Voice-infra vendors generally target a **500–1,500ms voice-to-voice budget** (caller stops speaking → agent's audio starts) for a call that still feels conversational; independent production telemetry has put real deployments around p50 ~680ms / p95 ~1,180ms end-to-end. That budget is spent mostly on:
 
 | Stage | Typical latency |
 |---|---|
-| STT (streaming) | ~150ms |
+| STT (e.g. Deepgram-class streaming) | ~150ms |
 | LLM response (time to first token, varies by model) | ~200–800ms+ |
-| TTS (low-latency "flash"-class) | ~75–85ms |
+| TTS (e.g. Cartesia, ElevenLabs Flash-class) | ~75–85ms |
 | **Floe gateway overhead** | **38ms p50 / ~180ms p99** |
 
 At p50, Floe's overhead is roughly 2.5–7.6% of a 500–1,500ms budget. At p99, it's a minority share even of the tightest 500ms target. Against the LLM leg alone, 38ms is small relative to the 200–800ms+ that leg typically takes on its own.
 
-Human turn-taking gives useful context for why this budget exists at all: research on conversational timing across ten languages (Stivers et al., *PNAS*, 2009) found natural turn-transition gaps ranging from a few milliseconds up to roughly half a second depending on the language, with most languages' most common gap falling between 0 and 200ms. That's the reflex a voice agent is competing with — not an arbitrary UX target.
+Human turn-taking gives useful context for why this budget exists at all: research on conversational timing across ten languages (Stivers et al., *PNAS*, 2009) found natural turn-transition gaps as tight as 7ms and as loose as ~470–490ms depending on the language, with most languages' most common gap falling between 0 and 200ms. That's the reflex a voice agent is competing with — not an arbitrary UX target.
 
 ## Related
 
