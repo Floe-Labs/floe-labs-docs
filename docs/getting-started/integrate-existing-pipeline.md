@@ -101,9 +101,19 @@ Most voice frameworks let you override the LLM base URL — that's all Option A 
 |---|---|
 | **Vapi** | Set a custom LLM provider with base URL `https://credit-api.floelabs.xyz/v1` and your Floe key |
 | **Vercel AI SDK** | `createOpenAI({ baseURL: "https://credit-api.floelabs.xyz/v1", apiKey: FLOE_API_KEY })` |
-| **Pipecat / LiveKit** | Point the LLM service's `base_url` at `https://credit-api.floelabs.xyz/v1` |
+| **Pipecat / LiveKit** | Point the LLM service's `base_url` at `https://credit-api.floelabs.xyz/v1`. See the live-voice note below for the TTS and STT legs. |
 | **LangChain** | `ChatOpenAI(openai_api_base="https://credit-api.floelabs.xyz/v1", openai_api_key=FLOE_API_KEY)` |
 | **Anything HTTP** | It's OpenAI-compatible — change the host and key |
+
+### Live voice (Pipecat / LiveKit): which legs land on Floe
+
+A **live** LiveKit/Pipecat pipeline streams audio and wires three separate services — STT, LLM, TTS. All three route through Floe keyless, on one ledger:
+
+- **LLM** — keyless base-url swap above (`https://credit-api.floelabs.xyz/v1`). Metered on Floe.
+- **TTS** — Floe keyless too: point the framework's TTS service at `POST /v1/audio/speech` (OpenAI-compatible), or wrap a vendor in `POST /v1/proxy/fetch`. Metered on Floe.
+- **Live STT** — Floe keyless too: point the framework's STT service at the streaming WebSocket `wss://credit-api.floelabs.xyz/v1/audio/transcriptions/stream?model=deepgram/nova-3&encoding=linear16&sample_rate=16000&language=en` with your Floe agent key. Stream PCM frames up; Floe emits the `interim`/`final` transcript events the plugin expects. Metered per audio-second on Floe (Floe fronts the Deepgram key) — no BYO key.
+
+For the full picture, see [The Voice Stack — live voice with your own stack](../build/voice-stack.md#live-voice-with-your-own-stack-livekit-pipecat).
 
 ---
 

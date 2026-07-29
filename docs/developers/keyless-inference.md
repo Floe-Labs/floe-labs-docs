@@ -86,7 +86,8 @@ All are drop-in OpenAI-compatible:
 | Chat Completions | `POST /v1/chat/completions` | `chat.completions.create` |
 | Embeddings | `POST /v1/embeddings` | `embeddings.create` |
 | Text-to-Speech | `POST /v1/audio/speech` | `audio.speech.create` |
-| Transcription | `POST /v1/audio/transcriptions` | `audio.transcriptions.create` |
+| Transcription (batch) | `POST /v1/audio/transcriptions` | `audio.transcriptions.create` |
+| Transcription (streaming) | `WS /v1/audio/transcriptions/stream?model=…` | — (Floe extension) |
 | Realtime voice | `WS /v1/realtime?model=…` | Realtime API |
 | List models | `GET /v1/models` | `models.list` |
 | Cost estimate | `POST /v1/estimate` | — (Floe extension) |
@@ -127,7 +128,11 @@ Every id is fully qualified as `provider/model` — copy them exactly as written
 
 ### Speech-to-Text
 
-`openai/whisper-1` · `openai/whisper-large-v3` · `openai/whisper-large-v3-turbo` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` · `mistral/voxtral-small` · `mistral/voxtral-mini-transcribe` · `nvidia/parakeet-tdt-0.6b-v3` · `nvidia/nemotron-3.5-asr`
+**Batch** (`POST /v1/audio/transcriptions`): `openai/whisper-1` · `openai/whisper-large-v3` · `openai/whisper-large-v3-turbo` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` · `mistral/voxtral-small` · `mistral/voxtral-mini-transcribe` · `nvidia/parakeet-tdt-0.6b-v3` · `nvidia/nemotron-3.5-asr`
+
+**Streaming** (`WS /v1/audio/transcriptions/stream`): `deepgram/nova-3`
+
+> STT on Floe has **two surfaces**: **batch** (`POST /v1/audio/transcriptions` — file in, transcript out) and **live streaming** (`WS /v1/audio/transcriptions/stream` — PCM frames in, `interim`/`final` transcript events out, the feed a LiveKit/Pipecat STT plugin consumes). Every id above — batch and streaming alike — resolves via `GET /v1/models`. See [Streaming transcription (live STT)](#streaming-transcription-live-stt) below. The separate `/v1/realtime` WebSocket is **speech-to-speech**, not a streaming-STT source.
 
 ### Realtime voice models
 
@@ -249,11 +254,45 @@ print(tr.text)
 
 > **Third-party voice vendors** (ElevenLabs, Cartesia, Google Cloud for TTS; Deepgram, AssemblyAI for STT) are **not** on this OpenAI-compatible surface — they run through the [Vendor Marketplace](../x402-directory/voice.md) via `POST /v1/proxy/fetch`, which still bills your Floe balance keyless. See the [x402 Voice directory](../x402-directory/voice.md).
 
+> **`audio.transcriptions.create` here is batch** — you send a file, you get one transcript back. For a **live** transcript stream (the `interim`/`final` feed a LiveKit/Pipecat STT plugin consumes), use the streaming surface below.
+
+### Streaming transcription (live STT)
+
+Open a WebSocket to:
+
+```
+wss://credit-api.floelabs.xyz/v1/audio/transcriptions/stream?model=deepgram/nova-3&encoding=linear16&sample_rate=16000&language=en
+```
+
+Authenticate with the **`Authorization: Bearer <floe key>`** header — **keyless**, Floe fronts the Deepgram key. A `?api_key=` query param is a fallback for browser clients that can't set headers; prefer the header where you can, since query-string credentials leak into proxy/server logs and browser history — if you must use `?api_key=`, use a short-lived, spend-capped agent key. Query params:
+
+| Param | Values | Notes |
+|---|---|---|
+| `model` | e.g. `deepgram/nova-3` | fully-qualified `provider/model` |
+| `encoding` | `linear16` · `mulaw` · `alaw` | raw PCM frame encoding |
+| `sample_rate` | `8000`–`48000` | rejected outside this range |
+| `language` | e.g. `en` | optional |
+
+**Client → server:** raw **PCM binary frames** in the declared `encoding`/`sample_rate`.
+
+**Server → client:** JSON transcript events, and an error event on budget exhaustion or failure (the socket then closes):
+
+```jsonc
+{ "type": "transcript", "text": "book me for friday", "is_final": true, "speech_final": true }
+{ "type": "error", "code": "insufficient_balance" }
+```
+
+Map these to your STT plugin's event types: `is_final: false` is an **interim** hypothesis, `is_final: true` is a **final** transcript, and `speech_final: true` marks the end of an utterance (endpointing). Every event is a `type: "transcript"` object — there is no separate `interim`/`final` event name on the wire; the boolean carries the finality.
+
+Metered per **audio-second** on your Floe balance; because your balance is the ceiling, the session is cut off mid-stream the instant a charge would exhaust it. This is the standalone streaming-STT feed a LiveKit or Pipecat STT plugin can consume — see [The Voice Stack — live voice with your own stack](../build/voice-stack.md#live-voice-with-your-own-stack-livekit-pipecat).
+
 ### Realtime voice
 
 Open a WebSocket to `wss://credit-api.floelabs.xyz/v1/realtime?model=openai/gpt-realtime-2.1`, authenticating with `Authorization: Bearer <floe key>` or `?api_key=`. Floe relays events verbatim in both directions and meters **each completed turn** from the provider's usage block — per token for conversational models, per minute for duration-billed ones. Because your balance is the ceiling, the session is cut off the instant a turn would exhaust it.
 
-Available realtime models: `openai/gpt-realtime-2.1` and `openai/gpt-realtime-2.1-mini` (plus the original `openai/gpt-realtime`), the duration-billed `openai/gpt-realtime-whisper` (live STT) and `openai/gpt-realtime-translate` (live translation), `google/gemini-live-3.1`, and `xai/grok-voice` ($0.05/min upstream). **Amazon Nova 2 Sonic is coming** — it needs a dedicated Bedrock bridge and ships separately.
+Available realtime models: `openai/gpt-realtime-2.1` and `openai/gpt-realtime-2.1-mini` (plus the original `openai/gpt-realtime`), the duration-billed `openai/gpt-realtime-whisper` (realtime transcription within the OpenAI Realtime session) and `openai/gpt-realtime-translate` (live translation), `google/gemini-live-3.1`, and `xai/grok-voice` ($0.05/min upstream). **`amazon/nova-2-sonic` is beta** — it's in the catalog but requires the dedicated Bedrock bridge (SigV4 credentials) to serve; treat it as not-yet-general until the bridge is provisioned on your deployment.
+
+> This WebSocket is **speech-to-speech** — audio in, audio (or, for the transcription/translation variants, text) out over one OpenAI-Realtime connection. It is **not** a general streaming-STT feed you can plug into a LiveKit or Pipecat STT service expecting `interim`/`final` transcript events. For that, use the keyless [streaming transcription](#streaming-transcription-live-stt) endpoint above.
 
 ## Errors
 
