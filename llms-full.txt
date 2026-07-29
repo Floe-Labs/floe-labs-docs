@@ -759,9 +759,19 @@ Most voice frameworks let you override the LLM base URL — that's all Option A 
 |---|---|
 | **Vapi** | Set a custom LLM provider with base URL `https://credit-api.floelabs.xyz/v1` and your Floe key |
 | **Vercel AI SDK** | `createOpenAI({ baseURL: "https://credit-api.floelabs.xyz/v1", apiKey: FLOE_API_KEY })` |
-| **Pipecat / LiveKit** | Point the LLM service's `base_url` at `https://credit-api.floelabs.xyz/v1` |
+| **Pipecat / LiveKit** | Point the LLM service's `base_url` at `https://credit-api.floelabs.xyz/v1`. See the live-voice note below for the TTS and STT legs. |
 | **LangChain** | `ChatOpenAI(openai_api_base="https://credit-api.floelabs.xyz/v1", openai_api_key=FLOE_API_KEY)` |
 | **Anything HTTP** | It's OpenAI-compatible — change the host and key |
+
+### Live voice (Pipecat / LiveKit): which legs land on Floe
+
+A **live** LiveKit/Pipecat pipeline streams audio and wires three separate services — STT, LLM, TTS. Here's what routes through Floe today:
+
+- **LLM** — keyless base-url swap above (`https://credit-api.floelabs.xyz/v1`). Metered on Floe.
+- **TTS** — Floe keyless too: point the framework's TTS service at `POST /v1/audio/speech` (OpenAI-compatible), or wrap a vendor in `POST /v1/proxy/fetch`. Metered on Floe.
+- **Live STT** — **bring your own key for now.** Floe's STT is **batch** (`POST /v1/audio/transcriptions`) or session-based (dTelecom) — there's no live streaming `interim`/`final` feed a LiveKit/Pipecat STT plugin can consume yet. Keep your own **Deepgram/AssemblyAI** key for the streaming-STT leg (that vendor bills you directly; Floe meters LLM + TTS). **Native Floe streaming STT is on the roadmap.**
+
+For the full picture, see [The Voice Stack — live voice with your own stack](../build/voice-stack.md#live-voice-with-your-own-stack-livekit-pipecat).
 
 ---
 
@@ -996,6 +1006,20 @@ All three legs share `X-Floe-Task-Id: call-8842`, so a single task budget caps t
 | Twilio | Telephony | Live |
 
 See the [Voice vendor directory](../x402-directory/voice.md) for endpoints, request shapes, and per-vendor pricing.
+
+## Live voice with your own stack (LiveKit / Pipecat)
+
+The turn above is **batch** — each leg is a discrete request/response call. If you're running a **live** conversation with LiveKit or Pipecat, the framework streams audio in and expects an STT plugin that emits `interim`/`final` transcripts as the caller speaks. Here's exactly what maps onto Floe today:
+
+| Leg | On Floe today? | How |
+|-----|----------------|-----|
+| **LLM** | Yes — keyless | Point the framework's LLM service `base_url` at `https://credit-api.floelabs.xyz/v1` with your Floe agent key. OpenAI-compatible; metered on Floe. |
+| **TTS** | Yes — keyless | Floe's `POST /v1/audio/speech` (OpenAI-compatible), or any vendor via `POST /v1/proxy/fetch`. Metered on Floe. |
+| **Live STT** | **Not yet** | Floe's STT is **batch** (`POST /v1/audio/transcriptions`) or **session-based** (dTelecom). There is no live streaming `interim`/`final` feed a LiveKit/Pipecat STT plugin can consume. **Bring your own Deepgram/AssemblyAI key** for the streaming-STT leg for now — that vendor bills you directly; Floe meters LLM + TTS. **Native Floe streaming STT is on the roadmap.** |
+
+So a live BYO stack today is: **Floe for the LLM and TTS legs (keyless, one ledger), your own streaming-STT key for the live transcription leg.** When native Floe streaming STT lands, that last leg moves onto the same Floe balance as the rest.
+
+If you don't need a self-hosted LiveKit/Pipecat pipeline, the keyless **[realtime WebSocket](../developers/keyless-inference.md#realtime-voice)** (`wss://credit-api.floelabs.xyz/v1/realtime`) is an alternative: a **speech-to-speech** model (gpt-realtime, gemini-live, grok-voice) that takes audio in and returns audio out on one connection, metered on Floe. It is **not** a standalone streaming-STT source — it won't emit `interim`/`final` transcripts into a LiveKit/Pipecat STT plugin — so reach for it when you want an end-to-end voice model, not when you need a drop-in STT feed.
 
 ## One key, one ledger
 
@@ -1384,6 +1408,8 @@ Every id is fully qualified as `provider/model` — copy them exactly as written
 
 `openai/whisper-1` · `openai/whisper-large-v3` · `openai/whisper-large-v3-turbo` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` · `mistral/voxtral-small` · `mistral/voxtral-mini-transcribe` · `nvidia/parakeet-tdt-0.6b-v3` · `nvidia/nemotron-3.5-asr`
 
+> STT on Floe is **batch** today (`POST /v1/audio/transcriptions` — file in, transcript out). Live **streaming** STT (the `interim`/`final` feed a LiveKit/Pipecat STT plugin consumes) is **not** on Floe yet — bring your own Deepgram/AssemblyAI key for that leg for now; **native Floe streaming STT is on the roadmap.** The `/v1/realtime` WebSocket below is **speech-to-speech**, not a streaming-STT source.
+
 ### Realtime voice models
 
 `openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
@@ -1504,11 +1530,15 @@ print(tr.text)
 
 > **Third-party voice vendors** (ElevenLabs, Cartesia, Google Cloud for TTS; Deepgram, AssemblyAI for STT) are **not** on this OpenAI-compatible surface — they run through the [Vendor Marketplace](../x402-directory/voice.md) via `POST /v1/proxy/fetch`, which still bills your Floe balance keyless. See the [x402 Voice directory](../x402-directory/voice.md).
 
+> **Transcription here is batch** — you send a file, you get a transcript. There is no live streaming STT (`interim`/`final`) surface on Floe yet, so a LiveKit/Pipecat STT plugin can't consume this leg. For a live BYO stack today, keep your own Deepgram/AssemblyAI key for the streaming-STT leg (Floe still meters the LLM and TTS legs); **native Floe streaming STT is on the roadmap.**
+
 ### Realtime voice
 
 Open a WebSocket to `wss://credit-api.floelabs.xyz/v1/realtime?model=openai/gpt-realtime-2.1`, authenticating with `Authorization: Bearer <floe key>` or `?api_key=`. Floe relays events verbatim in both directions and meters **each completed turn** from the provider's usage block — per token for conversational models, per minute for duration-billed ones. Because your balance is the ceiling, the session is cut off the instant a turn would exhaust it.
 
-Available realtime models: `openai/gpt-realtime-2.1` and `openai/gpt-realtime-2.1-mini` (plus the original `openai/gpt-realtime`), the duration-billed `openai/gpt-realtime-whisper` (live STT) and `openai/gpt-realtime-translate` (live translation), `google/gemini-live-3.1`, and `xai/grok-voice` ($0.05/min upstream). **Amazon Nova 2 Sonic is coming** — it needs a dedicated Bedrock bridge and ships separately.
+Available realtime models: `openai/gpt-realtime-2.1` and `openai/gpt-realtime-2.1-mini` (plus the original `openai/gpt-realtime`), the duration-billed `openai/gpt-realtime-whisper` (realtime transcription within the OpenAI Realtime session) and `openai/gpt-realtime-translate` (live translation), `google/gemini-live-3.1`, and `xai/grok-voice` ($0.05/min upstream). **Amazon Nova 2 Sonic is coming** — it needs a dedicated Bedrock bridge and ships separately.
+
+> This WebSocket is **speech-to-speech** — audio in, audio (or, for the transcription/translation variants, text) out over one OpenAI-Realtime connection. It is **not** a general streaming-STT feed you can plug into a LiveKit or Pipecat STT service expecting `interim`/`final` transcript events. For that live-STT leg today, bring your own Deepgram/AssemblyAI key; **native Floe streaming STT is on the roadmap.**
 
 ## Errors
 
@@ -2154,6 +2184,8 @@ Speech-to-text (STT), text-to-speech (TTS), telephony, and realtime (WebRTC) API
 Some vendors price and charge calls themselves (no Floe-held key) — see [Direct voice services](#direct-voice-services) below.
 
 ## STT (Speech-to-Text)
+
+> **These are batch STT** — send an audio file or URL, get a transcript back (dTelecom is session-based). Floe has **no live streaming STT** (`interim`/`final`) surface yet, so none of these can feed a LiveKit/Pipecat STT plugin in real time. For a live BYO voice stack today, bring your own **Deepgram/AssemblyAI** streaming key for the STT leg (that vendor bills you directly; Floe still meters the LLM and TTS legs). **Native Floe streaming STT is on the roadmap.** The [WebRTC](#webrtc) realtime models below are **speech-to-speech**, not a standalone streaming-STT source.
 
 ### Venice AI — Transcription
 

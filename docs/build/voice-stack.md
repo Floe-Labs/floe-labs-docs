@@ -66,6 +66,20 @@ All three legs share `X-Floe-Task-Id: call-8842`, so a single task budget caps t
 
 See the [Voice vendor directory](../x402-directory/voice.md) for endpoints, request shapes, and per-vendor pricing.
 
+## Live voice with your own stack (LiveKit / Pipecat)
+
+The turn above is **batch** — each leg is a discrete request/response call. If you're running a **live** conversation with LiveKit or Pipecat, the framework streams audio in and expects an STT plugin that emits `interim`/`final` transcripts as the caller speaks. Here's exactly what maps onto Floe today:
+
+| Leg | On Floe today? | How |
+|-----|----------------|-----|
+| **LLM** | Yes — keyless | Point the framework's LLM service `base_url` at `https://credit-api.floelabs.xyz/v1` with your Floe agent key. OpenAI-compatible; metered on Floe. |
+| **TTS** | Yes — keyless | Floe's `POST /v1/audio/speech` (OpenAI-compatible), or any vendor via `POST /v1/proxy/fetch`. Metered on Floe. |
+| **Live STT** | **Not yet** | Floe's STT is **batch** (`POST /v1/audio/transcriptions`) or **session-based** (dTelecom). There is no live streaming `interim`/`final` feed a LiveKit/Pipecat STT plugin can consume. **Bring your own Deepgram/AssemblyAI key** for the streaming-STT leg for now — that vendor bills you directly; Floe meters LLM + TTS. **Native Floe streaming STT is on the roadmap.** |
+
+So a live BYO stack today is: **Floe for the LLM and TTS legs (keyless, one ledger), your own streaming-STT key for the live transcription leg.** When native Floe streaming STT lands, that last leg moves onto the same Floe balance as the rest.
+
+If you don't need a self-hosted LiveKit/Pipecat pipeline, the keyless **[realtime WebSocket](../developers/keyless-inference.md#realtime-voice)** (`wss://credit-api.floelabs.xyz/v1/realtime`) is an alternative: a **speech-to-speech** model (gpt-realtime, gemini-live, grok-voice) that takes audio in and returns audio out on one connection, metered on Floe. It is **not** a standalone streaming-STT source — it won't emit `interim`/`final` transcripts into a LiveKit/Pipecat STT plugin — so reach for it when you want an end-to-end voice model, not when you need a drop-in STT feed.
+
 ## One key, one ledger
 
 Because the LLM leg routes through Floe's OpenAI-compatible endpoint, reasoning tokens land on the same ledger and the same budgets as the vendor legs — not a separate provider bill. See [Unified Billing & Ledger](unified-ledger.md) to read the combined statement, and [Spend Controls](../developers/spend-controls.md) to set the task, vendor, and session caps that govern every leg.

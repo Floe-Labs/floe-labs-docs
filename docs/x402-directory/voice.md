@@ -46,6 +46,8 @@ Some vendors price and charge calls themselves (no Floe-held key) — see [Direc
 
 ## STT (Speech-to-Text)
 
+> **These are batch STT** — send an audio file or URL, get a transcript back (dTelecom is session-based). Floe has **no live streaming STT** (`interim`/`final`) surface yet, so none of these can feed a LiveKit/Pipecat STT plugin in real time. For a live BYO voice stack today, bring your own **Deepgram/AssemblyAI** streaming key for the STT leg (that vendor bills you directly; Floe still meters the LLM and TTS legs). **Native Floe streaming STT is on the roadmap.** The [WebRTC](#webrtc) realtime models below are **speech-to-speech**, not a standalone streaming-STT source.
+
 ### Venice AI — Transcription
 
 **Endpoint:** `POST https://api.venice.ai/api/v1/audio/transcriptions`

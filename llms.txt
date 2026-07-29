@@ -85,6 +85,7 @@ All endpoints below are payable in USDC on Base mainnet through `POST https://cr
 
 ### Voice
 
+- **Live voice (LiveKit / Pipecat) — leg map**: For a live BYO voice stack, LLM + TTS run on Floe keyless (LLM = base-url swap to `https://credit-api.floelabs.xyz/v1`; TTS = `POST /v1/audio/speech` or a vendor via `/v1/proxy/fetch`), both metered on Floe. **Live streaming STT is NOT on Floe yet** — Floe STT is batch (`POST /v1/audio/transcriptions`) or session (dTelecom), with no `interim`/`final` feed a LiveKit/Pipecat STT plugin can consume. Bring your own Deepgram/AssemblyAI key for the streaming-STT leg for now (that vendor bills you directly); **native Floe streaming STT is on the roadmap.** The `WS /v1/realtime` models (gpt-realtime, gemini-live, grok-voice) are **speech-to-speech**, not a standalone streaming-STT source.
 - [Venice AI — Text to Speech](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#venice-ai-text-to-speech): `POST https://api.venice.ai/api/v1/audio/speech` · metered/chars
 - [Venice AI — Transcription](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#venice-ai-transcription): `POST https://api.venice.ai/api/v1/audio/transcriptions` · metered/min
 - [Sarvam AI — Text to Speech (Bulbul)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#sarvam-ai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/sarvam` (via /v1/proxy/fetch) · metered/char
