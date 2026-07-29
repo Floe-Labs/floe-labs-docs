@@ -78,7 +78,7 @@ The turn above is **batch** — each leg is a discrete request/response call. If
 
 So a live BYO stack today is: **Floe for the LLM and TTS legs (keyless, one ledger), your own streaming-STT key for the live transcription leg.** When native Floe streaming STT lands, that last leg moves onto the same Floe balance as the rest.
 
-If you don't need a self-hosted LiveKit/Pipecat pipeline, the keyless **[realtime WebSocket](../developers/keyless-inference.md#realtime-voice)** (`wss://credit-api.floelabs.xyz/v1/realtime`) is an alternative: a **speech-to-speech** model (gpt-realtime, gemini-live, grok-voice) that takes audio in and returns audio out on one connection, metered on Floe. It is **not** a standalone streaming-STT source — it won't emit `interim`/`final` transcripts into a LiveKit/Pipecat STT plugin — so reach for it when you want an end-to-end voice model, not when you need a drop-in STT feed.
+If you don't need a self-hosted LiveKit/Pipecat pipeline, the keyless **[realtime WebSocket](../developers/keyless-inference.md#realtime-voice)** (`wss://credit-api.floelabs.xyz/v1/realtime?model=<provider/model>`) is an alternative: a **speech-to-speech** model (gpt-realtime, gemini-live, grok-voice) that takes audio in and returns audio out on one connection, metered on Floe. It is **not** a standalone streaming-STT source — it won't emit `interim`/`final` transcripts into a LiveKit/Pipecat STT plugin — so reach for it when you want an end-to-end voice model, not when you need a drop-in STT feed.
 
 ## One key, one ledger
 
