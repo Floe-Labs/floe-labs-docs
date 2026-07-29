@@ -76,9 +76,9 @@ When the credit line (or session cap) is exhausted, the call is refused with `40
 | Venice AI | Chat Completions, Responses, Embeddings | metered / tokens | Verified |
 | Sarvam AI | Chat Completions (Indic LLM) | metered / tokens | Verified |
 
-Venice chat, responses, and embeddings are served through Floe's **drop-in OpenAI-compatible surface** — point any OpenAI SDK at `https://credit-api.floelabs.xyz/v1/venice` with your Floe agent key. No Venice key, no request envelope. See the full guide: [**Venice AI — Model Inference**](../developers/venice.md).
+Venice chat, responses, and embeddings are served through Floe's **drop-in OpenAI-compatible surface** — point any OpenAI SDK at `https://credit-api.floelabs.xyz/v1/venice` with your Floe agent key. No Venice key, no request envelope. See the full guide below: [**Venice models**](#venice-models).
 
-Sarvam AI chat is served on Floe's **OpenAI-compatible gateway** — call `POST /v1/chat/completions` with the model `sarvam/<id>` and your Floe agent key. No Sarvam key. Its proprietary voice, translation, transliteration, language-ID, and document models run through the marketplace shim (see [Voice](voice.md)). See the full guide: [**Sarvam AI — Indic Inference**](../developers/sarvam.md).
+Sarvam AI chat is served on Floe's **OpenAI-compatible gateway** — call `POST /v1/chat/completions` with the model `sarvam/<id>` and your Floe agent key. No Sarvam key. Its proprietary voice, translation, transliteration, language-ID, and document models run through the marketplace shim (see [Voice](voice.md)). See the full guide below: [**Sarvam AI — Chat Completions**](#sarvam-ai-chat-completions).
 
 ---
 
@@ -105,7 +105,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 
 ## Venice models
 
-Venice exposes **90+ chat models and 9 embedding models** through the same metered endpoint — from fast open-source to frontier, including private TEE-attested (E2EE) and uncensored options. Pass the model id straight through; there's no allowlist. The [Venice guide](../developers/venice.md#models) covers how to call them and pick by capability — the full current catalog with per-token pricing is below.
+Venice exposes **90+ chat models and 9 embedding models** through the same metered endpoint — from fast open-source to frontier, including private TEE-attested (E2EE) and uncensored options. Pass the model id straight through; there's no allowlist. The sections below cover [how to call them](#venice-ai-chat-completions) and [how to pick by capability](#pick-a-model) — the full current catalog with per-token pricing is below.
 
 Discover it live (capabilities, context windows, pricing) from Venice's public, no-key endpoint:
 

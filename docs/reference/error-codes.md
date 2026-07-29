@@ -200,4 +200,4 @@ When the on-chain `PriceOracle` circuit breaker is tripped (stale, deviation, se
 | 503 | `circuit_breaker_active` | Protocol-wide halt due to oracle stale price / deviation > 15% / L2 sequencer down | Back off, poll `/v1/status`; do not retry blindly |
 | 503 | `circuit_breaker_stale` | Facilitator cannot reach its RPC provider, so it cannot verify the breaker state | Back off, alert operator — this is an infra issue |
 
-The breaker auto-clears when all conditions resolve; there is no manual reset for agents. See [Oracles & Circuit Breaker](../protocol/oracles-conditions.md) for the full list of trigger conditions.
+The breaker auto-clears when all conditions resolve; there is no manual reset for agents.

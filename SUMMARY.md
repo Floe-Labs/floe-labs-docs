@@ -11,6 +11,7 @@
 * [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md)
 * [Funding your agent](docs/getting-started/funding.md)
 * [Pricing & cost](docs/getting-started/pricing.md)
+* [Agent Quickstart](docs/agents/quickstart-agents.md)
 
 ## The voice stack
 
@@ -49,7 +50,6 @@
 
 ## Frameworks
 
-* [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md)
 * [Plain HTTP / REST](docs/frameworks/http.md)
 * [LangChain](docs/frameworks/langchain.md)
 * [CrewAI](docs/frameworks/crewai.md)
@@ -81,4 +81,5 @@
 
 * [Error Codes](docs/reference/error-codes.md)
 * [Environment Variables](docs/reference/environment-variables.md)
+* [Contract Addresses](developers/networks.md)
 * [Changelog](docs/changelog.md)

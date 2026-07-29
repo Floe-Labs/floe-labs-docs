@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 48 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 50 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -17,6 +17,7 @@
 - Add Floe to your existing pipeline — https://floe-labs.gitbook.io/docs/start-here/integrate-existing-pipeline.md
 - Funding your agent — https://floe-labs.gitbook.io/docs/start-here/funding.md
 - Pricing & cost — https://floe-labs.gitbook.io/docs/start-here/pricing.md
+- Agent Quickstart — https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
 - The Voice Stack — overview — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-stack.md
 - Floe Phone — numbers & telephony — https://floe-labs.gitbook.io/docs/the-voice-stack/floe-phone.md
 - Floe Inference — keyless LLM & voice — https://floe-labs.gitbook.io/docs/the-voice-stack/keyless-inference.md
@@ -56,6 +57,7 @@
 - REST API — https://floe-labs.gitbook.io/docs/api-reference/credit-api.md
 - Error Codes — https://floe-labs.gitbook.io/docs/reference/error-codes.md
 - Environment Variables — https://floe-labs.gitbook.io/docs/reference/environment-variables.md
+- Contract Addresses — https://floe-labs.gitbook.io/docs/reference/networks.md
 - Changelog — https://floe-labs.gitbook.io/docs/reference/changelog.md
 
 ==============================================================================
@@ -72,11 +74,11 @@ URL: https://floe-labs.gitbook.io/docs/readme.md
 
 [Website](https://floelabs.xyz) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen)](https://github.com/Floe-Labs/floe-labs-docs/blob/main/LICENSE)
 
 No crypto, no wallets to manage. Works with **Pipecat, Vapi, Retell, ElevenLabs, LiveKit, Bland, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP.**
 
-> This repository is the source for the documentation at **[floe-labs.gitbook.io/docs](https://floe-labs.gitbook.io/docs)** — the published site is the best way to read it. Corrections and improvements are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
+> This repository is the source for the documentation at **[floe-labs.gitbook.io/docs](https://floe-labs.gitbook.io/docs)** — the published site is the best way to read it. Corrections and improvements are welcome; see [CONTRIBUTING.md](https://github.com/Floe-Labs/floe-labs-docs/blob/main/CONTRIBUTING.md).
 
 ---
 
@@ -911,6 +913,18 @@ Per-model and per-vendor rates live on the vendor pages in the [Vendor Marketpla
 - [Add Floe to your existing pipeline](integrate-existing-pipeline.md)
 
 ==============================================================================
+# Agent Quickstart
+Source: docs/agents/quickstart-agents.md
+URL: https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
+==============================================================================
+
+# Agent Quickstart
+
+This page has moved. The agent setup and first paid call — human does two things, the agent does the rest — are now part of the single **[Quickstart](../getting-started/quickstart.md)**.
+
+See also [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) to connect Claude Code, Cursor, or Codex.
+
+==============================================================================
 # The Voice Stack — overview
 Source: docs/build/voice-stack.md
 URL: https://floe-labs.gitbook.io/docs/the-voice-stack/voice-stack.md
@@ -1371,7 +1385,7 @@ Every id is fully qualified as `provider/model` — copy them exactly as written
 
 `openai/whisper-1` · `openai/whisper-large-v3` · `openai/whisper-large-v3-turbo` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` · `mistral/voxtral-small` · `mistral/voxtral-mini-transcribe` · `nvidia/parakeet-tdt-0.6b-v3` · `nvidia/nemotron-3.5-asr`
 
-### Realtime voice
+### Realtime voice models
 
 `openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
 
@@ -1838,9 +1852,9 @@ When the credit line (or session cap) is exhausted, the call is refused with `40
 | Venice AI | Chat Completions, Responses, Embeddings | metered / tokens | Verified |
 | Sarvam AI | Chat Completions (Indic LLM) | metered / tokens | Verified |
 
-Venice chat, responses, and embeddings are served through Floe's **drop-in OpenAI-compatible surface** — point any OpenAI SDK at `https://credit-api.floelabs.xyz/v1/venice` with your Floe agent key. No Venice key, no request envelope. See the full guide: [**Venice AI — Model Inference**](../developers/venice.md).
+Venice chat, responses, and embeddings are served through Floe's **drop-in OpenAI-compatible surface** — point any OpenAI SDK at `https://credit-api.floelabs.xyz/v1/venice` with your Floe agent key. No Venice key, no request envelope. See the full guide below: [**Venice models**](#venice-models).
 
-Sarvam AI chat is served on Floe's **OpenAI-compatible gateway** — call `POST /v1/chat/completions` with the model `sarvam/<id>` and your Floe agent key. No Sarvam key. Its proprietary voice, translation, transliteration, language-ID, and document models run through the marketplace shim (see [Voice](voice.md)). See the full guide: [**Sarvam AI — Indic Inference**](../developers/sarvam.md).
+Sarvam AI chat is served on Floe's **OpenAI-compatible gateway** — call `POST /v1/chat/completions` with the model `sarvam/<id>` and your Floe agent key. No Sarvam key. Its proprietary voice, translation, transliteration, language-ID, and document models run through the marketplace shim (see [Voice](voice.md)). See the full guide below: [**Sarvam AI — Chat Completions**](#sarvam-ai-chat-completions).
 
 ---
 
@@ -1867,7 +1881,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 
 ## Venice models
 
-Venice exposes **90+ chat models and 9 embedding models** through the same metered endpoint — from fast open-source to frontier, including private TEE-attested (E2EE) and uncensored options. Pass the model id straight through; there's no allowlist. The [Venice guide](../developers/venice.md#models) covers how to call them and pick by capability — the full current catalog with per-token pricing is below.
+Venice exposes **90+ chat models and 9 embedding models** through the same metered endpoint — from fast open-source to frontier, including private TEE-attested (E2EE) and uncensored options. Pass the model id straight through; there's no allowlist. The sections below cover [how to call them](#venice-ai-chat-completions) and [how to pick by capability](#pick-a-model) — the full current catalog with per-token pricing is below.
 
 Discover it live (capabilities, context windows, pricing) from Venice's public, no-key endpoint:
 
@@ -3638,7 +3652,7 @@ const view = await provider.getWalletBalance(walletProvider, {});
 ## Where the primitives live
 
 - **REST API**: `GET /v1/agents/balance` for balance, `/v1/agents/spend-limit` for the session cap
-- **MCP server**: [mcp-server.md → Agent Awareness Tools](mcp-server.md#agent-awareness-tools) — `get_wallet_balance`, `get_spend_limit` (snake_case)
+- **MCP server**: [mcp-server.md → Spend governance and awareness](mcp-server.md#spend-governance-and-awareness-14) — `get_wallet_balance`, `get_spend_limit` (snake_case)
 - **TypeScript SDK**: `floe-agent` v0.3.0+, on `X402ActionProvider`
 - **Python SDK**: `floe-agentkit-actions` v0.3.0+, on `X402ActionProvider`
 
@@ -4684,7 +4698,7 @@ Alerts are delivered via webhooks and shown in the dashboard.
 
 - **[API Keys](api-keys.md)** — Create your first developer key.
 - **[Webhooks](webhooks.md)** — Set up push notifications for loan events and alerts.
-- **[Agent Quickstart](agent-quickstart.md)** — Full happy-path walkthrough from zero to first paid API call.
+- **[Quickstart](../getting-started/quickstart.md)** — Full happy-path walkthrough from zero to first paid API call.
 - **[x402 Credit Facilitator](x402-facilitator.md)** — Delegate collateral and let your agent pay for APIs automatically.
 
 ==============================================================================
@@ -6314,7 +6328,7 @@ No key required.
 
 ### Advanced lending protocol (25)
 
-> These are the **on-chain protocol layer** (markets, intents, loans), not the live spend product. Borrowing/lending as a developer-facing product is on the [roadmap](../components/secured-credit.md); these tools exist for teams running their own keys on the self-custody path. All write tools return **unsigned transactions** — the server never holds private keys. See [Transaction Flow](#transaction-flow) below.
+> These are the **on-chain protocol layer** (markets, intents, loans), not the live spend product. Borrowing/lending as a developer-facing product is on the roadmap; these tools exist for teams running their own keys on the self-custody path. All write tools return **unsigned transactions** — the server never holds private keys. See [Transaction Flow](#transaction-flow) below.
 
 **Read:**
 
@@ -7914,7 +7928,7 @@ A 404 `NoLiquidityError` does **not** always mean the order book is empty. Most 
 
 #### Worked example — the LTV gap rule
 
-The protocol enforces `borrower.minLtvBps + 800 ≤ lender.maxLtvBps` (8 % buffer between origination and liquidation LTV — see [Order book matching](../protocol/orderbook-matching.md#5-ltv-gap)). A request that *looks* compatible on rate alone can still be rejected:
+The protocol enforces `borrower.minLtvBps + 800 ≤ lender.maxLtvBps` (8 % buffer between origination and liquidation LTV). A request that *looks* compatible on rate alone can still be rejected:
 
 - Borrower posts: `borrowAmount = 100,000 USDC`, `maxInterestRateBps = 500`, **`minLtvBps = 8000`**
 - Order book shows: `990,000,000 USDC available at 500 bps`, **`maxLtvBps = 8500`**
@@ -8915,7 +8929,7 @@ When the on-chain `PriceOracle` circuit breaker is tripped (stale, deviation, se
 | 503 | `circuit_breaker_active` | Protocol-wide halt due to oracle stale price / deviation > 15% / L2 sequencer down | Back off, poll `/v1/status`; do not retry blindly |
 | 503 | `circuit_breaker_stale` | Facilitator cannot reach its RPC provider, so it cannot verify the breaker state | Back off, alert operator — this is an infra issue |
 
-The breaker auto-clears when all conditions resolve; there is no manual reset for agents. See [Oracles & Circuit Breaker](../protocol/oracles-conditions.md) for the full list of trigger conditions.
+The breaker auto-clears when all conditions resolve; there is no manual reset for agents.
 
 ==============================================================================
 # Environment Variables
@@ -9174,6 +9188,161 @@ SSRF_ALLOW_LOCALHOST=1            # dev only — allows localhost targets
 See **[Error Codes → Self-hosting startup errors](error-codes.md#self-hosting-startup-errors)** for the exact text of every fail-fast exception and what to set to resolve it.
 
 ==============================================================================
+# Contract Addresses
+Source: developers/networks.md
+URL: https://floe-labs.gitbook.io/docs/reference/networks.md
+==============================================================================
+
+# Contract Addresses
+
+Floe runs on **Base Mainnet**. That's the only supported network — there is no testnet, sandbox, or staging environment. Every reference to a chain or address in this repo means Base Mainnet.
+
+## Base Mainnet (Production)
+
+| Parameter    | Value                                |
+| ------------ | ------------------------------------ |
+| Network Name | Base                                 |
+| Chain ID     | 8453                                 |
+| Currency     | ETH                                  |
+| RPC URL      | `https://mainnet.base.org`           |
+| Explorer     | [basescan.org](https://basescan.org) |
+
+### Core Contracts
+
+| Contract             | Address                                      |
+| -------------------- | -------------------------------------------- |
+| LendingIntentMatcher | `0x17946cD3e180f82e632805e5549EC913330Bb175` |
+| PriceOracle          | `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` |
+| LendingViews         | `0x9101027166bE205105a9E0c68d6F14f21f6c5003` |
+
+### x402 Credit Facilitator
+
+| Endpoint             | Value                                        |
+| -------------------- | -------------------------------------------- |
+| Facilitator API      | `https://credit-api.floelabs.xyz`            |
+| Facilitator EOA      | `0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1` |
+
+The **Facilitator EOA** is the address you pass as the `operator` argument to `setOperator` on `LendingIntentMatcher` when delegating credit to the Floe-hosted x402 facilitator. The corresponding private key lives only on the facilitator server; this address is the public half of the pair and is the one you grant `OperatorPermission` to. See [x402 Credit Facilitator](../docs/developers/x402-facilitator.md) for the full delegation flow.
+
+### Aerodrome (Flash Arb)
+
+| Contract        | Address                                      |
+| --------------- | -------------------------------------------- |
+| SwapRouter      | `0xBE6D8f0d05cC4be24d5167a3eF062215bE6D18a5` |
+| QuoterV2        | `0x254cF9E1E6e233aa1AC962CB9B05b2cFeAAe15b0` |
+
+### Token Addresses
+
+| Token  | Role                  | Address                                      | Decimals |
+| ------ | --------------------- | -------------------------------------------- | -------- |
+| USDC   | Loan + Collateral     | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6        |
+| WETH   | Collateral            | `0x4200000000000000000000000000000000000006` | 18       |
+| cbBTC  | Collateral            | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8        |
+
+### Active Markets
+
+| Market     | Loan Token | Collateral Token | Max LTV | Notes |
+| ---------- | ---------- | ---------------- | ------- | ----- |
+| **USDC/USDC** | USDC    | USDC             | **95%** | Same-token working capital — no price risk, hardcoded 1:1 oracle |
+| USDC/WETH  | USDC       | WETH             | 70%     | Volatile collateral |
+| USDC/cbBTC | USDC       | cbBTC            | 70%     | Volatile collateral |
+
+The **USDC/USDC market** (`marketId: 0x5027ae5ed5c85380c5dfa34a79915f41f139f4e859f56d15a6f958ea6b662820`) is the recommended market for AI agents. Deposit USDC, borrow up to 95% as working capital. No liquidation risk from price movements — the only path to liquidation is unpaid interest accrual.
+
+### Configuration
+
+```javascript
+const BASE_MAINNET_CONFIG = {
+  chainId: 8453,
+  name: "Base",
+  rpcUrl: "https://mainnet.base.org",
+  lendingIntentMatcher: "0x17946cD3e180f82e632805e5549EC913330Bb175",
+  priceOracle: "0xEA058a06b54dce078567f9aa4dBBE82a100210Cc",
+  facilitator: {
+    apiUrl: "https://credit-api.floelabs.xyz",
+    eoa: "0x58EDdE022FFDAD3Fb0Fb0E7D51eb05AaF66a31f1",
+  },
+  tokens: {
+    USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    WETH: "0x4200000000000000000000000000000000000006",
+    cbBTC: "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+  },
+};
+```
+
+***
+
+## Adding Base to Your Wallet
+
+### MetaMask / Rainbow / Other Wallets
+
+1. Open wallet settings
+2. Add network manually with:
+   * **Network Name**: Base
+   * **RPC URL**: `https://mainnet.base.org`
+   * **Chain ID**: `8453`
+   * **Currency Symbol**: ETH
+   * **Block Explorer**: `https://basescan.org`
+
+Or visit [chainlist.org](https://chainlist.org/?search=base) for one-click add.
+
+***
+
+## RPC Providers
+
+### Public RPCs (Rate Limited)
+
+| Network      | URL                        |
+| ------------ | -------------------------- |
+| Base Mainnet | `https://mainnet.base.org` |
+
+### Recommended Providers
+
+For production applications:
+
+* [Alchemy](https://www.alchemy.com/) - `https://base-mainnet.g.alchemy.com/v2/YOUR_KEY`
+* [Infura](https://www.infura.io/) - `https://base-mainnet.infura.io/v3/YOUR_KEY`
+* [QuickNode](https://www.quicknode.com/)
+
+***
+
+## Protocol Constants
+
+| Parameter             | Value       | Description                                   |
+| --------------------- | ----------- | --------------------------------------------- |
+| `minLtvGapBps`        | 800 (8%)    | Min gap between origination & liquidation LTV |
+| `withdrawalBufferBps` | 300 (3%)    | Buffer below liquidation for withdrawals      |
+| `stalenessTimeout`    | 3,600 sec   | Oracle staleness threshold                    |
+| `maxDeviationBps`     | 1,500 (15%) | Max price deviation before circuit breaker    |
+| `liquidationBonus`    | 500 (5%)    | Bonus for liquidators                         |
+| `gracePeriod`         | 86,400 sec  | Grace period after loan expiry (24 hours)     |
+
+***
+
+## Verified Contracts
+
+All contracts are verified on Basescan:
+
+* [LendingIntentMatcher](https://basescan.org/address/0x17946cD3e180f82e632805e5549EC913330Bb175#code)
+* [PriceOracle](https://basescan.org/address/0xEA058a06b54dce078567f9aa4dBBE82a100210Cc#code)
+* [LendingViews](https://basescan.org/address/0x9101027166bE205105a9E0c68d6F14f21f6c5003#code)
+
+***
+
+## Bridging Assets to Base
+
+### Bridge ETH
+
+* [Base Bridge](https://bridge.base.org) (Official)
+* [Superbridge](https://superbridge.app)
+
+### Get USDC on Base
+
+* Bridge from Ethereum via [Circle CCTP](https://www.circle.com/en/cross-chain-transfer-protocol)
+* Swap on [Uniswap](https://app.uniswap.org/) (Base)
+* Withdraw from exchanges that support Base
+
+==============================================================================
 # Changelog
 Source: docs/changelog.md
 URL: https://floe-labs.gitbook.io/docs/reference/changelog.md
@@ -9276,7 +9445,7 @@ Added **Sarvam AI** — India's sovereign-AI stack for **22+ Indian languages** 
 * **Chat** — `sarvam/sarvam-105b` (128K ctx) and `sarvam/sarvam-30b` (64K ctx) on the OpenAI-compatible gateway (`POST /v1/chat/completions`, model `sarvam/<id>`), metered per token
 * **Voice & language via the [marketplace shim](developers/marketplace-shim.md)** (`POST /v1/proxy/fetch`): Bulbul **TTS** (`/v1/tts/sarvam`), Saaras **STT** (`/v1/stt/sarvam`) and **speech-translate** (`/v1/stt-translate/sarvam`), Mayura **translation** (`/v1/translate/sarvam`), **transliteration** (`/v1/transliterate/sarvam`), **language ID** (`/v1/lid/sarvam`), and **Sarvam Vision** document digitization (`/v1/doc/sarvam`, async · preview)
 
-→ [Sarvam AI — Indic Inference](developers/sarvam.md) · [Compute](x402-directory/compute.md#sarvam-ai-chat-completions) · [Voice](x402-directory/voice.md#sarvam-ai-text-to-speech)
+→ [Sarvam AI — Indic Inference](x402-directory/compute.md#sarvam-ai-chat-completions) · [Compute](x402-directory/compute.md#sarvam-ai-chat-completions) · [Voice](x402-directory/voice.md#sarvam-ai-text-to-speech)
 
 ### v1.9.0 — Floe Inference: keyless pay-as-you-go LLM & voice (June 2026)
 
@@ -9348,7 +9517,7 @@ New developer's first agent wallet receives $2 USDC from treasury. Strict Privy 
 
 ### v1.7.1 — x402 v2 Wire Protocol Support (May 2026)
 
-The facilitator now negotiates between **x402 v1 and x402 v2** per request based on what the merchant returns. Previously, only the v1 bare-requirement envelope was understood, which caused parse failures against modern `@x402/hono` and other v2-compliant servers — and which made the v2 entries already published in the [Floe x402 directory](../x402-directory/directory.json) unreachable in practice.
+The facilitator now negotiates between **x402 v1 and x402 v2** per request based on what the merchant returns. Previously, only the v1 bare-requirement envelope was understood, which caused parse failures against modern `@x402/hono` and other v2-compliant servers — and which made the v2 entries already published in the [Floe x402 directory](https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json) unreachable in practice.
 
 **What changed:**
 
@@ -9463,7 +9632,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 **x402 Credit Facilitator:**
 
 * Agents grant a scoped on-chain `setOperator` permission, then call `POST /v1/proxy/fetch` with any x402 URL — the facilitator handles borrowing, EIP-3009 signing, and payment automatically.
-* 3-step setup: Create Wallet → Deposit & Delegate → Activate Agent. See [Agent Quickstart](developers/agent-quickstart.md).
+* 3-step setup: Create Wallet → Deposit & Delegate → Activate Agent. See [Agent Quickstart](getting-started/quickstart.md).
 * Automated credit health monitoring and graceful wind-down via `POST /v1/agents/close` or `revokeOperator`.
 * See [x402 Credit Facilitator](developers/x402-facilitator.md) and [Agent Runtime Contract](developers/agent-runtime-contract.md) for the full API.
 
@@ -9481,7 +9650,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 
 **AgentKit SDK Updates:**
 
-* `floe-agent` (npm) and `floe-agentkit-actions` (PyPI) updated to **0.2.0** — adds `X402ActionProvider` with 6 new actions (36 total). See [AgentKit Integration](developers/agentkit.md).
+* `floe-agent` (npm) and `floe-agentkit-actions` (PyPI) updated to **0.2.0** — adds `X402ActionProvider` with 6 new actions (36 total). See [AgentKit Integration](frameworks/agentkit.md).
 
 ***
 
@@ -9579,5 +9748,5 @@ Lets agents reason about their own credit before committing capital. Answers the
 ## Links
 
 * [Contract Addresses](../developers/networks.md)
-* [Agent Quickstart](developers/agent-quickstart.md)
+* [Agent Quickstart](getting-started/quickstart.md)
 * [GitHub](https://github.com/Floe-Labs)
