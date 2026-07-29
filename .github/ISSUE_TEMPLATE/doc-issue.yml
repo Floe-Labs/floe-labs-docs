@@ -8,7 +8,7 @@ body:
     attributes:
       label: Page
       description: Link to the docs page (or the file path in this repo).
-      placeholder: https://docs.floelabs.xyz/... or docs/getting-started/quickstart.md
+      placeholder: https://floe-labs.gitbook.io/docs/... or docs/getting-started/quickstart.md
     validations:
       required: true
   - type: textarea

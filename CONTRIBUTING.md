@@ -65,7 +65,7 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 
 ## License
 
-By contributing, you agree that your contributions are licensed under the repository's [MIT License](LICENSE).
+By contributing, you agree that your contributions are licensed under the repository's [MIT License](https://github.com/Floe-Labs/floe-labs-docs/blob/main/LICENSE).
 
 ## Questions?
 

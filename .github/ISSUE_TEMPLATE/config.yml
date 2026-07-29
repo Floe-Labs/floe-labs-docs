@@ -4,8 +4,8 @@ contact_links:
     url: https://github.com/Floe-Labs/floe-labs-docs/blob/main/SECURITY.md
     about: Please report security issues privately — never in a public issue.
   - name: Product support
-    url: mailto:hello@floelabs.xyz
-    about: Questions about your account, funding, or the dashboard.
+    url: https://floe-labs.gitbook.io/docs
+    about: Browse the docs, or email hello@floelabs.xyz for account, funding, or dashboard help.
   - name: Floe Dashboard
     url: https://dev-dashboard.floelabs.xyz
     about: Sign in to manage agents, keys, and budgets.
