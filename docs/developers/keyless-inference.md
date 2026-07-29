@@ -128,9 +128,11 @@ Every id is fully qualified as `provider/model` — copy them exactly as written
 
 ### Speech-to-Text
 
-`openai/whisper-1` · `openai/whisper-large-v3` · `openai/whisper-large-v3-turbo` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` · `mistral/voxtral-small` · `mistral/voxtral-mini-transcribe` · `nvidia/parakeet-tdt-0.6b-v3` · `nvidia/nemotron-3.5-asr`
+**Batch** (`POST /v1/audio/transcriptions`): `openai/whisper-1` · `openai/whisper-large-v3` · `openai/whisper-large-v3-turbo` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` · `mistral/voxtral-small` · `mistral/voxtral-mini-transcribe` · `nvidia/parakeet-tdt-0.6b-v3` · `nvidia/nemotron-3.5-asr`
 
-> STT on Floe has **two surfaces**: **batch** (`POST /v1/audio/transcriptions` — file in, transcript out) and **live streaming** (`WS /v1/audio/transcriptions/stream` — PCM frames in, `interim`/`final` transcript events out, the feed a LiveKit/Pipecat STT plugin consumes). See [Streaming transcription (live STT)](#streaming-transcription-live-stt) below. The separate `/v1/realtime` WebSocket is **speech-to-speech**, not a streaming-STT source.
+**Streaming** (`WS /v1/audio/transcriptions/stream`): `deepgram/nova-3`
+
+> STT on Floe has **two surfaces**: **batch** (`POST /v1/audio/transcriptions` — file in, transcript out) and **live streaming** (`WS /v1/audio/transcriptions/stream` — PCM frames in, `interim`/`final` transcript events out, the feed a LiveKit/Pipecat STT plugin consumes). Every id above — batch and streaming alike — resolves via `GET /v1/models`. See [Streaming transcription (live STT)](#streaming-transcription-live-stt) below. The separate `/v1/realtime` WebSocket is **speech-to-speech**, not a streaming-STT source.
 
 ### Realtime voice models
 
@@ -262,7 +264,7 @@ Open a WebSocket to:
 wss://credit-api.floelabs.xyz/v1/audio/transcriptions/stream?model=deepgram/nova-3&encoding=linear16&sample_rate=16000&language=en
 ```
 
-Authenticate with `Authorization: Bearer <floe key>` or `?api_key=` — **keyless**, Floe fronts the Deepgram key. Query params:
+Authenticate with the **`Authorization: Bearer <floe key>`** header — **keyless**, Floe fronts the Deepgram key. A `?api_key=` query param is a fallback for browser clients that can't set headers; prefer the header where you can, since query-string credentials leak into proxy/server logs and browser history — if you must use `?api_key=`, use a short-lived, spend-capped agent key. Query params:
 
 | Param | Values | Notes |
 |---|---|---|
@@ -279,6 +281,8 @@ Authenticate with `Authorization: Bearer <floe key>` or `?api_key=` — **keyles
 { "type": "transcript", "text": "book me for friday", "is_final": true, "speech_final": true }
 { "type": "error", "code": "insufficient_balance" }
 ```
+
+Map these to your STT plugin's event types: `is_final: false` is an **interim** hypothesis, `is_final: true` is a **final** transcript, and `speech_final: true` marks the end of an utterance (endpointing). Every event is a `type: "transcript"` object — there is no separate `interim`/`final` event name on the wire; the boolean carries the finality.
 
 Metered per **audio-second** on your Floe balance; because your balance is the ceiling, the session is cut off mid-stream the instant a charge would exhaust it. This is the standalone streaming-STT feed a LiveKit or Pipecat STT plugin can consume — see [The Voice Stack — live voice with your own stack](../build/voice-stack.md#live-voice-with-your-own-stack-livekit-pipecat).
 

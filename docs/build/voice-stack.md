@@ -74,7 +74,7 @@ The turn above is **batch** — each leg is a discrete request/response call. If
 |-----|----------|-----|
 | **LLM** | Yes — keyless | Point the framework's LLM service `base_url` at `https://credit-api.floelabs.xyz/v1` with your Floe agent key. OpenAI-compatible; metered on Floe. |
 | **TTS** | Yes — keyless | Floe's `POST /v1/audio/speech` (OpenAI-compatible), or any vendor via `POST /v1/proxy/fetch`. Metered on Floe. |
-| **Live STT** | Yes — keyless | Open a WebSocket to `wss://credit-api.floelabs.xyz/v1/audio/transcriptions/stream?model=deepgram/nova-3&encoding=linear16&sample_rate=16000&language=en` with your Floe agent key. Stream raw PCM frames up; Floe emits `interim`/`final` transcript events a LiveKit/Pipecat STT plugin consumes. Metered per audio-second on Floe — Floe fronts the Deepgram key. |
+| **Live STT** | Yes — keyless | Open a WebSocket to `wss://credit-api.floelabs.xyz/v1/audio/transcriptions/stream?model=deepgram/nova-3&encoding=linear16&sample_rate=16000&language=en` with your Floe agent key. Stream raw PCM frames up; Floe streams `{type:"transcript", text, is_final, speech_final}` events down (`is_final:false` = interim, `true` = final; `speech_final:true` = end of utterance) — the `interim`/`final` feed a LiveKit/Pipecat STT plugin consumes. Metered per audio-second on Floe — Floe fronts the Deepgram key. |
 
 So a live stack is **Floe for the LLM, TTS, and STT legs — keyless, one ledger, one set of budget caps.** See [Floe Inference — streaming transcription](../developers/keyless-inference.md#streaming-transcription-live-stt) for the wire protocol (frame encoding, sample-rate bounds, message shapes).
 
