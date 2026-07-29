@@ -79,7 +79,7 @@ const view = await provider.getWalletBalance(walletProvider, {});
 ## Where the primitives live
 
 - **REST API**: `GET /v1/agents/balance` for balance, `/v1/agents/spend-limit` for the session cap
-- **MCP server**: [mcp-server.md → Spend governance and awareness](mcp-server.md#spend-governance-and-awareness-14) — `get_wallet_balance`, `get_spend_limit` (snake_case)
+- **MCP server**: [mcp-server.md → Spend governance and awareness](mcp-server.md#spend-governance-and-awareness-14) — `get_credit_remaining`, `get_spend_limit` (snake_case)
 - **TypeScript SDK**: `floe-agent` v0.3.0+, on `X402ActionProvider`
 - **Python SDK**: `floe-agentkit-actions` v0.3.0+, on `X402ActionProvider`
 

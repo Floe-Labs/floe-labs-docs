@@ -423,10 +423,10 @@ Realtime speech-to-speech over WebSocket / WebRTC. Metering varies by provider �
 
 ### Google Gemini Live
 
-**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=google/gemini-live` (Floe Inference gateway)
+**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=google/gemini-live-3.1` (Floe Inference gateway)
 **Price:** metered per completed turn · Base mainnet
 
-> Google `gemini-live` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
+> Google `gemini-live-3.1` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
 
 ### xAI Grok Voice
 

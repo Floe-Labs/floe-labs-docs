@@ -1387,7 +1387,7 @@ Every id is fully qualified as `provider/model` — copy them exactly as written
 
 ### Realtime voice models
 
-`openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
+`openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
 
 > **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key); it grows over time, so resolve ids there rather than pinning this list. Venice and Sarvam are reachable here as **first-class inference providers** in the gateway (the ids above) — the same vendors also expose x402 endpoints — Venice [image](../x402-directory/image.md) and [TTS](../x402-directory/voice.md), Sarvam [voice and language](../x402-directory/voice.md) — reached via `/v1/proxy/fetch`. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, …) also live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`.
 
@@ -1663,8 +1663,8 @@ This page covers Floe's own overhead only — the added time on top of the vendo
 
 ## Methodology
 
-- **Metric:** `floe_overhead_ms` — the wall-clock time on Floe's critical path **minus** the upstream call it wraps (tracked separately as `upstream_latency_ms`). It is the *added* time, computed per call by subtracting upstream — not gateway time measured in isolation — so no separate "direct-to-vendor" control run is needed; upstream is subtracted on every call. Asynchronous post-response settlement is also excluded, since it happens off the caller's critical path.
-- **Instrumentation point:** measured inside the gateway across the path Floe owns — authenticate → gate the spend → resolve and route the model → return the response. The debit write is deferred until after the response is already flowing, so it falls outside this span (and this sample is non-streaming).
+- **Metric:** `floe_overhead_ms` — the wall-clock time on Floe's critical path **minus** the upstream call it wraps (tracked separately as `upstream_latency_ms`). It is the *added* time, computed per call by subtracting upstream — not gateway time measured in isolation — so no separate "direct-to-vendor" control run is needed; upstream is subtracted on every call. Settlement is excluded from the measured span (see the instrumentation note below).
+- **Instrumentation point:** measured inside the gateway across the path Floe owns — authenticate → gate the spend → resolve and route the model → return the response. On the proxy path the debit is deferred until after the response is flowing; on this non-streaming keyless path the ledger settle write lands after the span closes but still before the caller is fully done, so the persisted figures are a **lower bound** that excludes the settle write.
 - **Aggregation:** persisted per call on the request ledger (one row per settled call), aggregated with `percentile_disc` (nearest-rank) rather than interpolation.
 - **Rail scope:** measured on the **keyless rail** — where Floe fronts the upstream provider from a pooled credential. The proxy, BYOK, and x402-router paths have different overhead profiles and are reported separately; mixing rails would blur the number. Because the metric excludes upstream latency, which provider Floe fronts on the keyless rail doesn't change what's being measured.
 - **Window and sample:** rolling 1-hour window over live production traffic — keyless `/v1/chat/completions` calls, non-streaming. Two independent reads in the window: n=1,634 → p50 38ms / p99 166ms; n=2,141 → p50 39ms / p99 181ms. p50 is stable at 38–39ms; p99 varies within a 166–181ms band, reported as ~180ms.
@@ -2533,10 +2533,10 @@ Realtime speech-to-speech over WebSocket / WebRTC. Metering varies by provider �
 
 ### Google Gemini Live
 
-**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=google/gemini-live` (Floe Inference gateway)
+**Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=google/gemini-live-3.1` (Floe Inference gateway)
 **Price:** metered per completed turn · Base mainnet
 
-> Google `gemini-live` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
+> Google `gemini-live-3.1` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
 
 ### xAI Grok Voice
 
@@ -3652,7 +3652,7 @@ const view = await provider.getWalletBalance(walletProvider, {});
 ## Where the primitives live
 
 - **REST API**: `GET /v1/agents/balance` for balance, `/v1/agents/spend-limit` for the session cap
-- **MCP server**: [mcp-server.md → Spend governance and awareness](mcp-server.md#spend-governance-and-awareness-14) — `get_wallet_balance`, `get_spend_limit` (snake_case)
+- **MCP server**: [mcp-server.md → Spend governance and awareness](mcp-server.md#spend-governance-and-awareness-14) — `get_credit_remaining`, `get_spend_limit` (snake_case)
 - **TypeScript SDK**: `floe-agent` v0.3.0+, on `X402ActionProvider`
 - **Python SDK**: `floe-agentkit-actions` v0.3.0+, on `X402ActionProvider`
 
@@ -3870,7 +3870,7 @@ llm = FloeLLM(
 )
 ```
 
-Floe holds no provider keys: with BYOK your `provider_key` is supplied per request and **never persisted**.
+With per-request BYOK your `provider_key` is supplied on each call and **never persisted**.
 
 > **Open-weight models, zero extra infra.** Some providers (e.g. Venice) are already x402 vendors, so calls to them are just paid tool calls through `Floe402Tool` — every Floe control governs them with nothing extra to run. The honest caveat: the x402-native models available today are open-weight (Llama, Qwen, etc.). For GPT-4o and Claude, route through `FloeLLM`.
 
@@ -4223,10 +4223,13 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 Interactive conversational agent + per-agent registration tooling. The `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM; the other subcommands manage Floe agents and their API keys.
 
+Since v0.6.0 the same package also ships the full **Floe platform CLI** — `status`, `auth`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `estimate`, `forecast`, `pay`, `models`, `usage`, `activity`, `webhooks`, and more — under both the `floe` and `floe-agent` bin names. See the [Floe CLI reference](cli.md) for the complete command table; this section covers only the agent-workflow subcommands below.
+
 ### Install
 
 ```bash
-npm install -g floe-agent     # or: npm run build && npm link
+npm install -g floe-agent     # installs both the `floe` and `floe-agent` commands
+                              # or: npm run build && npm link
 ```
 
 ### Subcommands
@@ -4393,8 +4396,8 @@ In your consumer's `package.json`:
 ```bash
 npm run build && npm pack
 # In consumer — substitute the actual tarball name printed by `npm pack`
-# (it tracks the package.json `version` field; today that's 0.4.0):
-npm install ../agentkit-actions/floe-agent-0.4.0.tgz
+# (it tracks the package.json `version` field; today that's 0.6.0):
+npm install ../agentkit-actions/floe-agent-0.6.0.tgz
 ```
 
 ## Agent Awareness Actions (v0.3.0+)
@@ -4721,6 +4724,8 @@ One package, two command names: `floe` is the platform CLI, `floe-agent` is the 
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [MCP Server](mcp-server.md) | [API Keys](api-keys.md)
 
 **npm:** `floe-agent` (v0.6.0) · **GitHub:** [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions)
+
+> The platform CLI ships in the **npm** package. The Python package (`floe-agentkit-actions`) installs a smaller agent-workflow CLI (`floe-agent` only: `run`, `register`, `agents`, `use`, `rotate`, `revoke`, `open-credit-line`) — see [Python SDK](agentkit-python.md).
 
 ---
 
@@ -8926,7 +8931,7 @@ When the on-chain `PriceOracle` circuit breaker is tripped (stale, deviation, se
 
 | Status | `error` | Cause | Agent action |
 |---|---|---|---|
-| 503 | `circuit_breaker_active` | Protocol-wide halt due to oracle stale price / deviation > 15% / L2 sequencer down | Back off, poll `/v1/status`; do not retry blindly |
+| 503 | `circuit_breaker_active` | Protocol-wide halt due to oracle stale price / deviation > 20% / L2 sequencer down | Back off, poll `/v1/status`; do not retry blindly |
 | 503 | `circuit_breaker_stale` | Facilitator cannot reach its RPC provider, so it cannot verify the breaker state | Back off, alert operator — this is an infra issue |
 
 The breaker auto-clears when all conditions resolve; there is no manual reset for agents.
@@ -9213,7 +9218,11 @@ Floe runs on **Base Mainnet**. That's the only supported network — there is no
 | -------------------- | -------------------------------------------- |
 | LendingIntentMatcher | `0x17946cD3e180f82e632805e5549EC913330Bb175` |
 | PriceOracle          | `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` |
+| FallbackPriceOracle  | `0x75a29708914B7BFFF6330757af076EFD70525120` |
 | LendingViews         | `0x9101027166bE205105a9E0c68d6F14f21f6c5003` |
+| HookExecutor         | `0x71f0A88DfBFe1E0e2a7F74FBF85ed269eC25C3fA` |
+| SameTokenCloseExecutor | `0x7cb04d54fF2806A479ef84445EE0E8d6f4effb91` |
+| LiquidationCallbackExecutor | `0x93B7f53FEd42114B05979bc131cB67a427B0dC38` |
 
 ### x402 Credit Facilitator
 
@@ -9236,18 +9245,20 @@ The **Facilitator EOA** is the address you pass as the `operator` argument to `s
 | Token  | Role                  | Address                                      | Decimals |
 | ------ | --------------------- | -------------------------------------------- | -------- |
 | USDC   | Loan + Collateral     | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6        |
+| USDT   | Loan                  | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6        |
 | WETH   | Collateral            | `0x4200000000000000000000000000000000000006` | 18       |
 | cbBTC  | Collateral            | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8        |
 
 ### Active Markets
 
-| Market     | Loan Token | Collateral Token | Max LTV | Notes |
+| Market     | Loan Token | Collateral Token | LTV | Notes |
 | ---------- | ---------- | ---------------- | ------- | ----- |
-| **USDC/USDC** | USDC    | USDC             | **95%** | Same-token working capital — no price risk, hardcoded 1:1 oracle |
-| USDC/WETH  | USDC       | WETH             | 70%     | Volatile collateral |
-| USDC/cbBTC | USDC       | cbBTC            | 70%     | Volatile collateral |
+| **USDC/USDC** | USDC    | USDC             | **95% default** · 99.5% protocol max | Same-token working capital — no price risk, hardcoded 1:1 oracle |
+| USDC/WETH  | USDC       | WETH             | 30% market floor · 90% protocol max | Volatile collateral |
+| USDC/cbBTC | USDC       | cbBTC            | 30% market floor · 90% protocol max | Volatile collateral |
+| USDT/cbBTC | USDT       | cbBTC            | 30% market floor · 90% protocol max | Volatile collateral |
 
-The **USDC/USDC market** (`marketId: 0x5027ae5ed5c85380c5dfa34a79915f41f139f4e859f56d15a6f958ea6b662820`) is the recommended market for AI agents. Deposit USDC, borrow up to 95% as working capital. No liquidation risk from price movements — the only path to liquidation is unpaid interest accrual.
+The **USDC/USDC market** (`marketId: 0x5027ae5ed5c85380c5dfa34a79915f41f139f4e859f56d15a6f958ea6b662820`) is the recommended market for AI agents. Deposit USDC, borrow up to 95% as working capital — the recommended default; the protocol's hard cap for same-token markets is 99.5% (`SAME_TOKEN_MAX_LTV_BPS`). No liquidation risk from price movements — the only path to liquidation is unpaid interest accrual.
 
 ### Configuration
 
@@ -9311,10 +9322,10 @@ For production applications:
 | Parameter             | Value       | Description                                   |
 | --------------------- | ----------- | --------------------------------------------- |
 | `minLtvGapBps`        | 800 (8%)    | Min gap between origination & liquidation LTV |
-| `withdrawalBufferBps` | 300 (3%)    | Buffer below liquidation for withdrawals      |
+| `withdrawalBufferBps` | 800 (8%)    | Buffer below liquidation for withdrawals      |
 | `stalenessTimeout`    | 3,600 sec   | Oracle staleness threshold                    |
-| `maxDeviationBps`     | 1,500 (15%) | Max price deviation before circuit breaker    |
-| `liquidationBonus`    | 500 (5%)    | Bonus for liquidators                         |
+| `maxDeviationBps`     | 2,000 (20%) | Max price deviation before circuit breaker (live mainnet setting) |
+| `liquidationBonus`    | 500 (5%) two-token · 50 (0.5%) same-token | Bonus for liquidators |
 | `gracePeriod`         | 86,400 sec  | Grace period after loan expiry (24 hours)     |
 
 ***

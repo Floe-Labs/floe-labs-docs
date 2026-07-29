@@ -17,6 +17,8 @@ One package, two command names: `floe` is the platform CLI, `floe-agent` is the 
 
 **npm:** `floe-agent` (v0.6.0) · **GitHub:** [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions)
 
+> The platform CLI ships in the **npm** package. The Python package (`floe-agentkit-actions`) installs a smaller agent-workflow CLI (`floe-agent` only: `run`, `register`, `agents`, `use`, `rotate`, `revoke`, `open-credit-line`) — see [Python SDK](agentkit-python.md).
+
 ---
 
 ## Conventions
