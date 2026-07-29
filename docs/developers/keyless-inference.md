@@ -129,9 +129,9 @@ Every id is fully qualified as `provider/model` — copy them exactly as written
 
 `openai/whisper-1` · `openai/whisper-large-v3` · `openai/whisper-large-v3-turbo` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` · `mistral/voxtral-small` · `mistral/voxtral-mini-transcribe` · `nvidia/parakeet-tdt-0.6b-v3` · `nvidia/nemotron-3.5-asr`
 
-### Realtime voice
+### Realtime voice models
 
-`openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
+`openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
 
 > **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key); it grows over time, so resolve ids there rather than pinning this list. Venice and Sarvam are reachable here as **first-class inference providers** in the gateway (the ids above) — the same vendors also expose x402 endpoints — Venice [image](../x402-directory/image.md) and [TTS](../x402-directory/voice.md), Sarvam [voice and language](../x402-directory/voice.md) — reached via `/v1/proxy/fetch`. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, …) also live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`.
 

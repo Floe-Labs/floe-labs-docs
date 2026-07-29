@@ -6,11 +6,11 @@
 
 [Website](https://floelabs.xyz) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen)](https://github.com/Floe-Labs/floe-labs-docs/blob/main/LICENSE)
 
 No crypto, no wallets to manage. Works with **Pipecat, Vapi, Retell, ElevenLabs, LiveKit, Bland, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP.**
 
-> This repository is the source for the documentation at **[floe-labs.gitbook.io/docs](https://floe-labs.gitbook.io/docs)** — the published site is the best way to read it. Corrections and improvements are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
+> This repository is the source for the documentation at **[floe-labs.gitbook.io/docs](https://floe-labs.gitbook.io/docs)** — the published site is the best way to read it. Corrections and improvements are welcome; see [CONTRIBUTING.md](https://github.com/Floe-Labs/floe-labs-docs/blob/main/CONTRIBUTING.md).
 
 ---
 

@@ -333,7 +333,7 @@ No key required.
 
 ### Advanced lending protocol (25)
 
-> These are the **on-chain protocol layer** (markets, intents, loans), not the live spend product. Borrowing/lending as a developer-facing product is on the [roadmap](../components/secured-credit.md); these tools exist for teams running their own keys on the self-custody path. All write tools return **unsigned transactions** — the server never holds private keys. See [Transaction Flow](#transaction-flow) below.
+> These are the **on-chain protocol layer** (markets, intents, loans), not the live spend product. Borrowing/lending as a developer-facing product is on the roadmap; these tools exist for teams running their own keys on the self-custody path. All write tools return **unsigned transactions** — the server never holds private keys. See [Transaction Flow](#transaction-flow) below.
 
 **Read:**
 

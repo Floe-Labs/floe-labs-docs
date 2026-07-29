@@ -90,5 +90,5 @@ Alerts are delivered via webhooks and shown in the dashboard.
 
 - **[API Keys](api-keys.md)** — Create your first developer key.
 - **[Webhooks](webhooks.md)** — Set up push notifications for loan events and alerts.
-- **[Agent Quickstart](agent-quickstart.md)** — Full happy-path walkthrough from zero to first paid API call.
+- **[Quickstart](../getting-started/quickstart.md)** — Full happy-path walkthrough from zero to first paid API call.
 - **[x402 Credit Facilitator](x402-facilitator.md)** — Delegate collateral and let your agent pay for APIs automatically.

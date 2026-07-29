@@ -20,10 +20,9 @@ The first agent on an account is provisioned with a **$3 welcome credit that is 
 
 ## Start here
 
-- [Set up with your AI tools](https://floe-labs.gitbook.io/docs/quickstart/setup-with-ai-tools.md): The copy-prompt, MCP one-liners and deep links, CLI install — the fastest way to connect Claude Code, Cursor, Codex, or any MCP client — ask: "How do I connect Floe to Claude Code?"
-- [Agent Quickstart — human does two things, the agent does the rest](https://floe-labs.gitbook.io/docs/quickstart/quickstart-agents.md): Register + fund (human) vs. provision, govern, and pay (agent), ending in a real $0.001 paid call — ask: "What's the fastest way to make my first x402 call?"
-- [Quickstart (5 minutes)](https://floe-labs.gitbook.io/docs/quickstart/quickstart.md): The dashboard-first path — create an agent, fund it with a card, call `fetch()` — ask: "How do I create and fund an agent?"
-- [Funding your agent](https://floe-labs.gitbook.io/docs/quickstart/funding.md): Card, Apple Pay, Google Pay, bank transfer, and the $3 welcome credit — ask: "How do I fund my agent with a credit card?"
+- [Set up with your AI tools](https://floe-labs.gitbook.io/docs/start-here/setup-with-ai-tools.md): The copy-prompt, MCP one-liners and deep links, CLI install — the fastest way to connect Claude Code, Cursor, Codex, or any MCP client — ask: "How do I connect Floe to Claude Code?"
+- [Quickstart (5 minutes)](https://floe-labs.gitbook.io/docs/start-here/quickstart.md): The dashboard-first path — create an agent, fund it with a card, call `fetch()` — ask: "How do I create and fund an agent?"
+- [Funding your agent](https://floe-labs.gitbook.io/docs/start-here/funding.md): Card, Apple Pay, Google Pay, bank transfer, and the $3 welcome credit — ask: "How do I fund my agent with a credit card?"
 
 ## Machine-readable artifacts
 
@@ -37,15 +36,14 @@ The first agent on an account is provisioned with a **$3 welcome credit that is 
 ## Install
 
 - [MCP Server — 65 tools](https://floe-labs.gitbook.io/docs/developers/mcp-server.md): Hosted at `https://mcp.floelabs.xyz/mcp` (per-request `Authorization: Bearer`), or local via `npx -y @floelabs/mcp-server --stdio`. Universal install: `npx -y add-mcp https://mcp.floelabs.xyz/mcp`. Claude Code: `claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp --header "Authorization: Bearer YOUR_FLOE_KEY"`
-- [Floe CLI](https://floe-labs.gitbook.io/docs/developers/cli.md): `npm i -g floe-agent` installs both the `floe` and `floe-agent` commands — status, agents, keys, policy, limit, allowlist, balance, fund, estimate, forecast, pay, models, usage, activity, webhooks. `--json` on every command; exit codes 0 ok / 1 error / 2 usage / 4 auth required / 5 payment required
+- [Floe CLI](https://floe-labs.gitbook.io/docs/developers/cli.md): `npm i -g floe-agent` installs both the `floe` and `floe-agent` commands — status, auth, agents, keys, policy, limit, allowlist, balance, fund, estimate, forecast, pay, models, usage, activity, webhooks, skills install, mcp install, plus the agent-workflow verbs run, register, use, rotate, revoke, open-credit-line. `--json` on every command; exit codes 0 ok / 1 error / 2 usage / 4 auth required / 5 payment required
 - [TypeScript SDK](https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-typescript.md): `npm install floe-agent` — `FloeAgent` runtime client plus 54 AgentKit actions
 - [Python SDK](https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-python.md): `pip install floe-agentkit-actions` — same 54 actions
 - [Plain HTTP / REST](https://floe-labs.gitbook.io/docs/frameworks/http.md): No SDK — `Authorization: Bearer $FLOE_API_KEY` against `https://credit-api.floelabs.xyz`
 
 ## For agent operators
 
-- [Bank Account → First API Call](https://floe-labs.gitbook.io/docs/guides/fiat-to-x402.md): Fund with a bank account or card, then call any x402 API from your agent's Floe-managed balance — no crypto experience needed — ask: "How do I fund my agent with a credit card?"
-- [How Agents Pay With Floe](https://floe-labs.gitbook.io/docs/guides/credit-for-agents.md): How an agent pays for APIs from a funded balance today; on-chain working-capital credit (in development)
+- [Bank Account → First API Call](https://floe-labs.gitbook.io/docs/developers/fiat-to-x402.md): Fund with a bank account or card, then call any x402 API from your agent's Floe-managed balance — no crypto experience needed — ask: "How do I fund my agent with a credit card?"
 
 ## For developers
 
@@ -58,8 +56,8 @@ The first agent on an account is provisioned with a **$3 welcome credit that is 
 - [Marketplace Shim](https://floe-labs.gitbook.io/docs/developers/marketplace-shim.md): Keyless vendor routes at `marketplace.floelabs.xyz` — how to wrap them in a `/v1/proxy/fetch` call
 - [Credit REST API](https://floe-labs.gitbook.io/docs/api-reference/credit-api.md): HTTP endpoints for any language
 - [Webhooks](https://floe-labs.gitbook.io/docs/developers/webhooks.md): Push notifications for account events (credit.warning, credit.at_limit, credit.recovered, agent.created, key.created, key.rotated, x402.first_settlement, loan lifecycle)
-- [Floe Inference](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/keyless-inference.md): Keyless pay-as-you-go OpenAI-compatible LLM/embeddings/voice gateway — model ids like `openai/gpt-4o`, metered per call, `POST /v1/estimate` to price first
-- [Floe Phone](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/floe-phone.md): Phone numbers and voice sessions for agents, metered on the same ledger
+- [Floe Inference](https://floe-labs.gitbook.io/docs/the-voice-stack/keyless-inference.md): Keyless pay-as-you-go OpenAI-compatible LLM/embeddings/voice gateway — model ids like `openai/gpt-4o`, metered per call, `POST /v1/estimate` to price first
+- [Floe Phone](https://floe-labs.gitbook.io/docs/the-voice-stack/floe-phone.md): Phone numbers and voice sessions for agents, metered on the same ledger
 
 ## Floe Inference — model catalog (120 models across 28 providers)
 
@@ -79,81 +77,81 @@ All endpoints below are payable in USDC on Base mainnet through `POST https://cr
 
 ### Compute
 
-- [Venice AI — Models (90+ chat + embedding, pick by capability & price)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/compute.md#venice-models): full catalog with per-token pricing; discover live at `GET https://api.venice.ai/api/v1/models`
-- [Venice AI — Chat Completions](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/compute.md#venice-ai-chat-completions): `POST https://api.venice.ai/api/v1/chat/completions` · metered/tokens
-- [Venice AI — Responses](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/compute.md#venice-ai-chat-completions): `POST https://api.venice.ai/api/v1/responses` · metered/tokens
-- [Venice AI — Embeddings](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/compute.md#venice-ai-embeddings): `POST https://api.venice.ai/api/v1/embeddings` · metered/tokens
-- [Sarvam AI — Indic Chat (Sarvam 105B/30B, 22+ Indian languages)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/compute.md#sarvam-ai-chat-completions): `POST https://credit-api.floelabs.xyz/v1/chat/completions` model `sarvam/<id>` · metered/tokens
+- [Venice AI — Models (90+ chat + embedding, pick by capability & price)](https://floe-labs.gitbook.io/docs/vendor-marketplace/compute.md#venice-models): full catalog with per-token pricing; discover live at `GET https://api.venice.ai/api/v1/models`
+- [Venice AI — Chat Completions](https://floe-labs.gitbook.io/docs/vendor-marketplace/compute.md#venice-ai-chat-completions): `POST https://api.venice.ai/api/v1/chat/completions` · metered/tokens
+- [Venice AI — Responses](https://floe-labs.gitbook.io/docs/vendor-marketplace/compute.md#venice-ai-chat-completions): `POST https://api.venice.ai/api/v1/responses` · metered/tokens
+- [Venice AI — Embeddings](https://floe-labs.gitbook.io/docs/vendor-marketplace/compute.md#venice-ai-embeddings): `POST https://api.venice.ai/api/v1/embeddings` · metered/tokens
+- [Sarvam AI — Indic Chat (Sarvam 105B/30B, 22+ Indian languages)](https://floe-labs.gitbook.io/docs/vendor-marketplace/compute.md#sarvam-ai-chat-completions): `POST https://credit-api.floelabs.xyz/v1/chat/completions` model `sarvam/<id>` · metered/tokens
 
 ### Voice
 
-- [Venice AI — Text to Speech](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#venice-ai-text-to-speech): `POST https://api.venice.ai/api/v1/audio/speech` · metered/chars
-- [Venice AI — Transcription](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#venice-ai-transcription): `POST https://api.venice.ai/api/v1/audio/transcriptions` · metered/min
-- [Sarvam AI — Text to Speech (Bulbul)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#sarvam-ai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/sarvam` (via /v1/proxy/fetch) · metered/char
-- [Sarvam AI — Speech-to-Text (Saaras)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#sarvam-ai-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/sarvam` (via /v1/proxy/fetch) · metered/audio-sec
-- [Deepgram — Speech-to-Text](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#deepgram-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/deepgram` (via /v1/proxy/fetch) · metered/audio-min
-- [ElevenLabs — Text-to-Speech](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#elevenlabs-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/elevenlabs` (via /v1/proxy/fetch) · metered/char
-- [Cartesia — Text-to-Speech](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#cartesia-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/cartesia` (via /v1/proxy/fetch) · metered/char
-- [Google Cloud — Text-to-Speech](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#google-cloud-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/google` (via /v1/proxy/fetch) · metered/char
-- [AssemblyAI — Speech-to-Text](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#assemblyai-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/assemblyai` (via /v1/proxy/fetch) · metered/audio-sec
-- [Deepgram — Text-to-Speech (Aura-2)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#deepgram-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/deepgram` (via /v1/proxy/fetch) · metered/char
-- [ElevenLabs — Speech-to-Text (Scribe v2)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#elevenlabs-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/elevenlabs` (via /v1/proxy/fetch) · metered/audio-sec
-- [Cartesia — Speech-to-Text (Ink-Whisper)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#cartesia-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/cartesia` (via /v1/proxy/fetch) · metered/audio-sec
-- [Hume AI — Text-to-Speech (Octave 2)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#hume-ai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/hume` (via /v1/proxy/fetch) · metered/char
-- [Rime — Text-to-Speech (coda)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#rime-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/rime` (via /v1/proxy/fetch) · metered/char
-- [Inworld AI — Text-to-Speech (TTS-2)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#inworld-ai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/inworld` (via /v1/proxy/fetch) · metered/char
-- [MiniMax — Text-to-Speech (speech-2.8)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#minimax-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/minimax` (via /v1/proxy/fetch) · metered/char
-- [Azure AI Speech — Text-to-Speech](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#azure-ai-speech-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/azure` (via /v1/proxy/fetch) · metered/char
-- [Azure AI Speech — Speech-to-Text](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#azure-ai-speech-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/azure` (via /v1/proxy/fetch) · metered/audio-sec
-- [Amazon Polly — Text-to-Speech](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#amazon-polly-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/polly` (via /v1/proxy/fetch) · metered/char
-- [xAI — Text-to-Speech](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#xai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/xai` (via /v1/proxy/fetch) · metered/char
-- [xAI — Speech-to-Text](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#xai-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/xai` (via /v1/proxy/fetch) · metered/audio-sec
-- [Speechmatics — Speech-to-Text (melia-1)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#speechmatics-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/speechmatics` (via /v1/proxy/fetch) · metered/audio-sec
-- [dTelecom — Voice sessions (credits)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#dtelecom-voice-sessions): `POST https://x402.dtelecom.org/v1/credits/purchase` then STT $0.006/min · TTS $0.008/1K chars · WebRTC $0.001/min
-- [ForgeMesh Voice — Text-to-Speech](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#forgemesh-voice-text-to-speech): `POST https://voice.forgemesh.io/v1/audio/speech` · $0.001/call
-- [GEDX402 — TTS & ASR](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#gedx402-tts-and-asr): `POST https://media.gedx402.com/v1/tts/melotts` (+ aura-2, whisper, nova-3, sessions) · $0.005–$1.49/call
-- [x402engine — Voice gateway](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#x402engine-voice-gateway): `POST https://x402-gateway-production.up.railway.app/api/tts/openai` (+ elevenlabs, transcribe) · $0.01–$0.10/call
-- [Spraay — TTS & STT](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#spraay-text-to-speech-and-speech-to-text): `POST https://gateway.spraay.app/api/v1/compute/text-to-speech` · $0.02–$0.03/call
-- [Agent402 — TTS & transcription](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#agent402-tts-and-transcription): `POST https://agent402.tools/api/tts` (+ tts-hd, transcribe) · $0.03–$0.10/call
-- [Xona Agent — Text-to-Speech (Grok)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#xona-agent-text-to-speech): `POST https://api.xona-agent.com/base-main/audio/x-text-to-speech` · $0.01/call
-- [cnvrt.ing — Transcription (legacy protocol)](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/voice.md#cnvrt.ing-transcription): `POST https://cnvrt.ing/api/transcribe` · $0.025/call
+- [Venice AI — Text to Speech](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#venice-ai-text-to-speech): `POST https://api.venice.ai/api/v1/audio/speech` · metered/chars
+- [Venice AI — Transcription](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#venice-ai-transcription): `POST https://api.venice.ai/api/v1/audio/transcriptions` · metered/min
+- [Sarvam AI — Text to Speech (Bulbul)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#sarvam-ai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/sarvam` (via /v1/proxy/fetch) · metered/char
+- [Sarvam AI — Speech-to-Text (Saaras)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#sarvam-ai-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/sarvam` (via /v1/proxy/fetch) · metered/audio-sec
+- [Deepgram — Speech-to-Text](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#deepgram-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/deepgram` (via /v1/proxy/fetch) · metered/audio-min
+- [ElevenLabs — Text-to-Speech](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#elevenlabs-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/elevenlabs` (via /v1/proxy/fetch) · metered/char
+- [Cartesia — Text-to-Speech](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#cartesia-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/cartesia` (via /v1/proxy/fetch) · metered/char
+- [Google Cloud — Text-to-Speech](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#google-cloud-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/google` (via /v1/proxy/fetch) · metered/char
+- [AssemblyAI — Speech-to-Text](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#assemblyai-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/assemblyai` (via /v1/proxy/fetch) · metered/audio-sec
+- [Deepgram — Text-to-Speech (Aura-2)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#deepgram-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/deepgram` (via /v1/proxy/fetch) · metered/char
+- [ElevenLabs — Speech-to-Text (Scribe v2)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#elevenlabs-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/elevenlabs` (via /v1/proxy/fetch) · metered/audio-sec
+- [Cartesia — Speech-to-Text (Ink-Whisper)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#cartesia-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/cartesia` (via /v1/proxy/fetch) · metered/audio-sec
+- [Hume AI — Text-to-Speech (Octave 2)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#hume-ai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/hume` (via /v1/proxy/fetch) · metered/char
+- [Rime — Text-to-Speech (coda)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#rime-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/rime` (via /v1/proxy/fetch) · metered/char
+- [Inworld AI — Text-to-Speech (TTS-2)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#inworld-ai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/inworld` (via /v1/proxy/fetch) · metered/char
+- [MiniMax — Text-to-Speech (speech-2.8)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#minimax-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/minimax` (via /v1/proxy/fetch) · metered/char
+- [Azure AI Speech — Text-to-Speech](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#azure-ai-speech-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/azure` (via /v1/proxy/fetch) · metered/char
+- [Azure AI Speech — Speech-to-Text](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#azure-ai-speech-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/azure` (via /v1/proxy/fetch) · metered/audio-sec
+- [Amazon Polly — Text-to-Speech](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#amazon-polly-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/polly` (via /v1/proxy/fetch) · metered/char
+- [xAI — Text-to-Speech](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#xai-text-to-speech): `POST https://marketplace.floelabs.xyz/v1/tts/xai` (via /v1/proxy/fetch) · metered/char
+- [xAI — Speech-to-Text](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#xai-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/xai` (via /v1/proxy/fetch) · metered/audio-sec
+- [Speechmatics — Speech-to-Text (melia-1)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#speechmatics-speech-to-text): `POST https://marketplace.floelabs.xyz/v1/stt/speechmatics` (via /v1/proxy/fetch) · metered/audio-sec
+- [dTelecom — Voice sessions (credits)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#dtelecom-voice-sessions): `POST https://x402.dtelecom.org/v1/credits/purchase` then STT $0.006/min · TTS $0.008/1K chars · WebRTC $0.001/min
+- [ForgeMesh Voice — Text-to-Speech](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#forgemesh-voice-text-to-speech): `POST https://voice.forgemesh.io/v1/audio/speech` · $0.001/call
+- [GEDX402 — TTS & ASR](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#gedx402-tts-and-asr): `POST https://media.gedx402.com/v1/tts/melotts` (+ aura-2, whisper, nova-3, sessions) · $0.005–$1.49/call
+- [x402engine — Voice gateway](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#x402engine-voice-gateway): `POST https://x402-gateway-production.up.railway.app/api/tts/openai` (+ elevenlabs, transcribe) · $0.01–$0.10/call
+- [Spraay — TTS & STT](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#spraay-text-to-speech-and-speech-to-text): `POST https://gateway.spraay.app/api/v1/compute/text-to-speech` · $0.02–$0.03/call
+- [Agent402 — TTS & transcription](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#agent402-tts-and-transcription): `POST https://agent402.tools/api/tts` (+ tts-hd, transcribe) · $0.03–$0.10/call
+- [Xona Agent — Text-to-Speech (Grok)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#xona-agent-text-to-speech): `POST https://api.xona-agent.com/base-main/audio/x-text-to-speech` · $0.01/call
+- [cnvrt.ing — Transcription (legacy protocol)](https://floe-labs.gitbook.io/docs/vendor-marketplace/webrtc.md#cnvrt.ing-transcription): `POST https://cnvrt.ing/api/transcribe` · $0.025/call
 
 ### Image
 
-- [Venice AI — Image Generation](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/image.md#venice-ai-image-generation): `POST https://api.venice.ai/api/v1/image/generate` · metered/image
-- [Venice AI — Image Upscale](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/image.md): `POST https://api.venice.ai/api/v1/image/upscale` · metered/image
-- [Venice AI — Image Edit](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/image.md): `POST https://api.venice.ai/api/v1/image/edit` · metered/image
-- [Venice AI — Background Removal](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/image.md): `POST https://api.venice.ai/api/v1/image/background-remove` · metered/image
+- [Venice AI — Image Generation](https://floe-labs.gitbook.io/docs/vendor-marketplace/image.md#venice-ai-image-generation): `POST https://api.venice.ai/api/v1/image/generate` · metered/image
+- [Venice AI — Image Upscale](https://floe-labs.gitbook.io/docs/vendor-marketplace/image.md): `POST https://api.venice.ai/api/v1/image/upscale` · metered/image
+- [Venice AI — Image Edit](https://floe-labs.gitbook.io/docs/vendor-marketplace/image.md): `POST https://api.venice.ai/api/v1/image/edit` · metered/image
+- [Venice AI — Background Removal](https://floe-labs.gitbook.io/docs/vendor-marketplace/image.md): `POST https://api.venice.ai/api/v1/image/background-remove` · metered/image
 
 ### Search
 
-- [Exa — Search](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/search.md#exa-search): `POST https://api.exa.ai/search` · $0.007/search
-- [Exa — Contents](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/search.md#exa-contents): `POST https://api.exa.ai/contents` · $0.001/page — the cheapest verified endpoint; use it for a first proof-of-life paid call
-- [Parallel AI — Search](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/search.md#parallel-ai-search): `POST https://parallelmpp.dev/api/search` · $0.01/call
-- [Parallel AI — Extract](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/search.md#parallel-ai-extract): `POST https://parallelmpp.dev/api/extract` · $0.01/URL
-- [Parallel AI — Deep Research](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/search.md#parallel-ai-deep-research-task): `POST https://parallelmpp.dev/api/task` · $0.30/task (async)
-- [Tavily — Search](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/search.md#tavily-search): `POST https://x402.tavily.com/search` · $0.01/search
-- [Firecrawl — Search](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/search.md#firecrawl-search): `POST https://api.firecrawl.dev/v2/x402/search` · metered
-- [Firecrawl — Scrape](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/search.md#firecrawl-scrape): `POST https://api.firecrawl.dev/v1/scrape` · $0.010/page
+- [Exa — Search](https://floe-labs.gitbook.io/docs/vendor-marketplace/search.md#exa-search): `POST https://api.exa.ai/search` · $0.007/search
+- [Exa — Contents](https://floe-labs.gitbook.io/docs/vendor-marketplace/search.md#exa-contents): `POST https://api.exa.ai/contents` · $0.001/page — the cheapest verified endpoint; use it for a first proof-of-life paid call
+- [Parallel AI — Search](https://floe-labs.gitbook.io/docs/vendor-marketplace/search.md#parallel-ai-search): `POST https://parallelmpp.dev/api/search` · $0.01/call
+- [Parallel AI — Extract](https://floe-labs.gitbook.io/docs/vendor-marketplace/search.md#parallel-ai-extract): `POST https://parallelmpp.dev/api/extract` · $0.01/URL
+- [Parallel AI — Deep Research](https://floe-labs.gitbook.io/docs/vendor-marketplace/search.md#parallel-ai-deep-research-task): `POST https://parallelmpp.dev/api/task` · $0.30/task (async)
+- [Tavily — Search](https://floe-labs.gitbook.io/docs/vendor-marketplace/search.md#tavily-search): `POST https://x402.tavily.com/search` · $0.01/search
+- [Firecrawl — Search](https://floe-labs.gitbook.io/docs/vendor-marketplace/search.md#firecrawl-search): `POST https://api.firecrawl.dev/v2/x402/search` · metered
+- [Firecrawl — Scrape](https://floe-labs.gitbook.io/docs/vendor-marketplace/search.md#firecrawl-scrape): `POST https://api.firecrawl.dev/v1/scrape` · $0.010/page
 
 ### Browser
 
-- [Hyperbrowser — Fetch](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/browser.md#hyperbrowser-fetch): `POST https://api.hyperbrowser.ai/x402/web/fetch` · $0.001/page
-- [Hyperbrowser — Search](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/browser.md#hyperbrowser-search): `POST https://api.hyperbrowser.ai/x402/web/search` · $0.005/query
-- [Browserbase — Session](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/browser.md#browserbase-browser-session): `POST https://x402.browserbase.com/v1/sessions` · $0.01–$0.12/session
-- [Anchor Browser — Session](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/browser.md#anchor-browser-browser-session): `POST https://api.anchorbrowser.io/v1/sessions` · $0.50/session
+- [Hyperbrowser — Fetch](https://floe-labs.gitbook.io/docs/vendor-marketplace/browser.md#hyperbrowser-fetch): `POST https://api.hyperbrowser.ai/x402/web/fetch` · $0.001/page
+- [Hyperbrowser — Search](https://floe-labs.gitbook.io/docs/vendor-marketplace/browser.md#hyperbrowser-search): `POST https://api.hyperbrowser.ai/x402/web/search` · $0.005/query
+- [Browserbase — Session](https://floe-labs.gitbook.io/docs/vendor-marketplace/browser.md#browserbase-browser-session): `POST https://x402.browserbase.com/v1/sessions` · $0.01–$0.12/session
+- [Anchor Browser — Session](https://floe-labs.gitbook.io/docs/vendor-marketplace/browser.md#anchor-browser-browser-session): `POST https://api.anchorbrowser.io/v1/sessions` · $0.50/session
 
 ### Memory
 
-- [HydraDB — Vector query, ingest, memory & tenant management](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/database.md): `POST https://marketplace.floelabs.xyz/v1/db/hydradb/*` (via /v1/proxy/fetch) · free through the marketplace shim
+- [HydraDB — Vector query, ingest, memory & tenant management](https://floe-labs.gitbook.io/docs/vendor-marketplace/database.md): `POST https://marketplace.floelabs.xyz/v1/db/hydradb/*` (via /v1/proxy/fetch) · free through the marketplace shim
 
 ### Agent Tools
 
-- [AgentMail — Send](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/agent-tools-verified.md#agentmail-send-email): `POST https://x402.api.agentmail.to/v1/send` · metered
-- [AgentMail — Inbox](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/agent-tools-verified.md#agentmail-read-inbox): `POST https://x402.api.agentmail.to/v1/inbox` · metered
-- [Pinata — Content](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/agent-tools-verified.md#pinata-cloud-access-content): `GET https://<gateway>.mypinata.cloud/x402/cid/<cid>` · creator-set
-- [PostalForm — Validate](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/agent-tools-verified.md#postalform-validate-order): `POST https://postalform.com/api/machine/orders/validate` · metered
-- [PostalForm — Create](https://floe-labs.gitbook.io/docs/core-concepts/x402-directory/agent-tools-verified.md#postalform-create-order): `POST https://postalform.com/api/machine/orders` · metered
+- [AgentMail — Send](https://floe-labs.gitbook.io/docs/vendor-marketplace/agent-tools-verified.md#agentmail-send-email): `POST https://x402.api.agentmail.to/v1/send` · metered
+- [AgentMail — Inbox](https://floe-labs.gitbook.io/docs/vendor-marketplace/agent-tools-verified.md#agentmail-read-inbox): `POST https://x402.api.agentmail.to/v1/inbox` · metered
+- [Pinata — Content](https://floe-labs.gitbook.io/docs/vendor-marketplace/agent-tools-verified.md#pinata-cloud-access-content): `GET https://<gateway>.mypinata.cloud/x402/cid/<cid>` · creator-set
+- [PostalForm — Validate](https://floe-labs.gitbook.io/docs/vendor-marketplace/agent-tools-verified.md#postalform-validate-order): `POST https://postalform.com/api/machine/orders/validate` · metered
+- [PostalForm — Create](https://floe-labs.gitbook.io/docs/vendor-marketplace/agent-tools-verified.md#postalform-create-order): `POST https://postalform.com/api/machine/orders` · metered
 
 ## Reference
 
@@ -192,7 +190,7 @@ All endpoints below are payable in USDC on Base mainnet through `POST https://cr
 Every page is served as raw Markdown at its `.md` URL — no HTML parsing, no scraping:
 
 ```
-GET https://floe-labs.gitbook.io/docs/guides/credit-for-agents.md
+GET https://floe-labs.gitbook.io/docs/start-here/quickstart.md
 GET https://floe-labs.gitbook.io/docs/llms-full.txt      # every nav page in one request
 ```
 

@@ -126,10 +126,13 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 Interactive conversational agent + per-agent registration tooling. The `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM; the other subcommands manage Floe agents and their API keys.
 
+Since v0.6.0 the same package also ships the full **Floe platform CLI** — `status`, `auth`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `estimate`, `forecast`, `pay`, `models`, `usage`, `activity`, `webhooks`, and more — under both the `floe` and `floe-agent` bin names. See the [Floe CLI reference](cli.md) for the complete command table; this section covers only the agent-workflow subcommands below.
+
 ### Install
 
 ```bash
-npm install -g floe-agent     # or: npm run build && npm link
+npm install -g floe-agent     # installs both the `floe` and `floe-agent` commands
+                              # or: npm run build && npm link
 ```
 
 ### Subcommands
@@ -296,8 +299,8 @@ In your consumer's `package.json`:
 ```bash
 npm run build && npm pack
 # In consumer — substitute the actual tarball name printed by `npm pack`
-# (it tracks the package.json `version` field; today that's 0.4.0):
-npm install ../agentkit-actions/floe-agent-0.4.0.tgz
+# (it tracks the package.json `version` field; today that's 0.6.0):
+npm install ../agentkit-actions/floe-agent-0.6.0.tgz
 ```
 
 ## Agent Awareness Actions (v0.3.0+)

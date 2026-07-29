@@ -22,7 +22,11 @@ Floe runs on **Base Mainnet**. That's the only supported network — there is no
 | -------------------- | -------------------------------------------- |
 | LendingIntentMatcher | `0x17946cD3e180f82e632805e5549EC913330Bb175` |
 | PriceOracle          | `0xEA058a06b54dce078567f9aa4dBBE82a100210Cc` |
+| FallbackPriceOracle  | `0x75a29708914B7BFFF6330757af076EFD70525120` |
 | LendingViews         | `0x9101027166bE205105a9E0c68d6F14f21f6c5003` |
+| HookExecutor         | `0x71f0A88DfBFe1E0e2a7F74FBF85ed269eC25C3fA` |
+| SameTokenCloseExecutor | `0x7cb04d54fF2806A479ef84445EE0E8d6f4effb91` |
+| LiquidationCallbackExecutor | `0x93B7f53FEd42114B05979bc131cB67a427B0dC38` |
 
 ### x402 Credit Facilitator
 
@@ -45,18 +49,20 @@ The **Facilitator EOA** is the address you pass as the `operator` argument to `s
 | Token  | Role                  | Address                                      | Decimals |
 | ------ | --------------------- | -------------------------------------------- | -------- |
 | USDC   | Loan + Collateral     | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | 6        |
+| USDT   | Loan                  | `0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2` | 6        |
 | WETH   | Collateral            | `0x4200000000000000000000000000000000000006` | 18       |
 | cbBTC  | Collateral            | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8        |
 
 ### Active Markets
 
-| Market     | Loan Token | Collateral Token | Max LTV | Notes |
+| Market     | Loan Token | Collateral Token | LTV | Notes |
 | ---------- | ---------- | ---------------- | ------- | ----- |
-| **USDC/USDC** | USDC    | USDC             | **95%** | Same-token working capital — no price risk, hardcoded 1:1 oracle |
-| USDC/WETH  | USDC       | WETH             | 70%     | Volatile collateral |
-| USDC/cbBTC | USDC       | cbBTC            | 70%     | Volatile collateral |
+| **USDC/USDC** | USDC    | USDC             | **95% default** · 99.5% protocol max | Same-token working capital — no price risk, hardcoded 1:1 oracle |
+| USDC/WETH  | USDC       | WETH             | 30% market floor · 90% protocol max | Volatile collateral |
+| USDC/cbBTC | USDC       | cbBTC            | 30% market floor · 90% protocol max | Volatile collateral |
+| USDT/cbBTC | USDT       | cbBTC            | 30% market floor · 90% protocol max | Volatile collateral |
 
-The **USDC/USDC market** (`marketId: 0x5027ae5ed5c85380c5dfa34a79915f41f139f4e859f56d15a6f958ea6b662820`) is the recommended market for AI agents. Deposit USDC, borrow up to 95% as working capital. No liquidation risk from price movements — the only path to liquidation is unpaid interest accrual.
+The **USDC/USDC market** (`marketId: 0x5027ae5ed5c85380c5dfa34a79915f41f139f4e859f56d15a6f958ea6b662820`) is the recommended market for AI agents. Deposit USDC, borrow up to 95% as working capital — the recommended default; the protocol's hard cap for same-token markets is 99.5% (`SAME_TOKEN_MAX_LTV_BPS`). No liquidation risk from price movements — the only path to liquidation is unpaid interest accrual.
 
 ### Configuration
 
@@ -120,10 +126,10 @@ For production applications:
 | Parameter             | Value       | Description                                   |
 | --------------------- | ----------- | --------------------------------------------- |
 | `minLtvGapBps`        | 800 (8%)    | Min gap between origination & liquidation LTV |
-| `withdrawalBufferBps` | 300 (3%)    | Buffer below liquidation for withdrawals      |
+| `withdrawalBufferBps` | 800 (8%)    | Buffer below liquidation for withdrawals      |
 | `stalenessTimeout`    | 3,600 sec   | Oracle staleness threshold                    |
-| `maxDeviationBps`     | 1,500 (15%) | Max price deviation before circuit breaker    |
-| `liquidationBonus`    | 500 (5%)    | Bonus for liquidators                         |
+| `maxDeviationBps`     | 2,000 (20%) | Max price deviation before circuit breaker (live mainnet setting) |
+| `liquidationBonus`    | 500 (5%) two-token · 50 (0.5%) same-token | Bonus for liquidators |
 | `gracePeriod`         | 86,400 sec  | Grace period after loan expiry (24 hours)     |
 
 ***

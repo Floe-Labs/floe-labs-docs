@@ -96,7 +96,7 @@ llm = FloeLLM(
 )
 ```
 
-Floe holds no provider keys: with BYOK your `provider_key` is supplied per request and **never persisted**.
+With per-request BYOK your `provider_key` is supplied on each call and **never persisted**.
 
 > **Open-weight models, zero extra infra.** Some providers (e.g. Venice) are already x402 vendors, so calls to them are just paid tool calls through `Floe402Tool` — every Floe control governs them with nothing extra to run. The honest caveat: the x402-native models available today are open-weight (Llama, Qwen, etc.). For GPT-4o and Claude, route through `FloeLLM`.
 

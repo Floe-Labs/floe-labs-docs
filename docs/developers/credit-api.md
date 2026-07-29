@@ -820,7 +820,7 @@ A 404 `NoLiquidityError` does **not** always mean the order book is empty. Most 
 
 #### Worked example — the LTV gap rule
 
-The protocol enforces `borrower.minLtvBps + 800 ≤ lender.maxLtvBps` (8 % buffer between origination and liquidation LTV — see [Order book matching](../protocol/orderbook-matching.md#5-ltv-gap)). A request that *looks* compatible on rate alone can still be rejected:
+The protocol enforces `borrower.minLtvBps + 800 ≤ lender.maxLtvBps` (8 % buffer between origination and liquidation LTV). A request that *looks* compatible on rate alone can still be rejected:
 
 - Borrower posts: `borrowAmount = 100,000 USDC`, `maxInterestRateBps = 500`, **`minLtvBps = 8000`**
 - Order book shows: `990,000,000 USDC available at 500 bps`, **`maxLtvBps = 8500`**

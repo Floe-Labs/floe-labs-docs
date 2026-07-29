@@ -99,7 +99,7 @@ Added **Sarvam AI** — India's sovereign-AI stack for **22+ Indian languages** 
 * **Chat** — `sarvam/sarvam-105b` (128K ctx) and `sarvam/sarvam-30b` (64K ctx) on the OpenAI-compatible gateway (`POST /v1/chat/completions`, model `sarvam/<id>`), metered per token
 * **Voice & language via the [marketplace shim](developers/marketplace-shim.md)** (`POST /v1/proxy/fetch`): Bulbul **TTS** (`/v1/tts/sarvam`), Saaras **STT** (`/v1/stt/sarvam`) and **speech-translate** (`/v1/stt-translate/sarvam`), Mayura **translation** (`/v1/translate/sarvam`), **transliteration** (`/v1/transliterate/sarvam`), **language ID** (`/v1/lid/sarvam`), and **Sarvam Vision** document digitization (`/v1/doc/sarvam`, async · preview)
 
-→ [Sarvam AI — Indic Inference](developers/sarvam.md) · [Compute](x402-directory/compute.md#sarvam-ai-chat-completions) · [Voice](x402-directory/voice.md#sarvam-ai-text-to-speech)
+→ [Sarvam AI — Indic Inference](x402-directory/compute.md#sarvam-ai-chat-completions) · [Compute](x402-directory/compute.md#sarvam-ai-chat-completions) · [Voice](x402-directory/voice.md#sarvam-ai-text-to-speech)
 
 ### v1.9.0 — Floe Inference: keyless pay-as-you-go LLM & voice (June 2026)
 
@@ -171,7 +171,7 @@ New developer's first agent wallet receives $2 USDC from treasury. Strict Privy 
 
 ### v1.7.1 — x402 v2 Wire Protocol Support (May 2026)
 
-The facilitator now negotiates between **x402 v1 and x402 v2** per request based on what the merchant returns. Previously, only the v1 bare-requirement envelope was understood, which caused parse failures against modern `@x402/hono` and other v2-compliant servers — and which made the v2 entries already published in the [Floe x402 directory](../x402-directory/directory.json) unreachable in practice.
+The facilitator now negotiates between **x402 v1 and x402 v2** per request based on what the merchant returns. Previously, only the v1 bare-requirement envelope was understood, which caused parse failures against modern `@x402/hono` and other v2-compliant servers — and which made the v2 entries already published in the [Floe x402 directory](https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json) unreachable in practice.
 
 **What changed:**
 
@@ -286,7 +286,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 **x402 Credit Facilitator:**
 
 * Agents grant a scoped on-chain `setOperator` permission, then call `POST /v1/proxy/fetch` with any x402 URL — the facilitator handles borrowing, EIP-3009 signing, and payment automatically.
-* 3-step setup: Create Wallet → Deposit & Delegate → Activate Agent. See [Agent Quickstart](developers/agent-quickstart.md).
+* 3-step setup: Create Wallet → Deposit & Delegate → Activate Agent. See [Agent Quickstart](getting-started/quickstart.md).
 * Automated credit health monitoring and graceful wind-down via `POST /v1/agents/close` or `revokeOperator`.
 * See [x402 Credit Facilitator](developers/x402-facilitator.md) and [Agent Runtime Contract](developers/agent-runtime-contract.md) for the full API.
 
@@ -304,7 +304,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 
 **AgentKit SDK Updates:**
 
-* `floe-agent` (npm) and `floe-agentkit-actions` (PyPI) updated to **0.2.0** — adds `X402ActionProvider` with 6 new actions (36 total). See [AgentKit Integration](developers/agentkit.md).
+* `floe-agent` (npm) and `floe-agentkit-actions` (PyPI) updated to **0.2.0** — adds `X402ActionProvider` with 6 new actions (36 total). See [AgentKit Integration](frameworks/agentkit.md).
 
 ***
 
@@ -402,5 +402,5 @@ Lets agents reason about their own credit before committing capital. Answers the
 ## Links
 
 * [Contract Addresses](../developers/networks.md)
-* [Agent Quickstart](developers/agent-quickstart.md)
+* [Agent Quickstart](getting-started/quickstart.md)
 * [GitHub](https://github.com/Floe-Labs)
