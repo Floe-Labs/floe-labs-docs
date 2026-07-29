@@ -46,7 +46,7 @@ Some vendors price and charge calls themselves (no Floe-held key) — see [Direc
 
 ## STT (Speech-to-Text)
 
-> **These are batch STT** — send an audio file or URL, get a transcript back (dTelecom is session-based). Floe has **no live streaming STT** (`interim`/`final`) surface yet, so none of these can feed a LiveKit/Pipecat STT plugin in real time. For a live BYO voice stack today, bring your own **Deepgram/AssemblyAI** streaming key for the STT leg (that vendor bills you directly; Floe still meters the LLM and TTS legs). **Native Floe streaming STT is on the roadmap.** The [WebRTC](#webrtc) realtime models below are **speech-to-speech**, not a standalone streaming-STT source.
+> **The vendor entries below are batch STT** — send an audio file or URL, get one transcript back (dTelecom is session-based). For a **live** transcript stream (the `interim`/`final` feed a LiveKit/Pipecat STT plugin consumes), use Floe's keyless streaming endpoint `wss://credit-api.floelabs.xyz/v1/audio/transcriptions/stream` — see [Floe Inference — streaming transcription](../developers/keyless-inference.md#streaming-transcription-live-stt). The [WebRTC](#webrtc) realtime models below are **speech-to-speech**, not a standalone streaming-STT source.
 
 ### Venice AI — Transcription
 
@@ -421,14 +421,14 @@ Realtime speech-to-speech over WebSocket / WebRTC. Metering varies by provider �
 **Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=openai/gpt-realtime` (Floe Inference gateway)
 **Price:** metered per completed turn · Base mainnet
 
-> OpenAI `gpt-realtime` speech-to-speech over the keyless realtime WebSocket. No OpenAI key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
+> OpenAI `openai/gpt-realtime` speech-to-speech over the keyless realtime WebSocket. No OpenAI key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
 
 ### Google Gemini Live
 
 **Endpoint:** `wss://credit-api.floelabs.xyz/v1/realtime?model=google/gemini-live-3.1` (Floe Inference gateway)
 **Price:** metered per completed turn · Base mainnet
 
-> Google `gemini-live-3.1` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
+> Google `google/gemini-live-3.1` realtime speech-to-speech over the keyless realtime WebSocket. No Google key — billed to your Floe balance. See [Floe Inference](../developers/keyless-inference.md#realtime-voice).
 
 ### xAI Grok Voice
 
