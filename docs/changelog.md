@@ -294,7 +294,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 
 * `setOperator` / `revokeOperator` / `getOperatorPermission` — scoped, revocable delegation with `borrowLimit`, `maxRateBps`, `expiry`, and `onBehalfOfRestriction`.
 * All constraints re-validated at every borrow match — the facilitator provably cannot exceed the agent's bounds.
-* Proxy address unchanged: `0x17946cD3e180f82e632805e5549EC913330Bb175`. See [Contract Addresses](../developers/networks.md).
+* Proxy address unchanged: `0x17946cD3e180f82e632805e5549EC913330Bb175`.
 
 **Security:**
 

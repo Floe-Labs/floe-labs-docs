@@ -81,5 +81,4 @@
 
 * [Error Codes](docs/reference/error-codes.md)
 * [Environment Variables](docs/reference/environment-variables.md)
-* [Contract Addresses](developers/networks.md)
 * [Changelog](docs/changelog.md)

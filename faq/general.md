@@ -240,7 +240,7 @@ Bridge ETH to Base using:
 
 ### Is Floe audited?
 
-Audit information is available in the [Security](../docs/protocol/security.md) documentation.
+Floe's smart contracts have been audited by Omniscia (November 2025). See the repository's [security policy](https://github.com/Floe-Labs/floe-labs-docs/blob/main/SECURITY.md) for the report and responsible-disclosure process.
 
 ### How are my funds protected?
 
