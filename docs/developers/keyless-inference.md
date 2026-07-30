@@ -264,7 +264,7 @@ Open a WebSocket to:
 wss://credit-api.floelabs.xyz/v1/audio/transcriptions/stream?model=deepgram/nova-3&encoding=linear16&sample_rate=16000&language=en
 ```
 
-Authenticate with the **`Authorization: Bearer <floe key>`** header — **keyless**, Floe fronts the Deepgram key. A `?api_key=` query param is a fallback for browser clients that can't set headers; prefer the header where you can, since query-string credentials leak into proxy/server logs and browser history — if you must use `?api_key=`, use a short-lived, spend-capped agent key. Query params:
+Authenticate with the **`Authorization: Bearer <floe key>`** header — **keyless**, Floe fronts the Deepgram key. Browser clients that can't set headers on a WebSocket handshake pass the key via the **`floe-stt` subprotocol** instead: open the socket with two WebSocket subprotocols — `floe-stt` and your key, in either order (JS: `new WebSocket(url, ['floe-stt', '<floe key>'])`). The query string is **not** accepted — keys there leak into proxy, load-balancer, and access logs. Query params:
 
 | Param | Values | Notes |
 |---|---|---|
