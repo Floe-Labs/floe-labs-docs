@@ -106,5 +106,6 @@ jobs:
                  --title "[docs-sync] <what changed>" \
                  --body "<summary of edits + the compare link in $COMPARE_URL>"
           claude_args: |
+            --model claude-opus-5
             --max-turns 40
             --allowedTools "Read,Grep,Glob,Edit,Write,Bash(git:*),Bash(gh pr create:*)"
