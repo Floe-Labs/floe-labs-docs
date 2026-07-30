@@ -29,6 +29,15 @@ Read https://dev-dashboard.floelabs.xyz/agents.md and set up Floe for this proje
 Prefer to wire it up yourself? Pick one client:
 
 {% tabs %}
+{% tab title="Skill" %}
+Install the Floe agent skill so Claude Code / Cursor knows the whole workflow — onboard, migrate, cap spend, show the receipt:
+
+```bash
+npx skills add floe-labs/agent-skills
+```
+
+Full guide: [Claude Code / Agent Skills](claude-code-skill.md).
+{% endtab %}
 {% tab title="MCP" %}
 Claude Code, one line:
 
