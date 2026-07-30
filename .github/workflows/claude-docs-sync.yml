@@ -77,6 +77,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Without this input the action tries an OIDC exchange for a Claude
+          # GitHub App token, which fails here: the explicit permissions block
+          # above denies `id-token: write`, and this repo authenticates with a
+          # plain API key rather than the app. The workflow token already
+          # carries the contents/pull-requests write access the job needs.
+          github_token: ${{ github.token }}
           prompt: |
             A change merged to floe-monorepo main. The monorepo is checked out
             READ-ONLY at ./monorepo (never edit anything under it; it is a
