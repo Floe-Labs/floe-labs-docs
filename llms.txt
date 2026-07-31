@@ -21,6 +21,7 @@ The first agent on an account is provisioned with a **$3 welcome credit that is 
 ## Start here
 
 - [Set up with your AI tools](https://floe-labs.gitbook.io/docs/start-here/setup-with-ai-tools.md): The copy-prompt, MCP one-liners and deep links, CLI install — the fastest way to connect Claude Code, Cursor, Codex, or any MCP client — ask: "How do I connect Floe to Claude Code?"
+- [Voice dictation with Earheart](https://floe-labs.gitbook.io/docs/start-here/voice-dictation-earheart.md): Dictate into Claude Code by voice with Earheart, running its STT (hosted Parakeet) and cleanup engines on one Floe key under one spend cap — ask: "How do I use voice dictation with Claude Code and Floe?"
 - [Quickstart (5 minutes)](https://floe-labs.gitbook.io/docs/start-here/quickstart.md): The dashboard-first path — create an agent, fund it with a card, call `fetch()` — ask: "How do I create and fund an agent?"
 - [Funding your agent](https://floe-labs.gitbook.io/docs/start-here/funding.md): Card, Apple Pay, Google Pay, bank transfer, and the $3 welcome credit — ask: "How do I fund my agent with a credit card?"
 

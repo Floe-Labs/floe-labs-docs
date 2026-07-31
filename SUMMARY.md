@@ -6,6 +6,7 @@
 
 * [Set up with your AI tools](docs/getting-started/setup-with-ai-tools.md)
 * [Claude Code / Agent Skills](docs/getting-started/claude-code-skill.md)
+* [Voice dictation with Earheart](docs/getting-started/voice-dictation-earheart.md)
 * [Quickstart (5 minutes)](docs/getting-started/quickstart.md)
 * [Installation](docs/getting-started/installation.md)
 * [Authentication](docs/getting-started/authentication.md)
