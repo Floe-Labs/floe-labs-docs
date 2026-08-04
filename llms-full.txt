@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 50 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 52 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -20,6 +20,8 @@
 - Pricing & cost — https://floe-labs.gitbook.io/docs/start-here/pricing.md
 - Agent Quickstart — https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
 - The Voice Stack — overview — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-stack.md
+- Govern Vapi / Retell / Bland — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators.md
+- Graduate to 100% coverage — https://floe-labs.gitbook.io/docs/the-voice-stack/migrate-to-full-coverage.md
 - Floe Phone — numbers & telephony — https://floe-labs.gitbook.io/docs/the-voice-stack/floe-phone.md
 - Floe Inference — keyless LLM & voice — https://floe-labs.gitbook.io/docs/the-voice-stack/keyless-inference.md
 - Unified Billing & Ledger — https://floe-labs.gitbook.io/docs/the-voice-stack/unified-ledger.md
@@ -1116,6 +1118,269 @@ If you don't need a self-hosted LiveKit/Pipecat pipeline, the keyless **[realtim
 ## One key, one ledger
 
 Because the LLM leg routes through Floe's OpenAI-compatible endpoint, reasoning tokens land on the same ledger and the same budgets as the vendor legs — not a separate provider bill. See [Unified Billing & Ledger](unified-ledger.md) to read the combined statement, and [Spend Controls](../developers/spend-controls.md) to set the task, vendor, and session caps that govern every leg.
+
+==============================================================================
+# Govern Vapi / Retell / Bland
+Source: docs/build/voice-orchestrators.md
+URL: https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators.md
+==============================================================================
+
+# Govern Vapi / Retell / Bland spend with Floe
+
+You build on a voice orchestrator — Vapi, Retell, or Bland — and the platform
+executes the call: STT, LLM, TTS, telephony. Floe governs that spend in two
+complementary ways, and is honest about which is which:
+
+- **Pre-call, where Floe is in the path.** Route the leg the orchestrator lets
+  you redirect (the LLM — typically the biggest, most variable line) through
+  Floe's gateway: metered per token, refused with `402` *before* tokens are
+  bought once your cap is hit.
+- **Circuit-breaker everywhere else.** **Reconcile Mode** ingests the
+  orchestrator's own end-of-call webhook, writes the full call cost to your
+  Floe ledger, counts it against your spend policies, and enforces at the
+  *next session*: a tripped `suspend_agent` policy blocks the agent's next
+  Floe-keyed call, and a configured pre-call hook rejects the next eligible
+  inbound call (fixed-assistant Vapi, outbound, and Bland calls have no
+  pre-call hook — they stay post-call governed). You can't stop mid-call —
+  you guarantee a runaway dies after call *N*, not call 10,000.
+
+> **The promise, stated honestly.** Pre-call where we're in the path;
+> circuit-breaker everywhere else. No orchestrator partnership required —
+> both mechanisms use each platform's documented extension points.
+
+## 1 · Route the LLM leg through Floe (pre-call)
+
+| Orchestrator | Mechanism | Effort |
+|---|---|---|
+| **Vapi** | `custom-llm` → point `model.url` at Floe. Direct, streaming, no shim. | One config field |
+| **Retell** | Custom-LLM **WebSocket** (Retell's protocol, not OpenAI HTTP) → a ~150-line adapter that calls Floe per turn. | Small server ([recipe](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm)) |
+| **Bland** | No self-serve custom LLM (enterprise-only). | Use Reconcile Mode |
+
+{% tabs %}
+{% tab title="Vapi" %}
+Vapi's custom-llm is OpenAI-compatible and streams — it can point **directly**
+at Floe's gateway:
+
+```jsonc
+// assistant.model
+{
+  "provider": "custom-llm",
+  "url": "https://credit-api.floelabs.xyz/v1",   // Vapi appends /chat/completions
+  "model": "openai/gpt-4o-mini",                  // any Floe catalog slug — GET /v1/models
+  "metadataSendMode": "off"
+}
+```
+
+Auth: create a Vapi **custom-llm credential** holding your `floe_` agent key —
+Vapi sends it as `Authorization: Bearer …` on every turn. (Vapi does support
+custom headers on custom-llm models, but `Authorization` is handled
+separately — it must come from the credential.)
+
+Every turn is metered per token and pre-call gated: past the cap, the gateway
+refuses with `402` before any tokens are bought. On a direct integration that
+`402` surfaces to Vapi as an LLM failure — exact enforcement, abrupt ending.
+For a spoken *"I've reached my budget limit"* goodbye, run the graceful-stop
+shim from the [vapi-custom-llm recipe](https://github.com/Floe-Labs/floe-cookbook/tree/main/vapi-custom-llm)
+and point `model.url` at it instead.
+{% endtab %}
+
+{% tab title="Retell" %}
+Retell's custom LLM is a **WebSocket protocol**, not a base-URL swap: Retell
+connects out to your server (`response_engine.llm_websocket_url`) and sends
+`response_required` messages; you stream `response` chunks back.
+
+The [retell-custom-llm recipe](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm)
+is that server: each turn becomes a streaming call to
+`https://credit-api.floelabs.xyz/v1/chat/completions` on your `floe_` key —
+metered, pre-call gated, and on `402` the adapter **speaks** the budget stop
+and sets `end_call: true` so the call ends cleanly.
+{% endtab %}
+
+{% tab title="Bland" %}
+Bland exposes **no self-serve custom LLM** (the `model` parameter is an enum
+of Bland-hosted models; custom model integration is an enterprise
+engagement). The LLM leg cannot be redirected — govern Bland with
+**Reconcile Mode** below, and note Bland's own kill switches
+(`POST /v1/calls/{id}/stop`, org-wide `POST /v1/calls/active/stop`) are the
+strongest of the three for emergencies.
+{% endtab %}
+{% endtabs %}
+
+## 2 · Reconcile Mode (post-call → next-session enforcement)
+
+Connect an agent to an orchestrator once; Floe mints a webhook URL you paste
+into the platform's settings.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
+  -H "Cookie: <dashboard session>" -H "Content-Type: application/json" \
+  -d '{ "agentId": 42, "provider": "vapi" }'
+```
+
+```jsonc
+// 201 — secret shown ONCE (vapi: Floe mints it; retell/bland: you supply it)
+{
+  "id": 7,
+  "provider": "vapi",
+  "webhookUrl":  "https://credit-api.floelabs.xyz/v1/webhooks/vapi/call-end/<token>",
+  "preCallUrl":  "https://credit-api.floelabs.xyz/v1/webhooks/vapi/pre-call/<token>",
+  "secret": "whsec_…"
+}
+```
+
+Treat both URLs as secrets: the `<token>` path segment is the bearer
+credential that authenticates the provider's requests, so keep the URLs out
+of logs and any config third parties can read. If one leaks,
+`POST /v1/developer/orchestrators/{id}/rotate` mints a new token (and
+secret) — update the platform's settings with the new URLs.
+
+{% tabs %}
+{% tab title="Vapi" %}
+1. In Vapi, set the assistant's (or org's) **Server URL** to `webhookUrl` and
+   configure the returned `secret` on the server credential — Vapi delivers it
+   back in `X-Vapi-Secret`, which Floe verifies.
+2. Every `end-of-call-report` (`message.cost`, USD) becomes a ledger row
+   attributed to your agent — visible in the dashboard, counted against your
+   session/task/API policies.
+3. **Pre-call deny (inbound):** for numbers *without* a fixed assistant, point
+   the number's Server URL at `preCallUrl?assistantId=<your-assistant-id>`.
+   Admitted requests get your assistant back; an over-budget or suspended
+   agent gets `{"error": "…"}` — Vapi speaks it and the call never starts.
+4. Tag calls with `metadata.floe_task_id` on the Vapi side to attribute them
+   to a Floe task budget.
+{% endtab %}
+
+{% tab title="Retell" %}
+1. Connect with `"provider": "retell"` and `"secret": "<your Retell webhook
+   key>"` — Retell signs webhooks (`x-retell-signature`) with the API key
+   **designated as the webhook key** in your Retell dashboard, so that exact
+   key is what Floe needs to verify (any other Retell key fails
+   verification). Stored sealed (AES-256-GCM), never returned.
+2. Set the agent's **webhook URL** to `webhookUrl`. Floe ingests
+   `call_ended` / `call_analyzed` (`call_cost.combined_cost` — cents).
+3. **Pre-call deny:** set the phone number's **inbound webhook** to
+   `preCallUrl`. An over-budget agent's next inbound call gets
+   `{"call_inbound": {"reject": true}}` — Retell hangs up before any agent
+   or voice setup; no call object is even created.
+{% endtab %}
+
+{% tab title="Bland" %}
+1. Connect with `"provider": "bland"` and `"secret"` = the **webhook signing
+   secret** from the Bland dashboard (Settings → Keys — shown once there too).
+2. Pass `webhookUrl` as the `webhook` param on `POST /v1/calls` (or set it on
+   the inbound number). Floe verifies `X-Webhook-Signature` and ingests the
+   post-call payload (`price` USD, `call_length` minutes).
+3. Bland has **no pre-call hook** — the circuit breaker is: reconciled spend
+   trips your `suspend_agent` policy → the agent's next *Floe-keyed* action
+   (including placing calls via your own dialer) is refused `403`. For live
+   emergencies use Bland's stop APIs.
+{% endtab %}
+{% endtabs %}
+
+### What a reconciled cost does — and deliberately does not — do
+
+- **Counts against policies.** Reconciled rows enter the same spend
+  derivation as every Floe-carried call: session caps, per-task budgets, and
+  per-API caps keyed to the provider host (`api.vapi.ai`,
+  `api.retellai.com`, `api.bland.ai`) all see it. A breached policy with
+  `action: "suspend_agent"` suspends the agent (403 on its next call) and
+  fires the `agent.suspended` webhook; near-limit thresholds fire
+  `credit.warning` / `credit.at_limit`.
+- **Does not debit your Floe balance.** That money was paid to the
+  orchestrator, not Floe — reconciled spend is a *governance* signal, not a
+  second bill. Your spendable balance is untouched; your budgets are not.
+- **Is idempotent.** Providers retry webhooks; each call id is ingested once.
+- Unsigned or mis-signed deliveries are rejected `401` with **no** ledger
+  write.
+
+## Coverage, honestly
+
+With the LLM leg routed (§1) you govern the majority of per-call cost
+pre-call; with Reconcile Mode (§2) the rest is on the ledger and
+circuit-broken. The per-agent **coverage score** in the dashboard shows the
+split — % pre-call enforceable vs post-call reconciled — and the way to raise
+it is to move legs onto Floe rails: STT/TTS via [Floe Inference](../developers/keyless-inference.md),
+telephony via [Floe Phone](../developers/floe-phone.md), or the full path via
+[Pipecat / LiveKit on Floe](voice-stack.md#live-voice-with-your-own-stack-livekit-pipecat).
+
+==============================================================================
+# Graduate to 100% coverage
+Source: docs/build/migrate-to-full-coverage.md
+URL: https://floe-labs.gitbook.io/docs/the-voice-stack/migrate-to-full-coverage.md
+==============================================================================
+
+# Graduate to 100% coverage — orchestrator → Pipecat/LiveKit on Floe
+
+On Vapi or Retell, Floe governs what their platforms let it touch: the LLM leg
+pre-call, everything else by [post-call reconcile](voice-orchestrators.md).
+That's real governance — and it has a ceiling. The ceiling disappears when the
+agent runs on an **open voice stack** (Pipecat / LiveKit) with every leg on
+Floe rails: 100% of spend cap-enforced — request legs gated pre-call,
+duration-billed legs (streaming STT, phone) metered live and cut off
+mid-stream at the cap — one key, one ledger, one cap.
+
+> **The honest comparison.** On an orchestrator, Floe-alone on the LLM leg is
+> ~a token router with a budget. The answer isn't to pretend otherwise — it's
+> this page: the path to 100%, which no token router can offer.
+
+## Leg-by-leg migration
+
+| Leg | On the orchestrator | On Floe rails |
+|---|---|---|
+| **LLM** | custom-llm → Floe (already pre-call) | Same endpoint: `https://credit-api.floelabs.xyz/v1` — nothing to change |
+| **STT** | platform's vendor, reconciled | Streaming WS `wss://credit-api.floelabs.xyz/v1/audio/transcriptions/stream?model=deepgram/nova-3&encoding=linear16&sample_rate=16000&language=en` — binary PCM in, interim/final transcripts out, metered per audio-second |
+| **TTS** | platform's vendor, reconciled | `POST /v1/audio/speech` (OpenAI-compatible; e.g. `openai/tts-1`) — metered per character |
+| **Telephony** | platform's carrier, reconciled | [Floe Phone](../developers/floe-phone.md): `POST /v1/developer/agents/{agentId}/numbers` + `POST /v1/calls`, metered per minute |
+
+### Pipecat — three drop-in services
+
+The [`pipecat-floe`](https://github.com/Floe-Labs/pipecat-floe) package is the
+fastest path (`pip install pipecat-floe`):
+
+```python
+from pipecat_floe import FloeSTTService, FloeLLMService, FloeTTSService
+
+stt = FloeSTTService()                              # streaming STT over Floe's WS
+llm = FloeLLMService(model="openai/gpt-4o-mini")    # OpenAI-compatible
+tts = FloeTTSService(model="openai/tts-1", voice="alloy")
+```
+
+One `FLOE_API_KEY` — a `floe_…` **agent** key, not a `floe_live_…` developer
+key — powers all three; a single session cap bounds the whole run. Working references: the
+[livekit-voice-agent](https://github.com/Floe-Labs/floe-cookbook/tree/main/livekit-voice-agent)
+recipe (LLM + TTS swaps, STT note) and
+[floe-phone-sales-agent](https://github.com/Floe-Labs/floe-cookbook/tree/main/floe-phone-sales-agent)
+(every leg incl. telephony — the full dogfood).
+
+## Coverage & cost calculator
+
+Illustrative 3-minute outbound call, typical talk ratio (~40% caller / ~60%
+agent speech, ~1.5k LLM tokens/turn × 12 turns). Recompute for your profile
+with `POST /v1/estimate` — rates move; the *structure* is the point.
+
+| | Orchestrator + Floe LLM | Full path on Floe |
+|---|---|---|
+| LLM (gpt-4o-mini class) | ~$0.008 — **pre-call ✓** | ~$0.008 — pre-call ✓ |
+| STT | platform rate, reconciled ⟳ | ~$0.010 (1.2 caller min × $0.0077 × 1.05) — pre-call ✓ |
+| TTS | platform rate, reconciled ⟳ | ~$0.011 (tts-1 @ $15/1M chars, ~700 chars) — pre-call ✓ |
+| Telephony | platform rate, reconciled ⟳ | ~$0.042 (Floe Phone outbound @ $0.014/min) — pre-call ✓ |
+| Platform fee | e.g. Vapi $0.05/min → $0.15 | $0 (Floe margin is inside the leg rates above) |
+| **Pre-call coverage** | **~10–60%** (the LLM share) | **100%** |
+| **Governance at the cap** | LLM refused; other legs die *next* call | Every leg refused *this* call |
+
+Two honest caveats: orchestrator bundles include their platform value
+(builder UX, tooling) that raw legs don't replicate; and per-leg rates drift —
+trust `POST /v1/estimate` and the [pricing page](../getting-started/pricing.md)
+over this table.
+
+## Sequence it
+
+1. **Today**: point the orchestrator's LLM at Floe + connect
+   [Reconcile Mode](voice-orchestrators.md) — full visibility, LLM pre-call.
+2. **Watch the coverage score** (dashboard, per agent): it names the
+   reconciled legs and what moving each one is worth.
+3. **Migrate legs when ready** — STT and TTS are one-service swaps in
+   Pipecat/LiveKit; telephony last (number porting is the sticky part).
 
 ==============================================================================
 # Floe Phone — numbers & telephony
