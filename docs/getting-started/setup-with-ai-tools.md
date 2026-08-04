@@ -71,20 +71,6 @@ Any client that takes JSON (Cursor `.cursor/mcp.json`, VS Code, Claude Code):
 }
 ```
 
-Local stdio instead of the hosted endpoint (key stays in `env`, never in the URL):
-
-```json
-{
-  "mcpServers": {
-    "floe": {
-      "command": "npx",
-      "args": ["-y", "@floelabs/mcp-server", "--stdio"],
-      "env": { "FLOE_API_KEY": "floe_YOUR_AGENT_KEY" }
-    }
-  }
-}
-```
-
 One-click install links — the config carries the endpoint URL only, never a key:
 
 - Cursor — `cursor://anysphere.cursor-deeplink/mcp/install?name=floe&config=eyJ1cmwiOiJodHRwczovL21jcC5mbG9lbGFicy54eXovbWNwIn0`
