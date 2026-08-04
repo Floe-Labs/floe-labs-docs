@@ -4,7 +4,7 @@ icon: robot
 
 # Set up with your AI tools
 
-Floe is the spend layer for AI agents — one funded balance and one key that pays for search, scrape, voice, and LLM calls, all governed by server-side spend caps. And it's built so your coding agent does the setup: paste one prompt into Claude Code, Cursor, or Codex and it installs the MCP server or the CLI, provisions an agent, sets guardrails, and makes a real paid call.
+Floe is the unified billing ledger for voice AI — one key for your voice agent's entire bill (LLM, STT, TTS, telephony, and the data and tool calls around them), metered per call and bounded by server-side budgets. And it's built so your coding agent does the setup: paste one prompt into Claude Code, Cursor, or Codex and it installs the MCP server or the CLI, provisions an agent, sets guardrails, and makes a real paid call.
 
 > **You do two things.** Sign in and mint a developer key; fund the balance when the Welcome Credit runs out. Your agent does everything else — see the [Quickstart](quickstart.md).
 
