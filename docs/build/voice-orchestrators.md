@@ -12,9 +12,10 @@ complementary ways, and is honest about which is which:
   orchestrator's own end-of-call webhook, writes the full call cost to your
   Floe ledger, counts it against your spend policies, and enforces at the
   *next session*: a tripped `suspend_agent` policy blocks the agent's next
-  Floe-keyed call, and the pre-call webhook rejects the next orchestrator
-  call. You can't stop mid-call — you guarantee a runaway dies after call
-  *N*, not call 10,000.
+  Floe-keyed call, and a configured pre-call hook rejects the next eligible
+  inbound call (fixed-assistant Vapi, outbound, and Bland calls have no
+  pre-call hook — they stay post-call governed). You can't stop mid-call —
+  you guarantee a runaway dies after call *N*, not call 10,000.
 
 > **The promise, stated honestly.** Pre-call where we're in the path;
 > circuit-breaker everywhere else. No orchestrator partnership required —
@@ -44,8 +45,9 @@ at Floe's gateway:
 ```
 
 Auth: create a Vapi **custom-llm credential** holding your `floe_` agent key —
-Vapi sends it as `Authorization: Bearer …` on every turn. (Don't rely on
-custom headers in the model config; the credential is the supported path.)
+Vapi sends it as `Authorization: Bearer …` on every turn. (Vapi does support
+custom headers on custom-llm models, but `Authorization` is handled
+separately — it must come from the credential.)
 
 Every turn is metered per token and pre-call gated: past the cap, the gateway
 refuses with `402` before any tokens are bought. On a direct integration that
@@ -99,6 +101,12 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
 }
 ```
 
+Treat both URLs as secrets: the `<token>` path segment is the bearer
+credential that authenticates the provider's requests, so keep the URLs out
+of logs and any config third parties can read. If one leaks,
+`POST /v1/developer/orchestrators/{id}/rotate` mints a new token (and
+secret) — update the platform's settings with the new URLs.
+
 {% tabs %}
 {% tab title="Vapi" %}
 1. In Vapi, set the assistant's (or org's) **Server URL** to `webhookUrl` and
@@ -116,9 +124,11 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
 {% endtab %}
 
 {% tab title="Retell" %}
-1. Connect with `"provider": "retell"` and `"secret": "<your Retell API key>"`
-   — Retell signs webhooks (`x-retell-signature`) with your **API key**, so
-   Floe needs it to verify. Stored sealed (AES-256-GCM), never returned.
+1. Connect with `"provider": "retell"` and `"secret": "<your Retell webhook
+   key>"` — Retell signs webhooks (`x-retell-signature`) with the API key
+   **designated as the webhook key** in your Retell dashboard, so that exact
+   key is what Floe needs to verify (any other Retell key fails
+   verification). Stored sealed (AES-256-GCM), never returned.
 2. Set the agent's **webhook URL** to `webhookUrl`. Floe ingests
    `call_ended` / `call_analyzed` (`call_cost.combined_cost` — cents).
 3. **Pre-call deny:** set the phone number's **inbound webhook** to
