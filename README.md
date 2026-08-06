@@ -39,8 +39,8 @@ Or wire up a client yourself:
 claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
   --header "Authorization: Bearer YOUR_FLOE_KEY"
 
-# CLI — installs both `floe` and `floe-agent`
-npm i -g floe-agent
+# Platform CLI — onboard, mint an agent key, print the base-URL swap
+npx @floelabs/cli init
 ```
 
 → [Set up with your AI tools](docs/getting-started/setup-with-ai-tools.md)

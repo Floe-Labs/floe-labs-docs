@@ -10,6 +10,16 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.19.0 — Standalone platform CLI: `@floelabs/cli` owns the `floe` bin (August 2026)
+
+The platform CLI moved into its own package, and the two bin names now mean two different things.
+
+* **`@floelabs/cli` 0.1.0 — the `floe` bin.** `npx @floelabs/cli init` goes from developer key to a metered call in one command: authenticate, create or select an agent, mint its runtime key into the OS keychain, and print the OpenAI base-URL swap with the key filled in. Five verbs — `init`, `status`, `test` (`--voice` proves STT → LLM → TTS), `budget set` (`--per day|task`), `keys list|rotate` — every one with `--json` and `--api-url`; exit codes `0` ok / `1` error / `2` usage / `4` auth / `5` payment.
+* **`floe-agent` 0.6.1+ ships only the `floe-agent` bin.** All platform commands — `status`, `agents`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `estimate`, `forecast`, `pay`, `models`, `usage`, `activity`, `webhooks`, `mcp install`, `skills install` — plus the legacy wallet verbs run as `floe-agent <command>`. The short-lived `floe` alias from 0.6.0 is gone.
+* **Docs split to match.** [Floe CLI](developers/cli.md) now documents `@floelabs/cli`; the `floe-agent` command tree lives with the [TypeScript SDK](developers/agentkit-typescript.md#cli-floe-agent).
+
+→ [Floe CLI](developers/cli.md) · [TypeScript SDK](developers/agentkit-typescript.md) · [Floe-Labs/floe-cli](https://github.com/Floe-Labs/floe-cli)
+
 ### v1.18.0 — ICP restructure: one Quickstart, welcome-credit-first, Floe Phone up top (July 2026)
 
 The docs were restructured around the voice-operator ICP and the first-paid-call-via-Welcome-Credit journey.

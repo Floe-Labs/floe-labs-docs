@@ -109,8 +109,8 @@ Or wire up a client yourself:
 claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
   --header "Authorization: Bearer YOUR_FLOE_KEY"
 
-# CLI — installs both `floe` and `floe-agent`
-npm i -g floe-agent
+# Platform CLI — onboard, mint an agent key, print the base-URL swap
+npx @floelabs/cli init
 ```
 
 → [Set up with your AI tools](docs/getting-started/setup-with-ai-tools.md)
@@ -202,7 +202,7 @@ URL: https://floe-labs.gitbook.io/docs/start-here/setup-with-ai-tools.md
 
 # Set up with your AI tools
 
-Floe is the spend layer for AI agents — one funded balance and one key that pays for search, scrape, voice, and LLM calls, all governed by server-side spend caps. And it's built so your coding agent does the setup: paste one prompt into Claude Code, Cursor, or Codex and it installs the MCP server or the CLI, provisions an agent, sets guardrails, and makes a real paid call.
+Floe is the unified billing ledger for voice AI — one key for your voice agent's entire bill (LLM, STT, TTS, telephony, and the data and tool calls around them), metered per call and bounded by server-side budgets. And it's built so your coding agent does the setup: paste one prompt into Claude Code, Cursor, or Codex and it installs the MCP server or the CLI, provisions an agent, sets guardrails, and makes a real paid call.
 
 > **You do two things.** Sign in and mint a developer key; fund the balance when the Welcome Credit runs out. Your agent does everything else — see the [Quickstart](quickstart.md).
 
@@ -269,20 +269,6 @@ Any client that takes JSON (Cursor `.cursor/mcp.json`, VS Code, Claude Code):
 }
 ```
 
-Local stdio instead of the hosted endpoint (key stays in `env`, never in the URL):
-
-```json
-{
-  "mcpServers": {
-    "floe": {
-      "command": "npx",
-      "args": ["-y", "@floelabs/mcp-server", "--stdio"],
-      "env": { "FLOE_API_KEY": "floe_YOUR_AGENT_KEY" }
-    }
-  }
-}
-```
-
 One-click install links — the config carries the endpoint URL only, never a key:
 
 - Cursor — `cursor://anysphere.cursor-deeplink/mcp/install?name=floe&config=eyJ1cmwiOiJodHRwczovL21jcC5mbG9lbGFicy54eXovbWNwIn0`
@@ -293,21 +279,19 @@ One-click install links — the config carries the endpoint URL only, never a ke
 {% tab title="CLI" %}
 
 ```bash
-npm i -g floe-agent      # installs BOTH bins: `floe` and `floe-agent`
-floe status --json       # auth + capabilities + balance in one call
+npx @floelabs/cli init   # onboard: create or select an agent, mint its key into the keychain, get the base-URL swap
+floe status --json       # am I set up? balance, budgets, active agent + key
 ```
 
 ```bash
-AGENT_ID=$(floe agents create --name research-bot --json | jq -r .agentId)
-floe agents keys create "$AGENT_ID" --budget 5   # → floe_... runtime key (shown once)
-floe pay https://api.exa.ai/contents --method POST \
-  --body '{"urls":["https://example.com"],"text":true}'
+floe budget set 5 --per day   # cap this key at $5 per rolling 24 h
+floe test                     # one real metered call — cost printed from X-Floe-Cost-USDC
 ```
 
-`--json` on every command; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. Full reference: [Floe CLI](../developers/cli.md).
+`--json` on every command; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. Lifecycle and payment commands (`agents`, `policy`, `pay`, …) run as `floe-agent <command>`. Full reference: [Floe CLI](../developers/cli.md).
 {% endtab %}
 {% tab title="SDK" %}
-Both SDKs take the **agent** key (`floe_…`), not the `floe_live_…` developer key: a developer key passes the client's prefix check but the proxy rejects it with `wrong_credential_type`. Mint the agent key with `floe agents keys create <id>` and read it from `FLOE_AGENT_KEY`.
+Both SDKs take the **agent** key (`floe_…`), not the `floe_live_…` developer key: a developer key passes the client's prefix check but the proxy rejects it with `wrong_credential_type`. The agent key comes from `npx @floelabs/cli init` (minted into your OS keychain) or the dashboard — read it from `FLOE_AGENT_KEY`.
 
 TypeScript:
 
@@ -372,11 +356,10 @@ Machine-readable spec: [`/.well-known/openapi.yaml`](https://credit-api.floelabs
 Ask your agent to make its first paid call, or run it yourself:
 
 ```bash
-floe pay https://api.exa.ai/contents --method POST \
-  --body '{"urls":["https://example.com"],"text":true}'
+floe test
 ```
 
-That is **$0.001** against the **$3 welcome credit** your first agent starts with — no card required. The response carries the settled receipt in `X-Floe-Cost-USDC`.
+One real metered call against the **$3 welcome credit** your first agent starts with — no card required. The settled cost prints from the `X-Floe-Cost-USDC` receipt header; `floe test --voice` proves the whole STT → LLM → TTS turn on one key.
 
 ---
 
@@ -384,13 +367,15 @@ That is **$0.001** against the **$3 welcome credit** your first agent starts wit
 
 | Job | MCP tool | CLI |
 |---|---|---|
-| Create an agent | `create_agent` | `floe agents create --name <n>` |
-| Mint a runtime key | `create_agent_key` | `floe agents keys create <id> --budget <usd>` |
-| Cap spend | `set_spend_limit` | `floe limit set <usd> --agent <id>` |
-| Price a call first | `estimate_x402_cost` | `floe estimate <url>` |
-| Pay a vendor | `x402_pay` | `floe pay <url>` |
-| Watch the money | `get_usage_summary` | `floe usage` |
-| Hand funding to a human | `get_funding_instructions` | `floe fund <id>` |
+| Create an agent + mint its runtime key | `create_agent` + `create_agent_key` | `npx @floelabs/cli init` |
+| Check the setup | `get_balances` | `floe status --json` |
+| Cap spend | `set_spend_limit` | `floe budget set <usd> [--per day]` |
+| Rotate a runtime key | `rotate_agent_key` | `floe keys rotate` |
+| Prove the wiring | `x402_pay` | `floe test [--voice]` |
+| Price a call first | `estimate_x402_cost` | `floe-agent estimate <url>` |
+| Pay a vendor | `x402_pay` | `floe-agent pay <url>` |
+| Watch the money | `get_usage_summary` | `floe-agent usage` |
+| Hand funding to a human | `get_funding_instructions` | `floe-agent fund <id>` |
 
 ## Next steps
 
@@ -473,6 +458,8 @@ Budgets are enforced **server-side** — a breach returns `402`, or a kill-switc
 
 Sign up at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) — email only, no card. New accounts get the **$3 Welcome Credit (300 API credits)** to run the skill immediately. The skill uses an **agent** key (`floe_…`) — never paste a key into a chat window; use an environment variable or secret manager. See [Authentication](authentication.md).
 
+Prefer the terminal? `npx @floelabs/cli init` onboards end-to-end — it mints the agent key straight into your OS keychain, no copy-paste. See [Floe CLI](../developers/cli.md).
+
 ---
 
 ## Next
@@ -549,8 +536,9 @@ Full reference: [MCP Server](../developers/mcp-server.md). Deep links and per-cl
 {% endtab %}
 {% tab title="CLI" %}
 ```bash
-npm i -g floe-agent      # installs BOTH bins: `floe` and `floe-agent`
-floe status --json       # auth + capabilities + balance in one call
+npx @floelabs/cli init   # onboard: create or select an agent, mint its key, get the base-URL swap
+npm i -g @floelabs/cli   # keeps the `floe` bin around for the commands below
+floe status --json       # am I set up? balance, budgets, active agent + key
 ```
 
 Full reference: [Floe CLI](../developers/cli.md).
@@ -612,12 +600,10 @@ console.log(`Balance: $${(await agent.balance()).toFixed(2)}`);
 {% tab title="CLI" %}
 
 ```bash
-export FLOE_API_KEY=floe_...   # your agent key — copied once from the dashboard
-floe pay https://api.exa.ai/contents --method POST \
-  --body '{"urls":["https://example.com"],"text":true}'
+floe test                # one real metered call — the key is already in your keychain from `floe init`
 ```
 
-That's **$0.001** against the **$3 Welcome Credit** — the response carries the settled receipt in `X-Floe-Cost-USDC`.
+That's a fraction of a cent against the **$3 Welcome Credit** — the settled cost prints from the `X-Floe-Cost-USDC` receipt header. `floe test --voice` runs a full STT → LLM → TTS turn: three legs, one key, one bill.
 {% endtab %}
 {% endtabs %}
 
@@ -700,8 +686,11 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 ## CLI
 
 ```bash
-npm install -g floe-agent      # exposes `floe` and `floe-agent`
+npm install -g @floelabs/cli   # the `floe` platform CLI
+npx @floelabs/cli init         # or just run the onboarding once, straight from npm
 ```
+
+Two CLIs, two jobs: `@floelabs/cli` (bin `floe`) onboards, tests, and budgets, while the `floe-agent` SDK package ships its own `floe-agent` bin for agent lifecycle and payments. See [Floe CLI](../developers/cli.md).
 
 ## Next
 
@@ -739,7 +728,8 @@ Rule of thumb: if the call *spends money or reads an agent's state*, use the **a
 ## Get a key
 
 - **Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) → create an agent → copy the `floe_<hex>` key (shown once).
-- **CLI:** `npx floe-agent register --name my-agent` (stores it in your OS keychain).
+- **CLI:** `npx @floelabs/cli init` — creates or selects an agent and mints its `floe_…` key straight into your OS keychain.
+- **SDK workflow:** `npx floe-agent register --name my-agent` (also stores the key in your OS keychain).
 
 ## Keyless vs. bring-your-own-key
 
@@ -814,6 +804,8 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 ```
 {% endtab %}
 {% endtabs %}
+
+> **Shortcut:** `npx @floelabs/cli init` mints the key into your OS keychain and ends by printing exactly this base-URL swap, key filled in. See [Floe CLI](../developers/cli.md).
 
 That's it — the LLM leg is now on your Floe balance, under your [spend controls](../developers/spend-controls.md), and every response returns its cost in `X-Floe-Payment-Amount` (see [Pricing](pricing.md)).
 
@@ -4642,18 +4634,144 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 ## CLI: `floe-agent`
 
-Interactive conversational agent + per-agent registration tooling. The `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM; the other subcommands manage Floe agents and their API keys.
+The package's CLI is the **`floe-agent`** bin: the full platform command surface — agent lifecycle, keys, policies, limits, payments, observability — plus the interactive REPL whose `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM.
 
-Since v0.6.0 the same package also ships the full **Floe platform CLI** — `status`, `auth`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `estimate`, `forecast`, `pay`, `models`, `usage`, `activity`, `webhooks`, and more — under both the `floe` and `floe-agent` bin names. See the [Floe CLI reference](cli.md) for the complete command table; this section covers only the agent-workflow subcommands below.
+> The `floe` bin name belongs to the standalone platform CLI, [`@floelabs/cli`](https://github.com/Floe-Labs/floe-cli) (`npx @floelabs/cli init`) — five onboarding verbs, documented at [Floe CLI](cli.md). This package's CLI is invoked as `floe-agent`; since v0.6.1 it ships **only** that bin, and the commands below are otherwise unchanged. The interactive lending REPL (`floe-agent run`, the historical default) is lazy-loaded — management commands never pay its startup cost under `npx`.
 
 ### Install
 
 ```bash
-npm install -g floe-agent     # installs both the `floe` and `floe-agent` commands
+npm install -g floe-agent     # installs the `floe-agent` bin
                               # or: npm run build && npm link
 ```
 
-### Subcommands
+### Conventions
+
+Written for scripts and agents first, humans second.
+
+- **`--json` on every command.** Prints the raw API JSON to stdout — no spinner, no color, nothing else on stdout.
+- **Exit codes:** `0` ok · `1` error · `2` usage · `4` auth required · `5` payment required (402). Usage is validated *before* credentials, so a malformed command exits `2` whether or not a key is set.
+- **Never prompts when it is not a TTY.** Missing input exits `2` with usage instead of blocking; destructive prompts are skipped under `--json` or a non-interactive shell.
+- **`NO_COLOR` respected.**
+- **`User-Agent: floe-cli/<version>`** on every request to the Credit API.
+- **Keys are printed exactly once**, at mint or rotate time, and stored in the OS keychain. The CLI never echoes a key it did not just mint.
+- **`floe-agent pay` always sends an `Idempotency-Key`** (auto-generated UUID unless you pass one), so a retried command can never double-pay.
+
+### Authentication
+
+| Variable | What it holds |
+|---|---|
+| `FLOE_API_KEY` | Management credential — a `floe_live_…` developer key or a `floe_…` agent key |
+| `FLOE_AGENT_KEY` | Optional `floe_…` agent-key override used by the payment commands |
+| `FLOE_API_URL` | Credit API base URL (default `https://credit-api.floelabs.xyz`) |
+| `PRIVATE_KEY` | Wallet key — EIP-191 signature-auth fallback, plus the legacy wallet flows and the REPL |
+
+Two credential planes resolve independently:
+
+**Management commands** (`status`, `agents`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `usage`, `activity`, `webhooks`) resolve in order:
+
+1. `FLOE_API_KEY`
+2. the key stored by `floe-agent auth set-key` (OS keychain)
+3. EIP-191 wallet-signature headers when `PRIVATE_KEY` is set
+
+**Payment commands** (`pay`, `estimate`, `forecast`) resolve in order:
+
+1. `FLOE_AGENT_KEY`
+2. the active agent's key from the OS keychain
+3. `FLOE_API_KEY` when it is a `floe_` agent key
+
+None of the above → exit `4` with a pointer to the dashboard.
+
+```bash
+floe-agent auth status --json          # which credential each plane would use
+floe-agent auth set-key floe_live_...  # store the developer key in the OS keychain
+```
+
+> **Keychain storage.** Agent keys are kept in the OS credential store (macOS Keychain, Windows Credential Manager, Linux Secret Service) under `<agentName>@<facilitatorUrl>`; the developer key is stored under `@developer`. On headless machines without a session keyring the CLI falls back to environment variables — `FLOE_AGENT_KEY_<NAME>__<HOST>` (or the legacy `FLOE_AGENT_KEY_<NAME>`) — and prints a one-time warning that the secret is not persisted.
+
+### Platform commands
+
+#### Setup & status
+
+| Command | What it does |
+|---|---|
+| `floe-agent status [--json]` | One-shot probe: verifies the credential, reads `GET /v1/capabilities`, and prints a balance snapshot. Falls back to the agent plane when only a runtime key is present. |
+| `floe-agent auth status \| set-key [key] [--json]` | Report or store the developer key. Non-TTY `set-key` requires the key as an argument. |
+| `floe-agent mcp install [--json]` | Runs `npx -y add-mcp https://mcp.floelabs.xyz/mcp`; on failure prints the manual MCP JSON config and the `claude mcp add` one-liner. Configs carry the URL only, never a key. |
+| `floe-agent skills install [--json]` | Installs the `floe-budget` skill to `./.claude/skills/floe-budget/SKILL.md` and `~/.agents/skills/floe-budget/SKILL.md`. Idempotent. |
+
+#### Agents & runtime keys (developer key)
+
+| Command | What it does |
+|---|---|
+| `floe-agent agents create --name <name> [--borrow-limit <usd>] [--max-rate-bps <n>] [--expiry-days <n>] [--json]` | `POST /v1/developer/agents` — provisions the managed wallet and the on-chain delegation; the account's first agent also receives the **$3 welcome credit**. Prints the agent id and deposit address. Omit `--borrow-limit` for the pay-as-you-go default. |
+| `floe-agent agents list [--json]` | Every agent on the account, from the API. |
+| `floe-agent agents get\|pause\|resume\|close <agentId> [--json]` | Agent detail, the per-agent kill-switch, and permanent close. |
+| `floe-agent agents [--json]` | Bare `agents` lists the **local** registry from `.floe-agent.json` (back-compat) — use `floe-agent agents list` for the server view. |
+| `floe-agent agents keys create <agentId\|name> [--budget <usd>] [--window-seconds <s>] [--label <l>] [--json]` | Mints a `floe_…` runtime key. Plaintext is shown once and stored in the keychain. `--budget` sets a fail-closed rolling per-key cap. |
+| `floe-agent agents keys rotate <agentId\|name> [--key-id <id>] [--label <l>] [--json]` | Atomic revoke + mint. The replacement key is shown once. |
+| `floe-agent agents keys revoke <agentId\|name> [--key-id <id>] [--json]` | Revokes a runtime key immediately. |
+| `floe-agent keys create\|list\|rotate\|revoke [keyId] [--label <l>] [--permissions read\|read_write] [--json]` | Developer (`floe_live_…`) keys on `/v1/developer/keys`. |
+| `floe-agent fund <agentId> [--json]` | The walletless funding handoff: prints the dashboard link where the human adds money by card, Apple Pay, Google Pay, or bank transfer, plus the machine-readable settlement contract (deposit address, chain `8453`, `USDC`) for programmatic treasuries. The agent hands this to a human; it never moves money itself. |
+
+#### Guardrails
+
+| Command | What it does |
+|---|---|
+| `floe-agent limit get\|set\|clear [<usd>] [--agent <id>] [--json]` | Session spend cap. `--agent` takes a **numeric** agent id and is required when using developer credentials. |
+| `floe-agent policy list [--agent <id>\|--team] [--include-revoked] [--json]` | Spend policies for one agent or the team. `--include-revoked` also returns retired rows. |
+| `floe-agent policy set --kind <task\|api\|vendor\|session> --match <key> (--limit <usd> \| --limit-raw <raw>) [--match-kind <k>] [--window-kind once\|rolling] [--window-seconds <s>] [--label <l>] [--action block\|suspend_agent] [--agent <id>\|--team] [--json]` | Create a policy. `kind=session` is team-scope only — the per-agent equivalent is `floe-agent limit set`. |
+| `floe-agent policy delete <policyId> [--agent <id>\|--team] [--json]` | Remove a policy. |
+| `floe-agent policy reset <policyId> [--agent <id>] [--json]` | Reset a policy's accrued window. Not available on team policies — delete and re-create instead. |
+| `floe-agent allowlist mode [off\|host\|vendor\|both] [--agent <id>] [--json]` | Read or set merchant-allowlist enforcement. |
+| `floe-agent allowlist add <host\|payee> [--kind api\|vendor] (--limit <usd> \| --limit-raw <raw>) [--match-kind host_exact\|host_suffix\|recipient] [--agent <id>] [--json]` | Add an allowed-and-capped entry. Allowlist entries are always capped. |
+| `floe-agent allowlist remove <policyId> [--agent <id>] [--json]` · `floe-agent allowlist list [--agent <id>] [--json]` | Remove or list entries. |
+
+Semantics for every cap and window live in [Spend Controls](spend-controls.md).
+
+#### Spending (agent key)
+
+| Command | What it does |
+|---|---|
+| `floe-agent estimate <url> [--method <M>] [--json]` | `POST /v1/x402/estimate` — price one call and reflect it against available credit. Nothing is spent. |
+| `floe-agent forecast <url> [<url>…] [--count <n per url>] [--task-id <id>] [--json]` | `POST /v1/x402/forecast` — batch cost projection + policy preflight for a plan of up to 50 calls. |
+| `floe-agent pay <url> [--method <M>] [--body <raw>] [--header "K: V"]… [--task-id <id>] [--idempotency-key <k>] [--json]` | `POST /v1/proxy/fetch` — Floe pays the vendor and returns its response plus the `X-Floe-*` metering headers. Exit `5` on `402`. `--header` repeats. |
+| `floe-agent balance [--json]` | Developer rollup with a developer key; the agent's own balance with a runtime key. |
+
+#### Observability
+
+| Command | What it does |
+|---|---|
+| `floe-agent models [--json]` | The Floe Inference model catalog (`GET /v1/models`). |
+| `floe-agent usage [--json]` | Spend/usage analytics summary for the account. |
+| `floe-agent activity [--limit <n>] [--json]` | Unified activity feed — proxy calls, transfers, onramps, loan events. |
+| `floe-agent webhooks create --url <https-url> --events <e1,e2> [--scope global\|wallet\|loan --scope-value <v>] [--description <d>] [--json]` | Register a webhook. The signing secret is returned once. |
+| `floe-agent webhooks list [--json]` · `floe-agent webhooks test\|rotate-secret\|deliveries <webhookId> [--json]` | List, send a signed test delivery, rotate the secret, inspect deliveries. |
+
+Event catalog and signature verification: [Webhooks](webhooks.md).
+
+### A full bootstrap, headless
+
+```bash
+export FLOE_API_KEY=floe_live_...
+
+floe-agent status --json                                    # exit 4 if the key is bad
+AGENT_ID=$(floe-agent agents create --name research-bot --json | jq -r .agentId)
+AGENT_KEY=$(floe-agent agents keys create "$AGENT_ID" --budget 5 --json | jq -r .key)
+
+floe-agent limit set 5 --agent "$AGENT_ID"                  # session cap
+floe-agent policy set --kind api --match api.exa.ai --limit 2 \
+  --window-kind rolling --window-seconds 86400 --agent "$AGENT_ID"
+
+export FLOE_AGENT_KEY="$AGENT_KEY"
+floe-agent estimate https://api.exa.ai/contents --method POST --json
+floe-agent pay https://api.exa.ai/contents --method POST \
+  --body '{"urls":["https://example.com"],"text":true}' --json
+```
+
+Exit `5` from that last command means the balance is exhausted — run `floe-agent fund "$AGENT_ID"` and hand the output to a human.
+
+### Agent-workflow subcommands
 
 | Command | Purpose |
 |---|---|
@@ -4664,6 +4782,10 @@ npm install -g floe-agent     # installs both the `floe` and `floe-agent` comman
 | `floe-agent rotate <name>` | Atomically rotate the agent's API key — old key revoked + new key minted in one transaction. New key replaces the keychain entry. |
 | `floe-agent revoke <name>` | Revoke the agent's API key server-side and remove the local keychain entry. |
 | `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Optional — only for agents on credit-line funding. Pay-as-you-go agents (the default) pay through `/proxy/fetch` from their funded balance without opening a credit line. |
+
+> **`register` is not the same command as `agents create`.** `floe-agent agents create` is a thin headless API call (developer key, no wallet, no local state) that provisions the agent only — mint its key separately with `floe-agent agents keys create`. `floe-agent register` is the original wallet-signature flow: it registers the agent, mints the first key, and records it in `.floe-agent.json` so `use`/`rotate`/`revoke` can find it by name. Both remain supported; agents should prefer `agents create` + `agents keys create`.
+>
+> **Alias routing on `rotate` / `revoke`.** Top-level `floe-agent rotate <name>` and `floe-agent revoke <name>` take the developer-key path when headless credentials resolve, and fall back to the interactive wallet flow otherwise. Interactive `revoke` still asks for confirmation; the explicit `floe-agent agents keys revoke` never prompts. For an agent tracked in the local registry, both honor that record's persisted facilitator URL — `FLOE_API_URL` overrides it.
 
 ### Setup flow (for `run`)
 
@@ -4817,8 +4939,8 @@ In your consumer's `package.json`:
 ```bash
 npm run build && npm pack
 # In consumer — substitute the actual tarball name printed by `npm pack`
-# (it tracks the package.json `version` field; today that's 0.6.0):
-npm install ../agentkit-actions/floe-agent-0.6.0.tgz
+# (it tracks the package.json `version` field; today that's 0.6.2):
+npm install ../agentkit-actions/floe-agent-0.6.2.tgz
 ```
 
 ## Agent Awareness Actions (v0.3.0+)
@@ -5062,7 +5184,7 @@ Create and manage up to **5 agents per developer**. Each agent has its own credi
 2. **Fund Agent** — Send USDC to the agent's wallet, or **buy USDC directly via Coinbase** (credit card or bank transfer) using the "Fund Wallet" button. No crypto bridges needed.
 3. **Mint API Key** — Once the agent shows `active`, click **Reveal API Key** to mint the agent's `floe_*` runtime key. It is shown once — copy it immediately. To rotate, click **Rotate** (revokes the old key and mints a new one atomically).
 
-The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx floe-agent register --name <name>` (TypeScript) / `floe-agent register --name <name>` (Python). See [agentkit-typescript](agentkit-typescript.md#cli-floe-agent) / [agentkit-python](agentkit-python.md#cli-floe-agent).
+The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), or `npx floe-agent register --name <name>` (TypeScript SDK) / `floe-agent register --name <name>` (Python SDK). See [agentkit-typescript](agentkit-typescript.md#cli-floe-agent) / [agentkit-python](agentkit-python.md#cli-floe-agent).
 
 Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `closed`), USDC balance (live), credit limit, delegation expiry, and active loans.
 
@@ -5133,177 +5255,72 @@ URL: https://floe-labs.gitbook.io/docs/developers/cli.md
 
 # Floe CLI
 
-Everything the dashboard can do, from a terminal, with one API key — designed so a coding agent can drive it headlessly.
+`npm i` to a metered Floe call wired into your code — with zero dashboard round-trips after the first key.
 
 ```bash
-npm i -g floe-agent      # installs BOTH bins: `floe` and `floe-agent`
-floe status --json       # auth + capabilities + balances in one call
+npx @floelabs/cli init
 ```
 
-One package, two command names: `floe` is the platform CLI, `floe-agent` is the historical alias for the same binary. Every existing `floe-agent` command keeps working.
+`floe init` authenticates with your developer key, creates (or selects) an agent, mints its runtime key into your OS keychain, and ends with the only thing that matters — the base-URL swap for your existing OpenAI-compatible client, key already filled in:
+
+```python
+from openai import OpenAI
+client = OpenAI(base_url="https://credit-api.floelabs.xyz/v1", api_key="floe_…")
+```
+
+Every response carries `X-Floe-Cost-USDC`. One key meters chat, embeddings, speech, and transcription across 15+ vendors — one bill, in USDC.
 
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [MCP Server](mcp-server.md) | [API Keys](api-keys.md)
 
-**npm:** `floe-agent` (v0.6.0) · **GitHub:** [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions)
+**npm:** `@floelabs/cli` (v0.1.0) · **bin:** `floe` · **GitHub:** [Floe-Labs/floe-cli](https://github.com/Floe-Labs/floe-cli)
 
-> The platform CLI ships in the **npm** package. The Python package (`floe-agentkit-actions`) installs a smaller agent-workflow CLI (`floe-agent` only: `run`, `register`, `agents`, `use`, `rotate`, `revoke`, `open-credit-line`) — see [Python SDK](agentkit-python.md).
-
----
-
-## Conventions
-
-Written for scripts and agents first, humans second.
-
-- **`--json` on every command.** Prints the raw API JSON to stdout — no spinner, no color, nothing else on stdout.
-- **Exit codes:** `0` ok · `1` error · `2` usage · `4` auth required · `5` payment required (402). Usage is validated *before* credentials, so a malformed command exits `2` whether or not a key is set.
-- **Never prompts when it is not a TTY.** Missing input exits `2` with usage instead of blocking; destructive prompts are skipped under `--json` or a non-interactive shell.
-- **`NO_COLOR` respected.**
-- **`User-Agent: floe-cli/<version>`** on every request to the Credit API.
-- **Keys are printed exactly once**, at mint or rotate time, and stored in the OS keychain. The CLI never echoes a key it did not just mint.
-- **`floe pay` always sends an `Idempotency-Key`** (auto-generated UUID unless you pass one), so a retried command can never double-pay.
+> **Looking for `agents`, `policy`, `limit`, `pay`, `fund`, `estimate`, …?** The agent lifecycle and payment commands ship in the **`floe-agent`** bin from the `floe-agent` SDK package — run them as `floe-agent <command>`. See [TypeScript SDK → CLI](agentkit-typescript.md#cli-floe-agent) for that command tree; this page covers the platform CLI's five verbs only.
 
 ---
 
-## Authentication
+## Install
+
+```bash
+npx @floelabs/cli init    # run the onboarding once, straight from npm
+npm i -g @floelabs/cli    # or keep the `floe` bin around
+```
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `floe init` | Full setup in one command: paste your dashboard developer key (`floe_live_…`), create or select an agent, mint its runtime key into the keychain, and print the base-URL-swap snippet. Flags: `--key <floe_live_…>`, `--agent <name>`, `--name <name>`, `--new-key`, `--open`. |
+| `floe status` | Am I set up? Balance, budgets, active agent + key. |
+| `floe test` | Make one real metered call and print its cost from `X-Floe-Cost-USDC`. `--voice` runs STT → LLM → TTS: three legs, one key, one bill. Override models with `--model`, `--stt-model`, `--tts-model`, `--tts-voice`. |
+| `floe budget set <usd>` | Cap total spend before you let an agent loose. `--per day` caps this key per rolling 24 h; `--per task --task <id>` caps one task. Bare `floe budget` shows the current caps; `floe budget clear` removes them. |
+| `floe keys` | List this agent's keys; `floe keys rotate` replaces yours atomically. |
+
+Every command takes `--json` (raw JSON on stdout, for CI and coding agents) and `--api-url <url>`.
+
+## Two keys, handled for you
+
+Floe has a **developer key** (`floe_live_…`, from the [dashboard](https://dev-dashboard.floelabs.xyz)) for managing agents, and per-agent **runtime keys** (`floe_…`) that the gateway meters. The CLI stores both in your OS keychain and always sends the right one — you never pick. On systems without a usable keychain (headless Linux, some containers) it falls back to `~/.config/floe/credentials.json` with `0600` permissions and tells you so.
+
+## Environment overrides
+
+Headless / CI: set the env vars — they always win over the keychain.
 
 | Variable | What it holds |
 |---|---|
-| `FLOE_API_KEY` | Management credential — a `floe_live_…` developer key or a `floe_…` agent key |
-| `FLOE_AGENT_KEY` | Optional `floe_…` agent-key override used by the payment commands |
-| `FLOE_API_URL` | Credit API base URL (default `https://credit-api.floelabs.xyz`) |
-| `PRIVATE_KEY` | Wallet key — EIP-191 signature-auth fallback, plus the legacy wallet flows and the REPL |
+| `FLOE_API_KEY` | Developer key (`floe_live_…`) |
+| `FLOE_AGENT_KEY` | Runtime key (`floe_…`) |
+| `FLOE_API_URL` | Credit API base URL override (default `https://credit-api.floelabs.xyz`) |
 
-Two credential planes resolve independently:
+## Exit codes
 
-**Management commands** (`status`, `agents`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `usage`, `activity`, `webhooks`) resolve in order:
-
-1. `FLOE_API_KEY`
-2. the key stored by `floe auth set-key` (OS keychain)
-3. EIP-191 wallet-signature headers when `PRIVATE_KEY` is set
-
-**Payment commands** (`pay`, `estimate`, `forecast`) resolve in order:
-
-1. `FLOE_AGENT_KEY`
-2. the active agent's key from the OS keychain
-3. `FLOE_API_KEY` when it is a `floe_` agent key
-
-None of the above → exit `4` with a pointer to the dashboard.
-
-```bash
-floe auth status --json          # which credential each plane would use
-floe auth set-key floe_live_...  # store the developer key in the OS keychain
-```
-
-> **Keychain storage.** Agent keys are kept in the OS credential store (macOS Keychain, Windows Credential Manager, Linux Secret Service) under `<agentName>@<facilitatorUrl>`; the developer key is stored under `@developer`. On headless machines without a session keyring the CLI falls back to environment variables — `FLOE_AGENT_KEY_<NAME>__<HOST>` (or the legacy `FLOE_AGENT_KEY_<NAME>`) — and prints a one-time warning that the secret is not persisted.
-
----
-
-## Command reference
-
-### Setup & status
-
-| Command | What it does |
-|---|---|
-| `floe status [--json]` | One-shot probe: verifies the credential, reads `GET /v1/capabilities`, and prints a balance snapshot. Falls back to the agent plane when only a runtime key is present. |
-| `floe auth status \| set-key [key] [--json]` | Report or store the developer key. Non-TTY `set-key` requires the key as an argument. |
-| `floe mcp install [--json]` | Runs `npx -y add-mcp https://mcp.floelabs.xyz/mcp`; on failure prints the manual MCP JSON config and the `claude mcp add` one-liner. Configs carry the URL only, never a key. |
-| `floe skills install [--json]` | Installs the `floe-budget` skill to `./.claude/skills/floe-budget/SKILL.md` and `~/.agents/skills/floe-budget/SKILL.md`. Idempotent. |
-
-### Agents & runtime keys (developer key)
-
-| Command | What it does |
-|---|---|
-| `floe agents create --name <name> [--borrow-limit <usd>] [--max-rate-bps <n>] [--expiry-days <n>] [--json]` | `POST /v1/developer/agents` — provisions the managed wallet and the on-chain delegation; the account's first agent also receives the **$3 welcome credit**. Prints the agent id and deposit address. Omit `--borrow-limit` for the pay-as-you-go default. |
-| `floe agents list [--json]` | Every agent on the account, from the API. |
-| `floe agents get\|pause\|resume\|close <agentId> [--json]` | Agent detail, the per-agent kill-switch, and permanent close. |
-| `floe agents [--json]` | Bare `agents` lists the **local** registry from `.floe-agent.json` (back-compat) — use `floe agents list` for the server view. |
-| `floe agents keys create <agentId\|name> [--budget <usd>] [--window-seconds <s>] [--label <l>] [--json]` | Mints a `floe_…` runtime key. Plaintext is shown once and stored in the keychain. `--budget` sets a fail-closed rolling per-key cap. |
-| `floe agents keys rotate <agentId\|name> [--key-id <id>] [--label <l>] [--json]` | Atomic revoke + mint. The replacement key is shown once. |
-| `floe agents keys revoke <agentId\|name> [--key-id <id>] [--json]` | Revokes a runtime key immediately. |
-| `floe keys create\|list\|rotate\|revoke [keyId] [--label <l>] [--permissions read\|read_write] [--json]` | Developer (`floe_live_…`) keys on `/v1/developer/keys`. |
-| `floe fund <agentId> [--json]` | The walletless funding handoff: prints the dashboard link where the human adds money by card, Apple Pay, Google Pay, or bank transfer, plus the machine-readable settlement contract (deposit address, chain `8453`, `USDC`) for programmatic treasuries. The agent hands this to a human; it never moves money itself. |
-
-### Guardrails
-
-| Command | What it does |
-|---|---|
-| `floe limit get\|set\|clear [<usd>] [--agent <id>] [--json]` | Session spend cap. `--agent` takes a **numeric** agent id and is required when using developer credentials. |
-| `floe policy list [--agent <id>\|--team] [--include-revoked] [--json]` | Spend policies for one agent or the team. `--include-revoked` also returns retired rows. |
-| `floe policy set --kind <task\|api\|vendor\|session> --match <key> (--limit <usd> \| --limit-raw <raw>) [--match-kind <k>] [--window-kind once\|rolling] [--window-seconds <s>] [--label <l>] [--action block\|suspend_agent] [--agent <id>\|--team] [--json]` | Create a policy. `kind=session` is team-scope only — the per-agent equivalent is `floe limit set`. |
-| `floe policy delete <policyId> [--agent <id>\|--team] [--json]` | Remove a policy. |
-| `floe policy reset <policyId> [--agent <id>] [--json]` | Reset a policy's accrued window. Not available on team policies — delete and re-create instead. |
-| `floe allowlist mode [off\|host\|vendor\|both] [--agent <id>] [--json]` | Read or set merchant-allowlist enforcement. |
-| `floe allowlist add <host\|payee> [--kind api\|vendor] (--limit <usd> \| --limit-raw <raw>) [--match-kind host_exact\|host_suffix\|recipient] [--agent <id>] [--json]` | Add an allowed-and-capped entry. Allowlist entries are always capped. |
-| `floe allowlist remove <policyId> [--agent <id>] [--json]` · `floe allowlist list [--agent <id>] [--json]` | Remove or list entries. |
-
-Semantics for every cap and window live in [Spend Controls](spend-controls.md).
-
-### Spending (agent key)
-
-| Command | What it does |
-|---|---|
-| `floe estimate <url> [--method <M>] [--json]` | `POST /v1/x402/estimate` — price one call and reflect it against available credit. Nothing is spent. |
-| `floe forecast <url> [<url>…] [--count <n per url>] [--task-id <id>] [--json]` | `POST /v1/x402/forecast` — batch cost projection + policy preflight for a plan of up to 50 calls. |
-| `floe pay <url> [--method <M>] [--body <raw>] [--header "K: V"]… [--task-id <id>] [--idempotency-key <k>] [--json]` | `POST /v1/proxy/fetch` — Floe pays the vendor and returns its response plus the `X-Floe-*` metering headers. Exit `5` on `402`. `--header` repeats. |
-| `floe balance [--json]` | Developer rollup with a developer key; the agent's own balance with a runtime key. |
-
-### Observability
-
-| Command | What it does |
-|---|---|
-| `floe models [--json]` | The Floe Inference model catalog (`GET /v1/models`). |
-| `floe usage [--json]` | Spend/usage analytics summary for the account. |
-| `floe activity [--limit <n>] [--json]` | Unified activity feed — proxy calls, transfers, onramps, loan events. |
-| `floe webhooks create --url <https-url> --events <e1,e2> [--scope global\|wallet\|loan --scope-value <v>] [--description <d>] [--json]` | Register a webhook. The signing secret is returned once. |
-| `floe webhooks list [--json]` · `floe webhooks test\|rotate-secret\|deliveries <webhookId> [--json]` | List, send a signed test delivery, rotate the secret, inspect deliveries. |
-
-Event catalog and signature verification: [Webhooks](webhooks.md).
-
-### Legacy wallet flows
-
-These predate the platform commands and are unchanged. They use the wallet-signature path (`PRIVATE_KEY`) and the local `.floe-agent.json` registry.
-
-| Command | What it does |
-|---|---|
-| `floe run` | Interactive lending REPL — the historical default command. Needs a wallet and an LLM key (`OPENAI_API_KEY` / `ANTHROPIC_API_KEY`). Lazy-loaded, so management commands never pay its startup cost. |
-| `floe register --name <name> [--borrow-limit <usd>] [--max-rate-bps <n>] [--expiry-days <n>] [--label <l>] [--facilitator-url <url>]` | Wallet-signature agent registration **plus** a first key mint, written to the local registry. |
-| `floe use <name>` | Set the active agent for keychain lookups. |
-| `floe rotate\|revoke <name>` | Key rotation aliases (see the note below). |
-| `floe open-credit-line --name <name> [--deposit <usd>] [--max-ltv-bps <n>] [--max-rate-bps <n>]` | Open the USDC/USDC credit line for a funded agent. |
-
-> **`register` is not the same command as `agents create`.** `floe agents create` is a thin headless API call (developer key, no wallet, no local state) that provisions the agent only — mint its key separately with `floe agents keys create`. `floe register` is the original wallet-signature flow: it registers the agent, mints the first key, and records it in `.floe-agent.json` so `use`/`rotate`/`revoke` can find it by name. Both remain supported; agents should prefer `agents create` + `agents keys create`.
->
-> **Alias routing on `rotate` / `revoke`.** Top-level `floe rotate <name>` and `floe revoke <name>` take the developer-key path when headless credentials resolve, and fall back to the interactive wallet flow otherwise. Interactive `revoke` still asks for confirmation; the explicit `floe agents keys revoke` never prompts. For an agent tracked in the local registry, both honor that record's persisted facilitator URL — `FLOE_API_URL` overrides it.
-
----
-
-## A full bootstrap, headless
-
-```bash
-export FLOE_API_KEY=floe_live_...
-
-floe status --json                                    # exit 4 if the key is bad
-AGENT_ID=$(floe agents create --name research-bot --json | jq -r .agentId)
-AGENT_KEY=$(floe agents keys create "$AGENT_ID" --budget 5 --json | jq -r .key)
-
-floe limit set 5 --agent "$AGENT_ID"                  # session cap
-floe policy set --kind api --match api.exa.ai --limit 2 \
-  --window-kind rolling --window-seconds 86400 --agent "$AGENT_ID"
-
-export FLOE_AGENT_KEY="$AGENT_KEY"
-floe estimate https://api.exa.ai/contents --method POST --json
-floe pay https://api.exa.ai/contents --method POST \
-  --body '{"urls":["https://example.com"],"text":true}' --json
-```
-
-Exit `5` from that last command means the balance is exhausted — run `floe fund "$AGENT_ID"` and hand the output to a human.
+`0` ok · `1` error · `2` usage · `4` auth · `5` payment/budget
 
 ## Next steps
 
-- [Quickstart](../getting-started/quickstart.md) — the same flow with REST equivalents
-- [MCP Server](mcp-server.md) — the same surface as MCP tools, for clients that prefer tool calls
-- [Agent Runtime Contract](agent-runtime-contract.md) — error matrix and retry rules
-- [TypeScript SDK](agentkit-typescript.md) — the same package's `FloeAgent` client and AgentKit actions
+- [Quickstart](../getting-started/quickstart.md) — create an agent, connect your tools, first paid call
+- [Add Floe to your existing pipeline](../getting-started/integrate-existing-pipeline.md) — where the base-URL swap goes
+- [TypeScript SDK → CLI](agentkit-typescript.md#cli-floe-agent) — agent lifecycle, policies, and payments from the shell (`floe-agent`)
+- [MCP Server](mcp-server.md) — the same platform as MCP tools, for clients that prefer tool calls
 
 ==============================================================================
 # API Keys
@@ -5320,7 +5337,7 @@ Floe uses API keys to authenticate requests to the developer platform. There are
 | Prefix | Name | Scope | Created Via | Used For |
 |--------|------|-------|-------------|----------|
 | `floe_live_*` | Developer key | Whole developer account | Dashboard **API Keys** page or `POST /v1/developer/keys` | Credit API developer endpoints, agent management, webhook management |
-| `floe_*` | Agent key | One specific agent | Agent setup wizard, `POST /v1/developer/agents/:id/keys`, or `floe-agent register --name <name>` | x402 proxy, agent balance, agent-awareness endpoints, MCP server |
+| `floe_*` | Agent key | One specific agent | Agent setup wizard, `floe init` (platform CLI), `POST /v1/developer/agents/:id/keys`, or `floe-agent register --name <name>` | x402 proxy, agent balance, agent-awareness endpoints, MCP server |
 
 **Developer keys** are for your backend services — monitoring loan health, managing webhooks, registering new agents, and calling developer-scoped endpoints on the [Credit API](credit-api.md). One key per environment is typical.
 
@@ -5328,16 +5345,17 @@ Floe uses API keys to authenticate requests to the developer platform. There are
 
 ### Agent Keys
 
-One developer can own multiple agents (up to 5 per account today). Each agent has its own scoped key. There are four ways to mint one:
+One developer can own multiple agents (up to 5 per account today). Each agent has its own scoped key. There are five ways to mint one:
 
-1. **Dashboard wizard** — visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), create an agent, copy the `floe_*` key shown on the final step. It is revealed once.
-2. **TypeScript CLI** — `npx floe-agent register --name my-agent --borrow-limit 10000`. The key is stored in your OS keychain and surfaced once in stdout.
-3. **Python CLI** — `floe-agent register --name my-agent --borrow-limit 10000`. Same behavior as the TypeScript CLI.
-4. **REST API** — `POST /v1/developer/agents` to create, then `POST /v1/developer/agents/:id/keys` to mint. See [Credit API → Developer Agents](credit-api.md#developer-agents).
+1. **Platform CLI** — `npx @floelabs/cli init` creates (or selects) the agent and mints its key straight into your OS keychain; rotate later with `floe keys rotate`. See [Floe CLI](cli.md).
+2. **Dashboard wizard** — visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), create an agent, copy the `floe_*` key shown on the final step. It is revealed once.
+3. **TypeScript SDK CLI (`floe-agent`)** — `npx floe-agent register --name my-agent --borrow-limit 10000`. The key is stored in your OS keychain and surfaced once in stdout.
+4. **Python SDK CLI (`floe-agent`)** — `floe-agent register --name my-agent --borrow-limit 10000`. Same behavior as the TypeScript SDK CLI.
+5. **REST API** — `POST /v1/developer/agents` to create, then `POST /v1/developer/agents/:id/keys` to mint. See [Credit API → Developer Agents](credit-api.md#developer-agents).
 
-> The CLI's `--borrow-limit` flag is in **USDC** (`10000` = $10K). The REST API's `borrowLimitRaw` field is in **raw 6-decimal units** (`10000` = $0.01, `10000000000` = $10K).
+> The SDK CLIs' `--borrow-limit` flag is in **USDC** (`10000` = $10K). The REST API's `borrowLimitRaw` field is in **raw 6-decimal units** (`10000` = $0.01, `10000000000` = $10K).
 >
-> Each agent has a **one active key** cap. Mint a second key with `POST /v1/developer/agents/:id/keys/:keyId/rotate` — the old key is revoked atomically in the same transaction.
+> Each agent has a **one active key** cap. Mint a second key with `POST /v1/developer/agents/:id/keys/:keyId/rotate` — the old key is revoked atomically in the same transaction — or run `floe keys rotate` from the platform CLI.
 
 ## Authentication
 
@@ -6445,9 +6463,9 @@ Connect any AI agent to Floe using the [Model Context Protocol](https://modelcon
 | **Auth** | `floe_live_*` developer key, `floe_*` agent key, or none (keyless tools) | Same, from `FLOE_API_KEY` | Wallet signature or either key | Agent's own wallet |
 | **Signing** | Returns unsigned txs | Returns unsigned txs | Returns unsigned txs | Signs automatically |
 | **Language** | Any (MCP protocol) | Any (subprocess) | Any (HTTP) | TypeScript / Python |
-| **Setup** | 1 line of config | `npm i -g floe-agent` | Direct HTTP calls | npm/pip install |
+| **Setup** | 1 line of config | `npm i -g @floelabs/cli` | Direct HTTP calls | npm/pip install |
 
-When building AI agents that discover and use Floe tools dynamically, choose the **MCP server**. If your agent already shells out, the [**CLI**](cli.md) covers the same surface with `--json` and semantic exit codes. For direct HTTP integration, the **Credit API** is the right fit. If you're building on Coinbase's agent framework, go with **AgentKit**.
+When building AI agents that discover and use Floe tools dynamically, choose the **MCP server**. If your agent already shells out, the [**CLI**](cli.md) speaks `--json` with semantic exit codes (`@floelabs/cli` for onboarding, budgets, and test calls; the `floe-agent` bin for lifecycle and payments). For direct HTTP integration, the **Credit API** is the right fit. If you're building on Coinbase's agent framework, go with **AgentKit**.
 
 ---
 
@@ -6481,7 +6499,7 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 | Key | Format | Unlocks | Get one |
 |---|---|---|---|
 | Developer key | `floe_live_…` | Developer-key surface (19 tools — lifecycle 12, observability 4, webhooks 3): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
-| Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe agents keys create <id>`, or the dashboard |
+| Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe init`, or the dashboard |
 | Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
 | None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
 
@@ -9626,6 +9644,16 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **65 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.19.0 — Standalone platform CLI: `@floelabs/cli` owns the `floe` bin (August 2026)
+
+The platform CLI moved into its own package, and the two bin names now mean two different things.
+
+* **`@floelabs/cli` 0.1.0 — the `floe` bin.** `npx @floelabs/cli init` goes from developer key to a metered call in one command: authenticate, create or select an agent, mint its runtime key into the OS keychain, and print the OpenAI base-URL swap with the key filled in. Five verbs — `init`, `status`, `test` (`--voice` proves STT → LLM → TTS), `budget set` (`--per day|task`), `keys list|rotate` — every one with `--json` and `--api-url`; exit codes `0` ok / `1` error / `2` usage / `4` auth / `5` payment.
+* **`floe-agent` 0.6.1+ ships only the `floe-agent` bin.** All platform commands — `status`, `agents`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `estimate`, `forecast`, `pay`, `models`, `usage`, `activity`, `webhooks`, `mcp install`, `skills install` — plus the legacy wallet verbs run as `floe-agent <command>`. The short-lived `floe` alias from 0.6.0 is gone.
+* **Docs split to match.** [Floe CLI](developers/cli.md) now documents `@floelabs/cli`; the `floe-agent` command tree lives with the [TypeScript SDK](developers/agentkit-typescript.md#cli-floe-agent).
+
+→ [Floe CLI](developers/cli.md) · [TypeScript SDK](developers/agentkit-typescript.md) · [Floe-Labs/floe-cli](https://github.com/Floe-Labs/floe-cli)
 
 ### v1.18.0 — ICP restructure: one Quickstart, welcome-credit-first, Floe Phone up top (July 2026)
 

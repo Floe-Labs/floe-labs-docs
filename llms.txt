@@ -36,7 +36,7 @@ The first agent on an account is provisioned with a **$3 welcome credit that is 
 ## Install
 
 - [MCP Server — 65 tools](https://floe-labs.gitbook.io/docs/developers/mcp-server.md): Hosted at `https://mcp.floelabs.xyz/mcp` (per-request `Authorization: Bearer`), or local via `npx -y @floelabs/mcp-server --stdio`. Universal install: `npx -y add-mcp https://mcp.floelabs.xyz/mcp`. Claude Code: `claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp --header "Authorization: Bearer YOUR_FLOE_KEY"`
-- [Floe CLI](https://floe-labs.gitbook.io/docs/developers/cli.md): `npm i -g floe-agent` installs both the `floe` and `floe-agent` commands — status, auth, agents, keys, policy, limit, allowlist, balance, fund, estimate, forecast, pay, models, usage, activity, webhooks, skills install, mcp install, plus the agent-workflow verbs run, register, use, rotate, revoke, open-credit-line. `--json` on every command; exit codes 0 ok / 1 error / 2 usage / 4 auth required / 5 payment required
+- [Floe CLI](https://floe-labs.gitbook.io/docs/developers/cli.md): `npx @floelabs/cli init` — the `floe` bin, five verbs: init (developer key → create/select agent → runtime key minted into the OS keychain → OpenAI base-URL swap printed), status, test (one real metered call, `--voice` = STT → LLM → TTS), budget set `<usd>` (`--per day|task`, plus bare show and clear), keys list|rotate. `--json` and `--api-url` on every command; env overrides FLOE_API_KEY (developer key) / FLOE_AGENT_KEY (runtime key) / FLOE_API_URL; exit codes 0 ok / 1 error / 2 usage / 4 auth required / 5 payment required. The lifecycle + payment commands — agents, keys, policy, limit, allowlist, balance, fund, estimate, forecast, pay, models, usage, activity, webhooks, mcp install, skills install, and the legacy verbs run/register/use/rotate/revoke/open-credit-line — ship as the separate `floe-agent` bin from the `floe-agent` package
 - [TypeScript SDK](https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-typescript.md): `npm install floe-agent` — `FloeAgent` runtime client plus 54 AgentKit actions
 - [Python SDK](https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-python.md): `pip install floe-agentkit-actions` — same 54 actions
 - [Plain HTTP / REST](https://floe-labs.gitbook.io/docs/frameworks/http.md): No SDK — `Authorization: Bearer $FLOE_API_KEY` against `https://credit-api.floelabs.xyz`
@@ -178,9 +178,9 @@ All endpoints below are payable in USDC on Base mainnet through `POST https://cr
 - **AgentKit actions**: 54 total (30 Floe + 24 x402: 4 delegation + 4 x402 + 9 agent-awareness + 5 merchant-allowlist + 2 Floe Inference).
 - **MCP tools**: 65 (lending 25 · spend 14 · pricing 5 · lifecycle 12 · observability 4 · payments 1 · webhooks 3 · docs 1). Keyless without a key: `get_markets`, `check_x402_url`, `search_floe_docs`.
 - **MCP scope params**: `https://mcp.floelabs.xyz/mcp?read_only=true` and `?features=spend,pricing` narrow the registered tool set
-- **CLI**: `npm i -g floe-agent` installs both `floe` and `floe-agent`; `floe status --json` is the one-shot auth + capabilities + balance probe
+- **CLI**: two bins, two packages — `@floelabs/cli` ships `floe` (platform onboarding/ops: init/status/test/budget/keys; `npx @floelabs/cli init` is the one-command bootstrap, `floe status --json` the one-shot setup + balance probe); the `floe-agent` package ships `floe-agent` (agent lifecycle + payment commands)
 - **x402 reach**: 2,000+ vendor API services across categories (compute, voice, image, search, browser, memory, agent-tools)
-- **npm**: `floe-agent` (v0.6.0), `@floelabs/mcp-server` (v0.3.0)
+- **npm**: `@floelabs/cli` (v0.1.0), `floe-agent` (v0.6.2), `@floelabs/mcp-server` (v0.3.0)
 - **PyPI**: `floe-agentkit-actions` (v0.5.2)
 - **MCP endpoint**: https://mcp.floelabs.xyz/mcp
 - **x402 proxy**: `POST https://credit-api.floelabs.xyz/v1/proxy/fetch` — pays any x402 API from your agent's Floe-managed balance
