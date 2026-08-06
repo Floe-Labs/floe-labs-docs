@@ -124,7 +124,7 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 ## CLI: `floe-agent`
 
-The package's CLI is the **`floe-agent`** bin: the full platform command surface — agent lifecycle, keys, policies, limits, payments, observability — plus the interactive REPL whose `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM.
+The package's CLI is the **`floe-agent`** bin: the SDK's command tree — agent lifecycle, keys, policies, limits, payments, observability — plus the interactive REPL whose `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM.
 
 > The `floe` bin name belongs to the standalone platform CLI, [`@floelabs/cli`](https://github.com/Floe-Labs/floe-cli) (`npx @floelabs/cli init`) — five onboarding verbs, documented at [Floe CLI](cli.md). This package's CLI is invoked as `floe-agent`; since v0.6.1 it ships **only** that bin, and the commands below are otherwise unchanged. The interactive lending REPL (`floe-agent run`, the historical default) is lazy-loaded — management commands never pay its startup cost under `npx`.
 
@@ -145,7 +145,7 @@ Written for scripts and agents first, humans second.
 - **`NO_COLOR` respected.**
 - **`User-Agent: floe-cli/<version>`** on every request to the Credit API.
 - **Keys are printed exactly once**, at mint or rotate time, and stored in the OS keychain. The CLI never echoes a key it did not just mint.
-- **`floe-agent pay` always sends an `Idempotency-Key`** (auto-generated UUID unless you pass one), so a retried command can never double-pay.
+- **`floe-agent pay` always sends an `Idempotency-Key`** (auto-generated UUID unless you pass one). The auto-generated UUID protects retries within a single invocation only — a rerun mints a fresh UUID. To rerun safely after a timeout or unknown outcome, pass the same `--idempotency-key` again.
 
 ### Authentication
 
@@ -259,7 +259,7 @@ floe-agent pay https://api.exa.ai/contents --method POST \
   --body '{"urls":["https://example.com"],"text":true}' --json
 ```
 
-Exit `5` from that last command means the balance is exhausted — run `floe-agent fund "$AGENT_ID"` and hand the output to a human.
+Exit `5` from that last command means a `402` — inspect the JSON error before reacting. `insufficient_balance` means the balance is exhausted: run `floe-agent fund "$AGENT_ID"` and hand the output to a human. `spend_limit_exceeded` or `policy_exceeded` means the caps set above tripped — a guardrail doing its job, which calls for a human or policy decision, not funding.
 
 ### Agent-workflow subcommands
 
@@ -273,7 +273,7 @@ Exit `5` from that last command means the balance is exhausted — run `floe-age
 | `floe-agent revoke <name>` | Revoke the agent's API key server-side and remove the local keychain entry. |
 | `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Optional — only for agents on credit-line funding. Pay-as-you-go agents (the default) pay through `/proxy/fetch` from their funded balance without opening a credit line. |
 
-> **`register` is not the same command as `agents create`.** `floe-agent agents create` is a thin headless API call (developer key, no wallet, no local state) that provisions the agent only — mint its key separately with `floe-agent agents keys create`. `floe-agent register` is the original wallet-signature flow: it registers the agent, mints the first key, and records it in `.floe-agent.json` so `use`/`rotate`/`revoke` can find it by name. Both remain supported; agents should prefer `agents create` + `agents keys create`.
+> **`register` is not the same command as `agents create`.** `floe-agent agents create` is a thin headless API call (developer key, no local wallet or wallet signature, no local state) that provisions the agent only — mint its key separately with `floe-agent agents keys create`. `floe-agent register` is the original wallet-signature flow: it registers the agent, mints the first key, and records it in `.floe-agent.json` so `use`/`rotate`/`revoke` can find it by name. Both remain supported; agents should prefer `agents create` + `agents keys create`.
 >
 > **Alias routing on `rotate` / `revoke`.** Top-level `floe-agent rotate <name>` and `floe-agent revoke <name>` take the developer-key path when headless credentials resolve, and fall back to the interactive wallet flow otherwise. Interactive `revoke` still asks for confirmation; the explicit `floe-agent agents keys revoke` never prompts. For an agent tracked in the local registry, both honor that record's persisted facilitator URL — `FLOE_API_URL` overrides it.
 

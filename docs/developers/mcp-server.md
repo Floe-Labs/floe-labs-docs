@@ -26,7 +26,7 @@ Connect any AI agent to Floe using the [Model Context Protocol](https://modelcon
 | **Language** | Any (MCP protocol) | Any (subprocess) | Any (HTTP) | TypeScript / Python |
 | **Setup** | 1 line of config | `npm i -g @floelabs/cli` | Direct HTTP calls | npm/pip install |
 
-When building AI agents that discover and use Floe tools dynamically, choose the **MCP server**. If your agent already shells out, the [**CLI**](cli.md) speaks `--json` with semantic exit codes (`@floelabs/cli` for onboarding, budgets, and test calls; the `floe-agent` bin for lifecycle and payments). For direct HTTP integration, the **Credit API** is the right fit. If you're building on Coinbase's agent framework, go with **AgentKit**.
+When building AI agents that discover and use Floe tools dynamically, choose the **MCP server**. If your agent already shells out, the [**CLI**](cli.md) speaks `--json` with semantic exit codes (`@floelabs/cli` for onboarding, budgets, and test calls; the `floe-agent` bin — `npm i -g floe-agent` — for lifecycle and payments). For direct HTTP integration, the **Credit API** is the right fit. If you're building on Coinbase's agent framework, go with **AgentKit**.
 
 ---
 

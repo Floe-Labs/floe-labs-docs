@@ -111,6 +111,9 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
 
 # Platform CLI — onboard, mint an agent key, print the base-URL swap
 npx @floelabs/cli init
+
+# The curl below reads $FLOE_API_KEY — export the key init printed (it is not exported for you)
+export FLOE_API_KEY="floe_..."
 ```
 
 → [Set up with your AI tools](docs/getting-started/setup-with-ai-tools.md)
@@ -280,6 +283,7 @@ One-click install links — the config carries the endpoint URL only, never a ke
 
 ```bash
 npx @floelabs/cli init   # onboard: create or select an agent, mint its key into the keychain, get the base-URL swap
+npm i -g @floelabs/cli   # keeps the `floe` bin on PATH for the commands below
 floe status --json       # am I set up? balance, budgets, active agent + key
 ```
 
@@ -4634,7 +4638,7 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 ## CLI: `floe-agent`
 
-The package's CLI is the **`floe-agent`** bin: the full platform command surface — agent lifecycle, keys, policies, limits, payments, observability — plus the interactive REPL whose `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM.
+The package's CLI is the **`floe-agent`** bin: the SDK's command tree — agent lifecycle, keys, policies, limits, payments, observability — plus the interactive REPL whose `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM.
 
 > The `floe` bin name belongs to the standalone platform CLI, [`@floelabs/cli`](https://github.com/Floe-Labs/floe-cli) (`npx @floelabs/cli init`) — five onboarding verbs, documented at [Floe CLI](cli.md). This package's CLI is invoked as `floe-agent`; since v0.6.1 it ships **only** that bin, and the commands below are otherwise unchanged. The interactive lending REPL (`floe-agent run`, the historical default) is lazy-loaded — management commands never pay its startup cost under `npx`.
 
@@ -4655,7 +4659,7 @@ Written for scripts and agents first, humans second.
 - **`NO_COLOR` respected.**
 - **`User-Agent: floe-cli/<version>`** on every request to the Credit API.
 - **Keys are printed exactly once**, at mint or rotate time, and stored in the OS keychain. The CLI never echoes a key it did not just mint.
-- **`floe-agent pay` always sends an `Idempotency-Key`** (auto-generated UUID unless you pass one), so a retried command can never double-pay.
+- **`floe-agent pay` always sends an `Idempotency-Key`** (auto-generated UUID unless you pass one). The auto-generated UUID protects retries within a single invocation only — a rerun mints a fresh UUID. To rerun safely after a timeout or unknown outcome, pass the same `--idempotency-key` again.
 
 ### Authentication
 
@@ -4769,7 +4773,7 @@ floe-agent pay https://api.exa.ai/contents --method POST \
   --body '{"urls":["https://example.com"],"text":true}' --json
 ```
 
-Exit `5` from that last command means the balance is exhausted — run `floe-agent fund "$AGENT_ID"` and hand the output to a human.
+Exit `5` from that last command means a `402` — inspect the JSON error before reacting. `insufficient_balance` means the balance is exhausted: run `floe-agent fund "$AGENT_ID"` and hand the output to a human. `spend_limit_exceeded` or `policy_exceeded` means the caps set above tripped — a guardrail doing its job, which calls for a human or policy decision, not funding.
 
 ### Agent-workflow subcommands
 
@@ -4783,7 +4787,7 @@ Exit `5` from that last command means the balance is exhausted — run `floe-age
 | `floe-agent revoke <name>` | Revoke the agent's API key server-side and remove the local keychain entry. |
 | `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Optional — only for agents on credit-line funding. Pay-as-you-go agents (the default) pay through `/proxy/fetch` from their funded balance without opening a credit line. |
 
-> **`register` is not the same command as `agents create`.** `floe-agent agents create` is a thin headless API call (developer key, no wallet, no local state) that provisions the agent only — mint its key separately with `floe-agent agents keys create`. `floe-agent register` is the original wallet-signature flow: it registers the agent, mints the first key, and records it in `.floe-agent.json` so `use`/`rotate`/`revoke` can find it by name. Both remain supported; agents should prefer `agents create` + `agents keys create`.
+> **`register` is not the same command as `agents create`.** `floe-agent agents create` is a thin headless API call (developer key, no local wallet or wallet signature, no local state) that provisions the agent only — mint its key separately with `floe-agent agents keys create`. `floe-agent register` is the original wallet-signature flow: it registers the agent, mints the first key, and records it in `.floe-agent.json` so `use`/`rotate`/`revoke` can find it by name. Both remain supported; agents should prefer `agents create` + `agents keys create`.
 >
 > **Alias routing on `rotate` / `revoke`.** Top-level `floe-agent rotate <name>` and `floe-agent revoke <name>` take the developer-key path when headless credentials resolve, and fall back to the interactive wallet flow otherwise. Interactive `revoke` still asks for confirmation; the explicit `floe-agent agents keys revoke` never prompts. For an agent tracked in the local registry, both honor that record's persisted facilitator URL — `FLOE_API_URL` overrides it.
 
@@ -5268,6 +5272,8 @@ from openai import OpenAI
 client = OpenAI(base_url="https://credit-api.floelabs.xyz/v1", api_key="floe_…")
 ```
 
+That snippet is exactly what `init` prints — key filled in for a quick local start. For anything checked into source control, read the key from the environment instead: `api_key=os.environ["FLOE_AGENT_KEY"]`.
+
 Every response carries `X-Floe-Cost-USDC`. One key meters chat, embeddings, speech, and transcription across 15+ vendors — one bill, in USDC.
 
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [MCP Server](mcp-server.md) | [API Keys](api-keys.md)
@@ -5289,7 +5295,7 @@ npm i -g @floelabs/cli    # or keep the `floe` bin around
 
 | Command | What it does |
 |---|---|
-| `floe init` | Full setup in one command: paste your dashboard developer key (`floe_live_…`), create or select an agent, mint its runtime key into the keychain, and print the base-URL-swap snippet. Flags: `--key <floe_live_…>`, `--agent <name>`, `--name <name>`, `--new-key`, `--open`. |
+| `floe init` | Full setup in one command: paste your dashboard developer key (`floe_live_…`), create or select an agent, mint its runtime key into the keychain, and print the base-URL-swap snippet. Flags: `--key <floe_live_…>`, `--agent <name>`, `--name <name>`, `--new-key`, `--open`. `--new-key` mints a fresh key instead of reusing the stored one; if the agent is at its active-key cap, `init` fails with `409 limit_exceeded` — use `floe keys rotate` to replace a key atomically. `--key` is for non-interactive use and lands in shell history and CI logs — prefer the interactive paste or the `FLOE_API_KEY` env var. |
 | `floe status` | Am I set up? Balance, budgets, active agent + key. |
 | `floe test` | Make one real metered call and print its cost from `X-Floe-Cost-USDC`. `--voice` runs STT → LLM → TTS: three legs, one key, one bill. Override models with `--model`, `--stt-model`, `--tts-model`, `--tts-voice`. |
 | `floe budget set <usd>` | Cap total spend before you let an agent loose. `--per day` caps this key per rolling 24 h; `--per task --task <id>` caps one task. Bare `floe budget` shows the current caps; `floe budget clear` removes them. |
@@ -6465,7 +6471,7 @@ Connect any AI agent to Floe using the [Model Context Protocol](https://modelcon
 | **Language** | Any (MCP protocol) | Any (subprocess) | Any (HTTP) | TypeScript / Python |
 | **Setup** | 1 line of config | `npm i -g @floelabs/cli` | Direct HTTP calls | npm/pip install |
 
-When building AI agents that discover and use Floe tools dynamically, choose the **MCP server**. If your agent already shells out, the [**CLI**](cli.md) speaks `--json` with semantic exit codes (`@floelabs/cli` for onboarding, budgets, and test calls; the `floe-agent` bin for lifecycle and payments). For direct HTTP integration, the **Credit API** is the right fit. If you're building on Coinbase's agent framework, go with **AgentKit**.
+When building AI agents that discover and use Floe tools dynamically, choose the **MCP server**. If your agent already shells out, the [**CLI**](cli.md) speaks `--json` with semantic exit codes (`@floelabs/cli` for onboarding, budgets, and test calls; the `floe-agent` bin — `npm i -g floe-agent` — for lifecycle and payments). For direct HTTP integration, the **Credit API** is the right fit. If you're building on Coinbase's agent framework, go with **AgentKit**.
 
 ---
 
@@ -9650,7 +9656,7 @@ Notable changes and updates to the Floe protocol.
 The platform CLI moved into its own package, and the two bin names now mean two different things.
 
 * **`@floelabs/cli` 0.1.0 — the `floe` bin.** `npx @floelabs/cli init` goes from developer key to a metered call in one command: authenticate, create or select an agent, mint its runtime key into the OS keychain, and print the OpenAI base-URL swap with the key filled in. Five verbs — `init`, `status`, `test` (`--voice` proves STT → LLM → TTS), `budget set` (`--per day|task`), `keys list|rotate` — every one with `--json` and `--api-url`; exit codes `0` ok / `1` error / `2` usage / `4` auth / `5` payment.
-* **`floe-agent` 0.6.1+ ships only the `floe-agent` bin.** All platform commands — `status`, `agents`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `estimate`, `forecast`, `pay`, `models`, `usage`, `activity`, `webhooks`, `mcp install`, `skills install` — plus the legacy wallet verbs run as `floe-agent <command>`. The short-lived `floe` alias from 0.6.0 is gone.
+* **`floe-agent` 0.6.1+ ships only the `floe-agent` bin.** The lifecycle, policy, payment, and observability commands — `status`, `agents`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `estimate`, `forecast`, `pay`, `models`, `usage`, `activity`, `webhooks`, `mcp install`, `skills install` — plus the legacy wallet verbs run as `floe-agent <command>`. The short-lived `floe` alias from 0.6.0 is gone.
 * **Docs split to match.** [Floe CLI](developers/cli.md) now documents `@floelabs/cli`; the `floe-agent` command tree lives with the [TypeScript SDK](developers/agentkit-typescript.md#cli-floe-agent).
 
 → [Floe CLI](developers/cli.md) · [TypeScript SDK](developers/agentkit-typescript.md) · [Floe-Labs/floe-cli](https://github.com/Floe-Labs/floe-cli)

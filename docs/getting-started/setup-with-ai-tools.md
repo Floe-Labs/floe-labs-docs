@@ -82,6 +82,7 @@ One-click install links — the config carries the endpoint URL only, never a ke
 
 ```bash
 npx @floelabs/cli init   # onboard: create or select an agent, mint its key into the keychain, get the base-URL swap
+npm i -g @floelabs/cli   # keeps the `floe` bin on PATH for the commands below
 floe status --json       # am I set up? balance, budgets, active agent + key
 ```
 

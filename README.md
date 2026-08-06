@@ -41,6 +41,9 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
 
 # Platform CLI — onboard, mint an agent key, print the base-URL swap
 npx @floelabs/cli init
+
+# The curl below reads $FLOE_API_KEY — export the key init printed (it is not exported for you)
+export FLOE_API_KEY="floe_..."
 ```
 
 → [Set up with your AI tools](docs/getting-started/setup-with-ai-tools.md)

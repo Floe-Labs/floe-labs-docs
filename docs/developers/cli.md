@@ -17,6 +17,8 @@ from openai import OpenAI
 client = OpenAI(base_url="https://credit-api.floelabs.xyz/v1", api_key="floe_…")
 ```
 
+That snippet is exactly what `init` prints — key filled in for a quick local start. For anything checked into source control, read the key from the environment instead: `api_key=os.environ["FLOE_AGENT_KEY"]`.
+
 Every response carries `X-Floe-Cost-USDC`. One key meters chat, embeddings, speech, and transcription across 15+ vendors — one bill, in USDC.
 
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [MCP Server](mcp-server.md) | [API Keys](api-keys.md)
@@ -38,7 +40,7 @@ npm i -g @floelabs/cli    # or keep the `floe` bin around
 
 | Command | What it does |
 |---|---|
-| `floe init` | Full setup in one command: paste your dashboard developer key (`floe_live_…`), create or select an agent, mint its runtime key into the keychain, and print the base-URL-swap snippet. Flags: `--key <floe_live_…>`, `--agent <name>`, `--name <name>`, `--new-key`, `--open`. |
+| `floe init` | Full setup in one command: paste your dashboard developer key (`floe_live_…`), create or select an agent, mint its runtime key into the keychain, and print the base-URL-swap snippet. Flags: `--key <floe_live_…>`, `--agent <name>`, `--name <name>`, `--new-key`, `--open`. `--new-key` mints a fresh key instead of reusing the stored one; if the agent is at its active-key cap, `init` fails with `409 limit_exceeded` — use `floe keys rotate` to replace a key atomically. `--key` is for non-interactive use and lands in shell history and CI logs — prefer the interactive paste or the `FLOE_API_KEY` env var. |
 | `floe status` | Am I set up? Balance, budgets, active agent + key. |
 | `floe test` | Make one real metered call and print its cost from `X-Floe-Cost-USDC`. `--voice` runs STT → LLM → TTS: three legs, one key, one bill. Override models with `--model`, `--stt-model`, `--tts-model`, `--tts-voice`. |
 | `floe budget set <usd>` | Cap total spend before you let an agent loose. `--per day` caps this key per rolling 24 h; `--per task --task <id>` caps one task. Bare `floe budget` shows the current caps; `floe budget clear` removes them. |
