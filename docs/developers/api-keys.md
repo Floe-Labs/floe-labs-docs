@@ -11,7 +11,7 @@ Floe uses API keys to authenticate requests to the developer platform. There are
 | Prefix | Name | Scope | Created Via | Used For |
 |--------|------|-------|-------------|----------|
 | `floe_live_*` | Developer key | Whole developer account | Dashboard **API Keys** page or `POST /v1/developer/keys` | Credit API developer endpoints, agent management, webhook management |
-| `floe_*` | Agent key | One specific agent | Agent setup wizard, `POST /v1/developer/agents/:id/keys`, or `floe-agent register --name <name>` | x402 proxy, agent balance, agent-awareness endpoints, MCP server |
+| `floe_*` | Agent key | One specific agent | Agent setup wizard, `floe init` (platform CLI), `POST /v1/developer/agents/:id/keys`, or `floe-agent register --name <name>` | x402 proxy, agent balance, agent-awareness endpoints, MCP server |
 
 **Developer keys** are for your backend services — monitoring loan health, managing webhooks, registering new agents, and calling developer-scoped endpoints on the [Credit API](credit-api.md). One key per environment is typical.
 
@@ -19,16 +19,17 @@ Floe uses API keys to authenticate requests to the developer platform. There are
 
 ### Agent Keys
 
-One developer can own multiple agents (up to 5 per account today). Each agent has its own scoped key. There are four ways to mint one:
+One developer can own multiple agents (up to 5 per account today). Each agent has its own scoped key. There are five ways to mint one:
 
-1. **Dashboard wizard** — visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), create an agent, copy the `floe_*` key shown on the final step. It is revealed once.
-2. **TypeScript CLI** — `npx floe-agent register --name my-agent --borrow-limit 10000`. The key is stored in your OS keychain and surfaced once in stdout.
-3. **Python CLI** — `floe-agent register --name my-agent --borrow-limit 10000`. Same behavior as the TypeScript CLI.
-4. **REST API** — `POST /v1/developer/agents` to create, then `POST /v1/developer/agents/:id/keys` to mint. See [Credit API → Developer Agents](credit-api.md#developer-agents).
+1. **Platform CLI** — `npx @floelabs/cli init` creates (or selects) the agent and mints its key straight into your OS keychain; rotate later with `floe keys rotate`. See [Floe CLI](cli.md).
+2. **Dashboard wizard** — visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), create an agent, copy the `floe_*` key shown on the final step. It is revealed once.
+3. **TypeScript SDK CLI (`floe-agent`)** — `npx floe-agent register --name my-agent --borrow-limit 10000`. The key is stored in your OS keychain and surfaced once in stdout.
+4. **Python SDK CLI (`floe-agent`)** — `floe-agent register --name my-agent --borrow-limit 10000`. Same behavior as the TypeScript SDK CLI.
+5. **REST API** — `POST /v1/developer/agents` to create, then `POST /v1/developer/agents/:id/keys` to mint. See [Credit API → Developer Agents](credit-api.md#developer-agents).
 
-> The CLI's `--borrow-limit` flag is in **USDC** (`10000` = $10K). The REST API's `borrowLimitRaw` field is in **raw 6-decimal units** (`10000` = $0.01, `10000000000` = $10K).
+> The SDK CLIs' `--borrow-limit` flag is in **USDC** (`10000` = $10K). The REST API's `borrowLimitRaw` field is in **raw 6-decimal units** (`10000` = $0.01, `10000000000` = $10K).
 >
-> Each agent has a **one active key** cap. Mint a second key with `POST /v1/developer/agents/:id/keys/:keyId/rotate` — the old key is revoked atomically in the same transaction.
+> Each agent has a **one active key** cap. Mint a second key with `POST /v1/developer/agents/:id/keys/:keyId/rotate` — the old key is revoked atomically in the same transaction — or run `floe keys rotate` from the platform CLI.
 
 ## Authentication
 

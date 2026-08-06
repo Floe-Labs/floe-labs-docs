@@ -24,9 +24,9 @@ Connect any AI agent to Floe using the [Model Context Protocol](https://modelcon
 | **Auth** | `floe_live_*` developer key, `floe_*` agent key, or none (keyless tools) | Same, from `FLOE_API_KEY` | Wallet signature or either key | Agent's own wallet |
 | **Signing** | Returns unsigned txs | Returns unsigned txs | Returns unsigned txs | Signs automatically |
 | **Language** | Any (MCP protocol) | Any (subprocess) | Any (HTTP) | TypeScript / Python |
-| **Setup** | 1 line of config | `npm i -g floe-agent` | Direct HTTP calls | npm/pip install |
+| **Setup** | 1 line of config | `npm i -g @floelabs/cli` | Direct HTTP calls | npm/pip install |
 
-When building AI agents that discover and use Floe tools dynamically, choose the **MCP server**. If your agent already shells out, the [**CLI**](cli.md) covers the same surface with `--json` and semantic exit codes. For direct HTTP integration, the **Credit API** is the right fit. If you're building on Coinbase's agent framework, go with **AgentKit**.
+When building AI agents that discover and use Floe tools dynamically, choose the **MCP server**. If your agent already shells out, the [**CLI**](cli.md) speaks `--json` with semantic exit codes (`@floelabs/cli` for onboarding, budgets, and test calls; the `floe-agent` bin — `npm i -g floe-agent` — for lifecycle and payments). For direct HTTP integration, the **Credit API** is the right fit. If you're building on Coinbase's agent framework, go with **AgentKit**.
 
 ---
 
@@ -60,7 +60,7 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 | Key | Format | Unlocks | Get one |
 |---|---|---|---|
 | Developer key | `floe_live_…` | Developer-key surface (19 tools — lifecycle 12, observability 4, webhooks 3): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
-| Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe agents keys create <id>`, or the dashboard |
+| Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe init`, or the dashboard |
 | Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
 | None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
 

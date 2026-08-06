@@ -55,8 +55,11 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 ## CLI
 
 ```bash
-npm install -g floe-agent      # exposes `floe` and `floe-agent`
+npm install -g @floelabs/cli   # the `floe` platform CLI
+npx @floelabs/cli init         # or just run the onboarding once, straight from npm
 ```
+
+Two CLIs, two jobs: `@floelabs/cli` (bin `floe`) onboards, tests, and budgets, while the `floe-agent` SDK package ships its own `floe-agent` bin for agent lifecycle and payments. See [Floe CLI](../developers/cli.md).
 
 ## Next
 

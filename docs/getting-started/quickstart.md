@@ -64,8 +64,9 @@ Full reference: [MCP Server](../developers/mcp-server.md). Deep links and per-cl
 {% endtab %}
 {% tab title="CLI" %}
 ```bash
-npm i -g floe-agent      # installs BOTH bins: `floe` and `floe-agent`
-floe status --json       # auth + capabilities + balance in one call
+npx @floelabs/cli init   # onboard: create or select an agent, mint its key, get the base-URL swap
+npm i -g @floelabs/cli   # keeps the `floe` bin around for the commands below
+floe status --json       # am I set up? balance, budgets, active agent + key
 ```
 
 Full reference: [Floe CLI](../developers/cli.md).
@@ -127,12 +128,10 @@ console.log(`Balance: $${(await agent.balance()).toFixed(2)}`);
 {% tab title="CLI" %}
 
 ```bash
-export FLOE_API_KEY=floe_...   # your agent key — copied once from the dashboard
-floe pay https://api.exa.ai/contents --method POST \
-  --body '{"urls":["https://example.com"],"text":true}'
+floe test                # one real metered call — the key is already in your keychain from `floe init`
 ```
 
-That's **$0.001** against the **$3 Welcome Credit** — the response carries the settled receipt in `X-Floe-Cost-USDC`.
+That's a fraction of a cent against the **$3 Welcome Credit** — the settled cost prints from the `X-Floe-Cost-USDC` receipt header. `floe test --voice` runs a full STT → LLM → TTS turn: three legs, one key, one bill.
 {% endtab %}
 {% endtabs %}
 

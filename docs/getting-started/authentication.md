@@ -26,7 +26,8 @@ Rule of thumb: if the call *spends money or reads an agent's state*, use the **a
 ## Get a key
 
 - **Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) → create an agent → copy the `floe_<hex>` key (shown once).
-- **CLI:** `npx floe-agent register --name my-agent` (stores it in your OS keychain).
+- **CLI:** `npx @floelabs/cli init` — creates or selects an agent and mints its `floe_…` key straight into your OS keychain.
+- **SDK workflow:** `npx floe-agent register --name my-agent` (also stores the key in your OS keychain).
 
 ## Keyless vs. bring-your-own-key
 

@@ -81,21 +81,20 @@ One-click install links — the config carries the endpoint URL only, never a ke
 {% tab title="CLI" %}
 
 ```bash
-npm i -g floe-agent      # installs BOTH bins: `floe` and `floe-agent`
-floe status --json       # auth + capabilities + balance in one call
+npx @floelabs/cli init   # onboard: create or select an agent, mint its key into the keychain, get the base-URL swap
+npm i -g @floelabs/cli   # keeps the `floe` bin on PATH for the commands below
+floe status --json       # am I set up? balance, budgets, active agent + key
 ```
 
 ```bash
-AGENT_ID=$(floe agents create --name research-bot --json | jq -r .agentId)
-floe agents keys create "$AGENT_ID" --budget 5   # → floe_... runtime key (shown once)
-floe pay https://api.exa.ai/contents --method POST \
-  --body '{"urls":["https://example.com"],"text":true}'
+floe budget set 5 --per day   # cap this key at $5 per rolling 24 h
+floe test                     # one real metered call — cost printed from X-Floe-Cost-USDC
 ```
 
-`--json` on every command; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. Full reference: [Floe CLI](../developers/cli.md).
+`--json` on every command; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. Lifecycle and payment commands (`agents`, `policy`, `pay`, …) run as `floe-agent <command>`. Full reference: [Floe CLI](../developers/cli.md).
 {% endtab %}
 {% tab title="SDK" %}
-Both SDKs take the **agent** key (`floe_…`), not the `floe_live_…` developer key: a developer key passes the client's prefix check but the proxy rejects it with `wrong_credential_type`. Mint the agent key with `floe agents keys create <id>` and read it from `FLOE_AGENT_KEY`.
+Both SDKs take the **agent** key (`floe_…`), not the `floe_live_…` developer key: a developer key passes the client's prefix check but the proxy rejects it with `wrong_credential_type`. The agent key comes from `npx @floelabs/cli init` (minted into your OS keychain) or the dashboard — read it from `FLOE_AGENT_KEY`.
 
 TypeScript:
 
@@ -160,11 +159,10 @@ Machine-readable spec: [`/.well-known/openapi.yaml`](https://credit-api.floelabs
 Ask your agent to make its first paid call, or run it yourself:
 
 ```bash
-floe pay https://api.exa.ai/contents --method POST \
-  --body '{"urls":["https://example.com"],"text":true}'
+floe test
 ```
 
-That is **$0.001** against the **$3 welcome credit** your first agent starts with — no card required. The response carries the settled receipt in `X-Floe-Cost-USDC`.
+One real metered call against the **$3 welcome credit** your first agent starts with — no card required. The settled cost prints from the `X-Floe-Cost-USDC` receipt header; `floe test --voice` proves the whole STT → LLM → TTS turn on one key.
 
 ---
 
@@ -172,13 +170,15 @@ That is **$0.001** against the **$3 welcome credit** your first agent starts wit
 
 | Job | MCP tool | CLI |
 |---|---|---|
-| Create an agent | `create_agent` | `floe agents create --name <n>` |
-| Mint a runtime key | `create_agent_key` | `floe agents keys create <id> --budget <usd>` |
-| Cap spend | `set_spend_limit` | `floe limit set <usd> --agent <id>` |
-| Price a call first | `estimate_x402_cost` | `floe estimate <url>` |
-| Pay a vendor | `x402_pay` | `floe pay <url>` |
-| Watch the money | `get_usage_summary` | `floe usage` |
-| Hand funding to a human | `get_funding_instructions` | `floe fund <id>` |
+| Create an agent + mint its runtime key | `create_agent` + `create_agent_key` | `npx @floelabs/cli init` |
+| Check the setup | `get_balances` | `floe status --json` |
+| Cap spend | `set_spend_limit` | `floe budget set <usd> [--per day]` |
+| Rotate a runtime key | `rotate_agent_key` | `floe keys rotate` |
+| Prove the wiring | `x402_pay` | `floe test [--voice]` |
+| Price a call first | `estimate_x402_cost` | `floe-agent estimate <url>` |
+| Pay a vendor | `x402_pay` | `floe-agent pay <url>` |
+| Watch the money | `get_usage_summary` | `floe-agent usage` |
+| Hand funding to a human | `get_funding_instructions` | `floe-agent fund <id>` |
 
 ## Next steps
 

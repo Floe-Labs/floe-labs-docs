@@ -70,6 +70,8 @@ Budgets are enforced **server-side** — a breach returns `402`, or a kill-switc
 
 Sign up at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) — email only, no card. New accounts get the **$3 Welcome Credit (300 API credits)** to run the skill immediately. The skill uses an **agent** key (`floe_…`) — never paste a key into a chat window; use an environment variable or secret manager. See [Authentication](authentication.md).
 
+Prefer the terminal? `npx @floelabs/cli init` onboards end-to-end — it mints the agent key straight into your OS keychain, no copy-paste. See [Floe CLI](../developers/cli.md).
+
 ---
 
 ## Next
