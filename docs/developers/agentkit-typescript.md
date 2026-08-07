@@ -126,7 +126,7 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 The package's CLI is the **`floe-agent`** bin: the SDK's command tree — agent lifecycle, keys, policies, limits, payments, observability — plus the interactive REPL whose `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM.
 
-> The `floe` bin name belongs to the standalone platform CLI, [`@floelabs/cli`](https://github.com/Floe-Labs/floe-cli) (`npx @floelabs/cli init`) — five onboarding verbs, documented at [Floe CLI](cli.md). This package's CLI is invoked as `floe-agent`; since v0.6.1 it ships **only** that bin, and the commands below are otherwise unchanged. The interactive lending REPL (`floe-agent run`, the historical default) is lazy-loaded — management commands never pay its startup cost under `npx`.
+> The `floe` bin name belongs to the standalone platform CLI, [`@floelabs/cli`](https://github.com/Floe-Labs/floe-cli) (`npx @floelabs/cli init`) — the full platform surface (setup, agents, keys, budgets, policies, billing, funds, phone, metered calls; 32 commands), documented at [Floe CLI](cli.md). This package's CLI is invoked as `floe-agent` — the AgentKit-companion CLI for the agent-runtime SDK; since v0.6.1 it ships **only** that bin, and the commands below are otherwise unchanged. The interactive lending REPL (`floe-agent run`, the historical default) is lazy-loaded — management commands never pay its startup cost under `npx`.
 
 ### Install
 

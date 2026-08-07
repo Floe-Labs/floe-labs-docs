@@ -10,18 +10,18 @@ Floe uses API keys to authenticate requests to the developer platform. There are
 
 | Prefix | Name | Scope | Created Via | Used For |
 |--------|------|-------|-------------|----------|
-| `floe_live_*` | Developer key | Whole developer account | Dashboard **API Keys** page or `POST /v1/developer/keys` | Credit API developer endpoints, agent management, webhook management |
-| `floe_*` | Agent key | One specific agent | Agent setup wizard, `floe init` (platform CLI), `POST /v1/developer/agents/:id/keys`, or `floe-agent register --name <name>` | x402 proxy, agent balance, agent-awareness endpoints, MCP server |
+| `floe_live_*` | Developer key | Whole developer account | Dashboard **API Keys** page, `floe devkeys create`, or `POST /v1/developer/keys` | Credit API developer endpoints, agent management, webhook management, lifecycle MCP tools (agent/key/webhook management) |
+| `floe_*` | Agent key | One specific agent | Agent setup wizard, `floe init` / `floe keys create` (platform CLI), `POST /v1/developer/agents/:id/keys`, or `floe-agent register --name <name>` | x402 proxy, agent balance, agent-awareness endpoints, agent-scoped runtime [MCP](mcp-server.md) tools |
 
 **Developer keys** are for your backend services — monitoring loan health, managing webhooks, registering new agents, and calling developer-scoped endpoints on the [Credit API](credit-api.md). One key per environment is typical.
 
-**Agent keys** identify one specific agent. Every agent registered under a developer gets its own `floe_*` key with a one-active-key cap (rotate to issue a new one). Agent keys are required for the agent-awareness endpoints (`credit-remaining`, `loan-state`, `spend-limit`, etc.) and for [MCP server](mcp-server.md) sessions scoped to a single agent.
+**Agent keys** identify one specific agent. Every agent registered under a developer gets its own `floe_*` keys — up to **five active keys per agent** (`floe keys create` mints extras, optionally budget-capped at mint; `floe keys rotate` replaces one atomically). Agent keys are required for the agent-awareness endpoints (`credit-remaining`, `loan-state`, `spend-limit`, etc.) and for [MCP server](mcp-server.md) sessions scoped to a single agent.
 
 ### Agent Keys
 
 One developer can own multiple agents (up to 5 per account today). Each agent has its own scoped key. There are five ways to mint one:
 
-1. **Platform CLI** — `npx @floelabs/cli init` creates (or selects) the agent and mints its key straight into your OS keychain; rotate later with `floe keys rotate`. See [Floe CLI](cli.md).
+1. **Platform CLI** — `npx @floelabs/cli init` creates (or selects) the agent and mints its key straight into your OS keychain — one keychain slot per agent, and `floe use <agent>` switches agents without re-minting. Mint additional keys with `floe keys create` (`--budget <usd> [--window <dur>]` caps the key's spend at mint), revoke with `floe keys revoke <keyId>`, rotate with `floe keys rotate`. See [Floe CLI](cli.md).
 2. **Dashboard wizard** — visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), create an agent, copy the `floe_*` key shown on the final step. It is revealed once.
 3. **TypeScript SDK CLI (`floe-agent`)** — `npx floe-agent register --name my-agent --borrow-limit 10000`. The key is stored in your OS keychain and surfaced once in stdout.
 4. **Python SDK CLI (`floe-agent`)** — `floe-agent register --name my-agent --borrow-limit 10000`. Same behavior as the TypeScript SDK CLI.
@@ -29,7 +29,7 @@ One developer can own multiple agents (up to 5 per account today). Each agent ha
 
 > The SDK CLIs' `--borrow-limit` flag is in **USDC** (`10000` = $10K). The REST API's `borrowLimitRaw` field is in **raw 6-decimal units** (`10000` = $0.01, `10000000000` = $10K).
 >
-> Each agent has a **one active key** cap. Mint a second key with `POST /v1/developer/agents/:id/keys/:keyId/rotate` — the old key is revoked atomically in the same transaction — or run `floe keys rotate` from the platform CLI.
+> Each agent caps at **five active keys**. Mint an additional one with `POST /v1/developer/agents/:id/keys` or `floe keys create` (add `--budget <usd>` for a fail-closed spend cap at mint); replace one atomically with `POST /v1/developer/agents/:id/keys/:keyId/rotate` — the old key is revoked in the same transaction — or `floe keys rotate`; free a slot with `floe keys revoke <keyId>`.
 
 ## Authentication
 
@@ -63,7 +63,7 @@ Floe has two authentication systems. Sending the wrong one is the most common on
 
 | Credential | How you send it | Works on |
 |---|---|---|
-| **Agent key** `floe_*` | `Authorization: Bearer floe_...` | x402 proxy (`/v1/proxy/*`), agent balance, agent-awareness endpoints, [MCP server](mcp-server.md) |
+| **Agent key** `floe_*` | `Authorization: Bearer floe_...` | x402 proxy (`/v1/proxy/*`), agent balance, agent-awareness endpoints, agent-scoped runtime [MCP](mcp-server.md) tools |
 | **Developer key** `floe_live_*` | `Authorization: Bearer floe_live_...` | [Credit API](credit-api.md) developer endpoints, agent management, webhooks |
 | **Wallet signature** | `X-Wallet-Address` + `X-Signature` + `X-Timestamp` headers (EIP-191 `personal_sign` over `Floe Credit API\nTimestamp: <unix>`) | Credit API endpoints that act on your own wallet |
 
@@ -135,7 +135,7 @@ All endpoints require an existing developer key in the `Authorization` header.
 
 ### POST /v1/developer/keys
 
-Create a new developer key.
+Create a new developer key. CLI equivalent: `floe devkeys create [--label <label>] [--read-only]` (the key is shown once, never stored by the CLI).
 
 ```bash
 curl -X POST "https://credit-api.floelabs.xyz/v1/developer/keys" \
@@ -148,7 +148,7 @@ Returns the full key in the response. Store it securely.
 
 ### GET /v1/developer/keys
 
-List all keys for your account. Returns prefixes only — full keys are never returned after creation.
+List all keys for your account. Returns prefixes only — full keys are never returned after creation. CLI equivalent: `floe devkeys list --json`.
 
 ```bash
 curl "https://credit-api.floelabs.xyz/v1/developer/keys" \
@@ -175,7 +175,7 @@ curl "https://credit-api.floelabs.xyz/v1/developer/keys" \
 
 ### DELETE /v1/developer/keys/:keyId
 
-Revoke a key immediately. Any requests using this key will fail with `401` after revocation.
+Revoke a key immediately. Any requests using this key will fail with `401` after revocation. CLI equivalents: `floe devkeys revoke <keyId> [--yes]`, or `floe devkeys rotate <keyId>` for an atomic revoke + mint.
 
 ```bash
 curl -X DELETE "https://credit-api.floelabs.xyz/v1/developer/keys/key_abc123" \
@@ -218,7 +218,7 @@ If you exceed the limit, you receive a `429 Too Many Requests` response. Wait un
 - **Label keys by environment.** Use names like `production`, `staging`, `local-dev` so you can identify and rotate them easily.
 - **Never commit keys to git.** Use environment variables or a secrets manager. Add `.env` to your `.gitignore`.
 - **Use read-only keys when possible.** If a service only needs to read loan status or list webhooks, give it a `read` key.
-- **Rotate immediately if compromised.** Revoke the old key via `DELETE /v1/developer/keys/:keyId` and create a new one. There is no downtime — the new key works instantly.
+- **Rotate immediately if compromised.** Revoke the old key via `DELETE /v1/developer/keys/:keyId` and create a new one — or do both atomically with `floe devkeys rotate <keyId>` (agent keys: `floe keys rotate`). There is no downtime — the new key works instantly.
 - **Set expiry for temporary access.** If you're granting a key to a contractor or CI pipeline, use `expiresAt` so it auto-expires.
 
 ## Next Steps

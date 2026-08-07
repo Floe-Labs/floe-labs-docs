@@ -10,6 +10,22 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.20.0 — `@floelabs/cli` 0.2.0: full dashboard parity, 32 commands (August 2026)
+
+The `floe` bin grew from five onboarding verbs to the **full platform CLI** — everything the dashboard can do, scriptable: 32 commands (~75 subcommands) covering setup, agents, keys, budgets, policies, billing, funds, phone, and metered calls.
+
+* **The surface, grouped like `floe --help`:**
+  * *Get started* — `init` · `status` · `use` (switch the active agent; keys kept per agent) · `test`
+  * *Metered calls* — `chat` · `embed` · `speak` · `transcribe` · `pay` (x402 proxy with `--check` preflight, `--task`/`--action` spend tags, `--idempotency-key`)
+  * *Agents & limits* — `agents` (list/get/create/pause/resume/close/lock) · `keys` (create with `--budget` at mint) · `devkeys` · `budget` (+ `reserve` task pre-authorization) · `policy` (task/api/vendor/session caps, `chain`, dry-run `test`) · `allowlist` · `credit`
+  * *Observability & billing* — `activity` · `usage` (series/summary/coverage) · `ledger` · `billing` (mtd/invoice/export/charges) · `account` · `team`
+  * *Money* — `funds` (withdraw/move/list/address/topup/sessions) · `cashout`
+  * *Platform* — `webhooks` · `models` · `estimate` · `providers` (BYOK) · `phone` · `actions` · `orchestrators` (Vapi/Retell/Bland) · `vendors`
+* **Conventions.** `--json` on every command; `--yes` skips confirmation on destructive/money verbs; exit codes `0` ok / `1` error / `2` usage / `4` auth / `5` payment-or-budget; env `FLOE_API_KEY` / `FLOE_AGENT_KEY` / `FLOE_API_URL`. The OS keychain now holds **one runtime-key slot per agent** — `floe use <agent>` switches agents without re-minting (each agent has up to 5 active keys).
+* **Framing update.** `@floelabs/cli` is **the** Floe platform CLI. The `floe-agent` bin is not deprecated — it is the AgentKit-companion CLI for the agent-runtime SDK, documented with the [TypeScript SDK](developers/agentkit-typescript.md#cli-floe-agent).
+
+→ [Floe CLI](developers/cli.md) · [Floe-Labs/floe-cli](https://github.com/Floe-Labs/floe-cli)
+
 ### v1.19.0 — Standalone platform CLI: `@floelabs/cli` owns the `floe` bin (August 2026)
 
 The platform CLI moved into its own package, and the two bin names now mean two different things.

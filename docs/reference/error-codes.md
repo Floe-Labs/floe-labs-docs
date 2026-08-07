@@ -122,7 +122,7 @@ Endpoints: `POST /v1/developer/agents`, `POST/GET/DELETE /v1/developer/agents/:a
 | 400 | `Invalid request` | Body failed Zod validation (`name`, `borrowLimitRaw`, `maxRateBps`, `expirySeconds`) | Inspect the `details` array and fix the offending field |
 | 401 | (auth error) | None of the accepted credentials (session cookie, dev key, wallet signature) were present or valid | Re-authenticate the calling client |
 | 404 | `not_found` | Agent does not exist OR belongs to a different developer (cross-tenant probes return 404, not 403) | Check the agentId; confirm ownership |
-| 409 | `limit_exceeded` | Developer is at the 5-agent cap (or 1-active-key cap on `POST /keys`) | Close an agent first, or rotate the existing key |
+| 409 | `limit_exceeded` | Developer is at the 5-agent cap (or the 5-active-key cap per agent on `POST /keys`) | Close an agent first, or revoke/rotate an existing key |
 | 409 | `name_conflict` | Another agent owned by the same developer already uses this name | Pick a different name |
 | 502 | `privy_provisioning_failed` | Privy refused to create the Privy wallet | Inspect `detail`; the agent row stays in `pending_delegation` for a retry |
 | 502 | `delegation_failed` | Server-side `setOperator` tx threw | Inspect `detail`; retry once Privy / facilitator are healthy |
