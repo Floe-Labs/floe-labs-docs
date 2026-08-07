@@ -76,8 +76,9 @@ A model can be served by one or more **rails**. Floe picks the cheapest availabl
 | `free` | Promotional / zero-rated models | nothing |
 
 **BYOK — bring your own provider key.** You pay the upstream vendor with your own
-key; Floe adds only a small fixed per-call service fee (never the token cost) and
-marks the call `X-Floe-Payment: byok`. There are two ways to supply the key:
+key; on this gateway's `byok` rail Floe adds only a small **fixed per-call service
+fee** (never the token cost — you paid that) and marks the call `X-Floe-Payment:
+byok`. There are two ways to supply the key:
 
 - **Per request (ephemeral)** — send it in the `X-Floe-Provider-Key` header. It is
   used for that one call and **never persisted or logged**. A request header always

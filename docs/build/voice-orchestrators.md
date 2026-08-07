@@ -4,9 +4,12 @@ You build on a voice orchestrator and the framework executes the call: STT,
 LLM, TTS, telephony. Floe governs that spend in two complementary ways, and is
 honest about which is which:
 
-- **Pre-call, where Floe is in the path.** Route the legs you can redirect
-  through Floe's gateway: metered per token/second/character, refused with
-  `402` *before* the spend happens once your cap is hit.
+- **Pre-call / live-metered, where Floe is in the path.** Route the legs you can
+  redirect through Floe's gateway. **Request legs** (LLM turns, one-shot TTS,
+  batch STT) are refused with `402` *before* the spend happens once your cap is
+  hit. **Duration-billed legs** (streaming STT, phone) are metered **live** and
+  cut off mid-stream the instant the next charge would breach the cap — so a
+  small partial spend can land after admission, never a whole runaway call.
 - **Circuit-breaker everywhere else.** **Reconcile Mode** writes the full call
   cost to your Floe ledger, counts it against your spend policies, and enforces
   at the *next session*: a tripped `suspend_agent` policy blocks the agent's
@@ -44,12 +47,15 @@ number comes from:
 | **Vapi** | Hosted | Pre-call ✓ (custom-llm) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`message.cost`) |
 | **Retell** | Hosted | Pre-call ✓ (WS adapter) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`call_cost.combined_cost`) |
 | **Bland** | Hosted | Reconciled ⟳ (no self-serve custom LLM) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`price`) |
-| **Pipecat** | Self-hosted | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Metered by Floe on routed legs · **self-reported** off-Floe |
-| **LiveKit** | Self-hosted | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Metered by Floe on routed legs · **self-reported** off-Floe |
+| **Pipecat** | Self-hosted | Pre-call ✓ *if routed through Floe* | Live-metered ⏱ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Live-metered ⏱ *if routed through Floe* | Metered by Floe on routed legs · **self-reported** off-Floe |
+| **LiveKit** | Self-hosted | Pre-call ✓ *if routed through Floe* | Live-metered ⏱ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Live-metered ⏱ *if routed through Floe* | Metered by Floe on routed legs · **self-reported** off-Floe |
 
-Legend: **Pre-call ✓** = refused before the spend; **Reconciled ⟳** = counted
-after the call, enforced next session; **Self-reported** = your agent POSTs the
-cost (Pipecat/LiveKit only — there is no platform webhook to ingest).
+Legend: **Pre-call ✓** = a request leg refused *before* its spend; **Live-metered
+⏱** = a duration-billed leg (streaming STT, phone) metered during the session and
+cut off when the next charge would breach the cap — a small partial spend can land
+after admission; **Reconciled ⟳** = counted after the call, enforced next session;
+**Self-reported** = your agent POSTs the cost (Pipecat/LiveKit only — there is no
+platform webhook to ingest).
 
 > **Don't double-count.** For Pipecat/LiveKit, a leg **routed through Floe is
 > already metered pre-call** — self-report **only** the legs you keep off Floe

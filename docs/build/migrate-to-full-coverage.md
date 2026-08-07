@@ -1,9 +1,10 @@
 # Graduate to 100% coverage — orchestrator → Pipecat/LiveKit on Floe
 
 On a hosted orchestrator (Vapi / Retell / Bland), Floe governs what the platform
-lets it touch: the LLM leg pre-call, everything else by
-[post-call reconcile](voice-orchestrators.md). That's real governance — and it
-has a ceiling. The ceiling disappears when the agent runs on a **self-hosted
+lets it touch: the LLM leg pre-call on **Vapi and Retell** (Bland has no
+self-serve custom LLM, so its LLM — like every other leg — is governed by
+[post-call reconcile](voice-orchestrators.md)), and everything else by reconcile.
+That's real governance — and it has a ceiling. The ceiling disappears when the agent runs on a **self-hosted
 open voice stack** — **Pipecat** or **LiveKit** — with every leg on Floe rails:
 100% of spend cap-enforced — request legs gated pre-call,
 duration-billed legs (streaming STT, phone) metered live and cut off
