@@ -17,7 +17,7 @@
 ## The voice stack
 
 * [The Voice Stack — overview](docs/build/voice-stack.md)
-* [Govern Vapi / Retell / Bland](docs/build/voice-orchestrators.md)
+* [Govern Vapi / Retell / Bland / Pipecat / LiveKit](docs/build/voice-orchestrators.md)
 * [Graduate to 100% coverage](docs/build/migrate-to-full-coverage.md)
 * [Floe Phone — numbers & telephony](docs/developers/floe-phone.md)
 * [Floe Inference — keyless LLM & voice](docs/developers/keyless-inference.md)
