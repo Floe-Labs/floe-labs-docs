@@ -44,12 +44,16 @@ number comes from:
 | **Vapi** | Hosted | Pre-call ✓ (custom-llm) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`message.cost`) |
 | **Retell** | Hosted | Pre-call ✓ (WS adapter) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`call_cost.combined_cost`) |
 | **Bland** | Hosted | Reconciled ⟳ (no self-serve custom LLM) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`price`) |
-| **Pipecat** | Self-hosted | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | **Self-reported** (no cost webhook) |
-| **LiveKit** | Self-hosted | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | **Self-reported** (no cost webhook) |
+| **Pipecat** | Self-hosted | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Metered by Floe on routed legs · **self-reported** off-Floe |
+| **LiveKit** | Self-hosted | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Metered by Floe on routed legs · **self-reported** off-Floe |
 
 Legend: **Pre-call ✓** = refused before the spend; **Reconciled ⟳** = counted
 after the call, enforced next session; **Self-reported** = your agent POSTs the
 cost (Pipecat/LiveKit only — there is no platform webhook to ingest).
+
+> **Don't double-count.** For Pipecat/LiveKit, a leg **routed through Floe is
+> already metered pre-call** — self-report **only** the legs you keep off Floe
+> rails, never one Floe already carries.
 
 ## 1 · Route the LLM leg through Floe (pre-call)
 
@@ -252,12 +256,37 @@ Self-hosted connections also get a **`preCallUrl`**, but it works differently
 from the hosted platforms. There's no vendor to call it, so **your own agent**
 invokes it as a *self-serve admission check* before it starts a session — it
 returns `{ "allowed": boolean, "reason": string | null }`, and your code skips
-(or downgrades) the call when `allowed` is `false`. Because you call it
-yourself, it's a **cooperative** signal your agent must honor; the hard,
-un-bypassable circuit-breaker is still the reconciled-spend → `suspend_agent`
-path (a suspended agent's next Floe-keyed call is refused `403`). The strongest
-pre-call enforcement remains routing legs through Floe (above), where spend is
-refused before it happens rather than checked by your own code.
+(or downgrades) the call when `allowed` is `false`. The request contract:
+
+```http
+POST https://credit-api.floelabs.xyz/v1/webhooks/{pipecat|livekit}/pre-call/<token>
+X-Floe-Signature: <hex HMAC-SHA256(secret, raw body)>
+Content-Type: application/json
+
+{}
+```
+
+The body is signed like any other delivery but its fields are **not** read — the
+decision is the connection's current agent state and budget — so an empty `{}`
+is fine (sign whatever bytes you send). Responses:
+
+```jsonc
+// 200 — admit
+{ "allowed": true,  "reason": null }
+// 200 — deny (skip/downgrade the session)
+{ "allowed": false, "reason": "budget_exceeded" }   // also: agent_suspended, admission_unavailable
+```
+
+Mis-signed or unsigned → `401`; unknown / disabled / wrong-provider token → `404`.
+
+Because you call this yourself, it's a **cooperative** signal your agent must
+honor — and its scope is narrow: the hard, un-bypassable circuit-breaker is the
+reconciled-spend → `suspend_agent` path, which refuses the agent's next
+**Floe-keyed** call with `403` but **cannot** stop it from calling providers
+**off** Floe rails. Any leg you keep off Floe therefore stays dependent on your
+agent honoring the check. The strongest pre-call enforcement remains routing
+legs through Floe (above), where spend is refused before it happens rather than
+checked by your own code.
 
 **2. POST the cost when the call ends** — a Floe-native JSON body, signed with
 the per-connection secret:
@@ -282,8 +311,8 @@ Body fields:
 | Field | Required | Notes |
 |---|---|---|
 | `external_call_id` | yes | Your call's id — the idempotency key; each id is ingested once. |
-| `cost_usd` | one of | Call cost in USD. |
-| `cost_micro_usdc` | one of | Same cost as integer micro-USDC (10⁻⁶), if you'd rather avoid floats. Supply exactly one of `cost_usd` / `cost_micro_usdc`. |
+| `cost_usd` | one of (`cost_usd`, `cost_micro_usdc`) | Call cost in USD. |
+| `cost_micro_usdc` | one of (`cost_usd`, `cost_micro_usdc`) | Same cost as integer micro-USDC (10⁻⁶), if you'd rather avoid floats. Supply exactly one of `cost_usd` / `cost_micro_usdc`. |
 | `duration_seconds` | no | Call length, for reporting. |
 | `floe_task_id` | no | Attribute the cost to a Floe task budget. |
 | `floe_customer_id` | no | Attribute the cost to an end customer. |
