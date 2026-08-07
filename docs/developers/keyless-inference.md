@@ -89,10 +89,11 @@ marks the call `X-Floe-Payment: byok`. There are two ways to supply the key:
   - **Dashboard** → *Keys → Provider keys* (add, relabel, disable, remove)
   - **CLI** — `floe providers list` · `floe providers set <provider>` (pipe the key
     so it never lands in shell history: `printf '%s' "$KEY" | floe providers set openai`)
-  - **API** — `GET/PUT/PATCH/DELETE /v1/developer/provider-keys/:provider`
-    (`GET /v1/developer/provider-keys` also returns `supportedProviders`)
+  - **API** — `GET/PUT/PATCH/DELETE /v1/developer/provider-keys/{provider}`
+    (`GET /v1/developer/provider-keys` lists your keys and the `supportedProviders`)
 
-Reads never return key material — only a masked prefix, label, and enabled state.
+A key record never includes key material — only a masked prefix, label, and enabled
+state. (The collection response additionally lists `supportedProviders`.)
 
 ## Endpoints
 

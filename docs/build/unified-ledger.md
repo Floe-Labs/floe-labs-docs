@@ -10,7 +10,7 @@ Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from 
 
 ## Route your LLM through Floe
 
-The LLM endpoint is OpenAI-compatible — same request shape as OpenAI Chat Completions. Point it at Floe's host, authenticate with your Floe agent key, and pass your upstream provider key per request in `X-Floe-Provider-Key` (Floe uses it only to call upstream — it is never stored).
+The LLM endpoint is OpenAI-compatible — same request shape as OpenAI Chat Completions. Point it at Floe's host, authenticate with your Floe agent key, and supply your upstream provider key one of two ways: **per request** in `X-Floe-Provider-Key` (used only to call upstream, then discarded — never persisted), or **stored once** (encrypted, per provider) so Floe auto-routes BYOK with no header. See [per-request vs stored keys](../developers/keyless-inference.md) for the storage flow and the fixed BYOK service fee.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \

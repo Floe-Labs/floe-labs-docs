@@ -20,7 +20,7 @@
 - Pricing & cost — https://floe-labs.gitbook.io/docs/start-here/pricing.md
 - Agent Quickstart — https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
 - The Voice Stack — overview — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-stack.md
-- Govern Vapi / Retell / Bland — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators.md
+- Govern Vapi / Retell / Bland / Pipecat / LiveKit — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators.md
 - Graduate to 100% coverage — https://floe-labs.gitbook.io/docs/the-voice-stack/migrate-to-full-coverage.md
 - Floe Phone — numbers & telephony — https://floe-labs.gitbook.io/docs/the-voice-stack/floe-phone.md
 - Floe Inference — keyless LLM & voice — https://floe-labs.gitbook.io/docs/the-voice-stack/keyless-inference.md
@@ -1130,33 +1130,67 @@ If you don't need a self-hosted LiveKit/Pipecat pipeline, the keyless **[realtim
 Because the LLM leg routes through Floe's OpenAI-compatible endpoint, reasoning tokens land on the same ledger and the same budgets as the vendor legs — not a separate provider bill. See [Unified Billing & Ledger](unified-ledger.md) to read the combined statement, and [Spend Controls](../developers/spend-controls.md) to set the task, vendor, and session caps that govern every leg.
 
 ==============================================================================
-# Govern Vapi / Retell / Bland
+# Govern Vapi / Retell / Bland / Pipecat / LiveKit
 Source: docs/build/voice-orchestrators.md
 URL: https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators.md
 ==============================================================================
 
-# Govern Vapi / Retell / Bland spend with Floe
+# Govern voice-orchestrator spend with Floe
 
-You build on a voice orchestrator — Vapi, Retell, or Bland — and the platform
-executes the call: STT, LLM, TTS, telephony. Floe governs that spend in two
-complementary ways, and is honest about which is which:
+You build on a voice orchestrator and the framework executes the call: STT,
+LLM, TTS, telephony. Floe governs that spend in two complementary ways, and is
+honest about which is which:
 
-- **Pre-call, where Floe is in the path.** Route the leg the orchestrator lets
-  you redirect (the LLM — typically the biggest, most variable line) through
-  Floe's gateway: metered per token, refused with `402` *before* tokens are
-  bought once your cap is hit.
-- **Circuit-breaker everywhere else.** **Reconcile Mode** ingests the
-  orchestrator's own end-of-call webhook, writes the full call cost to your
-  Floe ledger, counts it against your spend policies, and enforces at the
-  *next session*: a tripped `suspend_agent` policy blocks the agent's next
-  Floe-keyed call, and a configured pre-call hook rejects the next eligible
-  inbound call (fixed-assistant Vapi, outbound, and Bland calls have no
-  pre-call hook — they stay post-call governed). You can't stop mid-call —
-  you guarantee a runaway dies after call *N*, not call 10,000.
+- **Pre-call, where Floe is in the path.** Route the legs you can redirect
+  through Floe's gateway: metered per token/second/character, refused with
+  `402` *before* the spend happens once your cap is hit.
+- **Circuit-breaker everywhere else.** **Reconcile Mode** writes the full call
+  cost to your Floe ledger, counts it against your spend policies, and enforces
+  at the *next session*: a tripped `suspend_agent` policy blocks the agent's
+  next Floe-keyed call, and a configured pre-call hook rejects the next eligible
+  inbound call. You can't stop mid-call — you guarantee a runaway dies after
+  call *N*, not call 10,000.
 
 > **The promise, stated honestly.** Pre-call where we're in the path;
 > circuit-breaker everywhere else. No orchestrator partnership required —
 > both mechanisms use each platform's documented extension points.
+
+## Two families, two cost signals
+
+The five orchestrators split into two architectures, and that split decides how
+Reconcile Mode gets its numbers — so we're explicit about it:
+
+- **Hosted platforms — Vapi, Retell, Bland.** The platform runs the call and
+  emits an **end-of-call webhook carrying the real call cost** (Vapi
+  `message.cost`, Retell `call_cost.combined_cost`, Bland `price`). Reconcile
+  Mode ingests that webhook directly. Nothing to compute on your side.
+- **Self-hosted frameworks — Pipecat, LiveKit.** These are open-source
+  frameworks *you* run. **They emit no cost webhook** — there is no platform to
+  send one. So the model flips: route their legs through Floe for real pre-call
+  enforcement (preferred), and if a leg stays off Floe rails, your own agent
+  **self-reports** its cost to a Floe webhook as the circuit-breaker fallback.
+  See [Self-hosted frameworks](#3-self-hosted-frameworks-pipecat-livekit) below.
+
+### Coverage boundary per platform
+
+Which leg is enforceable pre-call vs governed post-call, and where the cost
+number comes from:
+
+| Platform | Type | LLM | STT | TTS | Telephony | Cost signal |
+|---|---|---|---|---|---|---|
+| **Vapi** | Hosted | Pre-call ✓ (custom-llm) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`message.cost`) |
+| **Retell** | Hosted | Pre-call ✓ (WS adapter) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`call_cost.combined_cost`) |
+| **Bland** | Hosted | Reconciled ⟳ (no self-serve custom LLM) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`price`) |
+| **Pipecat** | Self-hosted | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Metered by Floe on routed legs · **self-reported** off-Floe |
+| **LiveKit** | Self-hosted | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Metered by Floe on routed legs · **self-reported** off-Floe |
+
+Legend: **Pre-call ✓** = refused before the spend; **Reconciled ⟳** = counted
+after the call, enforced next session; **Self-reported** = your agent POSTs the
+cost (Pipecat/LiveKit only — there is no platform webhook to ingest).
+
+> **Don't double-count.** For Pipecat/LiveKit, a leg **routed through Floe is
+> already metered pre-call** — self-report **only** the legs you keep off Floe
+> rails, never one Floe already carries.
 
 ## 1 · Route the LLM leg through Floe (pre-call)
 
@@ -1303,6 +1337,133 @@ secret) — update the platform's settings with the new URLs.
 - Unsigned or mis-signed deliveries are rejected `401` with **no** ledger
   write.
 
+## 3 · Self-hosted frameworks (Pipecat, LiveKit)
+
+Pipecat and LiveKit are **open-source frameworks you run yourself** — not hosted
+platforms. There is no vendor billing your call, and so **no end-of-call cost
+webhook** to ingest. That changes the governance model in two ways.
+
+### Preferred: route the legs through Floe (pre-call)
+
+Because *you* wire up each service, you can put Floe directly in the path of
+every leg — which is strictly better than reconcile: spend is refused *before*
+it happens, not counted after.
+
+- **LLM** — point the framework's LLM service `base_url` at
+  `https://credit-api.floelabs.xyz/v1` with your `floe_` agent key.
+  OpenAI-compatible, metered per token, `402` at the cap.
+- **STT / TTS / telephony** — move each onto Floe rails
+  ([streaming STT WS, `POST /v1/audio/speech`, Floe Phone](voice-stack.md#live-voice-with-your-own-stack-livekit-pipecat)).
+
+This is the [Graduate to 100% coverage](migrate-to-full-coverage.md) path, and
+for Pipecat the [`pipecat-floe`](https://github.com/Floe-Labs/pipecat-floe)
+package makes it three drop-in services. **A leg on Floe rails needs no
+reconcile at all** — it's already cap-enforced pre-call. Prefer this for every
+leg you can.
+
+### Fallback: self-report the cost (circuit-breaker)
+
+For any leg you keep off Floe rails, there is no platform webhook — so **your
+own agent reports the call's cost** to Floe at end-of-call. This is the same
+next-session circuit-breaker as hosted Reconcile Mode; the only difference is
+that you supply the number instead of a platform.
+
+**1. Register the connection** — mints the webhook URL and a per-connection
+signing secret. Also available in the dashboard UI (Agent → Orchestrators →
+Connect → Pipecat / LiveKit):
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
+  -H "Cookie: <dashboard session>" -H "Content-Type: application/json" \
+  -d '{ "agentId": 42, "provider": "pipecat" }'   # or "livekit"
+```
+
+```jsonc
+// 201 — secret shown ONCE
+{
+  "id": 12,
+  "provider": "pipecat",
+  "webhookUrl": "https://credit-api.floelabs.xyz/v1/webhooks/pipecat/call-end/<token>",
+  "preCallUrl": "https://credit-api.floelabs.xyz/v1/webhooks/pipecat/pre-call/<token>",
+  "secret": "whsec_…"   // per-connection HMAC key — store it, it is not returned again
+}
+```
+
+Self-hosted connections also get a **`preCallUrl`**, but it works differently
+from the hosted platforms. There's no vendor to call it, so **your own agent**
+invokes it as a *self-serve admission check* before it starts a session — it
+returns `{ "allowed": boolean, "reason": string | null }`, and your code skips
+(or downgrades) the call when `allowed` is `false`. The request contract:
+
+```http
+POST https://credit-api.floelabs.xyz/v1/webhooks/{pipecat|livekit}/pre-call/<token>
+X-Floe-Signature: <hex HMAC-SHA256(secret, raw body)>
+Content-Type: application/json
+
+{}
+```
+
+The body is signed like any other delivery but its fields are **not** read — the
+decision is the connection's current agent state and budget — so an empty `{}`
+is fine (sign whatever bytes you send). Responses:
+
+```jsonc
+// 200 — admit
+{ "allowed": true,  "reason": null }
+// 200 — deny (skip/downgrade the session)
+{ "allowed": false, "reason": "budget_exceeded" }   // also: agent_suspended, admission_unavailable
+```
+
+Mis-signed or unsigned → `401`; unknown / disabled / wrong-provider token → `404`.
+
+Because you call this yourself, it's a **cooperative** signal your agent must
+honor — and its scope is narrow: the hard, un-bypassable circuit-breaker is the
+reconciled-spend → `suspend_agent` path, which refuses the agent's next
+**Floe-keyed** call with `403` but **cannot** stop it from calling providers
+**off** Floe rails. Any leg you keep off Floe therefore stays dependent on your
+agent honoring the check. The strongest pre-call enforcement remains routing
+legs through Floe (above), where spend is refused before it happens rather than
+checked by your own code.
+
+**2. POST the cost when the call ends** — a Floe-native JSON body, signed with
+the per-connection secret:
+
+```bash
+BODY='{
+  "external_call_id": "pc_5f3a…",
+  "cost_usd": 0.043,
+  "duration_seconds": 182,
+  "floe_task_id": "call-8842"
+}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$FLOE_ORCH_SECRET" -hex | sed 's/^.* //')
+
+curl -X POST https://credit-api.floelabs.xyz/v1/webhooks/pipecat/call-end/<token> \
+  -H "Content-Type: application/json" \
+  -H "X-Floe-Signature: $SIG" \
+  -d "$BODY"
+```
+
+Body fields:
+
+| Field | Required | Notes |
+|---|---|---|
+| `external_call_id` | yes | Your call's id — the idempotency key; each id is ingested once. |
+| `cost_usd` | one of (`cost_usd`, `cost_micro_usdc`) | Call cost in USD. |
+| `cost_micro_usdc` | one of (`cost_usd`, `cost_micro_usdc`) | Same cost as integer micro-USDC (10⁻⁶), if you'd rather avoid floats. Supply exactly one of `cost_usd` / `cost_micro_usdc`. |
+| `duration_seconds` | no | Call length, for reporting. |
+| `floe_task_id` | no | Attribute the cost to a Floe task budget. |
+| `floe_customer_id` | no | Attribute the cost to an end customer. |
+
+**Signature:** `X-Floe-Signature: <hex>` where `<hex>` is
+`HMAC-SHA256(secret, rawBody)` over the **exact bytes** you send (sign the
+serialized string, don't re-serialize). Mis-signed or unsigned deliveries are
+rejected `401` with no ledger write. Rotate a leaked secret with
+`POST /v1/developer/orchestrators/{id}/rotate`.
+
+Once ingested, a self-reported cost behaves exactly like any reconciled row
+(next section): counts against your policies, doesn't debit your balance,
+idempotent per `external_call_id`.
+
 ## Coverage, honestly
 
 With the LLM leg routed (§1) you govern the majority of per-call cost
@@ -1321,11 +1482,12 @@ URL: https://floe-labs.gitbook.io/docs/the-voice-stack/migrate-to-full-coverage.
 
 # Graduate to 100% coverage — orchestrator → Pipecat/LiveKit on Floe
 
-On Vapi or Retell, Floe governs what their platforms let it touch: the LLM leg
-pre-call, everything else by [post-call reconcile](voice-orchestrators.md).
-That's real governance — and it has a ceiling. The ceiling disappears when the
-agent runs on an **open voice stack** (Pipecat / LiveKit) with every leg on
-Floe rails: 100% of spend cap-enforced — request legs gated pre-call,
+On a hosted orchestrator (Vapi / Retell / Bland), Floe governs what the platform
+lets it touch: the LLM leg pre-call, everything else by
+[post-call reconcile](voice-orchestrators.md). That's real governance — and it
+has a ceiling. The ceiling disappears when the agent runs on a **self-hosted
+open voice stack** — **Pipecat** or **LiveKit** — with every leg on Floe rails:
+100% of spend cap-enforced — request legs gated pre-call,
 duration-billed legs (streaming STT, phone) metered live and cut off
 mid-stream at the cap — one key, one ledger, one cap.
 
@@ -1718,10 +1880,28 @@ A model can be served by one or more **rails**. Floe picks the cheapest availabl
 | `self-host` | Open-weight model on a serverless host (Together, DeepInfra, …) | metered cost + margin |
 | `venice` | Venice via Floe's pooled wallet | metered cost + margin |
 | `x402-router` | Keyless pay-per-call router (no account anywhere) | router receipt + margin |
-| `byok` | **Your** provider key, passed per request | Floe fee only |
+| `byok` | **Your** provider key — sent per request or stored (encrypted) | Floe fee only |
 | `free` | Promotional / zero-rated models | nothing |
 
-**BYOK** — send your own upstream key in `X-Floe-Provider-Key` and Floe forwards with it, charging only a routing fee (`X-Floe-Payment: byok`). Keys are read per request, never stored or logged.
+**BYOK — bring your own provider key.** You pay the upstream vendor with your own
+key; Floe adds only a small fixed per-call service fee (never the token cost) and
+marks the call `X-Floe-Payment: byok`. There are two ways to supply the key:
+
+- **Per request (ephemeral)** — send it in the `X-Floe-Provider-Key` header. It is
+  used for that one call and **never persisted or logged**. A request header always
+  wins — it overrides a stored key for that call.
+- **Stored (once)** — save the key and every gateway call for that provider routes
+  BYOK automatically, no header needed. Stored keys are **AES-256-GCM encrypted at
+  rest**, scoped per developer + provider, and writable by **admins** only. Manage
+  them from any surface:
+  - **Dashboard** → *Keys → Provider keys* (add, relabel, disable, remove)
+  - **CLI** — `floe providers list` · `floe providers set <provider>` (pipe the key
+    so it never lands in shell history: `printf '%s' "$KEY" | floe providers set openai`)
+  - **API** — `GET/PUT/PATCH/DELETE /v1/developer/provider-keys/{provider}`
+    (`GET /v1/developer/provider-keys` lists your keys and the `supportedProviders`)
+
+A key record never includes key material — only a masked prefix, label, and enabled
+state. (The collection response additionally lists `supportedProviders`.)
 
 ## Endpoints
 
@@ -1974,7 +2154,7 @@ Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from 
 
 ## Route your LLM through Floe
 
-The LLM endpoint is OpenAI-compatible — same request shape as OpenAI Chat Completions. Point it at Floe's host, authenticate with your Floe agent key, and pass your upstream provider key per request in `X-Floe-Provider-Key` (Floe uses it only to call upstream — it is never stored).
+The LLM endpoint is OpenAI-compatible — same request shape as OpenAI Chat Completions. Point it at Floe's host, authenticate with your Floe agent key, and supply your upstream provider key one of two ways: **per request** in `X-Floe-Provider-Key` (used only to call upstream, then discarded — never persisted), or **stored once** (encrypted, per provider) so Floe auto-routes BYOK with no header. See [per-request vs stored keys](../developers/keyless-inference.md) for the storage flow and the fixed BYOK service fee.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
