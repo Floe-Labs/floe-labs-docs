@@ -91,7 +91,7 @@ floe budget set 5 --per day   # cap this key at $5 per rolling 24 h
 floe test                     # one real metered call — cost printed from X-Floe-Cost-USDC
 ```
 
-`--json` on every command; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. Lifecycle and payment commands (`agents`, `policy`, `pay`, …) run as `floe-agent <command>`. Full reference: [Floe CLI](../developers/cli.md).
+`--json` on every command; `--yes` skips confirmations on destructive/money verbs; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. The rest of the platform lives on the same bin — `agents`, `keys`, `policy`, `pay`, `chat`, `funds`, `phone`, and more (32 commands, dashboard parity). Full reference: [Floe CLI](../developers/cli.md).
 {% endtab %}
 {% tab title="SDK" %}
 Both SDKs take the **agent** key (`floe_…`), not the `floe_live_…` developer key: a developer key passes the client's prefix check but the proxy rejects it with `wrong_credential_type`. The agent key comes from `npx @floelabs/cli init` (minted into your OS keychain) or the dashboard — read it from `FLOE_AGENT_KEY`.
@@ -172,13 +172,27 @@ One real metered call against the **$3 welcome credit** your first agent starts 
 |---|---|---|
 | Create an agent + mint its runtime key | `create_agent` + `create_agent_key` | `npx @floelabs/cli init` |
 | Check the setup | `get_balances` | `floe status --json` |
+| Switch the active agent | — (CLI keychain concept) | `floe use <agent>` |
 | Cap spend | `set_spend_limit` | `floe budget set <usd> [--per day]` |
+| Full policy surface (task / api / vendor / session caps) | — (CLI only) | `floe policy create --kind <k> --limit <usd>` |
+| Restrict merchants | `set_allowlist_mode` + `add_allowlist_entry` | `floe allowlist set` / `floe allowlist add` |
+| Budget a key at mint | `create_agent_key` | `floe keys create --budget <usd> [--window <dur>]` |
 | Rotate a runtime key | `rotate_agent_key` | `floe keys rotate` |
+| Manage developer keys | — (CLI only) | `floe devkeys create\|revoke\|rotate` |
+| Pause / resume an agent | `pause_agent` / `resume_agent` | `floe agents pause\|resume <agent>` |
 | Prove the wiring | `x402_pay` | `floe test [--voice]` |
-| Price a call first | `estimate_x402_cost` | `floe-agent estimate <url>` |
-| Pay a vendor | `x402_pay` | `floe-agent pay <url>` |
-| Watch the money | `get_usage_summary` | `floe-agent usage` |
-| Hand funding to a human | `get_funding_instructions` | `floe-agent fund <id>` |
+| Make a metered LLM / voice call | — (CLI only) | `floe chat` · `floe embed` · `floe speak` · `floe transcribe` |
+| Check a vendor URL's price | `check_x402_url` / `estimate_x402_cost` | `floe pay <url> --check` |
+| Price an inference call | `estimate_inference_cost` | `floe estimate --model <id> …` |
+| Browse the model catalog | `list_models` | `floe models` |
+| Pay a vendor | `x402_pay` | `floe pay <url>` |
+| Watch the money | `get_usage_summary` / `get_activity` | `floe usage` / `floe activity` |
+| Billing + CSV export | — (CLI only) | `floe billing mtd\|invoice\|export` |
+| Open a credit line | `get_credit_line_bounds` + `open_credit_line` | `floe credit bounds` / `floe credit open` |
+| Webhooks | `create_webhook` / `list_webhooks` / `test_webhook` | `floe webhooks create\|list\|test` |
+| Move money / cash out | — (CLI only) | `floe funds` · `floe cashout` |
+| Hand funding to a human | `get_funding_instructions` | `floe funds address` / `floe funds topup` |
+| Phone, BYOK, orchestrators, team | — (CLI only) | `floe phone` · `floe providers` · `floe orchestrators` · `floe team` |
 
 ## Next steps
 

@@ -59,7 +59,7 @@ npm install -g @floelabs/cli   # the `floe` platform CLI
 npx @floelabs/cli init         # or just run the onboarding once, straight from npm
 ```
 
-Two CLIs, two jobs: `@floelabs/cli` (bin `floe`) onboards, tests, and budgets, while the `floe-agent` SDK package ships its own `floe-agent` bin for agent lifecycle and payments. See [Floe CLI](../developers/cli.md).
+`@floelabs/cli` (bin `floe`) is the full platform CLI — setup, agents, keys, budgets, policies, billing, funds, phone, and metered calls, at parity with the dashboard. The `floe-agent` SDK package ships its own `floe-agent` bin: the AgentKit-companion CLI for the agent-runtime SDK. See [Floe CLI](../developers/cli.md).
 
 ## Next
 

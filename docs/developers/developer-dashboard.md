@@ -30,13 +30,13 @@ Create and manage up to **5 agents per developer**. Each agent has its own credi
 2. **Fund Agent** — Send USDC to the agent's wallet, or **buy USDC directly via Coinbase** (credit card or bank transfer) using the "Fund Wallet" button. No crypto bridges needed.
 3. **Mint API Key** — Once the agent shows `active`, click **Reveal API Key** to mint the agent's `floe_*` runtime key. It is shown once — copy it immediately. To rotate, click **Rotate** (revokes the old key and mints a new one atomically).
 
-The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), or `npx floe-agent register --name <name>` (TypeScript SDK) / `floe-agent register --name <name>` (Python SDK). See [agentkit-typescript](agentkit-typescript.md#cli-floe-agent) / [agentkit-python](agentkit-python.md#cli-floe-agent).
+The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), with the full fleet surface on the same bin — `floe agents list|get|create|pause|resume|close|lock` — or `npx floe-agent register --name <name>` (TypeScript SDK) / `floe-agent register --name <name>` (Python SDK). See [agentkit-typescript](agentkit-typescript.md#cli-floe-agent) / [agentkit-python](agentkit-python.md#cli-floe-agent).
 
 Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `closed`), USDC balance (live), credit limit, delegation expiry, and active loans.
 
 **Agent limits:**
 - Max 5 agents per developer
-- Max 1 active API key per agent
+- Max 5 active API keys per agent (`floe keys create` mints extras; `floe keys rotate` replaces one atomically)
 - Borrow limit: 1–10B USDC (raw, 6 decimals)
 - Rate cap: 1–10,000 bps (0.01%–100%)
 - Delegation expiry: 1 minute–1 year
@@ -52,17 +52,19 @@ Buy USDC directly from the dashboard using a credit card, debit card, or bank tr
 
 No crypto bridges, no token swaps, no gas tokens needed.
 
+CLI equivalents: `floe funds topup [--amount <usd>] [--open]` prints the same Coinbase checkout link and watches for the funds; `floe funds address` prints the agent's raw USDC deposit address for wallet/exchange transfers.
+
 ### API Keys
 
 Create and manage developer API keys (`floe_live_*`) for authenticating with the [Credit API](credit-api.md) developer endpoints and webhook management. Label keys by environment and revoke compromised keys instantly.
 
-Go to **Keys** in the sidebar, or see [API Keys](api-keys.md).
+Go to **Keys** in the sidebar, or see [API Keys](api-keys.md). CLI equivalent: `floe devkeys list|create|revoke|rotate` (agent runtime keys: `floe keys …`).
 
 ### Webhooks
 
 Register webhook endpoints to receive push notifications for loan events — health warnings, expiry alerts, liquidations, repayments, **credit utilization warnings**, and **delegation expiry alerts**.
 
-Go to **Webhooks** in the sidebar, or see [Webhooks](webhooks.md).
+Go to **Webhooks** in the sidebar, or see [Webhooks](webhooks.md). CLI equivalent: `floe webhooks list|create|get|pause|enable|delete|test|rotate-secret|deliveries`.
 
 ### Alerts
 
@@ -77,14 +79,14 @@ Alerts are delivered via webhooks and shown in the dashboard.
 
 ## Quick Navigation
 
-| Section | Path | What It Does |
-|---------|------|--------------|
-| Overview | `/` | Dashboard home with usage summary |
-| Agents | `/agents` | Create, fund, and manage agents (up to 5) |
-| Agent Detail | `/agents/:id` | Status, balance, delegation, keys |
-| API Keys | `/keys` | Create, list, and revoke developer keys |
-| Webhooks | `/webhooks` | Register endpoints, test deliveries, view logs |
-| Docs | `/docs` | Interactive API reference |
+| Section | Path | What It Does | CLI equivalent |
+|---------|------|--------------|----------------|
+| Overview | `/` | Dashboard home with usage summary | `floe usage summary` · `floe billing mtd` |
+| Agents | `/agents` | Create, fund, and manage agents (up to 5) | `floe agents` · `floe funds` |
+| Agent Detail | `/agents/:id` | Status, balance, delegation, keys | `floe agents get <agent> [--usage]` · `floe keys` |
+| API Keys | `/keys` | Create, list, and revoke developer keys | `floe devkeys` |
+| Webhooks | `/webhooks` | Register endpoints, test deliveries, view logs | `floe webhooks` |
+| Docs | `/docs` | Interactive API reference | `floe help <command>` |
 
 ## Next Steps
 

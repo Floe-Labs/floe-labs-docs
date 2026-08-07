@@ -69,7 +69,7 @@ npm i -g @floelabs/cli   # keeps the `floe` bin around for the commands below
 floe status --json       # am I set up? balance, budgets, active agent + key
 ```
 
-Full reference: [Floe CLI](../developers/cli.md).
+And everything else lives on the same bin — `floe chat "hi"` for a metered LLM call, `floe budget set 5 --per day` to cap spend, `floe activity` to watch the money. Full reference: [Floe CLI](../developers/cli.md).
 {% endtab %}
 {% tab title="SDK" %}
 ```bash
