@@ -10,8 +10,8 @@ Floe uses API keys to authenticate requests to the developer platform. There are
 
 | Prefix | Name | Scope | Created Via | Used For |
 |--------|------|-------|-------------|----------|
-| `floe_live_*` | Developer key | Whole developer account | Dashboard **API Keys** page, `floe devkeys create`, or `POST /v1/developer/keys` | Credit API developer endpoints, agent management, webhook management |
-| `floe_*` | Agent key | One specific agent | Agent setup wizard, `floe init` / `floe keys create` (platform CLI), `POST /v1/developer/agents/:id/keys`, or `floe-agent register --name <name>` | x402 proxy, agent balance, agent-awareness endpoints, MCP server |
+| `floe_live_*` | Developer key | Whole developer account | Dashboard **API Keys** page, `floe devkeys create`, or `POST /v1/developer/keys` | Credit API developer endpoints, agent management, webhook management, lifecycle MCP tools (agent/key/webhook management) |
+| `floe_*` | Agent key | One specific agent | Agent setup wizard, `floe init` / `floe keys create` (platform CLI), `POST /v1/developer/agents/:id/keys`, or `floe-agent register --name <name>` | x402 proxy, agent balance, agent-awareness endpoints, agent-scoped runtime [MCP](mcp-server.md) tools |
 
 **Developer keys** are for your backend services — monitoring loan health, managing webhooks, registering new agents, and calling developer-scoped endpoints on the [Credit API](credit-api.md). One key per environment is typical.
 
@@ -63,7 +63,7 @@ Floe has two authentication systems. Sending the wrong one is the most common on
 
 | Credential | How you send it | Works on |
 |---|---|---|
-| **Agent key** `floe_*` | `Authorization: Bearer floe_...` | x402 proxy (`/v1/proxy/*`), agent balance, agent-awareness endpoints, [MCP server](mcp-server.md) |
+| **Agent key** `floe_*` | `Authorization: Bearer floe_...` | x402 proxy (`/v1/proxy/*`), agent balance, agent-awareness endpoints, agent-scoped runtime [MCP](mcp-server.md) tools |
 | **Developer key** `floe_live_*` | `Authorization: Bearer floe_live_...` | [Credit API](credit-api.md) developer endpoints, agent management, webhooks |
 | **Wallet signature** | `X-Wallet-Address` + `X-Signature` + `X-Timestamp` headers (EIP-191 `personal_sign` over `Floe Credit API\nTimestamp: <unix>`) | Credit API endpoints that act on your own wallet |
 

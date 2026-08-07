@@ -64,7 +64,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
 
 ### 4. Fund & set budgets
 
-When the Welcome Credit runs low, add money with a card, Apple Pay, Google Pay, or bank transfer — directly in the dashboard, shown in dollars. Then cap what your agent can spend: per call, per day, per task, per vendor, or across your whole team. Enforced server-side, so a runaway loop can't blow your budget. One task budget caps the whole conversation — LLM, voice, telephony, and data together.
+When the Welcome Credit runs low, add money with a card, Apple Pay, Google Pay, or bank transfer — directly in the dashboard, shown in dollars. Then cap what your agent can spend: per day, per task, per vendor, or across your whole team. Enforced server-side, so a runaway loop can't blow your budget. One task budget caps the whole conversation — LLM, voice, telephony, and data together.
 
 → [Funding guide](docs/getting-started/funding.md) · [Spend Controls](docs/developers/spend-controls.md)
 
@@ -110,7 +110,7 @@ See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookboo
 | **[Payment facilitator](docs/developers/x402-facilitator.md)** | One endpoint pays any vendor API, per call, from the agent's balance. |
 | **[Vendor Marketplace](docs/x402-directory/README.md)** | 2,000+ vendor API services — LLMs, STT, TTS, telephony, search, browser, memory — through one key. |
 | **[Unified billing & ledger](docs/build/unified-ledger.md)** | LLM, voice, telephony, and data on one ledger, one policy set. |
-| **[Spend controls](docs/developers/spend-controls.md)** | Per-call, per-day, per-task, per-vendor, per-team budgets — enforced server-side. |
+| **[Spend controls](docs/developers/spend-controls.md)** | Per-day, per-task, per-vendor, per-team budgets — enforced server-side. |
 | **[Budget-aware routing](docs/build/budget-aware-routing.md)** | Downgrade, finish, or hard-stop as budgets tighten. |
 
 ---

@@ -21,7 +21,7 @@ The `floe` bin grew from five onboarding verbs to the **full platform CLI** — 
   * *Observability & billing* — `activity` · `usage` (series/summary/coverage) · `ledger` · `billing` (mtd/invoice/export/charges) · `account` · `team`
   * *Money* — `funds` (withdraw/move/list/address/topup/sessions) · `cashout`
   * *Platform* — `webhooks` · `models` · `estimate` · `providers` (BYOK) · `phone` · `actions` · `orchestrators` (Vapi/Retell/Bland) · `vendors`
-* **Conventions.** `--json` on every command; `--yes` skips confirmation on destructive/money verbs; exit codes `0` ok / `1` error / `2` usage / `4` auth / `5` payment-or-budget; env `FLOE_API_KEY` / `FLOE_AGENT_KEY` / `FLOE_API_URL`. The OS keychain now holds **one runtime-key slot per agent** — `floe use <agent>` switches agents without re-minting (agents cap at 5 active keys).
+* **Conventions.** `--json` on every command; `--yes` skips confirmation on destructive/money verbs; exit codes `0` ok / `1` error / `2` usage / `4` auth / `5` payment-or-budget; env `FLOE_API_KEY` / `FLOE_AGENT_KEY` / `FLOE_API_URL`. The OS keychain now holds **one runtime-key slot per agent** — `floe use <agent>` switches agents without re-minting (each agent has up to 5 active keys).
 * **Framing update.** `@floelabs/cli` is **the** Floe platform CLI. The `floe-agent` bin is not deprecated — it is the AgentKit-companion CLI for the agent-runtime SDK, documented with the [TypeScript SDK](developers/agentkit-typescript.md#cli-floe-agent).
 
 → [Floe CLI](developers/cli.md) · [Floe-Labs/floe-cli](https://github.com/Floe-Labs/floe-cli)

@@ -38,11 +38,11 @@ npm i -g @floelabs/cli    # or keep the `floe` bin around
 
 ## Conventions
 
-- **`--json` on every command** — raw JSON on stdout, nothing else, for CI and coding agents. USDC amounts in `--json` are raw 6-decimal integer strings where the API returns them that way.
+- **`--json` for structured-output commands** — raw JSON on stdout, except streaming, binary-output, and CSV export modes (`chat --stream` rejects `--json`; `speak` and `billing export` write audio/CSV to `--out`). USDC amounts in `--json` are raw 6-decimal integer strings where the API returns them that way.
 - **`--yes` on destructive and money-moving verbs** — skips the confirmation prompt (`agents close`, `keys revoke`, `funds withdraw`, `credit open`, `phone buy`, …). Without a TTY, prompts are never shown: missing confirmation exits `2` instead of hanging.
 - **`--api-url <url>`** overrides the API base (default `https://credit-api.floelabs.xyz`), as does `FLOE_API_URL`.
 - **Exit codes:** `0` ok · `1` error · `2` usage · `4` auth · `5` payment/budget.
-- **Keys print exactly once**, at mint or rotate, and land in the OS keychain — one slot per agent (see [Keychain](#two-keys-handled-for-you)).
+- **Keys print exactly once**, at mint or rotate. The keychain stores only your developer key and each agent's active runtime key — extra keys from `keys create` / `devkeys create|rotate` are shown once and never stored (see [Keychain](#two-keys-handled-for-you)).
 
 ## Commands at a glance
 
@@ -50,8 +50,8 @@ npm i -g @floelabs/cli    # or keep the `floe` bin around
 |---|---|
 | [Get started](#get-started) | `init` · `status` · `use` · `test` |
 | [Metered calls](#metered-calls) | `chat` · `embed` · `speak` · `transcribe` · `pay` |
-| [Agents & limits](#agents--limits) | `agents` · `keys` · `devkeys` · `budget` · `policy` · `allowlist` · `credit` |
-| [Observability & billing](#observability--billing) | `activity` · `usage` · `ledger` · `billing` · `account` · `team` |
+| [Agents & limits](#agents-limits) | `agents` · `keys` · `devkeys` · `budget` · `policy` · `allowlist` · `credit` |
+| [Observability & billing](#observability-billing) | `activity` · `usage` · `ledger` · `billing` · `account` · `team` |
 | [Money](#money) | `funds` · `cashout` |
 | [Platform](#platform) | `webhooks` · `models` · `estimate` · `providers` · `phone` · `actions` · `orchestrators` · `vendors` |
 
@@ -119,7 +119,7 @@ Exits `5` when the call is declined for balance or budget reasons.
 
 ## Metered calls
 
-Every command here spends real (fractions of) cents with this machine's agent key and prints the settled cost from `X-Floe-Cost-USDC`. A `402` decline (balance, budget, policy, allowlist) exits `5`.
+Every paid command here spends real (fractions of) cents with this machine's agent key and prints the settled cost from `X-Floe-Cost-USDC` — `pay --check` is a free pre-flight that never charges, and free vendor routes settle at $0. A `402` decline (balance, budget, policy, allowlist) exits `5`.
 
 ### `floe chat`
 
@@ -197,7 +197,7 @@ floe pay https://api.exa.ai/contents \
   --task nightly-crawl --json
 ```
 
-After a timeout or unknown outcome, rerun with the **same** `--idempotency-key` — the replay returns the cached response instead of paying again.
+After a timeout or unknown outcome, rerun with the **same** `--idempotency-key` — the replay returns the cached response instead of paying again. One exception: on `502 upstream_paid_request_failed_ambiguous` the payment already went out — reuse the key only to inspect the recorded result, wait for settlement to go terminal, then start any new attempt with a fresh key.
 
 ---
 
@@ -604,7 +604,7 @@ There is no vendor-catalog API — browse the full directory and per-vendor docs
 
 ## Two keys, handled for you
 
-Floe has a **developer key** (`floe_live_…`, from the [dashboard](https://dev-dashboard.floelabs.xyz)) for managing the account, and per-agent **runtime keys** (`floe_…`) that the gateway meters. The CLI stores both in your OS keychain and always sends the right one — you never pick.
+Floe has a **developer key** (`floe_live_…`, from the [dashboard](https://dev-dashboard.floelabs.xyz)) for managing the account, and per-agent **runtime keys** (`floe_…`) that the gateway meters. The CLI stores your developer key and each agent's active runtime key in your OS keychain and always sends the right one — you never pick. Extra keys minted with `keys create` / `devkeys create` are printed once and never stored.
 
 The keychain holds **one runtime-key slot per agent**: `floe use <agent>` switches the active agent without re-minting anything, and the first switch to an agent mints its key into a fresh slot (agents cap at 5 active keys). `floe keys rotate` replaces the active slot's key atomically; `floe keys create` mints extra keys for other machines or CI without touching your slots.
 

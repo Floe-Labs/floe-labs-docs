@@ -4,7 +4,7 @@ icon: rocket
 
 # Quickstart (5 minutes)
 
-Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap every call with spend controls you set — per call, day, vendor, or team (set them once you've seen it work). That's the whole product: **a budget, not a balance.** No wallets to install, no provider or wallet keys to manage, no tokens to buy, no gas to pay.
+Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap spending with server-side controls you set — per task, day, vendor, or team (set them once you've seen it work). That's the whole product: **a budget, not a balance.** No wallets to install, no provider or wallet keys to manage, no tokens to buy, no gas to pay.
 
 > **$3 Welcome Credit (300 API credits).** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. The grant is once per account, not per agent. [Get started →](https://dev-dashboard.floelabs.xyz)
 

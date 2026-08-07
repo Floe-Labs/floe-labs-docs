@@ -83,7 +83,7 @@ Alerts are delivered via webhooks and shown in the dashboard.
 |---------|------|--------------|----------------|
 | Overview | `/` | Dashboard home with usage summary | `floe usage summary` · `floe billing mtd` |
 | Agents | `/agents` | Create, fund, and manage agents (up to 5) | `floe agents` · `floe funds` |
-| Agent Detail | `/agents/:id` | Status, balance, delegation, keys | `floe agents get <agent> [--usage]` · `floe keys` |
+| Agent Detail | `/agents/:id` | Status, balance, delegation, keys | `floe agents get <agent> [--usage]` · `floe keys list --agent <agent>` |
 | API Keys | `/keys` | Create, list, and revoke developer keys | `floe devkeys` |
 | Webhooks | `/webhooks` | Register endpoints, test deliveries, view logs | `floe webhooks` |
 | Docs | `/docs` | Interactive API reference | `floe help <command>` |
