@@ -243,14 +243,21 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
   "id": 12,
   "provider": "pipecat",
   "webhookUrl": "https://credit-api.floelabs.xyz/v1/webhooks/pipecat/call-end/<token>",
+  "preCallUrl": "https://credit-api.floelabs.xyz/v1/webhooks/pipecat/pre-call/<token>",
   "secret": "whsec_…"   // per-connection HMAC key — store it, it is not returned again
 }
 ```
 
-Self-hosted connections have **no `preCallUrl`** — there is no inbound platform
-hop for Floe to sit in front of. Pre-call enforcement for these frameworks comes
-only from routing legs through Floe (above); the self-report path is
-purely the post-call circuit-breaker.
+Self-hosted connections also get a **`preCallUrl`**, but it works differently
+from the hosted platforms. There's no vendor to call it, so **your own agent**
+invokes it as a *self-serve admission check* before it starts a session — it
+returns `{ "allowed": boolean, "reason": string | null }`, and your code skips
+(or downgrades) the call when `allowed` is `false`. Because you call it
+yourself, it's a **cooperative** signal your agent must honor; the hard,
+un-bypassable circuit-breaker is still the reconciled-spend → `suspend_agent`
+path (a suspended agent's next Floe-keyed call is refused `403`). The strongest
+pre-call enforcement remains routing legs through Floe (above), where spend is
+refused before it happens rather than checked by your own code.
 
 **2. POST the cost when the call ends** — a Floe-native JSON body, signed with
 the per-connection secret:
