@@ -1,25 +1,55 @@
-# Govern Vapi / Retell / Bland spend with Floe
+# Govern voice-orchestrator spend with Floe
 
-You build on a voice orchestrator — Vapi, Retell, or Bland — and the platform
-executes the call: STT, LLM, TTS, telephony. Floe governs that spend in two
-complementary ways, and is honest about which is which:
+You build on a voice orchestrator and the framework executes the call: STT,
+LLM, TTS, telephony. Floe governs that spend in two complementary ways, and is
+honest about which is which:
 
-- **Pre-call, where Floe is in the path.** Route the leg the orchestrator lets
-  you redirect (the LLM — typically the biggest, most variable line) through
-  Floe's gateway: metered per token, refused with `402` *before* tokens are
-  bought once your cap is hit.
-- **Circuit-breaker everywhere else.** **Reconcile Mode** ingests the
-  orchestrator's own end-of-call webhook, writes the full call cost to your
-  Floe ledger, counts it against your spend policies, and enforces at the
-  *next session*: a tripped `suspend_agent` policy blocks the agent's next
-  Floe-keyed call, and a configured pre-call hook rejects the next eligible
-  inbound call (fixed-assistant Vapi, outbound, and Bland calls have no
-  pre-call hook — they stay post-call governed). You can't stop mid-call —
-  you guarantee a runaway dies after call *N*, not call 10,000.
+- **Pre-call, where Floe is in the path.** Route the legs you can redirect
+  through Floe's gateway: metered per token/second/character, refused with
+  `402` *before* the spend happens once your cap is hit.
+- **Circuit-breaker everywhere else.** **Reconcile Mode** writes the full call
+  cost to your Floe ledger, counts it against your spend policies, and enforces
+  at the *next session*: a tripped `suspend_agent` policy blocks the agent's
+  next Floe-keyed call, and a configured pre-call hook rejects the next eligible
+  inbound call. You can't stop mid-call — you guarantee a runaway dies after
+  call *N*, not call 10,000.
 
 > **The promise, stated honestly.** Pre-call where we're in the path;
 > circuit-breaker everywhere else. No orchestrator partnership required —
 > both mechanisms use each platform's documented extension points.
+
+## Two families, two cost signals
+
+The five orchestrators split into two architectures, and that split decides how
+Reconcile Mode gets its numbers — so we're explicit about it:
+
+- **Hosted platforms — Vapi, Retell, Bland.** The platform runs the call and
+  emits an **end-of-call webhook carrying the real call cost** (Vapi
+  `message.cost`, Retell `call_cost.combined_cost`, Bland `price`). Reconcile
+  Mode ingests that webhook directly. Nothing to compute on your side.
+- **Self-hosted frameworks — Pipecat, LiveKit.** These are open-source
+  frameworks *you* run. **They emit no cost webhook** — there is no platform to
+  send one. So the model flips: route their legs through Floe for real pre-call
+  enforcement (preferred), and if a leg stays off Floe rails, your own agent
+  **self-reports** its cost to a Floe webhook as the circuit-breaker fallback.
+  See [Self-hosted frameworks](#3-self-hosted-frameworks-pipecat-livekit) below.
+
+### Coverage boundary per platform
+
+Which leg is enforceable pre-call vs governed post-call, and where the cost
+number comes from:
+
+| Platform | Type | LLM | STT | TTS | Telephony | Cost signal |
+|---|---|---|---|---|---|---|
+| **Vapi** | Hosted | Pre-call ✓ (custom-llm) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`message.cost`) |
+| **Retell** | Hosted | Pre-call ✓ (WS adapter) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`call_cost.combined_cost`) |
+| **Bland** | Hosted | Reconciled ⟳ (no self-serve custom LLM) | Reconciled ⟳ | Reconciled ⟳ | Reconciled ⟳ | Provider webhook (`price`) |
+| **Pipecat** | Self-hosted | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | **Self-reported** (no cost webhook) |
+| **LiveKit** | Self-hosted | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | Pre-call ✓ *if routed through Floe* | **Self-reported** (no cost webhook) |
+
+Legend: **Pre-call ✓** = refused before the spend; **Reconciled ⟳** = counted
+after the call, enforced next session; **Self-reported** = your agent POSTs the
+cost (Pipecat/LiveKit only — there is no platform webhook to ingest).
 
 ## 1 · Route the LLM leg through Floe (pre-call)
 
@@ -165,6 +195,101 @@ secret) — update the platform's settings with the new URLs.
 - **Is idempotent.** Providers retry webhooks; each call id is ingested once.
 - Unsigned or mis-signed deliveries are rejected `401` with **no** ledger
   write.
+
+## 3 · Self-hosted frameworks (Pipecat, LiveKit)
+
+Pipecat and LiveKit are **open-source frameworks you run yourself** — not hosted
+platforms. There is no vendor billing your call, and so **no end-of-call cost
+webhook** to ingest. That changes the governance model in two ways.
+
+### Preferred: route the legs through Floe (pre-call)
+
+Because *you* wire up each service, you can put Floe directly in the path of
+every leg — which is strictly better than reconcile: spend is refused *before*
+it happens, not counted after.
+
+- **LLM** — point the framework's LLM service `base_url` at
+  `https://credit-api.floelabs.xyz/v1` with your `floe_` agent key.
+  OpenAI-compatible, metered per token, `402` at the cap.
+- **STT / TTS / telephony** — move each onto Floe rails
+  ([streaming STT WS, `POST /v1/audio/speech`, Floe Phone](voice-stack.md#live-voice-with-your-own-stack-livekit-pipecat)).
+
+This is the [Graduate to 100% coverage](migrate-to-full-coverage.md) path, and
+for Pipecat the [`pipecat-floe`](https://github.com/Floe-Labs/pipecat-floe)
+package makes it three drop-in services. **A leg on Floe rails needs no
+reconcile at all** — it's already cap-enforced pre-call. Prefer this for every
+leg you can.
+
+### Fallback: self-report the cost (circuit-breaker)
+
+For any leg you keep off Floe rails, there is no platform webhook — so **your
+own agent reports the call's cost** to Floe at end-of-call. This is the same
+next-session circuit-breaker as hosted Reconcile Mode; the only difference is
+that you supply the number instead of a platform.
+
+**1. Register the connection** — mints the webhook URL and a per-connection
+signing secret. Also available in the dashboard UI (Agent → Orchestrators →
+Connect → Pipecat / LiveKit):
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
+  -H "Cookie: <dashboard session>" -H "Content-Type: application/json" \
+  -d '{ "agentId": 42, "provider": "pipecat" }'   # or "livekit"
+```
+
+```jsonc
+// 201 — secret shown ONCE
+{
+  "id": 12,
+  "provider": "pipecat",
+  "webhookUrl": "https://credit-api.floelabs.xyz/v1/webhooks/pipecat/call-end/<token>",
+  "secret": "whsec_…"   // per-connection HMAC key — store it, it is not returned again
+}
+```
+
+Self-hosted connections have **no `preCallUrl`** — there is no inbound platform
+hop for Floe to sit in front of. Pre-call enforcement for these frameworks comes
+only from routing legs through Floe (above); the self-report path is
+purely the post-call circuit-breaker.
+
+**2. POST the cost when the call ends** — a Floe-native JSON body, signed with
+the per-connection secret:
+
+```bash
+BODY='{
+  "external_call_id": "pc_5f3a…",
+  "cost_usd": 0.043,
+  "duration_seconds": 182,
+  "floe_task_id": "call-8842"
+}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$FLOE_ORCH_SECRET" -hex | sed 's/^.* //')
+
+curl -X POST https://credit-api.floelabs.xyz/v1/webhooks/pipecat/call-end/<token> \
+  -H "Content-Type: application/json" \
+  -H "X-Floe-Signature: $SIG" \
+  -d "$BODY"
+```
+
+Body fields:
+
+| Field | Required | Notes |
+|---|---|---|
+| `external_call_id` | yes | Your call's id — the idempotency key; each id is ingested once. |
+| `cost_usd` | one of | Call cost in USD. |
+| `cost_micro_usdc` | one of | Same cost as integer micro-USDC (10⁻⁶), if you'd rather avoid floats. Supply exactly one of `cost_usd` / `cost_micro_usdc`. |
+| `duration_seconds` | no | Call length, for reporting. |
+| `floe_task_id` | no | Attribute the cost to a Floe task budget. |
+| `floe_customer_id` | no | Attribute the cost to an end customer. |
+
+**Signature:** `X-Floe-Signature: <hex>` where `<hex>` is
+`HMAC-SHA256(secret, rawBody)` over the **exact bytes** you send (sign the
+serialized string, don't re-serialize). Mis-signed or unsigned deliveries are
+rejected `401` with no ledger write. Rotate a leaked secret with
+`POST /v1/developer/orchestrators/{id}/rotate`.
+
+Once ingested, a self-reported cost behaves exactly like any reconciled row
+(next section): counts against your policies, doesn't debit your balance,
+idempotent per `external_call_id`.
 
 ## Coverage, honestly
 

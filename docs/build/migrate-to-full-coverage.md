@@ -1,10 +1,11 @@
 # Graduate to 100% coverage — orchestrator → Pipecat/LiveKit on Floe
 
-On Vapi or Retell, Floe governs what their platforms let it touch: the LLM leg
-pre-call, everything else by [post-call reconcile](voice-orchestrators.md).
-That's real governance — and it has a ceiling. The ceiling disappears when the
-agent runs on an **open voice stack** (Pipecat / LiveKit) with every leg on
-Floe rails: 100% of spend cap-enforced — request legs gated pre-call,
+On a hosted orchestrator (Vapi / Retell / Bland), Floe governs what the platform
+lets it touch: the LLM leg pre-call, everything else by
+[post-call reconcile](voice-orchestrators.md). That's real governance — and it
+has a ceiling. The ceiling disappears when the agent runs on a **self-hosted
+open voice stack** — **Pipecat** or **LiveKit** — with every leg on Floe rails:
+100% of spend cap-enforced — request legs gated pre-call,
 duration-billed legs (streaming STT, phone) metered live and cut off
 mid-stream at the cap — one key, one ledger, one cap.
 
