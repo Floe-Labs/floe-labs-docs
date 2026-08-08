@@ -7,7 +7,7 @@ icon: webhook
 Floe uses webhooks in **two directions**:
 
 1. **Events Floe sends you** — register a URL and Floe POSTs it when something happens on your account (an agent is provisioned, a key is rotated, an agent is suspended by a spend policy). Use these to drive activation checklists, audit logs, and spend alerts instead of polling.
-2. **Webhooks you connect to Floe (Reconcile Mode)** — point your voice platform's end-of-call webhook at Floe so it can meter every call onto one ledger and deny the next call when an agent crosses its budget. This is how Vapi / Retell / Bland / Pipecat / LiveKit agents get spend enforcement. See [Connect your orchestrator](#connect-your-orchestrator-reconcile-mode).
+2. **Webhooks you connect to Floe (Reconcile Mode)** — point your voice platform's end-of-call webhook at Floe so it meters every call onto one ledger and stops it at the cap. How the stop happens depends on the platform — a denied *next call* where a pre-call hook exists, or a blocked next Floe-keyed action otherwise (see [Connect your orchestrator](#connect-your-orchestrator-reconcile-mode)). This is how Vapi / Retell / Bland / Pipecat / LiveKit agents get spend enforcement.
 
 **Base URL:** `https://credit-api.floelabs.xyz`
 
@@ -222,7 +222,7 @@ Every delivery includes three headers:
 |--------|-------------|
 | `X-Floe-Signature` | Hex HMAC-SHA256 of `{timestamp}.{raw_body}` using your webhook secret |
 | `X-Floe-Timestamp` | Unix timestamp (seconds) when the event was sent |
-| `X-Floe-Delivery-Id` | Unique ID for this delivery attempt (use for idempotency) |
+| `X-Floe-Delivery-Id` | ID for this delivery, **stable across its retry attempts** — use it for idempotency |
 
 The signature is computed as:
 
@@ -305,7 +305,13 @@ After 3 failed attempts the delivery is marked `failed`. Inspect failures in the
 
 ## Connect your orchestrator (Reconcile Mode)
 
-The webhooks above are events Floe sends **you**. Reconcile Mode is the other direction: you connect your **voice platform's** end-of-call webhook to Floe so every call is metered onto one ledger, and the next call is denied when an agent is over budget. A runaway campaign dies at call N, not call 10,000.
+The webhooks above are events Floe sends **you**. Reconcile Mode is the other direction: you connect your **voice platform's** end-of-call webhook to Floe so every call is metered onto one ledger. Metering works for **all** providers. Enforcement at the cap is provider-specific:
+
+- **Vapi & Retell** — a pre-call webhook can deny the next inbound call outright, but only when you've configured the pre-call URL.
+- **Pipecat & LiveKit** — the pre-call check is **cooperative**: Floe returns `{ "allowed": false }` and your pipeline must honor it. Legs not on a Floe key can bypass it.
+- **Bland** — **no pre-call hook.** A reconciled breach suspends the agent, which hard-blocks its subsequent Floe-keyed actions (LLM / STT / TTS / telephony on a Floe key) rather than rejecting the inbound call.
+
+Either way a runaway campaign is stopped — the difference is whether it's blocked *before the next call connects* or *at the agent's next Floe-keyed action*.
 
 This works with **Vapi, Retell, Bland, Pipecat, and LiveKit**. The full per-platform setup — where to paste each URL, provider-specific fields, and the pre-call deny responses — lives in the guide:
 
@@ -353,7 +359,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/orchestrators" \
 }
 ```
 
-Manage connections with `GET /v1/developer/orchestrators`, `POST /v1/developer/orchestrators/:id/rotate` (mints a fresh token + secret), `PATCH /v1/developer/orchestrators/:id` (`{ "active": false }`), and `DELETE /v1/developer/orchestrators/:id`.
+Manage connections with `GET /v1/developer/orchestrators`, `POST /v1/developer/orchestrators/:id/rotate` (mints a fresh token + secret), `PATCH /v1/developer/orchestrators/:id` (`{ "active": false }`), and `DELETE /v1/developer/orchestrators/:id`. Rotating invalidates the old URL token **and** secret immediately, so update the URLs everywhere you pasted them — and for `retell`/`bland`, update the signing credential in the provider's dashboard — before the next call, or deliveries fail `401`.
 
 ### 2. Paste the URLs into your platform
 
@@ -368,7 +374,7 @@ Ingest is idempotent per call ID — safe for provider retries.
 
 ### 3. Inbound signature verification
 
-Floe verifies every inbound webhook over the **raw** request body, per provider. The path token identifies the connection; the signature authenticates it. A bad or missing signature is rejected `401` with no ledger write; an unknown or disabled token is `404`.
+Authentication is **provider-specific**. The path token always identifies the connection; how the request is authenticated depends on the provider — Retell, Bland, Pipecat, and LiveKit sign the **raw** request body with HMAC, while Vapi compares a shared-secret header (`X-Vapi-Secret`) independent of the body. A bad or missing signature is rejected `401` with no ledger write; an unknown or disabled token is `404`.
 
 | Provider | Header | Scheme |
 |----------|--------|--------|
@@ -407,7 +413,7 @@ For quick testing without deploying a server:
 - **Implement idempotency.** Store `X-Floe-Delivery-Id` and skip duplicates. Retries can send the same event more than once.
 - **Use HTTPS endpoints.** Floe only delivers to HTTPS URLs in production.
 - **Monitor delivery logs.** Check the dashboard or `GET /v1/developer/webhooks/:id/deliveries` periodically for failed deliveries.
-- **Rotate secrets safely.** Update your server to accept both old and new secrets during rotation, then remove the old one.
+- **Rotate secrets with a short window.** `rotate-secret` returns the new secret and invalidates the old one immediately — there is no overlap period. Install the returned secret in your verifier right away; any deliveries signed with the old secret during the swap fail signature and retry (3 attempts over ~6 minutes), so keep the window short.
 
 ## Next steps
 
