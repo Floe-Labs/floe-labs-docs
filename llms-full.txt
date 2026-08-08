@@ -7987,7 +7987,7 @@ URL: https://floe-labs.gitbook.io/docs/developers/webhooks.md
 Floe uses webhooks in **two directions**:
 
 1. **Events Floe sends you** — register a URL and Floe POSTs it when something happens on your account (an agent is provisioned, a key is rotated, an agent is suspended by a spend policy). Use these to drive activation checklists, audit logs, and spend alerts instead of polling.
-2. **Webhooks you connect to Floe (Reconcile Mode)** — point your voice platform's end-of-call webhook at Floe so it meters every call onto one ledger and stops it at the cap. How the stop happens depends on the platform — a denied *next call* where a pre-call hook exists, or a blocked next Floe-keyed action otherwise (see [Connect your orchestrator](#connect-your-orchestrator-reconcile-mode)). This is how Vapi / Retell / Bland / Pipecat / LiveKit agents get spend enforcement.
+2. **Cost you report to Floe (Reconcile Mode)** — get every call's cost onto one ledger so one budget spans your whole stack. On **hosted platforms (Vapi, Retell, Bland)** you point the platform's own end-of-call cost webhook at Floe. On **self-hosted stacks (Pipecat, LiveKit)** there is no such webhook — your agent self-reports each call's cost to Floe. Enforcement then differs by platform (see [Connect your orchestrator](#connect-your-orchestrator-reconcile-mode)).
 
 **Base URL:** `https://credit-api.floelabs.xyz`
 
@@ -8285,13 +8285,18 @@ After 3 failed attempts the delivery is marked `failed`. Inspect failures in the
 
 ## Connect your orchestrator (Reconcile Mode)
 
-The webhooks above are events Floe sends **you**. Reconcile Mode is the other direction: you connect your **voice platform's** end-of-call webhook to Floe so every call is metered onto one ledger. Metering works for **all** providers. Enforcement at the cap is provider-specific:
+The webhooks above are events Floe sends **you**. Reconcile Mode is the other direction: it gets every call's cost onto one ledger. **How the cost reaches Floe depends on where the agent runs:**
 
-- **Vapi & Retell** — a pre-call webhook can deny the next inbound call outright, but only when you've configured the pre-call URL.
-- **Pipecat & LiveKit** — the pre-call check is **cooperative**: Floe returns `{ "allowed": false }` and your pipeline must honor it. Legs not on a Floe key can bypass it.
+- **Hosted (Vapi, Retell, Bland)** — Floe ingests the platform's own end-of-call cost webhook. You paste the `call-end` URL into the platform.
+- **Self-hosted (Pipecat, LiveKit)** — there is no platform cost webhook. Your agent **self-reports** each call's cost to Floe's `call-end` URL, signed with `X-Floe-Signature`.
+
+**Enforcement at the cap is also platform-specific** — Floe can only stop a call where it sits in the path:
+
+- **Vapi & Retell** — a pre-call webhook can deny the next inbound call, but only for the configured number/assistant path and only when you've set the pre-call URL.
+- **Pipecat & LiveKit** — the pre-call check is **cooperative**: your agent must call `preCallUrl` before dialing and honor the `{ "allowed": false }` response. Floe cannot enforce it for you, and any leg not on a Floe key can bypass it.
 - **Bland** — **no pre-call hook.** A reconciled breach suspends the agent, which hard-blocks its subsequent Floe-keyed actions (LLM / STT / TTS / telephony on a Floe key) rather than rejecting the inbound call.
 
-Either way a runaway campaign is stopped — the difference is whether it's blocked *before the next call connects* or *at the agent's next Floe-keyed action*.
+So a runaway campaign is stopped **before the next call** on Vapi/Retell, **at the next Floe-keyed action** on Bland, and on Pipecat/LiveKit **only if the agent honors the cooperative check**.
 
 This works with **Vapi, Retell, Bland, Pipecat, and LiveKit**. The full per-platform setup — where to paste each URL, provider-specific fields, and the pre-call deny responses — lives in the guide:
 
@@ -8365,7 +8370,7 @@ Authentication is **provider-specific**. The path token always identifies the co
 
 ### 4. Pre-call gate response
 
-The pre-call endpoint decides admission from server-side state (agent status + budget). Deny reasons include `unknown_agent`, `agent_suspended`, and `budget_exceeded`; it **fails closed** if the check can't run. Responses are shaped to each platform's contract — e.g. Retell receives `{ "call_inbound": { "reject": true } }` on deny, and Pipecat/LiveKit receive `{ "allowed": false, "reason": "budget_exceeded" }`. See the [guide](../build/voice-orchestrators.md) for the exact per-platform bodies.
+The pre-call endpoint decides admission from server-side state (agent status + budget). Deny reasons include `unknown_agent`, `agent_suspended`, and `budget_exceeded`; it **fails closed** if the check can't run. Responses are shaped to each platform's contract — e.g. Retell receives `{ "call_inbound": { "reject": true } }` on deny, and Pipecat/LiveKit receive `{ "allowed": false, "reason": "budget_exceeded" }`. On **Vapi**, admission applies to the configured assistant/number path (an admit returns `{ "assistantId": … }`). On **self-hosted stacks (Pipecat, LiveKit)** the gate only bites if your agent actually calls `preCallUrl` before dialing and honors the response — Floe cannot block the call for you. See the [guide](../build/voice-orchestrators.md) for the exact per-platform bodies.
 
 ---
 
