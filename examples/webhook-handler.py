@@ -70,51 +70,49 @@ def is_duplicate(delivery_id: str) -> bool:
 
 
 # ── Event Handlers ──
+# Payload fields are spread at the top level of the event, alongside
+# `event` and `firedAt` — there is no nested `data` object.
 
 
-def handle_health_warning(data: dict) -> None:
+def handle_agent_created(event: dict) -> None:
     print(
-        f"Health warning: Loan {data['loanId']} — "
-        f"LTV {data['currentLtvBps']} bps "
-        f"(liquidation at {data['liquidationLtvBps']} bps), "
-        f"state: {data['healthState']}"
+        f"Agent created: {event.get('name')} "
+        f"({event.get('agentWalletAddress')}), funding={event.get('fundingMode')}"
     )
-    # TODO: Send alert to Slack, PagerDuty, or your monitoring system
+    # TODO: Kick off onboarding, advance your activation checklist
 
 
-def handle_expiry_warning(data: dict) -> None:
+def handle_agent_suspended(event: dict) -> None:
     print(
-        f"Expiry warning: Loan {data['loanId']} — "
-        f"{data['hoursRemaining']} hours remaining"
+        f"Agent suspended: {event.get('agentId')} — "
+        f"tripped policy {event.get('policyId')} ({event.get('reason')})"
     )
-    # TODO: Trigger auto-repay or notify the borrower
+    # TODO: Page on-call, pause the campaign, or raise the budget
 
 
-def handle_liquidated(data: dict) -> None:
+def handle_key_rotated(event: dict) -> None:
     print(
-        f"Liquidated: Loan {data['loanId']} — "
-        f"principal {data['principal']}, "
-        f"collateral {data['collateralAmount']}"
+        f"Key rotated: {event.get('keyPrefix')} "
+        f"(from key {event.get('rotatedFromKeyId')}) by {event.get('actorWallet')}"
     )
-    # TODO: Update internal records, notify stakeholders
+    # TODO: Update your audit log
 
 
-def handle_repaid(data: dict) -> None:
+def handle_first_settlement(event: dict) -> None:
     print(
-        f"Repaid: Loan {data['loanId']} — "
-        f"principal {data['principal']}, "
-        f"interest rate {data['interestRateBps']} bps"
+        f"First settlement: agent {event.get('agentId')} paid "
+        f"{event.get('amountRaw')} to {event.get('url')}"
     )
-    # TODO: Update internal records, release any holds
+    # TODO: Mark the agent activated
 
 
 # ── Event Router ──
 
 EVENT_HANDLERS = {
-    "loan.health_warning": handle_health_warning,
-    "loan.expiry_warning": handle_expiry_warning,
-    "loan.liquidated": handle_liquidated,
-    "loan.repaid": handle_repaid,
+    "agent.created": handle_agent_created,
+    "agent.suspended": handle_agent_suspended,
+    "key.rotated": handle_key_rotated,
+    "x402.first_settlement": handle_first_settlement,
 }
 
 
@@ -152,7 +150,7 @@ def webhook():
 
     handler = EVENT_HANDLERS.get(event_type)
     if handler:
-        handler(event["data"])
+        handler(event)
     else:
         print(f"Unknown event type: {event_type}")
 
