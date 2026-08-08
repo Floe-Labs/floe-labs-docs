@@ -72,10 +72,29 @@ A model can be served by one or more **rails**. Floe picks the cheapest availabl
 | `self-host` | Open-weight model on a serverless host (Together, DeepInfra, …) | metered cost + margin |
 | `venice` | Venice via Floe's pooled wallet | metered cost + margin |
 | `x402-router` | Keyless pay-per-call router (no account anywhere) | router receipt + margin |
-| `byok` | **Your** provider key, passed per request | Floe fee only |
+| `byok` | **Your** provider key — sent per request or stored (encrypted) | Floe fee only |
 | `free` | Promotional / zero-rated models | nothing |
 
-**BYOK** — send your own upstream key in `X-Floe-Provider-Key` and Floe forwards with it, charging only a routing fee (`X-Floe-Payment: byok`). Keys are read per request, never stored or logged.
+**BYOK — bring your own provider key.** You pay the upstream vendor with your own
+key; on this gateway's `byok` rail Floe adds only a small **fixed per-call service
+fee** (never the token cost — you paid that) and marks the call `X-Floe-Payment:
+byok`. There are two ways to supply the key:
+
+- **Per request (ephemeral)** — send it in the `X-Floe-Provider-Key` header. It is
+  used for that one call and **never persisted or logged**. A request header always
+  wins — it overrides a stored key for that call.
+- **Stored (once)** — save the key and every gateway call for that provider routes
+  BYOK automatically, no header needed. Stored keys are **AES-256-GCM encrypted at
+  rest**, scoped per developer + provider, and writable by **admins** only. Manage
+  them from any surface:
+  - **Dashboard** → *Keys → Provider keys* (add, relabel, disable, remove)
+  - **CLI** — `floe providers list` · `floe providers set <provider>` (pipe the key
+    so it never lands in shell history: `printf '%s' "$KEY" | floe providers set openai`)
+  - **API** — `GET/PUT/PATCH/DELETE /v1/developer/provider-keys/{provider}`
+    (`GET /v1/developer/provider-keys` lists your keys and the `supportedProviders`)
+
+A key record never includes key material — only a masked prefix, label, and enabled
+state. (The collection response additionally lists `supportedProviders`.)
 
 ## Endpoints
 
