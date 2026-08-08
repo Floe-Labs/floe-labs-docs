@@ -67,36 +67,39 @@ function isDuplicate(deliveryId: string): boolean {
 }
 
 // ── Event Handlers ──
+// Payload fields are spread at the top level of the event, alongside
+// `event` and `firedAt` — there is no nested `data` object.
 
-function handleHealthWarning(data: Record<string, unknown>): void {
+function handleAgentCreated(event: Record<string, unknown>): void {
   console.log(
-    `Health warning: Loan ${data.loanId} — LTV ${data.currentLtvBps} bps ` +
-      `(liquidation at ${data.liquidationLtvBps} bps), state: ${data.healthState}`
+    `Agent created: ${event.name} (${event.agentWalletAddress}), ` +
+      `funding=${event.fundingMode}`
   );
-  // TODO: Send alert to Slack, PagerDuty, or your monitoring system
+  // TODO: Kick off onboarding, advance your activation checklist
 }
 
-function handleExpiryWarning(data: Record<string, unknown>): void {
+function handleAgentSuspended(event: Record<string, unknown>): void {
   console.log(
-    `Expiry warning: Loan ${data.loanId} — ${data.hoursRemaining} hours remaining`
+    `Agent suspended: ${event.agentId} — tripped policy ${event.policyId} ` +
+      `(${event.reason})`
   );
-  // TODO: Trigger auto-repay or notify the borrower
+  // TODO: Page on-call, pause the campaign, or raise the budget
 }
 
-function handleLiquidated(data: Record<string, unknown>): void {
+function handleKeyRotated(event: Record<string, unknown>): void {
   console.log(
-    `Liquidated: Loan ${data.loanId} — principal ${data.principal}, ` +
-      `collateral ${data.collateralAmount}`
+    `Key rotated: ${event.keyPrefix} (from key ${event.rotatedFromKeyId}) ` +
+      `by ${event.actorWallet}`
   );
-  // TODO: Update internal records, notify stakeholders
+  // TODO: Update your audit log
 }
 
-function handleRepaid(data: Record<string, unknown>): void {
+function handleFirstSettlement(event: Record<string, unknown>): void {
   console.log(
-    `Repaid: Loan ${data.loanId} — principal ${data.principal}, ` +
-      `interest rate ${data.interestRateBps} bps`
+    `First settlement: agent ${event.agentId} paid ${event.amountRaw} ` +
+      `to ${event.url}`
   );
-  // TODO: Update internal records, release any holds
+  // TODO: Mark the agent activated
 }
 
 // ── Express Server ──
@@ -142,17 +145,17 @@ app.post(
     console.log(`\nReceived ${event.event} (delivery: ${deliveryId})`);
 
     switch (event.event) {
-      case "loan.health_warning":
-        handleHealthWarning(event.data);
+      case "agent.created":
+        handleAgentCreated(event);
         break;
-      case "loan.expiry_warning":
-        handleExpiryWarning(event.data);
+      case "agent.suspended":
+        handleAgentSuspended(event);
         break;
-      case "loan.liquidated":
-        handleLiquidated(event.data);
+      case "key.rotated":
+        handleKeyRotated(event);
         break;
-      case "loan.repaid":
-        handleRepaid(event.data);
+      case "x402.first_settlement":
+        handleFirstSettlement(event);
         break;
       default:
         console.log(`Unknown event type: ${event.event}`);
