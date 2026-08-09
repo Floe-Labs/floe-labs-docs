@@ -77,7 +77,7 @@ Sarvam AI chat is served on Floe's **OpenAI-compatible gateway** — call `POST 
 ## Sarvam AI — Chat Completions
 
 **Endpoint:** `POST https://credit-api.floelabs.xyz/v1/chat/completions` · model `sarvam/<id>`
-**Price:** metered per token · Base mainnet · x402 v2
+**Price:** metered per token · billed from your Floe balance
 
 > Indic-language chat (Sarvam 105B / 30B) across 22+ Indian languages — India's sovereign-AI stack. OpenAI-compatible; set `stream: false`. Prices are Sarvam's INR list converted at ~₹83/$ plus a 5% Floe margin.
 
@@ -112,7 +112,7 @@ The full current catalog — every chat and embedding model with per-token prici
 ## Venice AI — Chat Completions
 
 **Endpoint:** `POST https://credit-api.floelabs.xyz/v1/venice/chat/completions`
-**Price:** metered per token · Base mainnet · x402 v2
+**Price:** metered per token · billed from your Floe balance
 
 > OpenAI-compatible chat across text & reasoning models, with tool use. Set `stream: false`.
 
@@ -126,7 +126,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/venice/chat/completions \
 ## Venice AI — Responses
 
 **Endpoint:** `POST https://credit-api.floelabs.xyz/v1/venice/responses`
-**Price:** metered per token · Base mainnet · x402 v2
+**Price:** metered per token · billed from your Floe balance
 
 > Venice's Responses API — structured output and tool calls with built-in state.
 
@@ -140,7 +140,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/venice/responses \
 ## Venice AI — Embeddings
 
 **Endpoint:** `POST https://credit-api.floelabs.xyz/v1/venice/embeddings`
-**Price:** metered per token · Base mainnet · x402 v2
+**Price:** metered per token · billed from your Floe balance
 
 > Vector embeddings for retrieval, clustering, and semantic search.
 

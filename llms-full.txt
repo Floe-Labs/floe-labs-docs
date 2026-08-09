@@ -2158,7 +2158,7 @@ Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from 
 
 ## Route your LLM through Floe (BYOK metered proxy)
 
-`POST /v1/llm/chat/completions` is Floe's **BYOK metered proxy**: you bring your own upstream provider key and Floe charges only a small routing fee on top of provider cost. It is OpenAI-compatible — same request shape as OpenAI Chat Completions — but distinct from the keyless gateway in two ways: it prices from Floe's maintained LiteLLM cost map and accepts the model id **with or without** a `provider/` prefix (`gpt-4o` or `openai/gpt-4o` — Floe strips it), and it needs your provider key. Point it at Floe's host, authenticate with your Floe agent key, and supply your upstream provider key one of two ways: **per request** in `X-Floe-Provider-Key` (used only to call upstream, then discarded — never persisted), or **stored once** (encrypted, per provider) so Floe auto-routes BYOK with no header. See [per-request vs stored keys](../developers/keyless-inference.md) for the storage flow and the fixed BYOK service fee.
+`POST /v1/llm/chat/completions` is Floe's **BYOK metered proxy**: you bring your own upstream provider key and Floe charges only a small routing fee on top of provider cost. It is OpenAI-compatible — same request shape as OpenAI Chat Completions — but distinct from the keyless gateway in two ways: it prices from Floe's maintained LiteLLM cost map and accepts the model id **with or without** a `provider/` prefix (`gpt-4o` or `openai/gpt-4o` — Floe strips it), and it needs your provider key. Point it at Floe's host, authenticate with your Floe agent key, and send your upstream provider key in the `X-Floe-Provider-Key` header — **required on this endpoint** (used only to call upstream, then discarded, never persisted). To skip the header, store the key once (encrypted, per provider) and use the **keyless `/v1` gateway** instead — stored-key auto-routing works there, not on `/v1/llm`. See [per-request vs stored keys](../developers/keyless-inference.md) for the storage flow and the fixed BYOK service fee.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
@@ -2453,7 +2453,7 @@ Sarvam AI chat is served on Floe's **OpenAI-compatible gateway** — call `POST 
 ## Sarvam AI — Chat Completions
 
 **Endpoint:** `POST https://credit-api.floelabs.xyz/v1/chat/completions` · model `sarvam/<id>`
-**Price:** metered per token · Base mainnet · x402 v2
+**Price:** metered per token · billed from your Floe balance
 
 > Indic-language chat (Sarvam 105B / 30B) across 22+ Indian languages — India's sovereign-AI stack. OpenAI-compatible; set `stream: false`. Prices are Sarvam's INR list converted at ~₹83/$ plus a 5% Floe margin.
 
@@ -2488,7 +2488,7 @@ The full current catalog — every chat and embedding model with per-token prici
 ## Venice AI — Chat Completions
 
 **Endpoint:** `POST https://credit-api.floelabs.xyz/v1/venice/chat/completions`
-**Price:** metered per token · Base mainnet · x402 v2
+**Price:** metered per token · billed from your Floe balance
 
 > OpenAI-compatible chat across text & reasoning models, with tool use. Set `stream: false`.
 
@@ -2502,7 +2502,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/venice/chat/completions \
 ## Venice AI — Responses
 
 **Endpoint:** `POST https://credit-api.floelabs.xyz/v1/venice/responses`
-**Price:** metered per token · Base mainnet · x402 v2
+**Price:** metered per token · billed from your Floe balance
 
 > Venice's Responses API — structured output and tool calls with built-in state.
 
@@ -2516,7 +2516,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/venice/responses \
 ## Venice AI — Embeddings
 
 **Endpoint:** `POST https://credit-api.floelabs.xyz/v1/venice/embeddings`
-**Price:** metered per token · Base mainnet · x402 v2
+**Price:** metered per token · billed from your Floe balance
 
 > Vector embeddings for retrieval, clustering, and semantic search.
 
@@ -2872,7 +2872,7 @@ You're billed the **metered cost of each call** — Sarvam's INR list price conv
 |---|---|
 | `X-Floe-Cost-USDC` | This call's cost in raw USDC (6 decimals) |
 | `X-Floe-Payment-Amount` | Same cost as a decimal USDC string |
-| `X-Floe-Payment` | `sarvam` (metered) or `passthrough` (upstream error, not charged) |
+| `X-Floe-Payment` | `gateway` (chat) · `internal` (voice/language shim) · `passthrough` (upstream error, not charged) |
 
 ## Supported endpoints
 
@@ -2889,7 +2889,7 @@ You're billed the **metered cost of each call** — Sarvam's INR list price conv
 
 > The voice/language routes above are **marketplace-shim** paths on `marketplace.floelabs.xyz` — call them by passing the full `https://marketplace.floelabs.xyz/v1/<route>/sarvam` URL to `POST /v1/proxy/fetch`. Document digitization is **async** and in **preview**.
 
-> **Streaming is not supported on metered chat** — set `stream: false` (the default). Per-call metering needs the terminal usage block that a streamed response doesn't deliver.
+> **Streaming is supported on chat** — set `stream: true` for token-by-token output; Floe meters the call off the terminal usage chunk. (The voice/language shim routes are request/response, not streamed.)
 
 ## Models
 
@@ -3189,7 +3189,6 @@ Successful calls return Sarvam's response verbatim (voice/language responses are
 | HTTP | `error` | When |
 |---|---|---|
 | `400` | `Invalid JSON body` | Request body wasn't valid JSON |
-| `400` | `streaming_not_supported` | `stream: true` was set on a metered chat call |
 | `401` | `wrong_credential_type` | A publishable key (`floe_live_…`) was used instead of an agent key |
 | `402` | `budget_exhausted` | Credit-line or session spend ceiling reached (`scope`: `credit_line` \| `session`) |
 | `402` | `reimbursement_required` | Outstanding spend couldn't be collected from the agent wallet — fund it to resume |
@@ -4357,7 +4356,7 @@ Programmable budgets for your agent wallets. Cap spending per vendor, per task, 
 | **API** | Spend to a hostname or domain | Target URL hostname | "$100/week to *.venice.ai" |
 | **Task** | Spend on a specific task ID | `X-Floe-Task-Id` header | "$5 budget for task-research-123" |
 
-All types support **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined).
+Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` kind and the `session` window are **team-scoped only** (`/v1/developer/policies`).
 
 ## Quick Start
 
@@ -4438,7 +4437,7 @@ Useful for campaign budgets, time-boxed experiments, or scheduled spending windo
 | Kind | Behavior | Use case |
 |------|----------|----------|
 | `rolling` | Resets every `windowSeconds` | Daily/weekly/monthly budgets |
-| `session` | Resets when you call PUT /spend-limit | Manual session caps |
+| `session` | Resets when you call PUT /spend-limit | Manual session caps (team policies only) |
 | `once` | Single-shot cap, expires at `expiresAt` | Pre-borrow task holds |
 
 ## Matching Rules
@@ -4636,11 +4635,11 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
 
 ```typescript
 {
-  kind: 'vendor' | 'api' | 'task' | 'session',
-  matchKey: string,              // Required except for session
+  kind: 'vendor' | 'api' | 'task',   // per-agent; the 'session' kind is team-only (/v1/developer/policies)
+  matchKey: string,              // Required (except for the team-only 'session' kind)
   matchKind?: 'host_exact' | 'host_suffix' | 'recipient',
   limitRaw: string,              // Raw USDC, 6 decimals (e.g. "5000000" = $5)
-  windowKind?: 'rolling' | 'once' | 'session',
+  windowKind?: 'rolling' | 'once',   // 'session' window is team-only
   windowSeconds?: number,        // Required for rolling (minimum 60)
   effectiveFrom?: number,        // UNIX seconds
   effectiveUntil?: number,       // UNIX seconds
@@ -7373,7 +7372,7 @@ print(resp.json())  # Response from the target API
 Registration is a two-step API call, both authenticated with a wallet signature:
 
 1. **Create the agent** (`POST /v1/developer/agents`) — Floe provisions a managed wallet for the agent. You don't send any on-chain transactions from your local wallet. Body: `{ name, maxRateBps, expirySeconds }`. Returns `{ agentId, status, privyWalletAddress }`.
-2. **Mint an API key** (`POST /v1/developer/agents/:agentId/keys`) — issues a `floe_*` key scoped to that agent. Optional body `{ label, permissions }`. The full key is returned **once**; only its prefix is persisted server-side. Each agent has a one-active-key cap — use `POST /keys/:keyId/rotate` to swap atomically.
+2. **Mint an API key** (`POST /v1/developer/agents/:agentId/keys`) — issues a `floe_*` key scoped to that agent. Optional body `{ label, permissions }`. The full key is returned **once**; only its prefix is persisted server-side. Each agent may hold up to **5** active keys (default `MAX_KEYS_PER_AGENT`); minting past the cap returns `409`. Rotate a key atomically with `POST /v1/developer/agents/:agentId/keys/:keyId/rotate`.
 
 Both calls accept any of three credentials interchangeably: a dashboard session cookie, a `floe_live_*` developer key, or a wallet-signature header set (`X-Wallet-Address` + `X-Signature` + `X-Timestamp`). The agentkit SDKs use the signature path so users don't need to obtain a developer key first.
 
