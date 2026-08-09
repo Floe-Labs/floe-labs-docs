@@ -8,7 +8,7 @@ Floe is the spend layer: one key pays every vendor per call, governed by server-
 
 > You can also set up agents through the [Developer Dashboard](developer-dashboard.md) — a web UI at `dev-dashboard.floelabs.xyz`.
 
-**Reaches 2,000+ vendor API services** — no per-service integration needed.
+**Reaches thousands of vendor API services** — no per-service integration needed.
 
 ## How payment works
 

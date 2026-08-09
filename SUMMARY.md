@@ -27,7 +27,7 @@
 
 ## Vendor Marketplace
 
-* [Overview — 2,000+ services](docs/x402-directory/README.md)
+* [Overview](docs/x402-directory/README.md)
 * [Compute](docs/x402-directory/compute.md)
 * [STT — Speech-to-Text](docs/x402-directory/voice.md#stt-speech-to-text)
 * [TTS — Text-to-Speech](docs/x402-directory/voice.md#tts-text-to-speech)

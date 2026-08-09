@@ -38,21 +38,6 @@ Or with AgentKit:
 await agentkit.run("x402_fetch", { url: "https://api.firecrawl.dev/v1/x402/search", method: "POST" });
 ```
 
-## Broader x402 Ecosystem
-
-The directory above is Floe-verified. The broader x402 ecosystem has **46,000+ indexed endpoints** across multiple registries:
-
-| Directory | What it is | Link |
-|-----------|-----------|------|
-| **CDP Bazaar** | Coinbase's canonical index — 46,000+ endpoints | [Browse →](https://docs.cdp.coinbase.com/x402/bazaar) |
-| **x402scan** | Block-explorer-style analytics: servers, sellers, volume | [Browse →](https://x402scan.com) |
-| **x402list.fun** | Searchable directory with category and pricing filters | [Browse →](https://x402list.fun) |
-| **x402station** | Performance and reliability monitoring | [Browse →](https://x402station.com) |
-| **EntRoute** | Machine-first ranked discovery with semantic search | [Browse →](https://entroute.com) |
-| **x402.org Ecosystem** | Foundation-maintained provider and facilitator list | [Browse →](https://x402.org/ecosystem) |
-
-**Most USDC-on-Base x402 endpoints work with Floe credit even when unlisted** — pass the URL to `x402_fetch` or `/v1/proxy/fetch`. Floe settles exact-scheme USDC offers on Base mainnet; the proxy still applies URL parsing, SSRF, and allowlist checks, so a non-conforming vendor fails closed rather than paying.
-
 ## Submit an API
 
 [How to submit →](submit.md)

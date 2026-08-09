@@ -31,7 +31,7 @@ const { text } = await generateText({
 });
 ```
 
-> **Scope.** In this example the `gpt-4o` model tokens are billed by OpenAI against **your own** `@ai-sdk/openai` key — a call that bypasses Floe is the one thing a policy can't see. To bring LLM tokens onto the same ledger and caps as your x402 payments, point the model at Floe's LLM proxy (`/v1/llm/chat/completions`, host `credit-api.floelabs.xyz`); then one budget bounds both. See [Spend Controls](../developers/spend-controls.md).
+> **Scope.** In this example the `gpt-4o` model tokens are billed by OpenAI against **your own** `@ai-sdk/openai` key — a call that bypasses Floe is the one thing a policy can't see. To bring LLM tokens onto the same ledger and caps as your x402 payments, route the model through Floe: **keyless** via `POST /v1/chat/completions` (fully-qualified ids like `openai/gpt-4o`, no provider key), or **BYOK** via `/v1/llm/chat/completions` with `X-Floe-Provider-Key` (host `credit-api.floelabs.xyz` either way). Then one budget bounds both. See [Floe Inference](../developers/keyless-inference.md) and [Spend Controls](../developers/spend-controls.md).
 
 ## Example
 

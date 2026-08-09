@@ -67,7 +67,7 @@ Every tool call and every token is paid from the balance behind `FLOE_API_KEY`. 
 
 ### Paying for tools — `Floe402Tool`
 
-`Floe402Tool` is a `crewai.tools.BaseTool` that calls any of the **2,000+ vendor API services** reachable through [x402](../developers/x402-facilitator.md). Each call routes through the Floe facilitator, which funds the payment from your prepaid balance, signs the payment, and returns the response. The agent never holds USDC or an API key, never signs a transaction, never pays gas.
+`Floe402Tool` is a `crewai.tools.BaseTool` that calls any of the **thousands of vendor API services** reachable through [x402](../developers/x402-facilitator.md). Each call routes through the Floe facilitator, which funds the payment from your prepaid balance, signs the payment, and returns the response. The agent never holds USDC or an API key, never signs a transaction, never pays gas.
 
 ```python
 from crewai_floe import Floe402Tool

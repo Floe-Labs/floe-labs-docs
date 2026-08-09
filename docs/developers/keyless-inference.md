@@ -113,7 +113,9 @@ All are drop-in OpenAI-compatible:
 
 ## Models
 
-Every id is fully qualified as `provider/model` — copy them exactly as written; a bare name (e.g. `gpt-4o` without the `openai/` prefix) is rejected. **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key) — always resolve ids there at runtime. The full set below is what's live today: **120 models across 28 providers**.
+Every id on this keyless gateway is fully qualified as `provider/model` — copy them exactly as written; on `POST /v1/chat/completions` (and the other `/v1/*` gateway surfaces) a bare name (e.g. `gpt-4o` without the `openai/` prefix) is **rejected**. **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key) — always resolve ids there at runtime; **for the full, current set see `GET /v1/models` for the live list** rather than a hard-coded count. The tables below enumerate what's live today.
+
+> **Two id formats, two endpoints — don't mix them.** The keyless gateway (`POST /v1/chat/completions`, `/v1/embeddings`, `/v1/audio/*`) requires the **fully-qualified** `provider/model` id used throughout this page. The legacy, flag-gated **BYOK metered proxy** `POST /v1/llm/chat/completions` is a *different* endpoint — it takes a **bare** id (`gpt-4o`, not `openai/gpt-4o`) plus your own `X-Floe-Provider-Key`, and charges only a routing fee. Prefer this keyless gateway for new work; the BYOK metered proxy is documented in [Unified Ledger](../build/unified-ledger.md).
 
 ### Text / reasoning
 
@@ -145,6 +147,8 @@ Every id is fully qualified as `provider/model` — copy them exactly as written
 
 `openai/tts-1` · `openai/tts-1-hd` · `openai/gpt-4o-mini-tts` · `google/gemini-3.1-flash-tts` · `google/gemini-2.5-flash-tts` · `cartesia/sonic-3` · `resemble/chatterbox-multilingual` · `resemble/chatterbox-turbo` · `xiaomi/mimo-v2.5-tts` · `xiaomi/mimo-v2.5-tts-voiceclone` · `xiaomi/mimo-v2.5-tts-voicedesign` · `canopy/orpheus-3b` · `canopy/orpheus-v1-english` · `kokoro/kokoro-82m` · `inworld/realtime-tts-2` · `boson/higgs-audio-v2.5` · `sesame/csm-1b` · `qwen/qwen3-tts`
 
+> `elevenlabs/eleven-turbo-v2-5` is in the catalog for pricing/attribution but is served only by the orchestrator's custom-voice surface (`POST /v1/orchestrator/voice`), **not** the OpenAI-compatible `/v1/audio/speech` above — so it's omitted from this list. Reach ElevenLabs on the OpenAI-compatible path via the [Vendor Marketplace](../x402-directory/voice.md).
+
 ### Speech-to-Text
 
 **Batch** (`POST /v1/audio/transcriptions`): `openai/whisper-1` · `openai/whisper-large-v3` · `openai/whisper-large-v3-turbo` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` · `mistral/voxtral-small` · `mistral/voxtral-mini-transcribe` · `nvidia/parakeet-tdt-0.6b-v3` · `nvidia/nemotron-3.5-asr`
@@ -155,7 +159,7 @@ Every id is fully qualified as `provider/model` — copy them exactly as written
 
 ### Realtime voice models
 
-`openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
+`openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
 
 > **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key); it grows over time, so resolve ids there rather than pinning this list. Venice and Sarvam are reachable here as **first-class inference providers** in the gateway (the ids above) — the same vendors also expose x402 endpoints — Venice [image](../x402-directory/image.md) and [TTS](../x402-directory/voice.md), Sarvam [voice and language](../x402-directory/voice.md) — reached via `/v1/proxy/fetch`. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, …) also live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`.
 
@@ -309,7 +313,7 @@ Metered per **audio-second** on your Floe balance; because your balance is the c
 
 Open a WebSocket to `wss://credit-api.floelabs.xyz/v1/realtime?model=openai/gpt-realtime-2.1`, authenticating with `Authorization: Bearer <floe key>` or `?api_key=`. Floe relays events verbatim in both directions and meters **each completed turn** from the provider's usage block — per token for conversational models, per minute for duration-billed ones. Because your balance is the ceiling, the session is cut off the instant a turn would exhaust it.
 
-Available realtime models: `openai/gpt-realtime-2.1` and `openai/gpt-realtime-2.1-mini` (plus the original `openai/gpt-realtime`), the duration-billed `openai/gpt-realtime-whisper` (realtime transcription within the OpenAI Realtime session) and `openai/gpt-realtime-translate` (live translation), `google/gemini-live-3.1`, and `xai/grok-voice` ($0.05/min upstream). **`amazon/nova-2-sonic` is beta** — it's in the catalog but requires the dedicated Bedrock bridge (SigV4 credentials) to serve; treat it as not-yet-general until the bridge is provisioned on your deployment.
+Available realtime models: `openai/gpt-realtime-2.1` and `openai/gpt-realtime-2.1-mini` (plus the original `openai/gpt-realtime`), the duration-billed `openai/gpt-realtime-whisper` (realtime transcription within the OpenAI Realtime session) and `openai/gpt-realtime-translate` (live translation), `google/gemini-live-3.1` (plus the earlier `google/gemini-live`, Gemini Live 2.5 Flash), and `xai/grok-voice` ($0.05/min upstream). **`amazon/nova-2-sonic` is beta** — it's in the catalog but requires the dedicated Bedrock bridge (SigV4 credentials) to serve; treat it as not-yet-general until the bridge is provisioned on your deployment.
 
 > This WebSocket is **speech-to-speech** — audio in, audio (or, for the transcription/translation variants, text) out over one OpenAI-Realtime connection. It is **not** a general streaming-STT feed you can plug into a LiveKit or Pipecat STT service expecting `interim`/`final` transcript events. For that, use the keyless [streaming transcription](#streaming-transcription-live-stt) endpoint above.
 

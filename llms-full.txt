@@ -27,7 +27,7 @@
 - Unified Billing & Ledger — https://floe-labs.gitbook.io/docs/the-voice-stack/unified-ledger.md
 - Budget-Aware Routing — https://floe-labs.gitbook.io/docs/the-voice-stack/budget-aware-routing.md
 - Latency & overhead — https://floe-labs.gitbook.io/docs/the-voice-stack/latency-overhead.md
-- Overview — 2,000+ services — https://floe-labs.gitbook.io/docs/vendor-marketplace/x402-directory.md
+- Overview — https://floe-labs.gitbook.io/docs/vendor-marketplace/x402-directory.md
 - Compute — https://floe-labs.gitbook.io/docs/vendor-marketplace/compute.md
 - STT — Speech-to-Text — https://floe-labs.gitbook.io/docs/vendor-marketplace/voice.md
 - Image — https://floe-labs.gitbook.io/docs/vendor-marketplace/image.md
@@ -752,7 +752,7 @@ Rule of thumb: if the call *spends money or reads an agent's state*, use the **a
 ## Keyless vs. bring-your-own-key
 
 - **Keyless (default):** send only your Floe key; Floe holds the upstream vendor key and bills you per call.
-- **BYOK:** add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` on `/v1/llm/chat/completions` to keep paying the vendor directly — Floe meters and charges a routing fee only.
+- **BYOK:** add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` on the BYOK metered proxy `/v1/llm/chat/completions` (bare model ids, e.g. `gpt-4o`) to keep paying the vendor directly — Floe meters and charges a routing fee only.
 
 Full key lifecycle (rotation, rate limits, scopes): [API Keys](../developers/api-keys.md).
 
@@ -827,7 +827,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 
 That's it — the LLM leg is now on your Floe balance, under your [spend controls](../developers/spend-controls.md), and every response returns its cost in `X-Floe-Payment-Amount` (see [Pricing](pricing.md)).
 
-**Keep your own model key?** Point at `/v1/llm/chat/completions` and add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` — Floe meters the call and charges only a routing fee; you pay the vendor at cost. See [Floe Inference](../developers/keyless-inference.md).
+**Keep your own model key?** Point at the BYOK metered proxy `/v1/llm/chat/completions` (bare model ids there, e.g. `gpt-4o`) and add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` — Floe meters the call and charges only a routing fee; you pay the vendor at cost. See [Floe Inference](../developers/keyless-inference.md).
 
 ---
 
@@ -1099,17 +1099,7 @@ All three legs share `X-Floe-Task-Id: call-8842`, so a single task budget caps t
 
 ## Live voice vendors
 
-| Service | Endpoints | Status |
-|---------|-----------|--------|
-| ElevenLabs | Text-to-Speech | Live |
-| Deepgram | Speech-to-Text | Live |
-| Venice AI | Text-to-Speech, Transcription | Live |
-| Cartesia | Text-to-Speech | Live |
-| Google Cloud TTS | Text-to-Speech | Live |
-| AssemblyAI | Speech-to-Text | Live |
-| Twilio | Telephony | Live |
-
-See the [Voice vendor directory](../x402-directory/voice.md) for endpoints, request shapes, and per-vendor pricing.
+The [Voice vendor directory](../x402-directory/voice.md) is the canonical roster of live TTS, STT, and telephony vendors — with endpoints, request shapes, and per-vendor pricing.
 
 ## Live voice with your own stack (LiveKit / Pipecat)
 
@@ -1928,7 +1918,9 @@ All are drop-in OpenAI-compatible:
 
 ## Models
 
-Every id is fully qualified as `provider/model` — copy them exactly as written; a bare name (e.g. `gpt-4o` without the `openai/` prefix) is rejected. **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key) — always resolve ids there at runtime. The full set below is what's live today: **120 models across 28 providers**.
+Every id on this keyless gateway is fully qualified as `provider/model` — copy them exactly as written; on `POST /v1/chat/completions` (and the other `/v1/*` gateway surfaces) a bare name (e.g. `gpt-4o` without the `openai/` prefix) is **rejected**. **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key) — always resolve ids there at runtime; **for the full, current set see `GET /v1/models` for the live list** rather than a hard-coded count. The tables below enumerate what's live today.
+
+> **Two id formats, two endpoints — don't mix them.** The keyless gateway (`POST /v1/chat/completions`, `/v1/embeddings`, `/v1/audio/*`) requires the **fully-qualified** `provider/model` id used throughout this page. The legacy, flag-gated **BYOK metered proxy** `POST /v1/llm/chat/completions` is a *different* endpoint — it takes a **bare** id (`gpt-4o`, not `openai/gpt-4o`) plus your own `X-Floe-Provider-Key`, and charges only a routing fee. Prefer this keyless gateway for new work; the BYOK metered proxy is documented in [Unified Ledger](../build/unified-ledger.md).
 
 ### Text / reasoning
 
@@ -1960,6 +1952,8 @@ Every id is fully qualified as `provider/model` — copy them exactly as written
 
 `openai/tts-1` · `openai/tts-1-hd` · `openai/gpt-4o-mini-tts` · `google/gemini-3.1-flash-tts` · `google/gemini-2.5-flash-tts` · `cartesia/sonic-3` · `resemble/chatterbox-multilingual` · `resemble/chatterbox-turbo` · `xiaomi/mimo-v2.5-tts` · `xiaomi/mimo-v2.5-tts-voiceclone` · `xiaomi/mimo-v2.5-tts-voicedesign` · `canopy/orpheus-3b` · `canopy/orpheus-v1-english` · `kokoro/kokoro-82m` · `inworld/realtime-tts-2` · `boson/higgs-audio-v2.5` · `sesame/csm-1b` · `qwen/qwen3-tts`
 
+> `elevenlabs/eleven-turbo-v2-5` is in the catalog for pricing/attribution but is served only by the orchestrator's custom-voice surface (`POST /v1/orchestrator/voice`), **not** the OpenAI-compatible `/v1/audio/speech` above — so it's omitted from this list. Reach ElevenLabs on the OpenAI-compatible path via the [Vendor Marketplace](../x402-directory/voice.md).
+
 ### Speech-to-Text
 
 **Batch** (`POST /v1/audio/transcriptions`): `openai/whisper-1` · `openai/whisper-large-v3` · `openai/whisper-large-v3-turbo` · `openai/gpt-4o-transcribe` · `openai/gpt-4o-mini-transcribe` · `mistral/voxtral-small` · `mistral/voxtral-mini-transcribe` · `nvidia/parakeet-tdt-0.6b-v3` · `nvidia/nemotron-3.5-asr`
@@ -1970,7 +1964,7 @@ Every id is fully qualified as `provider/model` — copy them exactly as written
 
 ### Realtime voice models
 
-`openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
+`openai/gpt-realtime` · `openai/gpt-realtime-2.1` · `openai/gpt-realtime-2.1-mini` · `openai/gpt-realtime-translate` · `openai/gpt-realtime-whisper` · `google/gemini-live` · `google/gemini-live-3.1` · `xai/grok-voice` · `amazon/nova-2-sonic`
 
 > **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key); it grows over time, so resolve ids there rather than pinning this list. Venice and Sarvam are reachable here as **first-class inference providers** in the gateway (the ids above) — the same vendors also expose x402 endpoints — Venice [image](../x402-directory/image.md) and [TTS](../x402-directory/voice.md), Sarvam [voice and language](../x402-directory/voice.md) — reached via `/v1/proxy/fetch`. Third-party **voice** vendors with proprietary APIs (ElevenLabs, Cartesia, Deepgram, Google Cloud TTS, AssemblyAI, Hume, Rime, …) also live in the [Vendor Marketplace](../x402-directory/voice.md), reached via `/v1/proxy/fetch`.
 
@@ -2124,7 +2118,7 @@ Metered per **audio-second** on your Floe balance; because your balance is the c
 
 Open a WebSocket to `wss://credit-api.floelabs.xyz/v1/realtime?model=openai/gpt-realtime-2.1`, authenticating with `Authorization: Bearer <floe key>` or `?api_key=`. Floe relays events verbatim in both directions and meters **each completed turn** from the provider's usage block — per token for conversational models, per minute for duration-billed ones. Because your balance is the ceiling, the session is cut off the instant a turn would exhaust it.
 
-Available realtime models: `openai/gpt-realtime-2.1` and `openai/gpt-realtime-2.1-mini` (plus the original `openai/gpt-realtime`), the duration-billed `openai/gpt-realtime-whisper` (realtime transcription within the OpenAI Realtime session) and `openai/gpt-realtime-translate` (live translation), `google/gemini-live-3.1`, and `xai/grok-voice` ($0.05/min upstream). **`amazon/nova-2-sonic` is beta** — it's in the catalog but requires the dedicated Bedrock bridge (SigV4 credentials) to serve; treat it as not-yet-general until the bridge is provisioned on your deployment.
+Available realtime models: `openai/gpt-realtime-2.1` and `openai/gpt-realtime-2.1-mini` (plus the original `openai/gpt-realtime`), the duration-billed `openai/gpt-realtime-whisper` (realtime transcription within the OpenAI Realtime session) and `openai/gpt-realtime-translate` (live translation), `google/gemini-live-3.1` (plus the earlier `google/gemini-live`, Gemini Live 2.5 Flash), and `xai/grok-voice` ($0.05/min upstream). **`amazon/nova-2-sonic` is beta** — it's in the catalog but requires the dedicated Bedrock bridge (SigV4 credentials) to serve; treat it as not-yet-general until the bridge is provisioned on your deployment.
 
 > This WebSocket is **speech-to-speech** — audio in, audio (or, for the transcription/translation variants, text) out over one OpenAI-Realtime connection. It is **not** a general streaming-STT feed you can plug into a LiveKit or Pipecat STT service expecting `interim`/`final` transcript events. For that, use the keyless [streaming transcription](#streaming-transcription-live-stt) endpoint above.
 
@@ -2158,11 +2152,11 @@ A token router shows you your LLM spend. Floe shows you the whole bill — telep
 
 A voice agent's cost is never just tokens. One conversation pays for telephony to place the call, speech-to-text to hear the caller, an LLM to decide what to say, and text-to-speech to say it back. If four vendors bill four different ways, you can't answer the only question that matters: what did this call cost, and was it worth it?
 
-Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from the same balance and lands in the same ledger, tagged by agent, task, and vendor. x402 vendors go through `POST /v1/proxy/fetch`; LLM calls go through `POST https://credit-api.floelabs.xyz/v1/llm/chat/completions`. One balance, one ledger, one policy set.
+Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from the same balance and lands in the same ledger, tagged by agent, task, and vendor. x402 vendors go through `POST /v1/proxy/fetch`; LLM calls go through Floe's OpenAI-compatible gateway — **keyless** `POST /v1/chat/completions` (recommended; fully-qualified `provider/model` ids) or the **BYOK metered proxy** `POST /v1/llm/chat/completions` (your own provider key, bare ids). One balance, one ledger, one policy set.
 
-## Route your LLM through Floe
+## Route your LLM through Floe (BYOK metered proxy)
 
-The LLM endpoint is OpenAI-compatible — same request shape as OpenAI Chat Completions. Point it at Floe's host, authenticate with your Floe agent key, and supply your upstream provider key one of two ways: **per request** in `X-Floe-Provider-Key` (used only to call upstream, then discarded — never persisted), or **stored once** (encrypted, per provider) so Floe auto-routes BYOK with no header. See [per-request vs stored keys](../developers/keyless-inference.md) for the storage flow and the fixed BYOK service fee.
+`POST /v1/llm/chat/completions` is Floe's **BYOK metered proxy**: you bring your own upstream provider key and Floe charges only a small routing fee on top of provider cost. It is OpenAI-compatible — same request shape as OpenAI Chat Completions — but distinct from the keyless gateway in two ways: it takes a **bare** model id (`gpt-4o`, **not** `openai/gpt-4o`), and it needs your provider key. Point it at Floe's host, authenticate with your Floe agent key, and supply your upstream provider key one of two ways: **per request** in `X-Floe-Provider-Key` (used only to call upstream, then discarded — never persisted), or **stored once** (encrypted, per provider) so Floe auto-routes BYOK with no header. See [per-request vs stored keys](../developers/keyless-inference.md) for the storage flow and the fixed BYOK service fee.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
@@ -2174,6 +2168,8 @@ curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
     "messages": [{ "role": "user", "content": "Hello from Floe" }]
   }'
 ```
+
+> **Don't want to hold a provider key at all?** Use the **keyless** gateway `POST /v1/chat/completions` with a **fully-qualified** `provider/model` id (`openai/gpt-4o`) — Floe fronts the upstream relationship and bills you per call. That's the recommended path for new work; see [Floe Inference (Keyless LLM & Voice)](../developers/keyless-inference.md).
 
 Now LLM tokens, speech, and search all count against the same budgets, appear in the same analytics, and feed the same per-agent cost history — right next to the x402 vendors you already pay through the proxy.
 
@@ -2329,7 +2325,7 @@ Human turn-taking gives useful context for why this budget exists at all: resear
 - [Vendor marketplace](../x402-directory/README.md) — endpoints Floe routes today
 
 ==============================================================================
-# Overview — 2,000+ services
+# Overview
 Source: docs/x402-directory/README.md
 URL: https://floe-labs.gitbook.io/docs/vendor-marketplace/x402-directory.md
 ==============================================================================
@@ -2370,21 +2366,6 @@ Or with AgentKit:
 await agentkit.run("x402_fetch", { url: "https://api.firecrawl.dev/v1/x402/search", method: "POST" });
 ```
 
-## Broader x402 Ecosystem
-
-The directory above is Floe-verified. The broader x402 ecosystem has **46,000+ indexed endpoints** across multiple registries:
-
-| Directory | What it is | Link |
-|-----------|-----------|------|
-| **CDP Bazaar** | Coinbase's canonical index — 46,000+ endpoints | [Browse →](https://docs.cdp.coinbase.com/x402/bazaar) |
-| **x402scan** | Block-explorer-style analytics: servers, sellers, volume | [Browse →](https://x402scan.com) |
-| **x402list.fun** | Searchable directory with category and pricing filters | [Browse →](https://x402list.fun) |
-| **x402station** | Performance and reliability monitoring | [Browse →](https://x402station.com) |
-| **EntRoute** | Machine-first ranked discovery with semantic search | [Browse →](https://entroute.com) |
-| **x402.org Ecosystem** | Foundation-maintained provider and facilitator list | [Browse →](https://x402.org/ecosystem) |
-
-**Most USDC-on-Base x402 endpoints work with Floe credit even when unlisted** — pass the URL to `x402_fetch` or `/v1/proxy/fetch`. Floe settles exact-scheme USDC offers on Base mainnet; the proxy still applies URL parsing, SSRF, and allowlist checks, so a non-conforming vendor fails closed rather than paying.
-
 ## Submit an API
 
 [How to submit →](submit.md)
@@ -2421,17 +2402,9 @@ Two headers do the work:
 | `Authorization` | `Bearer floe_<agent key>` | Authenticates the agent and bills its credit line |
 | `X-Floe-Provider-Key` | `<your OpenAI/Anthropic key>` | Pass-through key used to call upstream — never stored |
 
-### Featured models
+The full model list with live pricing is the canonical catalog — see [Keyless Inference](../developers/keyless-inference.md) or call `GET /v1/models`. The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header.
 
-| Model | Provider | Input ($/1M tokens) | Output ($/1M tokens) |
-|---|---|---|---|
-| `gpt-5.5` | OpenAI | $5.00 | $30.00 |
-| `gpt-5.4-mini` | OpenAI | $0.75 | $4.50 |
-| `claude-opus-4-8` | Anthropic | $5.00 | $25.00 |
-| `claude-sonnet-4-6` | Anthropic | $3.00 | $15.00 |
-| `claude-haiku-4-5` | Anthropic | $1.00 | $5.00 |
-
-Rates track the maintained LiteLLM cost map (refreshed weekly) and may change. The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header.
+> This `/v1/llm` surface is the **BYOK metered proxy** — you bring a provider key and pass a **bare** model id (e.g. `gpt-5.5`). The keyless gateway at `/v1/chat/completions` is different: no provider key, and it requires the fully-qualified `provider/model` form (`openai/gpt-5.5`). See [Keyless Inference](../developers/keyless-inference.md).
 
 ### Drop-in OpenAI client
 
@@ -2482,10 +2455,7 @@ Sarvam AI chat is served on Floe's **OpenAI-compatible gateway** — call `POST 
 
 > Indic-language chat (Sarvam 105B / 30B) across 22+ Indian languages — India's sovereign-AI stack. OpenAI-compatible; set `stream: false`. Prices are Sarvam's INR list converted at ~₹83/$ plus a 5% Floe margin.
 
-| Model | id | Context | Input $/1M | Output $/1M |
-|---|---|---|---|---|
-| Sarvam 105B | `sarvam/sarvam-105b` | 128K | $0.048 | $0.193 |
-| Sarvam 30B | `sarvam/sarvam-30b` | 64K | $0.030 | $0.121 |
+See [Sarvam AI](../developers/sarvam.md) for the full model list and per-token pricing.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
@@ -2498,7 +2468,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 
 ## Venice models
 
-Venice exposes **90+ chat models and 9 embedding models** through the same metered endpoint — from fast open-source to frontier, including private TEE-attested (E2EE) and uncensored options. Pass the model id straight through; there's no allowlist. The sections below cover [how to call them](#venice-ai-chat-completions) and [how to pick by capability](#pick-a-model) — the full current catalog with per-token pricing is below.
+Venice exposes its full chat and embedding catalog through the same metered endpoint — from fast open-source to frontier, including private TEE-attested (E2EE) and uncensored options. Pass the model id straight through; there's no allowlist. The sections below cover [how to call them](#venice-ai-chat-completions) and [how to pick by capability](#pick-a-model); the full catalog with per-token pricing is served from the live endpoint below.
 
 Discover it live (capabilities, context windows, pricing) from Venice's public, no-key endpoint:
 
@@ -2509,121 +2479,7 @@ curl "https://api.venice.ai/api/v1/models?type=embedding"   # embedding models
 
 > Capabilities shown below: **reasoning · vision · code · audio in · video in · E2EE · X search**. Most models additionally support tool/function calling, structured output, and web search. Prices are USD per 1M tokens, track Venice's catalog (refreshed ~weekly), and may change — you're billed the exact metered amount in `X-Floe-Cost-USDC`.
 
-### Embedding models
-
-| Model | Input $/1M |
-|---|---|
-| `text-embedding-bge-en-icl` | $0.0125 |
-| `text-embedding-multilingual-e5-large-instruct` | $0.0125 |
-| `text-embedding-nemotron-embed-vl-1b-v2` | $0.0125 |
-| `text-embedding-qwen3-0-6b` | $0.0125 |
-| `text-embedding-qwen3-8b` | $0.0125 |
-| `text-embedding-3-small` | $0.025 |
-| `text-embedding-bge-m3` | $0.15 |
-| `text-embedding-3-large` | $0.1625 |
-| `gemini-embedding-2-preview` | $0.25 |
-
-### Chat models
-
-<details>
-
-<summary>Full chat catalog — all 91 models, cheapest first</summary>
-
-| Model | Capabilities | Context | Input $/1M | Output $/1M |
-|---|---|---|---|---|
-| `e2ee-gpt-oss-20b-p` | reasoning · E2EE | 128K | $0.05 | $0.19 |
-| `e2ee-qwen-2-5-7b-p` | E2EE | 32K | $0.05 | $0.13 |
-| `openai-gpt-oss-120b` | reasoning | 128K | $0.07 | $0.30 |
-| `nvidia-nemotron-3-nano-30b-a3b` | — | 128K | $0.075 | $0.30 |
-| `mistral-small-3-2-24b-instruct` | — | 256K | $0.0938 | $0.25 |
-| `qwen3-5-9b` | reasoning · vision | 256K | $0.10 | $0.15 |
-| `google-gemma-3-27b-it` | vision | 198K | $0.12 | $0.20 |
-| `google-gemma-4-31b-it` | reasoning · vision · video in | 256K | $0.12 | $0.36 |
-| `zai-org-glm-4.7-flash` | reasoning | 128K | $0.125 | $0.50 |
-| `e2ee-gpt-oss-120b-p` | reasoning · E2EE | 128K | $0.13 | $0.65 |
-| `e2ee-gemma-4-31b` | reasoning · E2EE | 32K | $0.139 | $0.43 |
-| `e2ee-gemma-3-27b-p` | E2EE | 40K | $0.14 | $0.50 |
-| `nvidia-nemotron-cascade-2-30b-a3b` | reasoning | 256K | $0.14 | $0.80 |
-| `olafangensan-glm-4.7-flash-heretic` | reasoning | 200K | $0.14 | $0.80 |
-| `llama-3.2-3b` | — | 128K | $0.15 | $0.60 |
-| `qwen3-235b-a22b-instruct-2507` | — | 128K | $0.15 | $0.75 |
-| `gemma-4-uncensored` | vision · uncensored | 256K | $0.1625 | $0.50 |
-| `google-gemma-4-26b-a4b-it` | reasoning · vision · video in | 256K | $0.1625 | $0.50 |
-| `deepseek-v4-flash` | reasoning · code | 1M | $0.17 | $0.35 |
-| `xiaomi-mimo-v2-5` | reasoning · vision · code · audio in · video in | 1M | $0.175 | $0.35 |
-| `e2ee-qwen3-6-35b-a3b` | reasoning · code · E2EE | 32K | $0.182 | $1.18 |
-| `mistral-small-2603` | reasoning · vision · code | 256K | $0.1875 | $0.75 |
-| `openai-gpt-4o-mini-2024-07-18` | vision | 128K | $0.1875 | $0.75 |
-| `e2ee-gemma-4-26b-a4b-uncensored-p` | E2EE · uncensored | 64K | $0.19 | $0.88 |
-| `e2ee-qwen3-30b-a3b-p` | E2EE | 256K | $0.19 | $0.69 |
-| `venice-uncensored-1-2` | vision · uncensored | 128K | $0.20 | $0.90 |
-| `e2ee-qwen3-vl-30b-a3b-p` | vision · E2EE | 128K | $0.25 | $0.90 |
-| `e2ee-venice-uncensored-24b-p` | E2EE · uncensored | 32K | $0.25 | $1.15 |
-| `qwen3-vl-235b-a22b` | vision | 256K | $0.25 | $1.50 |
-| `minimax-m3` | reasoning · vision · code · video in | 500K | $0.30 | $1.20 |
-| `minimax-m3-preview` | reasoning · code | 524K | $0.30 | $1.20 |
-| `arcee-trinity-large-thinking` | reasoning · code | 256K | $0.3125 | $1.125 |
-| `mercury-2` | reasoning | 128K | $0.3125 | $0.9375 |
-| `qwen3-5-35b-a3b` | reasoning · vision · code · video in | 256K | $0.3125 | $1.25 |
-| `qwen3-6-27b` | reasoning · vision · code · video in | 256K | $0.325 | $3.25 |
-| `deepseek-v3.2` | reasoning | 160K | $0.33 | $0.48 |
-| `minimax-m25` | reasoning · code | 198K | $0.34 | $1.19 |
-| `qwen3-coder-480b-a35b-instruct-turbo` | code | 256K | $0.35 | $1.50 |
-| `qwen3-next-80b` | — | 256K | $0.35 | $1.90 |
-| `minimax-m27` | reasoning · code | 198K | $0.375 | $1.50 |
-| `e2ee-qwen3-6-35b-a3b-uncensored-p` | E2EE · uncensored | 128K | $0.38 | $1.88 |
-| `qwen3-235b-a22b-thinking-2507` | reasoning | 128K | $0.45 | $3.50 |
-| `qwen-3-7-plus` | reasoning · vision · code · video in | 1M | $0.50 | $2.00 |
-| `venice-uncensored-role-play` | vision · uncensored | 128K | $0.50 | $2.00 |
-| `zai-org-glm-4.7` | reasoning | 198K | $0.55 | $2.65 |
-| `kimi-k2-5` | reasoning · vision · code | 256K | $0.56 | $3.50 |
-| `nvidia-nemotron-3-ultra-550b-a55b` | reasoning | 256K | $0.625 | $3.125 |
-| `qwen-3-6-plus` | reasoning · vision · code · video in | 1M | $0.625 | $3.75 |
-| `gemini-3-flash-preview` | reasoning · vision · audio in · video in | 256K | $0.70 | $3.75 |
-| `llama-3.3-70b` | — | 128K | $0.70 | $2.80 |
-| `qwen3-5-397b-a17b` | reasoning · vision · code · video in | 128K | $0.75 | $4.50 |
-| `kimi-k2-6` | reasoning · vision · code | 256K | $0.85 | $4.655 |
-| `zai-org-glm-4.6` | reasoning | 198K | $0.85 | $2.75 |
-| `kimi-k2-7-code` | reasoning · vision · code | 256K | $0.90 | $4.30 |
-| `openai-gpt-54-mini` | reasoning · vision | 400K | $0.9375 | $5.625 |
-| `aion-labs-aion-2-0` | reasoning | 128K | $1.00 | $2.00 |
-| `grok-build-0-1` | reasoning · vision · code | 256K | $1.00 | $2.00 |
-| `zai-org-glm-5` | reasoning · code | 198K | $1.00 | $3.20 |
-| `e2ee-glm-4-7-p` | reasoning · code · E2EE | 128K | $1.10 | $4.15 |
-| `e2ee-glm-5-1` | reasoning · E2EE | 200K | $1.10 | $4.15 |
-| `hermes-3-llama-3.1-405b` | — | 128K | $1.10 | $3.00 |
-| `z-ai-glm-5-turbo` | reasoning · code | 200K | $1.20 | $4.00 |
-| `zai-org-glm-5-2` | reasoning | 1M | $1.40 | $4.40 |
-| `grok-4-20` | reasoning · vision · X search | 2M | $1.42 | $2.83 |
-| `grok-4-20-multi-agent` | reasoning · vision · X search | 2M | $1.42 | $2.83 |
-| `grok-4-3` | reasoning · vision · X search | 1M | $1.42 | $2.83 |
-| `z-ai-glm-5v-turbo` | reasoning · vision · code | 200K | $1.50 | $5.00 |
-| `gemini-3-5-flash` | reasoning · vision · audio in · video in | 1M | $1.55 | $9.45 |
-| `deepseek-v4-pro` | reasoning · code | 1M | $1.73 | $3.796 |
-| `e2ee-glm-5-2-p` | reasoning · code · E2EE | 524K | $1.75 | $5.75 |
-| `zai-org-glm-5-1` | reasoning | 200K | $1.75 | $5.50 |
-| `openai-gpt-52` | reasoning | 256K | $2.19 | $17.50 |
-| `openai-gpt-52-codex` | reasoning · vision · code | 256K | $2.19 | $17.50 |
-| `openai-gpt-53-codex` | reasoning · vision · code | 400K | $2.19 | $17.50 |
-| `gemini-3-1-pro-preview` | reasoning · vision · audio in · video in | 1M | $2.50 | $15.00 |
-| `qwen-3-7-max` | reasoning · code | 1M | $2.70 | $8.05 |
-| `openai-gpt-4o-2024-11-20` | vision | 128K | $3.125 | $12.50 |
-| `openai-gpt-54` | reasoning · vision | 1M | $3.13 | $18.80 |
-| `claude-sonnet-4-6` | reasoning · vision · code | 1M | $3.60 | $18.00 |
-| `claude-sonnet-4-5` | reasoning · vision · code | 198K | $3.75 | $18.75 |
-| `claude-opus-4-5` | reasoning · vision · code | 198K | $6.00 | $30.00 |
-| `claude-opus-4-6` | reasoning · vision · code | 1M | $6.00 | $30.00 |
-| `claude-opus-4-7` | reasoning · vision · code | 1M | $6.00 | $30.00 |
-| `claude-opus-4-8` | reasoning · vision · code | 1M | $6.00 | $30.00 |
-| `openai-gpt-55` | reasoning · vision | 1M | $6.25 | $37.50 |
-| `claude-fable-5` | reasoning · vision · code | 1M | $12.00 | $60.00 |
-| `claude-opus-4-8-fast` | reasoning · vision · code | 1M | $12.00 | $60.00 |
-| `claude-opus-4-6-fast` | reasoning · vision · code | 1M | $36.00 | $180.00 |
-| `claude-opus-4-7-fast` | reasoning · vision · code | 1M | $36.00 | $180.00 |
-| `openai-gpt-54-pro` | reasoning · vision | 1M | $37.50 | $225.00 |
-| `openai-gpt-55-pro` | reasoning · vision | 1M | $37.50 | $225.00 |
-
-</details>
+The full current catalog — every chat and embedding model with per-token pricing — is served from the live, no-key endpoint above and mirrored on the marketplace card [`/vendors/venice-compute`](https://dev-dashboard.floelabs.xyz/vendors/venice-compute), the canonical Venice model reference. Pass any listed id as the `model` field.
 
 ---
 
@@ -3871,7 +3727,7 @@ URL: https://floe-labs.gitbook.io/docs/core-concepts/spend-controls.md
 
 Programmable budgets for your agent wallets. Cap spending per vendor, per task, per API, or across your whole team — with optional time windows.
 
-> **Scope: one ledger, one policy set.** Spend controls cap **every paid call Floe settles** — x402 vendors through the proxy (`POST /v1/proxy/fetch`) **and** LLM tokens through the LLM proxy (`POST /v1/llm/chat/completions`, host `credit-api.floelabs.xyz`). Route both through Floe and a single task or session budget bounds the entire conversation cost across every vendor. The one thing a policy can't see is a call you send straight to a provider with your own key, bypassing Floe — so route it through Floe.
+> **Scope: one ledger, one policy set.** Spend controls cap **every paid call Floe settles** — x402 vendors through the proxy (`POST /v1/proxy/fetch`) **and** LLM/voice tokens through the keyless gateway (`POST /v1/chat/completions`, host `credit-api.floelabs.xyz`); the legacy BYOK metered proxy `/v1/llm/chat/completions` is capped the same way. Route both through Floe and a single task or session budget bounds the entire conversation cost across every vendor. The one thing a policy can't see is a call you send straight to a provider with your own key, bypassing Floe — so route it through Floe.
 
 ## Policy Types
 
@@ -4315,7 +4171,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   }'
 ```
 
-> **Scope.** This governs every paid call Floe settles — x402 payments through the proxy **and** LLM tokens routed through Floe's LLM proxy at `/v1/llm/chat/completions`, all on one ledger and one set of caps. A call you send straight to a provider with your own key, bypassing Floe, is the one thing a policy can't see. See [Spend Controls](../developers/spend-controls.md).
+> **Scope.** This governs every paid call Floe settles — x402 payments through the proxy **and** LLM tokens routed through Floe's keyless gateway at `/v1/chat/completions` (or the legacy BYOK metered proxy `/v1/llm/chat/completions`), all on one ledger and one set of caps. A call you send straight to a provider with your own key, bypassing Floe, is the one thing a policy can't see. See [Spend Controls](../developers/spend-controls.md).
 
 ## Example: borrow `Roadmap`
 
@@ -4387,7 +4243,7 @@ tools = get_floe_langchain_tools(wallet_provider)
 
 See [`floe-cookbook/langchain-agent`](https://github.com/Floe-Labs/floe-cookbook/tree/main/langchain-agent) for a complete LangChain agent that funds a balance, pays an x402 endpoint through the proxy, and checks its remaining spend.
 
-> **Scope.** Floe's spend controls cap every paid call it settles — x402 payments through the proxy **and** LLM tokens routed through Floe's LLM proxy at `/v1/llm/chat/completions`, on one ledger and one set of caps. A call sent straight to a provider with your own key, bypassing Floe, is the one thing a policy can't see. See [Spend Controls](../developers/spend-controls.md).
+> **Scope.** Floe's spend controls cap every paid call it settles — x402 payments through the proxy **and** LLM tokens routed through Floe's keyless gateway at `/v1/chat/completions` (or the legacy BYOK metered proxy `/v1/llm/chat/completions`), on one ledger and one set of caps. A call sent straight to a provider with your own key, bypassing Floe, is the one thing a policy can't see. See [Spend Controls](../developers/spend-controls.md).
 
 ==============================================================================
 # CrewAI
@@ -4460,7 +4316,7 @@ Every tool call and every token is paid from the balance behind `FLOE_API_KEY`. 
 
 ### Paying for tools — `Floe402Tool`
 
-`Floe402Tool` is a `crewai.tools.BaseTool` that calls any of the **2,000+ vendor API services** reachable through [x402](../developers/x402-facilitator.md). Each call routes through the Floe facilitator, which funds the payment from your prepaid balance, signs the payment, and returns the response. The agent never holds USDC or an API key, never signs a transaction, never pays gas.
+`Floe402Tool` is a `crewai.tools.BaseTool` that calls any of the **thousands of vendor API services** reachable through [x402](../developers/x402-facilitator.md). Each call routes through the Floe facilitator, which funds the payment from your prepaid balance, signs the payment, and returns the response. The agent never holds USDC or an API key, never signs a transaction, never pays gas.
 
 ```python
 from crewai_floe import Floe402Tool
@@ -4648,7 +4504,7 @@ const { text } = await generateText({
 });
 ```
 
-> **Scope.** In this example the `gpt-4o` model tokens are billed by OpenAI against **your own** `@ai-sdk/openai` key — a call that bypasses Floe is the one thing a policy can't see. To bring LLM tokens onto the same ledger and caps as your x402 payments, point the model at Floe's LLM proxy (`/v1/llm/chat/completions`, host `credit-api.floelabs.xyz`); then one budget bounds both. See [Spend Controls](../developers/spend-controls.md).
+> **Scope.** In this example the `gpt-4o` model tokens are billed by OpenAI against **your own** `@ai-sdk/openai` key — a call that bypasses Floe is the one thing a policy can't see. To bring LLM tokens onto the same ledger and caps as your x402 payments, route the model through Floe: **keyless** via `POST /v1/chat/completions` (fully-qualified ids like `openai/gpt-4o`, no provider key), or **BYOK** via `/v1/llm/chat/completions` with `X-Floe-Provider-Key` (host `credit-api.floelabs.xyz` either way). Then one budget bounds both. See [Floe Inference](../developers/keyless-inference.md) and [Spend Controls](../developers/spend-controls.md).
 
 ## Example
 
@@ -5478,7 +5334,7 @@ client = OpenAI(base_url="https://credit-api.floelabs.xyz/v1", api_key="floe_…
 
 That snippet is exactly what `init` prints — key filled in for a quick local start. For anything checked into source control, read the key from the environment instead: `api_key=os.environ["FLOE_AGENT_KEY"]`.
 
-Every response carries `X-Floe-Cost-USDC`. One key meters chat, embeddings, speech, and transcription across 15+ vendors — one bill, in USDC.
+Every response carries `X-Floe-Cost-USDC`. One key meters chat, embeddings, speech, and transcription across the models in the Floe catalog and the [vendor marketplace](../x402-directory/README.md) — one bill, in USDC.
 
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [MCP Server](mcp-server.md) | [API Keys](api-keys.md)
 
@@ -6629,7 +6485,7 @@ Floe is the spend layer: one key pays every vendor per call, governed by server-
 
 > You can also set up agents through the [Developer Dashboard](developer-dashboard.md) — a web UI at `dev-dashboard.floelabs.xyz`.
 
-**Reaches 2,000+ vendor API services** — no per-service integration needed.
+**Reaches thousands of vendor API services** — no per-service integration needed.
 
 ## How payment works
 
@@ -7183,6 +7039,8 @@ For stateful vendors like HydraDB, the shim enforces **hard isolation between pa
 Inside your own tenant you still control namespacing: every HydraDB route accepts an optional `subTenantId`, and the tenant-management routes (`tenant/create`, `tenant/status`, `tenant/delete`) operate within the boundary the shim already enforces. See the [Memory](../x402-directory/database.md) directory page for the full route list and request shapes — all HydraDB routes are free to call.
 
 ## Available shim vendors
+
+The [Voice directory](../x402-directory/voice.md) is the canonical vendor roster (endpoints, request shapes, full pricing); the table below is **shim-specific** — the non-x402 vendors Floe re-exposes as marketplace routes, with the exact route and metered rate for each.
 
 All routes are `POST`, called through `/v1/proxy/fetch` as above. Prices are the vendor's list rate, before Floe's 5% margin — you're billed the metered amount.
 

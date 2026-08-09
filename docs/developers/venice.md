@@ -57,23 +57,17 @@ Each model carries `model_spec.capabilities` (reasoning, vision, function callin
 
 ### Featured models
 
-A representative slice — **not** the full menu and **not** a fixed list. Prices are USD per 1M tokens, track Venice's catalog (refreshed ~weekly), and may change; you're billed the exact metered amount in `X-Floe-Cost-USDC`.
+A short representative slice — **not** the full menu and **not** a fixed list. **Resolve the live catalog and current prices from Venice's models endpoint above** (`GET https://api.venice.ai/api/v1/models`). Prices below are USD per 1M tokens, track Venice's catalog (refreshed ~weekly), and may change; you're billed the exact metered amount in `X-Floe-Cost-USDC`.
 
 | Model | Capabilities | Context | Input $/1M | Output $/1M |
 |---|---|---|---|---|
 | `openai-gpt-oss-120b` | reasoning | 128K | $0.07 | $0.30 |
 | `venice-uncensored-1-2` | vision · uncensored | 128K | $0.20 | $0.90 |
-| `qwen3-vl-235b-a22b` | vision | 256K | $0.25 | $1.50 |
 | `qwen3-coder-480b-a35b-instruct-turbo` | code | 256K | $0.35 | $1.50 |
 | `kimi-k2-5` | reasoning · vision · code | 256K | $0.56 | $3.50 |
-| `llama-3.3-70b` | tools | 128K | $0.70 | $2.80 |
 | `zai-org-glm-5-2` | reasoning | 1M | $1.40 | $4.40 |
-| `grok-4-20` | reasoning · vision · X search | 2M | $1.42 | $2.83 |
-| `deepseek-v4-pro` | reasoning · code | 1M | $1.73 | $3.80 |
-| `gemini-3-1-pro-preview` | reasoning · vision · audio · video | 1M | $2.50 | $15.00 |
 | `claude-sonnet-4-6` | reasoning · vision · code | 1M | $3.60 | $18.00 |
 | `claude-opus-4-8` | reasoning · vision · code | 1M | $6.00 | $30.00 |
-| `openai-gpt-55` | reasoning · vision | 1M | $6.25 | $37.50 |
 
 **Embeddings**
 
