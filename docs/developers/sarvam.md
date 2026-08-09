@@ -1,6 +1,6 @@
 # Sarvam AI — sovereign Indic inference
 
-Run inference against **Sarvam AI** — India's "sovereign AI" stack for **22+ Indian languages**. Chat with the **Sarvam 105B / 30B** Indic LLMs and reach Sarvam's proprietary **voice, translation, transliteration, language-ID, and document-digitization** models — all paid **per call** from your Floe credit line. Floe meters every call and bills the exact cost.
+Run inference against **Sarvam AI** — India's "sovereign AI" stack for **22+ Indian languages**. Chat with the **Sarvam 105B / 30B** Indic LLMs and reach Sarvam's proprietary **voice, translation, transliteration, language-ID, and document-digitization** models — all **metered at the exact usage** (per token for chat, per character for voice/translate/transliterate/language-ID, per audio-second for STT, per page for docs) and billed from your Floe credit line.
 
 Sarvam is served on two planes, both keyless for you — **Floe holds the Sarvam subscription key**, so you never create a Sarvam account or manage a key:
 
@@ -29,7 +29,7 @@ You're billed the **metered cost of each call** — Sarvam's INR list price conv
 |---|---|
 | `X-Floe-Cost-USDC` | This call's cost in raw USDC (6 decimals) |
 | `X-Floe-Payment-Amount` | Same cost as a decimal USDC string |
-| `X-Floe-Payment` | `sarvam` (metered) or `passthrough` (upstream error, not charged) |
+| `X-Floe-Payment` | `gateway` (chat) · `internal` (voice/language shim) · `passthrough` (upstream error, not charged) |
 
 ## Supported endpoints
 
@@ -46,7 +46,7 @@ You're billed the **metered cost of each call** — Sarvam's INR list price conv
 
 > The voice/language routes above are **marketplace-shim** paths on `marketplace.floelabs.xyz` — call them by passing the full `https://marketplace.floelabs.xyz/v1/<route>/sarvam` URL to `POST /v1/proxy/fetch`. Document digitization is **async** and in **preview**.
 
-> **Streaming is not supported on metered chat** — set `stream: false` (the default). Per-call metering needs the terminal usage block that a streamed response doesn't deliver.
+> **Streaming is supported on chat** — set `stream: true` for token-by-token output; Floe meters the call off the terminal usage chunk. (The voice/language shim routes are request/response, not streamed.)
 
 ## Models
 
@@ -346,7 +346,6 @@ Successful calls return Sarvam's response verbatim (voice/language responses are
 | HTTP | `error` | When |
 |---|---|---|
 | `400` | `Invalid JSON body` | Request body wasn't valid JSON |
-| `400` | `streaming_not_supported` | `stream: true` was set on a metered chat call |
 | `401` | `wrong_credential_type` | A publishable key (`floe_live_…`) was used instead of an agent key |
 | `402` | `budget_exhausted` | Credit-line or session spend ceiling reached (`scope`: `credit_line` \| `session`) |
 | `402` | `reimbursement_required` | Outstanding spend couldn't be collected from the agent wallet — fund it to resume |

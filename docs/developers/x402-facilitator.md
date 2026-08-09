@@ -8,7 +8,7 @@ Floe is the spend layer: one key pays every vendor per call, governed by server-
 
 > You can also set up agents through the [Developer Dashboard](developer-dashboard.md) — a web UI at `dev-dashboard.floelabs.xyz`.
 
-**Reaches 2,000+ vendor API services** — no per-service integration needed.
+**Reaches thousands of vendor API services** — no per-service integration needed.
 
 ## How payment works
 
@@ -277,7 +277,7 @@ print(resp.json())  # Response from the target API
 Registration is a two-step API call, both authenticated with a wallet signature:
 
 1. **Create the agent** (`POST /v1/developer/agents`) — Floe provisions a managed wallet for the agent. You don't send any on-chain transactions from your local wallet. Body: `{ name, maxRateBps, expirySeconds }`. Returns `{ agentId, status, privyWalletAddress }`.
-2. **Mint an API key** (`POST /v1/developer/agents/:agentId/keys`) — issues a `floe_*` key scoped to that agent. Optional body `{ label, permissions }`. The full key is returned **once**; only its prefix is persisted server-side. Each agent has a one-active-key cap — use `POST /keys/:keyId/rotate` to swap atomically.
+2. **Mint an API key** (`POST /v1/developer/agents/:agentId/keys`) — issues a `floe_*` key scoped to that agent. Optional body `{ label, permissions }`. The full key is returned **once**; only its prefix is persisted server-side. Each agent may hold up to **5** active keys (default `MAX_KEYS_PER_AGENT`); minting past the cap returns `409`. Rotate a key atomically with `POST /v1/developer/agents/:agentId/keys/:keyId/rotate`.
 
 Both calls accept any of three credentials interchangeably: a dashboard session cookie, a `floe_live_*` developer key, or a wallet-signature header set (`X-Wallet-Address` + `X-Signature` + `X-Timestamp`). The agentkit SDKs use the signature path so users don't need to obtain a developer key first.
 

@@ -67,7 +67,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 
 That's it — the LLM leg is now on your Floe balance, under your [spend controls](../developers/spend-controls.md), and every response returns its cost in `X-Floe-Payment-Amount` (see [Pricing](pricing.md)).
 
-**Keep your own model key?** Point at `/v1/llm/chat/completions` and add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` — Floe meters the call and charges only a routing fee; you pay the vendor at cost. See [Floe Inference](../developers/keyless-inference.md).
+**Keep your own model key?** Point at the BYOK metered proxy `/v1/llm/chat/completions` (model id with or without a `provider/` prefix there, e.g. `gpt-4o`) and add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` — Floe meters the call and charges only a routing fee; you pay the vendor at cost. See [Floe Inference](../developers/keyless-inference.md).
 
 ---
 

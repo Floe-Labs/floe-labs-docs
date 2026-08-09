@@ -54,17 +54,7 @@ All three legs share `X-Floe-Task-Id: call-8842`, so a single task budget caps t
 
 ## Live voice vendors
 
-| Service | Endpoints | Status |
-|---------|-----------|--------|
-| ElevenLabs | Text-to-Speech | Live |
-| Deepgram | Speech-to-Text | Live |
-| Venice AI | Text-to-Speech, Transcription | Live |
-| Cartesia | Text-to-Speech | Live |
-| Google Cloud TTS | Text-to-Speech | Live |
-| AssemblyAI | Speech-to-Text | Live |
-| Twilio | Telephony | Live |
-
-See the [Voice vendor directory](../x402-directory/voice.md) for endpoints, request shapes, and per-vendor pricing.
+The [Voice vendor directory](../x402-directory/voice.md) is the canonical roster of live TTS, STT, and telephony vendors — with endpoints, request shapes, and per-vendor pricing.
 
 ## Live voice with your own stack (LiveKit / Pipecat)
 
