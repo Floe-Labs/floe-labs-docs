@@ -21,13 +21,13 @@ Bland has **no self-serve custom LLM** and there's no adapter recipe for it, so 
 
 This is Reconcile Mode: Bland posts each call's real cost to Floe at call-end, so **every leg** (model, STT, TTS, telephony) lands on the same ledger.
 
-**Register the connection** (admin — dashboard, or the API with an admin dashboard session). A **signing secret is required at registration** — supply one, then set the same value in Bland so it can sign each delivery:
+**Register the connection** (admin — dashboard, or the API with an admin dashboard session). A **signing secret is required at registration** — copy the **webhook signing secret** from your Bland dashboard (Settings → Keys; shown once) and supply that exact value:
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
   -H "Content-Type: application/json" \
   -H "Cookie: <admin dashboard session>" \
-  -d '{ "agentId": <your-agent-id>, "provider": "bland", "label": "support line", "secret": "<your signing secret>" }'
+  -d '{ "agentId": <your-agent-id>, "provider": "bland", "label": "support line", "secret": "<your Bland webhook signing secret>" }'
 ```
 
 The response returns the connection URL:

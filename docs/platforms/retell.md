@@ -46,13 +46,13 @@ Every turn is now **metered per token and gated pre-call**: once the agent's cap
 
 This is Reconcile Mode: Retell posts each call's real cost to Floe at call-end, so **every leg** (STT, TTS, telephony) lands on the same ledger — not just the LLM.
 
-**Register the connection** (admin — dashboard, or the API with an admin dashboard session). Unlike Vapi, Floe does **not** mint a secret for you — Retell signs its webhooks with **your Retell API key**, so you supply it as the signing secret at registration:
+**Register the connection** (admin — dashboard, or the API with an admin dashboard session). Unlike Vapi, Floe does **not** mint a secret for you — Retell signs its webhooks with the API key **designated as the webhook key** in your Retell dashboard, so supply that exact key as the signing secret (any other Retell key fails verification):
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
   -H "Content-Type: application/json" \
   -H "Cookie: <admin dashboard session>" \
-  -d '{ "agentId": <your-agent-id>, "provider": "retell", "label": "support line", "secret": "<your Retell API key>" }'
+  -d '{ "agentId": <your-agent-id>, "provider": "retell", "label": "support line", "secret": "<your designated Retell webhook key>" }'
 ```
 
 The response returns the connection URLs:

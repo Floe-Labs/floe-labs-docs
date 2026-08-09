@@ -36,7 +36,7 @@ There's no hard minimum, but card payments have a Coinbase-imposed floor around 
 
 ## Low-balance alerts
 
-For production, don't manually babysit balances — have the agent check `GET /v1/agents/credit-remaining` (its `utilizationBps`) before spending, or set server-side [spend controls](../developers/spend-controls.md) that stop it at the cap.
+For production, don't manually babysit balances — have the agent call `GET /v1/agents/credit-remaining` and compare the expected call cost against `available` (and `sessionSpendRemaining` when a session cap is set) before spending; `utilizationBps` is for monitoring. Or set server-side [spend controls](../developers/spend-controls.md) that stop it at the cap.
 
 ---
 
