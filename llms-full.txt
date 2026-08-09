@@ -754,7 +754,7 @@ Rule of thumb: if the call *spends money or reads an agent's state*, use the **a
 ## Keyless vs. bring-your-own-key
 
 - **Keyless (default):** send only your Floe key; Floe holds the upstream vendor key and bills you per call.
-- **BYOK:** add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` on the BYOK metered proxy `/v1/llm/chat/completions` (bare model ids, e.g. `gpt-4o`) to keep paying the vendor directly — Floe meters and charges a routing fee only.
+- **BYOK:** add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` on the BYOK metered proxy `/v1/llm/chat/completions` (model id with or without a `provider/` prefix, e.g. `gpt-4o` or `openai/gpt-4o`) to keep paying the vendor directly — Floe meters and charges a routing fee only.
 
 Full key lifecycle (rotation, rate limits, scopes): [API Keys](../developers/api-keys.md).
 
@@ -829,7 +829,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 
 That's it — the LLM leg is now on your Floe balance, under your [spend controls](../developers/spend-controls.md), and every response returns its cost in `X-Floe-Payment-Amount` (see [Pricing](pricing.md)).
 
-**Keep your own model key?** Point at the BYOK metered proxy `/v1/llm/chat/completions` (bare model ids there, e.g. `gpt-4o`) and add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` — Floe meters the call and charges only a routing fee; you pay the vendor at cost. See [Floe Inference](../developers/keyless-inference.md).
+**Keep your own model key?** Point at the BYOK metered proxy `/v1/llm/chat/completions` (model id with or without a `provider/` prefix there, e.g. `gpt-4o`) and add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` — Floe meters the call and charges only a routing fee; you pay the vendor at cost. See [Floe Inference](../developers/keyless-inference.md).
 
 ---
 
@@ -1922,7 +1922,7 @@ All are drop-in OpenAI-compatible:
 
 Every id on this keyless gateway is fully qualified as `provider/model` — copy them exactly as written; on `POST /v1/chat/completions` (and the other `/v1/*` gateway surfaces) a bare name (e.g. `gpt-4o` without the `openai/` prefix) is **rejected**. **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key) — always resolve ids there at runtime; **for the full, current set see `GET /v1/models` for the live list** rather than a hard-coded count. The tables below enumerate what's live today.
 
-> **Two id formats, two endpoints — don't mix them.** The keyless gateway (`POST /v1/chat/completions`, `/v1/embeddings`, `/v1/audio/*`) requires the **fully-qualified** `provider/model` id used throughout this page. The legacy, flag-gated **BYOK metered proxy** `POST /v1/llm/chat/completions` is a *different* endpoint — it takes a **bare** id (`gpt-4o`, not `openai/gpt-4o`) plus your own `X-Floe-Provider-Key`, and charges only a routing fee. Prefer this keyless gateway for new work; the BYOK metered proxy is documented in [Unified Ledger](../build/unified-ledger.md).
+> **Two endpoints, two id rules — don't confuse them.** The keyless gateway (`POST /v1/chat/completions`, `/v1/embeddings`, `/v1/audio/*`) resolves an **exact catalog id** — the **fully-qualified** `provider/model` used throughout this page (a bare `gpt-4o` is rejected). The legacy, flag-gated **BYOK metered proxy** `POST /v1/llm/chat/completions` is a *different* endpoint: it takes **your own** `X-Floe-Provider-Key`, prices the call from Floe's maintained LiteLLM cost map (no catalog allowlist), and accepts the model id **with or without** a `provider/` prefix — `gpt-4o` or `openai/gpt-4o` both work, since Floe strips the prefix before pricing. Prefer the keyless gateway for new work; the BYOK proxy is documented in [Unified Ledger](../build/unified-ledger.md).
 
 ### Text / reasoning
 
@@ -2154,11 +2154,11 @@ A token router shows you your LLM spend. Floe shows you the whole bill — telep
 
 A voice agent's cost is never just tokens. One conversation pays for telephony to place the call, speech-to-text to hear the caller, an LLM to decide what to say, and text-to-speech to say it back. If four vendors bill four different ways, you can't answer the only question that matters: what did this call cost, and was it worth it?
 
-Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from the same balance and lands in the same ledger, tagged by agent, task, and vendor. x402 vendors go through `POST /v1/proxy/fetch`; LLM calls go through Floe's OpenAI-compatible gateway — **keyless** `POST /v1/chat/completions` (recommended; fully-qualified `provider/model` ids) or the **BYOK metered proxy** `POST /v1/llm/chat/completions` (your own provider key, bare ids). One balance, one ledger, one policy set.
+Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from the same balance and lands in the same ledger, tagged by agent, task, and vendor. x402 vendors go through `POST /v1/proxy/fetch`; LLM calls go through Floe's OpenAI-compatible gateway — **keyless** `POST /v1/chat/completions` (recommended; fully-qualified `provider/model` ids) or the **BYOK metered proxy** `POST /v1/llm/chat/completions` (your own provider key; model id with or without a `provider/` prefix). One balance, one ledger, one policy set.
 
 ## Route your LLM through Floe (BYOK metered proxy)
 
-`POST /v1/llm/chat/completions` is Floe's **BYOK metered proxy**: you bring your own upstream provider key and Floe charges only a small routing fee on top of provider cost. It is OpenAI-compatible — same request shape as OpenAI Chat Completions — but distinct from the keyless gateway in two ways: it takes a **bare** model id (`gpt-4o`, **not** `openai/gpt-4o`), and it needs your provider key. Point it at Floe's host, authenticate with your Floe agent key, and supply your upstream provider key one of two ways: **per request** in `X-Floe-Provider-Key` (used only to call upstream, then discarded — never persisted), or **stored once** (encrypted, per provider) so Floe auto-routes BYOK with no header. See [per-request vs stored keys](../developers/keyless-inference.md) for the storage flow and the fixed BYOK service fee.
+`POST /v1/llm/chat/completions` is Floe's **BYOK metered proxy**: you bring your own upstream provider key and Floe charges only a small routing fee on top of provider cost. It is OpenAI-compatible — same request shape as OpenAI Chat Completions — but distinct from the keyless gateway in two ways: it prices from Floe's maintained LiteLLM cost map and accepts the model id **with or without** a `provider/` prefix (`gpt-4o` or `openai/gpt-4o` — Floe strips it), and it needs your provider key. Point it at Floe's host, authenticate with your Floe agent key, and supply your upstream provider key one of two ways: **per request** in `X-Floe-Provider-Key` (used only to call upstream, then discarded — never persisted), or **stored once** (encrypted, per provider) so Floe auto-routes BYOK with no header. See [per-request vs stored keys](../developers/keyless-inference.md) for the storage flow and the fixed BYOK service fee.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
@@ -2404,9 +2404,9 @@ Two headers do the work:
 | `Authorization` | `Bearer floe_<agent key>` | Authenticates the agent and bills its credit line |
 | `X-Floe-Provider-Key` | `<your OpenAI/Anthropic key>` | Pass-through key used to call upstream — never stored |
 
-The full model list with live pricing is the canonical catalog — see [Keyless Inference](../developers/keyless-inference.md) or call `GET /v1/models`. The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header.
+This BYOK proxy prices from Floe's maintained LiteLLM cost map — there's **no model allowlist**; pass any model your provider serves. (The **keyless** gateway's catalog is separate — see [Keyless Inference](../developers/keyless-inference.md) or `GET /v1/models`.) The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header.
 
-> This `/v1/llm` surface is the **BYOK metered proxy** — you bring a provider key and pass a **bare** model id (e.g. `gpt-5.5`). The keyless gateway at `/v1/chat/completions` is different: no provider key, and it requires the fully-qualified `provider/model` form (`openai/gpt-5.5`). See [Keyless Inference](../developers/keyless-inference.md).
+> This `/v1/llm` surface is the **BYOK metered proxy** — you bring a provider key; Floe prices the call from its LiteLLM cost map and accepts the model id **with or without** a `provider/` prefix (`gpt-5.5` or `openai/gpt-5.5` — the prefix is stripped). The keyless gateway at `/v1/chat/completions` is different: no provider key, and it resolves an **exact** catalog id — the fully-qualified `provider/model` (a bare `gpt-5.5` is rejected). See [Keyless Inference](../developers/keyless-inference.md).
 
 ### Drop-in OpenAI client
 
@@ -2470,7 +2470,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 
 ## Venice models
 
-Venice exposes its full chat and embedding catalog through the same metered endpoint — from fast open-source to frontier, including private TEE-attested (E2EE) and uncensored options. Pass the model id straight through; there's no allowlist. The sections below cover [how to call them](#venice-ai-chat-completions) and [how to pick by capability](#pick-a-model); the full catalog with per-token pricing is served from the live endpoint below.
+Venice exposes its full chat and embedding catalog through Floe's metered Venice routes (separate chat, responses, and embeddings endpoints, below) — from fast open-source to frontier, including private TEE-attested (E2EE) and uncensored options. Pass the model id straight through; there's no allowlist. The sections below cover [how to call them](#venice-ai-chat-completions) and [how to pick by capability](#pick-a-model); the full catalog with per-token pricing is served from the live endpoint below.
 
 Discover it live (capabilities, context windows, pricing) from Venice's public, no-key endpoint:
 
@@ -2843,7 +2843,7 @@ URL: https://floe-labs.gitbook.io/docs/vendor-marketplace/compute/sarvam.md
 
 # Sarvam AI — sovereign Indic inference
 
-Run inference against **Sarvam AI** — India's "sovereign AI" stack for **22+ Indian languages**. Chat with the **Sarvam 105B / 30B** Indic LLMs and reach Sarvam's proprietary **voice, translation, transliteration, language-ID, and document-digitization** models — all paid **per call** from your Floe credit line. Floe meters every call and bills the exact cost.
+Run inference against **Sarvam AI** — India's "sovereign AI" stack for **22+ Indian languages**. Chat with the **Sarvam 105B / 30B** Indic LLMs and reach Sarvam's proprietary **voice, translation, transliteration, language-ID, and document-digitization** models — all **metered at the exact usage** (per token for chat, per character for voice/translate/transliterate/language-ID, per audio-second for STT, per page for docs) and billed from your Floe credit line.
 
 Sarvam is served on two planes, both keyless for you — **Floe holds the Sarvam subscription key**, so you never create a Sarvam account or manage a key:
 

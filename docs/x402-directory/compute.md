@@ -28,9 +28,9 @@ Two headers do the work:
 | `Authorization` | `Bearer floe_<agent key>` | Authenticates the agent and bills its credit line |
 | `X-Floe-Provider-Key` | `<your OpenAI/Anthropic key>` | Pass-through key used to call upstream — never stored |
 
-The full model list with live pricing is the canonical catalog — see [Keyless Inference](../developers/keyless-inference.md) or call `GET /v1/models`. The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header.
+This BYOK proxy prices from Floe's maintained LiteLLM cost map — there's **no model allowlist**; pass any model your provider serves. (The **keyless** gateway's catalog is separate — see [Keyless Inference](../developers/keyless-inference.md) or `GET /v1/models`.) The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header.
 
-> This `/v1/llm` surface is the **BYOK metered proxy** — you bring a provider key and pass a **bare** model id (e.g. `gpt-5.5`). The keyless gateway at `/v1/chat/completions` is different: no provider key, and it requires the fully-qualified `provider/model` form (`openai/gpt-5.5`). See [Keyless Inference](../developers/keyless-inference.md).
+> This `/v1/llm` surface is the **BYOK metered proxy** — you bring a provider key; Floe prices the call from its LiteLLM cost map and accepts the model id **with or without** a `provider/` prefix (`gpt-5.5` or `openai/gpt-5.5` — the prefix is stripped). The keyless gateway at `/v1/chat/completions` is different: no provider key, and it resolves an **exact** catalog id — the fully-qualified `provider/model` (a bare `gpt-5.5` is rejected). See [Keyless Inference](../developers/keyless-inference.md).
 
 ### Drop-in OpenAI client
 
@@ -94,7 +94,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 
 ## Venice models
 
-Venice exposes its full chat and embedding catalog through the same metered endpoint — from fast open-source to frontier, including private TEE-attested (E2EE) and uncensored options. Pass the model id straight through; there's no allowlist. The sections below cover [how to call them](#venice-ai-chat-completions) and [how to pick by capability](#pick-a-model); the full catalog with per-token pricing is served from the live endpoint below.
+Venice exposes its full chat and embedding catalog through Floe's metered Venice routes (separate chat, responses, and embeddings endpoints, below) — from fast open-source to frontier, including private TEE-attested (E2EE) and uncensored options. Pass the model id straight through; there's no allowlist. The sections below cover [how to call them](#venice-ai-chat-completions) and [how to pick by capability](#pick-a-model); the full catalog with per-token pricing is served from the live endpoint below.
 
 Discover it live (capabilities, context windows, pricing) from Venice's public, no-key endpoint:
 

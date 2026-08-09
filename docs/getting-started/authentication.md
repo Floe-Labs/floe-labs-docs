@@ -32,6 +32,6 @@ Rule of thumb: if the call *spends money or reads an agent's state*, use the **a
 ## Keyless vs. bring-your-own-key
 
 - **Keyless (default):** send only your Floe key; Floe holds the upstream vendor key and bills you per call.
-- **BYOK:** add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` on the BYOK metered proxy `/v1/llm/chat/completions` (bare model ids, e.g. `gpt-4o`) to keep paying the vendor directly — Floe meters and charges a routing fee only.
+- **BYOK:** add `X-Floe-Provider-Key: <your OpenAI/Anthropic key>` on the BYOK metered proxy `/v1/llm/chat/completions` (model id with or without a `provider/` prefix, e.g. `gpt-4o` or `openai/gpt-4o`) to keep paying the vendor directly — Floe meters and charges a routing fee only.
 
 Full key lifecycle (rotation, rate limits, scopes): [API Keys](../developers/api-keys.md).

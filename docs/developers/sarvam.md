@@ -1,6 +1,6 @@
 # Sarvam AI — sovereign Indic inference
 
-Run inference against **Sarvam AI** — India's "sovereign AI" stack for **22+ Indian languages**. Chat with the **Sarvam 105B / 30B** Indic LLMs and reach Sarvam's proprietary **voice, translation, transliteration, language-ID, and document-digitization** models — all paid **per call** from your Floe credit line. Floe meters every call and bills the exact cost.
+Run inference against **Sarvam AI** — India's "sovereign AI" stack for **22+ Indian languages**. Chat with the **Sarvam 105B / 30B** Indic LLMs and reach Sarvam's proprietary **voice, translation, transliteration, language-ID, and document-digitization** models — all **metered at the exact usage** (per token for chat, per character for voice/translate/transliterate/language-ID, per audio-second for STT, per page for docs) and billed from your Floe credit line.
 
 Sarvam is served on two planes, both keyless for you — **Floe holds the Sarvam subscription key**, so you never create a Sarvam account or manage a key:
 
