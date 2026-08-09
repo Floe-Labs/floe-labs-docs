@@ -147,7 +147,7 @@ Every id on this keyless gateway is fully qualified as `provider/model` — copy
 
 `openai/tts-1` · `openai/tts-1-hd` · `openai/gpt-4o-mini-tts` · `google/gemini-3.1-flash-tts` · `google/gemini-2.5-flash-tts` · `cartesia/sonic-3` · `resemble/chatterbox-multilingual` · `resemble/chatterbox-turbo` · `xiaomi/mimo-v2.5-tts` · `xiaomi/mimo-v2.5-tts-voiceclone` · `xiaomi/mimo-v2.5-tts-voicedesign` · `canopy/orpheus-3b` · `canopy/orpheus-v1-english` · `kokoro/kokoro-82m` · `inworld/realtime-tts-2` · `boson/higgs-audio-v2.5` · `sesame/csm-1b` · `qwen/qwen3-tts`
 
-> `elevenlabs/eleven-turbo-v2-5` is in the catalog for pricing/attribution but is served only by the orchestrator's custom-voice surface (`POST /v1/orchestrator/voice`), **not** the OpenAI-compatible `/v1/audio/speech` above — so it's omitted from this list. Reach ElevenLabs on the OpenAI-compatible path via the [Vendor Marketplace](../x402-directory/voice.md).
+> `elevenlabs/eleven-turbo-v2-5` is in the catalog for pricing/attribution but is served only by the orchestrator's custom-voice surface (`POST /v1/orchestrator/voice`), **not** the OpenAI-compatible `/v1/audio/speech` above — so it's omitted from this list. ElevenLabs TTS is reachable through the [Vendor Marketplace](../x402-directory/voice.md) (a marketplace-shim route) and the orchestrator's custom-voice surface — neither is the OpenAI-compatible `/v1/audio/speech`.
 
 ### Speech-to-Text
 

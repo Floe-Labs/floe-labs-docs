@@ -29,6 +29,8 @@
 
 * [Overview](docs/x402-directory/README.md)
 * [Compute](docs/x402-directory/compute.md)
+  * [Venice AI](docs/developers/venice.md)
+  * [Sarvam AI](docs/developers/sarvam.md)
 * [STT — Speech-to-Text](docs/x402-directory/voice.md#stt-speech-to-text)
 * [TTS — Text-to-Speech](docs/x402-directory/voice.md#tts-text-to-speech)
 * [Telephony](docs/x402-directory/voice.md#telephony)

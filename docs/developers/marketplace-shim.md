@@ -56,7 +56,7 @@ Inside your own tenant you still control namespacing: every HydraDB route accept
 
 ## Available shim vendors
 
-The [Voice directory](../x402-directory/voice.md) is the canonical vendor roster (endpoints, request shapes, full pricing); the table below is **shim-specific** — the non-x402 vendors Floe re-exposes as marketplace routes, with the exact route and metered rate for each.
+The [Voice directory](../x402-directory/voice.md) is the canonical vendor roster (endpoints, request shapes, full pricing); the table below is **shim-specific** — the non-x402 vendors Floe re-exposes as marketplace routes, with the route and metered pricing for each.
 
 All routes are `POST`, called through `/v1/proxy/fetch` as above. Prices are the vendor's list rate, before Floe's 5% margin — you're billed the metered amount.
 
