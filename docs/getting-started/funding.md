@@ -36,7 +36,7 @@ There's no hard minimum, but card payments have a Coinbase-imposed floor around 
 
 ## Low-balance alerts
 
-For production, don't manually babysit balances. Subscribe to a low-balance webhook with `POST /v1/agents/credit-thresholds` (a utilization threshold in basis points). Floe POSTs `credit.warning` / `credit.at_limit` to your webhook when the agent crosses it, so it can self-manage — page a human or trigger a top-up. See [Webhooks](../developers/webhooks.md).
+For production, don't manually babysit balances — have the agent check `GET /v1/agents/credit-remaining` (its `utilizationBps`) before spending, or set server-side [spend controls](../developers/spend-controls.md) that stop it at the cap.
 
 ---
 

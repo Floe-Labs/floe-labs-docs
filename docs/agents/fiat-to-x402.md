@@ -54,7 +54,7 @@ await agentkit.run("x402_fetch", {
 
 ## Step 5 — Top up
 
-When the balance runs low, top up from the dashboard. You can wire a low-balance webhook to be notified before the agent runs dry — see [Webhooks](../developers/webhooks.md).
+When the balance runs low, top up from the dashboard.
 
 ---
 

@@ -7,7 +7,7 @@ icon: webhook
 The Credit API is the HTTP surface for both Floe's **live spend layer** and its **roadmap on-chain credit product**. Agents of any language or framework can use it; write endpoints return unsigned transaction calldata that agents sign and submit with their own wallet.
 
 > **What's live vs roadmap on this page:**
-> - **Live (spend layer):** Developer Endpoints, Developer Agents, Agent Endpoints (balance, transactions), Agent Awareness Endpoints (credit-remaining, loan-state, spend-limit, credit-thresholds, x402/estimate), and the x402 Proxy Endpoints. `open-credit-line` is **managed plumbing** the facilitator uses to fund your payments.
+> - **Live (spend layer):** Developer Endpoints, Developer Agents, Agent Endpoints (balance, transactions), Agent Awareness Endpoints (credit-remaining, loan-state, spend-limit, x402/estimate), and the x402 Proxy Endpoints. `open-credit-line` is **managed plumbing** the facilitator uses to fund your payments.
 > - **Roadmap (on-chain credit product — not generally available):** the `/v1/credit/*` borrow endpoints (`instant-borrow`, `repay`, `repay-and-reborrow`, `status`), `/v1/credit/offers`, `/v1/markets/:id/cost-of-capital`, and direct market/intent matching. Borrowing as a developer-facing product — and any associated rate — is not live. The live way to fund an agent is the [Floe-managed balance](../getting-started/quickstart.md).
 
 > **See also:** [API Keys](api-keys.md) | [Webhooks](webhooks.md) | [Developer Dashboard](developer-dashboard.md)
@@ -1293,7 +1293,7 @@ These five primitives let an agent reason about its own credit before committing
 2. **Is this call worth its cost?** → `POST /v1/x402/estimate`
 3. **Where am I in the loan lifecycle?** → `GET /v1/agents/loan-state`
 
-Plus operator controls (`/spend-limit`) and event subscriptions (`/credit-thresholds`) for long-running agents that want webhook-based alerts.
+Plus operator controls (`/spend-limit`) for long-running agents.
 
 ### GET /v1/agents/credit-remaining
 
@@ -1422,65 +1422,6 @@ When the cap is hit, `POST /v1/proxy/fetch` returns:
   "required": "1000000"
 }
 ```
-
-### GET / POST /v1/agents/credit-thresholds, DELETE /v1/agents/credit-thresholds/:id
-
-Webhook subscriptions that fire when the agent's `utilizationBps` crosses a threshold. Three event names are emitted via the existing developer webhook stack:
-
-- `credit.warning` — utilization crossed `thresholdBps` from below (threshold < 9500 bps)
-- `credit.at_limit` — same, but emitted when threshold ≥ 9500 bps so urgent vs informational can be routed separately
-- `credit.recovered` — utilization dropped back below threshold
-
-Hysteresis guarantees exactly-once delivery per edge crossing — an agent oscillating around the boundary won't be spammed. Cap of **20 thresholds per agent**.
-
-```bash
-# Register a threshold at 80% utilization
-curl -X POST "https://credit-api.floelabs.xyz/v1/agents/credit-thresholds" \
-  -H "Authorization: Bearer floe_YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"thresholdBps": 8000}'
-
-# List
-curl "https://credit-api.floelabs.xyz/v1/agents/credit-thresholds" \
-  -H "Authorization: Bearer floe_YOUR_API_KEY"
-
-# Delete by id
-curl -X DELETE "https://credit-api.floelabs.xyz/v1/agents/credit-thresholds/42" \
-  -H "Authorization: Bearer floe_YOUR_API_KEY"
-```
-
-`POST` request body:
-
-| Field | Type | Required | Description |
-|---|---|---|---|
-| `thresholdBps` | number | Yes | 1–10000. ≥ 9500 emits `credit.at_limit` instead of `credit.warning`. |
-| `webhookId` | number | No | Pin to a specific webhook owned by the calling developer. Omit for fanout to all matching webhooks. |
-
-Webhook payload:
-
-```json
-{
-  "event": "credit.warning",
-  "agentId": "0x...",
-  "thresholdBps": 8000,
-  "utilizationBps": 8123,
-  "creditLimit": "10000000000",
-  "creditOut": "8123000000",
-  "available": "1877000000",
-  "firedAt": "2026-05-04T12:00:00.000Z"
-}
-```
-
-`credit.warning` / `credit.at_limit` / `credit.recovered` are subscribed **only** through this credit-thresholds endpoint (`POST /v1/agents/credit-thresholds`) — **not** by listing them in the `events` array on `POST /v1/developer/webhooks`. The webhook registration API rejects `credit.*` (and `*`); those event names are not in its allowed set. Delivery still reuses your existing webhook endpoints (URL, secret, retries): register the endpoint once via `POST /v1/developer/webhooks`, then pin it to a threshold with `webhookId`.
-
-| Status | Meaning |
-|---|---|
-| 200 | Idempotent: duplicate `(agentId, thresholdBps)` returns the existing row |
-| 201 | Created |
-| 404 | `webhook_not_found_or_not_owned` — pinned `webhookId` doesn't belong to caller |
-| 409 | `subscription_limit_reached` — 20 per agent |
-
-> **Polling alternative for serverless agents:** ephemeral runners that can't receive webhooks should poll `GET /v1/agents/credit-remaining` and compare `utilizationBps` locally. No threshold subscription needed.
 
 ### POST /v1/x402/estimate
 
