@@ -4,7 +4,7 @@ icon: rocket
 
 # Quickstart (5 minutes)
 
-Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap spending with server-side controls you set — per task, day, vendor, or team (set them once you've seen it work). That's the whole product: **a budget, not a balance.**
+Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap spending with server-side controls you set — per task, day, vendor, or team (set them once you've seen it work). That's the whole product: **a funded balance with budgets enforced server-side.**
 
 > **$3 Welcome Credit (300 API credits).** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. The grant is once per account, not per agent. [Get started →](https://dev-dashboard.floelabs.xyz)
 
@@ -12,9 +12,13 @@ Create an agent, connect your tools, and make your first paid API call on the **
 
 ## 1. Create an agent
 
-Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email or Google, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once.
+Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email or Google, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once. Export it so the examples below can read it:
 
-Floe provisions everything your agent needs in the background — a funded balance and the **$3 Welcome Credit**.
+```bash
+export FLOE_API_KEY="floe_..."
+```
+
+Floe provisions everything your agent needs in the background — a funded balance and the **$3 Welcome Credit** (granted once per account, not per agent).
 
 ## 2. Connect to your AI tools & models
 

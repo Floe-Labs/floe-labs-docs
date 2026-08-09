@@ -63,7 +63,7 @@ Bland has no pre-call webhook, so the breaker works differently here: a reconcil
 
 ## Your coverage score
 
-The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **% of spend pre-call enforceable vs post-call reconciled** — across every platform the agent runs on. On Bland everything is **post-call reconciled** (there's no pre-call leg to gate), so the breaker's bite depends on how much you route through Floe: **moving legs onto Floe keys is what gives the breaker teeth**. See [Coverage Score](../build/coverage-score.md).
+The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **enforceable pre-call vs post-call reconciled vs dark** — across every platform the agent runs on. On Bland, the legs Bland runs are all **post-call reconciled** (no pre-call hook, no custom-LLM to gate); pre-call enforcement comes only from legs you run on **Floe rails** instead, and anything Floe never sees stays **dark**. So the breaker's bite grows the more you move onto Floe rails. See [Coverage Score](../build/coverage-score.md).
 
 To **raise** it, move more legs onto Floe rails — model and STT/TTS via [Floe Inference](../developers/keyless-inference.md), telephony via [Floe Phone](../developers/floe-phone.md). The full path is [Graduate to 100% coverage](../build/migrate-to-full-coverage.md).
 

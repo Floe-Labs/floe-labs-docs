@@ -24,6 +24,8 @@ Use the ready-made recipe — a ~150-line server — rather than writing your ow
 
 [**retell-custom-llm recipe**](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm)
 
+First get a `floe_…` **agent key** — from the [dashboard](https://dev-dashboard.floelabs.xyz) or `npx @floelabs/cli init` — and put it in `.env` as `FLOE_API_KEY` (alongside your `RETELL_API_KEY`):
+
 ```bash
 cp .env.example .env      # RETELL_API_KEY, FLOE_API_KEY, path secret, model
 npm install

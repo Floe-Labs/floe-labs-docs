@@ -8,7 +8,7 @@ Every agent in your [dashboard](https://dev-dashboard.floelabs.xyz) carries a **
 
 | Bucket | Meaning | Example |
 |---|---|---|
-| **Enforceable pre-call** | The leg runs through Floe's path, so an over-budget request is denied *before* money moves. | Model calls via the custom-LLM slot; STT/TTS on Floe keys; Floe Phone minutes. |
+| **Enforceable** | The leg runs through Floe's path. Request legs (LLM turns, one-shot TTS) are gated **pre-call**; Floe-native **duration-billed** legs (streaming STT, Floe Phone minutes) are metered **live** and cut off at the cap. | Model calls via the custom-LLM slot; STT/TTS on Floe keys; Floe Phone minutes. |
 | **Reconciled** | The cost reaches the ledger at call-end via Reconcile Mode; the circuit breaker acts on the *next* admission. | A Vapi call's cost ingested from the end-of-call webhook. |
 | **Dark** | Spend Floe never sees. It counts against nothing and appears nowhere. | A vendor billed on its own account, with no webhook and no Floe key. |
 
@@ -35,14 +35,14 @@ The score tells you which leg to move. In order of typical impact:
 
 ## API
 
-```
+```http
 GET /v1/developer/agents/:agentId/coverage?days=30
 ```
 
-Returns the three-way split (as basis points), per-source attribution, and the window total. Requires a developer key (`floe_live_…`).
+Returns `totals` — `knownRaw`, `enforceableRaw`, `reconciledRaw` (raw USDC) plus `coverageBps` (the enforceable-plus-reconciled share in basis points; `null` when there's no spend in the window) — a `bySource` breakdown (`class`, `calls`, `costRaw`), a daily `series`, and `dark: "unknown"` (spend on platforms never wired to Floe can't be counted). Accepts any developer credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set.
 
 ## The honest boundary
 
-Floe never intervenes mid-call — a dropped call is a worse failure than an expensive one. Enforcement is **admission control**: pre-call where Floe is in the path; at the next admission point everywhere else (the next inbound call on Vapi/Retell; the next Floe-keyed action on Bland, which exposes no pre-call hook; the cooperative pre-call check on self-hosted stacks). The score exists so that boundary is **visible instead of implied**.
+On calls Floe doesn't run — the orchestrator owns the media path — enforcement is **admission control, never mid-call**: an over-budget request is refused *before* it starts, and a reconciled breach denies the **next** admission (the next inbound call on Vapi/Retell **when a pre-call URL is configured**; otherwise the agent's next Floe-keyed action — always the case on Bland, which has no pre-call hook; a cooperative pre-call check on self-hosted stacks). The one exception is **Floe-native duration-billed legs** — streaming STT and Floe Phone run through Floe's own path and are metered live, cut off mid-stream at the cap. The score exists so that boundary is **visible instead of implied**.
 
 > Pre-call where we're in the path. Circuit breaker everywhere else.

@@ -226,7 +226,7 @@ Before the call is placed, `POST /v1/calls` runs an admission check so an over-b
 
 Deny reasons include `insufficient_balance` (top up the agent first), `policy_exceeded` (a spend policy blocks the call), and the suspended states `credit_frozen` / `credit_line_expired` (resolve billing or renew the credit line).
 
-This is the same admission-control principle as the gateway: gate up front, never intervene mid-call. The authoritative money gate is still the reserve taken when the call is answered, so this check stays deliberately conservative — it rejects only clearly-unaffordable or blocked dials.
+This is admission control at the *start* of the call, and it's deliberately conservative — the authoritative money gate is the reserve taken when the call is answered, so the pre-dial check rejects only clearly-unaffordable or blocked dials. It's distinct from **live metering**: once a call is answered, Floe meters it per second and ends it if continuing would breach the cap (see above). The pre-dial check just avoids ringing a callee for a call that can't run.
 
 ## Voice settings — hosted vs webhook
 

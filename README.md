@@ -14,8 +14,8 @@ Every voice-agent call spends across 7–20 vendors in real time, and token and 
 
 ---
 
-> ### Running production agents on Vapi, Retell, or Bland?
-> Floe governs spend **inside your platform** through its own documented hooks — no migration, no platform cooperation, your keys stay yours. Point the custom-LLM slot at Floe for pre-call enforcement on the model leg; connect the end-of-call webhook and every call lands on one ledger with a between-call circuit breaker.
+> **Running production agents on Vapi, Retell, or Bland?**
+> Floe governs spend **inside your platform** through its own documented hooks — no migration, no platform cooperation, your keys stay yours. Where the platform allows it, route the model leg through Floe for pre-call enforcement (a custom-LLM URL on **Vapi**, a hosted adapter on **Retell**; **Bland** is reconcile-only). Connect the end-of-call webhook and every call lands on one ledger, with a between-call circuit breaker that stops the agent's next call once it's over budget.
 > → **[Vapi in 10 minutes](docs/platforms/vapi.md)** · [Retell](docs/platforms/retell.md) · [Bland](docs/platforms/bland.md) · [Full orchestrator reference](docs/build/voice-orchestrators.md)
 
 ---
@@ -89,7 +89,7 @@ When the Welcome Credit runs low, add money by card, Apple Pay, Google Pay, or b
 
 | Framework | How |
 |---|---|
-| **Voice platforms** (Vapi, Retell, Bland) | Govern spend inside the platform through its own hooks — custom-LLM slot + end-of-call webhook. → [Platform setup](docs/platforms/vapi.md) · [Orchestrator reference](docs/build/voice-orchestrators.md) |
+| **Voice platforms** (Vapi, Retell, Bland) | Govern spend inside the platform through its own hooks — model leg where supported (custom-LLM on Vapi/Retell; Bland reconcile-only) + end-of-call webhook. → [Platform setup](docs/platforms/vapi.md) · [Orchestrator reference](docs/build/voice-orchestrators.md) |
 | **Self-hosted pipelines** (Pipecat, LiveKit, ElevenLabs) | Route each leg through Floe — one key, one budget. → [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md) |
 | **Claude / Cursor / MCP** | [MCP Server](docs/developers/mcp-server.md) — one line to connect any MCP client |
 | **LangChain** | [`getLangChainTools` adapter](docs/frameworks/langchain.md) |

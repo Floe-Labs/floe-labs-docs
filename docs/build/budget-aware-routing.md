@@ -13,6 +13,8 @@ When an agent nears its budget you can do more than fail the call — but what's
 | **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
 | **Finish** | Complete the current task, then stop new spend. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
 
+Where a stop *lands* depends on the platform: pre-call where Floe is in the path; at the agent's next Floe-keyed action on reconcile-only platforms like Bland (which has no pre-call hook). See [Coverage Score](coverage-score.md) for the per-platform boundary.
+
 ## Preflight: ask before you spend
 
 Before a paid call, check the effective cap so the agent chooses a model it can afford — rather than discovering the limit by hitting it.

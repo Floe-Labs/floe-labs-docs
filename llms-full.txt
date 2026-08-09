@@ -90,8 +90,8 @@ Every voice-agent call spends across 7–20 vendors in real time, and token and 
 
 ---
 
-> ### Running production agents on Vapi, Retell, or Bland?
-> Floe governs spend **inside your platform** through its own documented hooks — no migration, no platform cooperation, your keys stay yours. Point the custom-LLM slot at Floe for pre-call enforcement on the model leg; connect the end-of-call webhook and every call lands on one ledger with a between-call circuit breaker.
+> **Running production agents on Vapi, Retell, or Bland?**
+> Floe governs spend **inside your platform** through its own documented hooks — no migration, no platform cooperation, your keys stay yours. Where the platform allows it, route the model leg through Floe for pre-call enforcement (a custom-LLM URL on **Vapi**, a hosted adapter on **Retell**; **Bland** is reconcile-only). Connect the end-of-call webhook and every call lands on one ledger, with a between-call circuit breaker that stops the agent's next call once it's over budget.
 > → **[Vapi in 10 minutes](docs/platforms/vapi.md)** · [Retell](docs/platforms/retell.md) · [Bland](docs/platforms/bland.md) · [Full orchestrator reference](docs/build/voice-orchestrators.md)
 
 ---
@@ -165,7 +165,7 @@ When the Welcome Credit runs low, add money by card, Apple Pay, Google Pay, or b
 
 | Framework | How |
 |---|---|
-| **Voice platforms** (Vapi, Retell, Bland) | Govern spend inside the platform through its own hooks — custom-LLM slot + end-of-call webhook. → [Platform setup](docs/platforms/vapi.md) · [Orchestrator reference](docs/build/voice-orchestrators.md) |
+| **Voice platforms** (Vapi, Retell, Bland) | Govern spend inside the platform through its own hooks — model leg where supported (custom-LLM on Vapi/Retell; Bland reconcile-only) + end-of-call webhook. → [Platform setup](docs/platforms/vapi.md) · [Orchestrator reference](docs/build/voice-orchestrators.md) |
 | **Self-hosted pipelines** (Pipecat, LiveKit, ElevenLabs) | Route each leg through Floe — one key, one budget. → [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md) |
 | **Claude / Cursor / MCP** | [MCP Server](docs/developers/mcp-server.md) — one line to connect any MCP client |
 | **LangChain** | [`getLangChainTools` adapter](docs/frameworks/langchain.md) |
@@ -500,7 +500,7 @@ URL: https://floe-labs.gitbook.io/docs/start-here/quickstart.md
 
 # Quickstart (5 minutes)
 
-Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap spending with server-side controls you set — per task, day, vendor, or team (set them once you've seen it work). That's the whole product: **a budget, not a balance.**
+Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap spending with server-side controls you set — per task, day, vendor, or team (set them once you've seen it work). That's the whole product: **a funded balance with budgets enforced server-side.**
 
 > **$3 Welcome Credit (300 API credits).** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. The grant is once per account, not per agent. [Get started →](https://dev-dashboard.floelabs.xyz)
 
@@ -508,9 +508,13 @@ Create an agent, connect your tools, and make your first paid API call on the **
 
 ## 1. Create an agent
 
-Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email or Google, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once.
+Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email or Google, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once. Export it so the examples below can read it:
 
-Floe provisions everything your agent needs in the background — a funded balance and the **$3 Welcome Credit**.
+```bash
+export FLOE_API_KEY="floe_..."
+```
+
+Floe provisions everything your agent needs in the background — a funded balance and the **$3 Welcome Credit** (granted once per account, not per agent).
 
 ## 2. Connect to your AI tools & models
 
@@ -1788,7 +1792,7 @@ Before the call is placed, `POST /v1/calls` runs an admission check so an over-b
 
 Deny reasons include `insufficient_balance` (top up the agent first), `policy_exceeded` (a spend policy blocks the call), and the suspended states `credit_frozen` / `credit_line_expired` (resolve billing or renew the credit line).
 
-This is the same admission-control principle as the gateway: gate up front, never intervene mid-call. The authoritative money gate is still the reserve taken when the call is answered, so this check stays deliberately conservative — it rejects only clearly-unaffordable or blocked dials.
+This is admission control at the *start* of the call, and it's deliberately conservative — the authoritative money gate is the reserve taken when the call is answered, so the pre-dial check rejects only clearly-unaffordable or blocked dials. It's distinct from **live metering**: once a call is answered, Floe meters it per second and ends it if continuing would breach the cap (see above). The pre-dial check just avoids ringing a callee for a call that can't run.
 
 ## Voice settings — hosted vs webhook
 
@@ -2229,6 +2233,8 @@ When an agent nears its budget you can do more than fail the call — but what's
 | **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
 | **Finish** | Complete the current task, then stop new spend. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
 
+Where a stop *lands* depends on the platform: pre-call where Floe is in the path; at the agent's next Floe-keyed action on reconcile-only platforms like Bland (which has no pre-call hook). See [Coverage Score](coverage-score.md) for the per-platform boundary.
+
 ## Preflight: ask before you spend
 
 Before a paid call, check the effective cap so the agent chooses a model it can afford — rather than discovering the limit by hitting it.
@@ -2433,7 +2439,7 @@ When the cap is crossed, the breaching call gets a `402` (carrying `"auto_suspen
 
 ## Your coverage score
 
-The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **% of spend pre-call enforceable vs post-call reconciled** — across every platform the agent runs on. With Step 1 you govern the LLM leg pre-call; Reconcile Mode (Step 2) puts the rest on the ledger and behind the circuit breaker.
+The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **enforceable pre-call vs post-call reconciled vs dark** — across every platform the agent runs on. With Step 1 you govern the LLM leg pre-call; Reconcile Mode (Step 2) puts the rest on the ledger and behind the circuit breaker; anything Floe never sees stays **dark**.
 
 To **raise** it, move more legs onto Floe rails — STT/TTS via [Floe Inference](../developers/keyless-inference.md), telephony via [Floe Phone](../developers/floe-phone.md). The full path is [Graduate to 100% coverage](../build/migrate-to-full-coverage.md).
 
@@ -2492,6 +2498,8 @@ Route your Retell agent's model leg through Floe and connect its end-of-call web
 Use the ready-made recipe — a ~150-line server — rather than writing your own:
 
 [**retell-custom-llm recipe**](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm)
+
+First get a `floe_…` **agent key** — from the [dashboard](https://dev-dashboard.floelabs.xyz) or `npx @floelabs/cli init` — and put it in `.env` as `FLOE_API_KEY` (alongside your `RETELL_API_KEY`):
 
 ```bash
 cp .env.example .env      # RETELL_API_KEY, FLOE_API_KEY, path secret, model
@@ -2648,7 +2656,7 @@ Bland has no pre-call webhook, so the breaker works differently here: a reconcil
 
 ## Your coverage score
 
-The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **% of spend pre-call enforceable vs post-call reconciled** — across every platform the agent runs on. On Bland everything is **post-call reconciled** (there's no pre-call leg to gate), so the breaker's bite depends on how much you route through Floe: **moving legs onto Floe keys is what gives the breaker teeth**. See [Coverage Score](../build/coverage-score.md).
+The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **enforceable pre-call vs post-call reconciled vs dark** — across every platform the agent runs on. On Bland, the legs Bland runs are all **post-call reconciled** (no pre-call hook, no custom-LLM to gate); pre-call enforcement comes only from legs you run on **Floe rails** instead, and anything Floe never sees stays **dark**. So the breaker's bite grows the more you move onto Floe rails. See [Coverage Score](../build/coverage-score.md).
 
 To **raise** it, move more legs onto Floe rails — model and STT/TTS via [Floe Inference](../developers/keyless-inference.md), telephony via [Floe Phone](../developers/floe-phone.md). The full path is [Graduate to 100% coverage](../build/migrate-to-full-coverage.md).
 
@@ -4690,7 +4698,7 @@ Every agent in your [dashboard](https://dev-dashboard.floelabs.xyz) carries a **
 
 | Bucket | Meaning | Example |
 |---|---|---|
-| **Enforceable pre-call** | The leg runs through Floe's path, so an over-budget request is denied *before* money moves. | Model calls via the custom-LLM slot; STT/TTS on Floe keys; Floe Phone minutes. |
+| **Enforceable** | The leg runs through Floe's path. Request legs (LLM turns, one-shot TTS) are gated **pre-call**; Floe-native **duration-billed** legs (streaming STT, Floe Phone minutes) are metered **live** and cut off at the cap. | Model calls via the custom-LLM slot; STT/TTS on Floe keys; Floe Phone minutes. |
 | **Reconciled** | The cost reaches the ledger at call-end via Reconcile Mode; the circuit breaker acts on the *next* admission. | A Vapi call's cost ingested from the end-of-call webhook. |
 | **Dark** | Spend Floe never sees. It counts against nothing and appears nowhere. | A vendor billed on its own account, with no webhook and no Floe key. |
 
@@ -4717,15 +4725,15 @@ The score tells you which leg to move. In order of typical impact:
 
 ## API
 
-```
+```http
 GET /v1/developer/agents/:agentId/coverage?days=30
 ```
 
-Returns the three-way split (as basis points), per-source attribution, and the window total. Requires a developer key (`floe_live_…`).
+Returns `totals` — `knownRaw`, `enforceableRaw`, `reconciledRaw` (raw USDC) plus `coverageBps` (the enforceable-plus-reconciled share in basis points; `null` when there's no spend in the window) — a `bySource` breakdown (`class`, `calls`, `costRaw`), a daily `series`, and `dark: "unknown"` (spend on platforms never wired to Floe can't be counted). Accepts any developer credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set.
 
 ## The honest boundary
 
-Floe never intervenes mid-call — a dropped call is a worse failure than an expensive one. Enforcement is **admission control**: pre-call where Floe is in the path; at the next admission point everywhere else (the next inbound call on Vapi/Retell; the next Floe-keyed action on Bland, which exposes no pre-call hook; the cooperative pre-call check on self-hosted stacks). The score exists so that boundary is **visible instead of implied**.
+On calls Floe doesn't run — the orchestrator owns the media path — enforcement is **admission control, never mid-call**: an over-budget request is refused *before* it starts, and a reconciled breach denies the **next** admission (the next inbound call on Vapi/Retell **when a pre-call URL is configured**; otherwise the agent's next Floe-keyed action — always the case on Bland, which has no pre-call hook; a cooperative pre-call check on self-hosted stacks). The one exception is **Floe-native duration-billed legs** — streaming STT and Floe Phone run through Floe's own path and are metered live, cut off mid-stream at the cap. The score exists so that boundary is **visible instead of implied**.
 
 > Pre-call where we're in the path. Circuit breaker everywhere else.
 
