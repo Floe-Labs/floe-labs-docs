@@ -4,7 +4,7 @@ icon: rocket
 
 # Quickstart (5 minutes)
 
-Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap spending with server-side controls you set — per task, day, vendor, or team (set them once you've seen it work). That's the whole product: **a budget, not a balance.** No wallets to install, no provider or wallet keys to manage, no tokens to buy, no gas to pay.
+Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap spending with server-side controls you set — per task, day, vendor, or team (set them once you've seen it work). That's the whole product: **a budget, not a balance.**
 
 > **$3 Welcome Credit (300 API credits).** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. The grant is once per account, not per agent. [Get started →](https://dev-dashboard.floelabs.xyz)
 
@@ -12,9 +12,9 @@ Create an agent, connect your tools, and make your first paid API call on the **
 
 ## 1. Create an agent
 
-Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email, Google, or a wallet, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once.
+Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email or Google, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once.
 
-Floe provisions everything your agent needs in the background — a managed wallet and the **$3 Welcome Credit**. No "connect wallet" step, no MetaMask, no seed phrase.
+Floe provisions everything your agent needs in the background — a funded balance and the **$3 Welcome Credit**.
 
 ## 2. Connect to your AI tools & models
 
@@ -135,7 +135,7 @@ That's a fraction of a cent against the **$3 Welcome Credit** — the settled co
 {% endtab %}
 {% endtabs %}
 
-That's the entire happy path. No `instant_borrow`, no `marketId`, no LTV, no signing, no `viem`, no `web3.py`, no `PRIVATE_KEY`, no RPC URL, no gas token.
+That's the entire happy path — one HTTP call with your Floe key.
 
 ## 4. Fund & set budgets (later)
 

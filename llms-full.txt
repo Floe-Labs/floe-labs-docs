@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 55 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 58 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -9,7 +9,7 @@
 
 ## Contents
 
-- Floe — FinOps for voice AI builders — https://floe-labs.gitbook.io/docs/readme.md
+- Floe — Spend controls for Voice AI — https://floe-labs.gitbook.io/docs/readme.md
 - Set up with your AI tools — https://floe-labs.gitbook.io/docs/start-here/setup-with-ai-tools.md
 - Claude Code / Agent Skills — https://floe-labs.gitbook.io/docs/start-here/claude-code-skill.md
 - Quickstart (5 minutes) — https://floe-labs.gitbook.io/docs/start-here/quickstart.md
@@ -21,13 +21,15 @@
 - Agent Quickstart — https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
 - The Voice Stack — overview — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-stack.md
 - Govern Vapi / Retell / Bland / Pipecat / LiveKit — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators.md
-- Vapi quickstart (10 min) — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators/vapi.md
 - Graduate to 100% coverage — https://floe-labs.gitbook.io/docs/the-voice-stack/migrate-to-full-coverage.md
 - Floe Phone — numbers & telephony — https://floe-labs.gitbook.io/docs/the-voice-stack/floe-phone.md
 - Floe Inference — keyless LLM & voice — https://floe-labs.gitbook.io/docs/the-voice-stack/keyless-inference.md
 - Unified Billing & Ledger — https://floe-labs.gitbook.io/docs/the-voice-stack/unified-ledger.md
 - Budget-Aware Routing — https://floe-labs.gitbook.io/docs/the-voice-stack/budget-aware-routing.md
 - Latency & overhead — https://floe-labs.gitbook.io/docs/the-voice-stack/latency-overhead.md
+- Vapi — 10-minute setup — https://floe-labs.gitbook.io/docs/platforms/vapi.md
+- Retell — https://floe-labs.gitbook.io/docs/platforms/retell.md
+- Bland — https://floe-labs.gitbook.io/docs/platforms/bland.md
 - Overview — https://floe-labs.gitbook.io/docs/vendor-marketplace/x402-directory.md
 - Compute — https://floe-labs.gitbook.io/docs/vendor-marketplace/compute.md
 - Venice AI — https://floe-labs.gitbook.io/docs/vendor-marketplace/compute/venice.md
@@ -39,7 +41,8 @@
 - Memory — https://floe-labs.gitbook.io/docs/vendor-marketplace/database.md
 - Agent Tools — https://floe-labs.gitbook.io/docs/vendor-marketplace/agent-tools-verified.md
 - Submit an API — https://floe-labs.gitbook.io/docs/vendor-marketplace/submit.md
-- Agent Wallet — https://floe-labs.gitbook.io/docs/core-concepts/wallet.md
+- Agent Balance — https://floe-labs.gitbook.io/docs/core-concepts/wallet.md
+- Coverage Score — https://floe-labs.gitbook.io/docs/core-concepts/coverage-score.md
 - Spend Controls — https://floe-labs.gitbook.io/docs/core-concepts/spend-controls.md
 - Agent Awareness — https://floe-labs.gitbook.io/docs/core-concepts/agent-awareness.md
 - Plain HTTP / REST — https://floe-labs.gitbook.io/docs/frameworks/http.md
@@ -56,7 +59,7 @@
 - API Keys — https://floe-labs.gitbook.io/docs/developers/api-keys.md
 - From Bank Account to First API Call — https://floe-labs.gitbook.io/docs/developers/fiat-to-x402.md
 - Agent Runtime Contract — https://floe-labs.gitbook.io/docs/developers/agent-runtime-contract.md
-- Payment Facilitator — https://floe-labs.gitbook.io/docs/developers/x402-facilitator.md
+- Pay any vendor API — https://floe-labs.gitbook.io/docs/developers/x402-facilitator.md
 - Marketplace Shim — https://floe-labs.gitbook.io/docs/developers/marketplace-shim.md
 - MCP Server — https://floe-labs.gitbook.io/docs/developers/mcp-server.md
 - Webhooks — https://floe-labs.gitbook.io/docs/developers/webhooks.md
@@ -66,38 +69,43 @@
 - Changelog — https://floe-labs.gitbook.io/docs/reference/changelog.md
 
 ==============================================================================
-# Floe — FinOps for voice AI builders
+# Floe — Spend controls for Voice AI
 Source: README.md
 URL: https://floe-labs.gitbook.io/docs/readme.md
 ==============================================================================
 
 <p align="center"><img src="https://raw.githubusercontent.com/Floe-Labs/.github/main/profile/banner.png" alt="Floe" width="100%" /></p>
 
-# Floe — FinOps for voice AI builders
+# Floe — Spend controls for Voice AI
 
-**One key for your voice agent's entire bill — LLM, voice, telephony, data.** Every voice-agent call spends across 5–10 vendors in real time. Floe pays all of them per call through a single key, enforces per-agent and per-task budgets, and puts the whole bill on one ledger. Walletless.
+**Your voice agent's whole bill — telephony, STT, LLM, TTS, search — on one ledger, enforced before money moves.**
+
+Every voice-agent call spends across 7–20 vendors in real time, and token and TTS usage varies every conversation — so true per-call cost only exists by joining usage data across providers after the call. Floe is that join, plus enforcement: budgets applied **pre-call where Floe is in the path**, and a **circuit breaker everywhere else**. One ledger, tagged by agent, task, and customer.
 
 [Website](https://floelabs.xyz) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen)](https://github.com/Floe-Labs/floe-labs-docs/blob/main/LICENSE)
 
-No crypto, no wallets to manage. Works with **Pipecat, Vapi, Retell, ElevenLabs, LiveKit, Bland, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP.**
-
-> This repository is the source for the documentation at **[floe-labs.gitbook.io/docs](https://floe-labs.gitbook.io/docs)** — the published site is the best way to read it. Corrections and improvements are welcome; see [CONTRIBUTING.md](https://github.com/Floe-Labs/floe-labs-docs/blob/main/CONTRIBUTING.md).
+> This repository is the source for the documentation at **[floe-labs.gitbook.io/docs](https://floe-labs.gitbook.io/docs)** — the published site is the best way to read it. Corrections welcome; see [CONTRIBUTING.md](https://github.com/Floe-Labs/floe-labs-docs/blob/main/CONTRIBUTING.md).
 
 ---
 
-## Your agent is 4 steps from its first paid API call
+> ### Running production agents on Vapi, Retell, or Bland?
+> Floe governs spend **inside your platform** through its own documented hooks — no migration, no platform cooperation, your keys stay yours. Point the custom-LLM slot at Floe for pre-call enforcement on the model leg; connect the end-of-call webhook and every call lands on one ledger with a between-call circuit breaker.
+> → **[Vapi in 10 minutes](docs/platforms/vapi.md)** · [Retell](docs/platforms/retell.md) · [Bland](docs/platforms/bland.md) · [Full orchestrator reference](docs/build/voice-orchestrators.md)
 
-Every account's first agent starts with a **$3 Welcome Credit (300 API credits)** — so your first paid call needs **no card and no funding**. Fund and set budgets later, once you've seen it work.
+---
+
+## Prototyping? Your agent is 4 steps from its first paid call
+
+Every account's first agent starts with a **$3 Welcome Credit (300 API credits)** — so your first paid call needs **no card and no funding**.
 
 ### 1. Create an agent
 
-Go to the [Developer Dashboard](https://dev-dashboard.floelabs.xyz). Sign in with email, Google, or a wallet, and create an agent. Floe provisions everything — a managed wallet and the **$3 Welcome Credit** — automatically. Walletless: no MetaMask, no seed phrase.
-
+Sign in to the [Developer Dashboard](https://dev-dashboard.floelabs.xyz) with email or Google and create an agent. Floe provisions everything — a funded balance and the Welcome Credit — automatically.
 → [Dashboard guide](docs/developers/developer-dashboard.md)
 
-### 2. Connect to your AI tools & models
+### 2. Connect your AI tools
 
 Point your coding agent at Floe and it does the setup — installs a client, provisions an agent, sets guardrails, and makes a real paid call:
 
@@ -105,7 +113,7 @@ Point your coding agent at Floe and it does the setup — installs a client, pro
 Read https://dev-dashboard.floelabs.xyz/agents.md and set up Floe for this project.
 ```
 
-Or wire up a client yourself:
+Or wire a client yourself:
 
 ```bash
 # MCP — Claude Code, one line
@@ -114,16 +122,14 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
 
 # Platform CLI — onboard, mint an agent key, print the base-URL swap
 npx @floelabs/cli init
-
-# The curl below reads $FLOE_API_KEY — export the key init printed (it is not exported for you)
-export FLOE_API_KEY="floe_..."
+export FLOE_API_KEY="floe_..."   # export the key init printed (it is not exported for you)
 ```
 
 → [Set up with your AI tools](docs/getting-started/setup-with-ai-tools.md)
 
 ### 3. Make your first paid call
 
-Spend the **$3 Welcome Credit** — no card needed. Your agent sends one HTTP request; Floe pays the vendor and returns the response with an `X-Floe-Payment-Amount` header showing the cost. The same key pays LLM tokens, so every leg lands on one ledger.
+Spend the **$3 Welcome Credit** — no card needed. Your agent sends one HTTP request; Floe pays the vendor and returns the response with an `X-Floe-Payment-Amount` header showing the cost. The same key pays LLM tokens, and `X-Floe-Task-Id` ties every leg to one budget.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
@@ -133,13 +139,12 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "https://api.exa.ai/search", "method": "POST", "body": "{\"query\":\"hello world\"}"}'
 ```
 
-→ [Vendor Marketplace](docs/x402-directory/README.md) — thousands of vendor services · [Floe Inference](docs/developers/keyless-inference.md) — keyless LLM · [Payment facilitator](docs/developers/x402-facilitator.md)
+→ [Vendor Marketplace](docs/x402-directory/README.md) · [Floe Inference](docs/developers/keyless-inference.md)
 
 ### 4. Fund & set budgets
 
-When the Welcome Credit runs low, add money with a card, Apple Pay, Google Pay, or bank transfer — directly in the dashboard, shown in dollars. Then cap what your agent can spend: per day, per task, per vendor, or across your whole team. Enforced server-side, so a runaway loop can't blow your budget. One task budget caps the whole conversation — LLM, voice, telephony, and data together.
-
-→ [Funding guide](docs/getting-started/funding.md) · [Spend Controls](docs/developers/spend-controls.md)
+When the Welcome Credit runs low, add money by card, Apple Pay, Google Pay, or bank transfer — shown in dollars. Then cap what your agent can spend: per day, per task, per vendor, or across your team. Enforced server-side, so a runaway loop can't blow your budget. One task budget caps the whole conversation — LLM, voice, telephony, and data together.
+→ [Funding](docs/getting-started/funding.md) · [Spend Controls](docs/developers/spend-controls.md)
 
 ---
 
@@ -147,21 +152,21 @@ When the Welcome Credit runs low, add money with a card, Apple Pay, Google Pay, 
 
 | Guide | What you get |
 |---|---|
-| **[The Voice Stack](docs/build/voice-stack.md)** | Run a full voice turn — STT → LLM → TTS → telephony — on one key, one budget. |
-| **[Floe Inference](docs/developers/keyless-inference.md)** | Keyless LLM & voice — call any model with just your Floe key, no provider account. |
-| **[Floe Phone](docs/developers/floe-phone.md)** | Give an agent a real phone number; carrier, STT, LLM, and TTS metered on one ledger. |
-| **[Unified Billing & Ledger](docs/build/unified-ledger.md)** | LLM, voice, telephony, and data on one ledger, priced per call. |
-| **[Budget-Aware Routing](docs/build/budget-aware-routing.md)** | Downgrade, finish, or hard-stop as an agent nears its budget — the job still finishes. |
+| **[The Voice Stack](docs/build/voice-stack.md)** | A full voice turn — STT → LLM → TTS → telephony — on one key, one budget. |
+| **[Floe Inference](docs/developers/keyless-inference.md)** | Keyless LLM & voice — any model with just your Floe key. |
+| **[Floe Phone](docs/developers/floe-phone.md)** | A real phone number; carrier, STT, LLM, and TTS metered on one ledger. |
+| **[Unified Billing & Ledger](docs/build/unified-ledger.md)** | Every leg on one ledger, priced per call, attributed per agent, task, and customer. |
+| **[Voice Orchestrators](docs/build/voice-orchestrators.md)** | Connect Vapi / Retell / Bland / Pipecat / LiveKit — Reconcile Mode + circuit breaker. |
+| **[Coverage Score](docs/build/coverage-score.md)** | The % of an agent's spend that's enforceable vs reconciled vs dark — and how to raise it. |
 
 ---
 
 ## Integrate with your framework
 
-Works with **Pipecat, Vapi, Retell, ElevenLabs, LiveKit, Bland, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP.** Every one follows the same flow — create an agent, get an API key, call the proxy.
-
 | Framework | How |
 |---|---|
-| **Voice pipelines** (Vapi, Retell, Pipecat, LiveKit, Bland, ElevenLabs) | Drop Floe in as the payment layer — route each leg through Floe so it lands on one key and one budget. → [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md) |
+| **Voice platforms** (Vapi, Retell, Bland) | Govern spend inside the platform through its own hooks — custom-LLM slot + end-of-call webhook. → [Platform setup](docs/platforms/vapi.md) · [Orchestrator reference](docs/build/voice-orchestrators.md) |
+| **Self-hosted pipelines** (Pipecat, LiveKit, ElevenLabs) | Route each leg through Floe — one key, one budget. → [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md) |
 | **Claude / Cursor / MCP** | [MCP Server](docs/developers/mcp-server.md) — one line to connect any MCP client |
 | **LangChain** | [`getLangChainTools` adapter](docs/frameworks/langchain.md) |
 | **CrewAI** | [via MCP server](docs/frameworks/crewai.md) |
@@ -178,21 +183,19 @@ See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookboo
 
 | Capability | What it does |
 |---|---|
-| **[Agent Wallet](docs/components/wallet.md)** | A funded dollar balance per agent, with programmable spend limits. |
+| **[Agent Balance](docs/components/wallet.md)** | A funded dollar balance per agent, with programmable spend limits. |
+| **[Coverage Score](docs/build/coverage-score.md)** | Per-agent: % of spend enforceable pre-call vs reconciled vs dark. |
 | **[Funding](docs/getting-started/funding.md)** | Add money by card, Apple Pay, Google Pay, or bank; withdraw anytime. |
-| **[Payment facilitator](docs/developers/x402-facilitator.md)** | One endpoint pays any vendor API, per call, from the agent's balance. |
+| **[Pay any vendor API](docs/developers/x402-facilitator.md)** | One endpoint pays any vendor API, per call, from the agent's balance. |
 | **[Vendor Marketplace](docs/x402-directory/README.md)** | Vendor API services — LLMs, STT, TTS, telephony, search, browser, memory — thousands reachable through one key. |
-| **[Unified billing & ledger](docs/build/unified-ledger.md)** | LLM, voice, telephony, and data on one ledger, one policy set. |
+| **[Unified billing & ledger](docs/build/unified-ledger.md)** | Every leg on one ledger, one policy set. |
 | **[Spend controls](docs/developers/spend-controls.md)** | Per-day, per-task, per-vendor, per-team budgets — enforced server-side. |
-| **[Budget-aware routing](docs/build/budget-aware-routing.md)** | Downgrade, finish, or hard-stop as budgets tighten. |
 
 ---
 
 ## Why this matters
 
-A voice agent's cost is never just tokens. One conversation pays for telephony, speech-to-text, an LLM, and text-to-speech — 5 to 10 vendors, in real time. If they bill four different ways, you can't answer the only question that matters: what did this call cost, and was it worth it?
-
-Floe answers it. One key pays every vendor per call, per-agent and per-task budgets stop a runaway loop server-side, and the whole bill lands on one ledger — tagged by agent, task, and vendor.
+A voice agent's cost is never just tokens. One conversation pays 7–20 vendors in real time, and if they bill separately you can't answer the only question that matters: what did this call cost, and was it worth it? Floe answers it — and enforces the answer. Pre-call where we're in the path. Circuit breaker everywhere else.
 
 ---
 
@@ -497,7 +500,7 @@ URL: https://floe-labs.gitbook.io/docs/start-here/quickstart.md
 
 # Quickstart (5 minutes)
 
-Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap spending with server-side controls you set — per task, day, vendor, or team (set them once you've seen it work). That's the whole product: **a budget, not a balance.** No wallets to install, no provider or wallet keys to manage, no tokens to buy, no gas to pay.
+Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap spending with server-side controls you set — per task, day, vendor, or team (set them once you've seen it work). That's the whole product: **a budget, not a balance.**
 
 > **$3 Welcome Credit (300 API credits).** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. The grant is once per account, not per agent. [Get started →](https://dev-dashboard.floelabs.xyz)
 
@@ -505,9 +508,9 @@ Create an agent, connect your tools, and make your first paid API call on the **
 
 ## 1. Create an agent
 
-Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email, Google, or a wallet, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once.
+Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email or Google, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once.
 
-Floe provisions everything your agent needs in the background — a managed wallet and the **$3 Welcome Credit**. No "connect wallet" step, no MetaMask, no seed phrase.
+Floe provisions everything your agent needs in the background — a funded balance and the **$3 Welcome Credit**.
 
 ## 2. Connect to your AI tools & models
 
@@ -628,7 +631,7 @@ That's a fraction of a cent against the **$3 Welcome Credit** — the settled co
 {% endtab %}
 {% endtabs %}
 
-That's the entire happy path. No `instant_borrow`, no `marketId`, no LTV, no signing, no `viem`, no `web3.py`, no `PRIVATE_KEY`, no RPC URL, no gas token.
+That's the entire happy path — one HTTP call with your Floe key.
 
 ## 4. Fund & set budgets (later)
 
@@ -1130,6 +1133,8 @@ URL: https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators.md
 
 # Govern voice-orchestrator spend with Floe
 
+> **Setting up one platform?** Start with the quickstart: [Vapi](../platforms/vapi.md) · [Retell](../platforms/retell.md) · [Bland](../platforms/bland.md). This page is the full reference across all five (Pipecat and LiveKit included).
+
 You build on a voice orchestrator and the framework executes the call: STT,
 LLM, TTS, telephony. Floe governs that spend in two complementary ways, and is
 honest about which is which:
@@ -1474,127 +1479,6 @@ telephony via [Floe Phone](../developers/floe-phone.md), or the full path via
 [Pipecat / LiveKit on Floe](voice-stack.md#live-voice-with-your-own-stack-livekit-pipecat).
 
 ==============================================================================
-# Vapi quickstart (10 min)
-Source: docs/build/vapi.md
-URL: https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators/vapi.md
-==============================================================================
-
-# Govern your Vapi spend with Floe — 10 minutes, no migration
-
-Route your Vapi assistant's model leg through Floe and connect its end-of-call webhook, and you get **pre-call budget enforcement on the LLM leg** plus **every call reconciled onto one ledger** — without leaving Vapi or changing vendors. Three steps, ~10 minutes.
-
-**Prerequisites**
-
-- A Floe account + an **agent key** (`floe_…`) — [dashboard](https://dev-dashboard.floelabs.xyz) or `POST /v1/developer/agents/:agentId/keys`.
-- A Vapi assistant you can edit.
-
-> This is the same flow documented in depth (all five platforms) in [Govern Vapi / Retell / Bland / Pipecat / LiveKit](voice-orchestrators.md) — this page is the focused Vapi quickstart.
-
----
-
-## Step 1 — Route the LLM leg through Floe (2 min)
-
-Vapi's **custom-llm** is OpenAI-compatible and streams, so it points **directly** at Floe's keyless gateway — no shim.
-
-In your assistant's **Model → Custom LLM** settings:
-
-```json
-{
-  "provider": "custom-llm",
-  "url": "https://credit-api.floelabs.xyz/v1",
-  "model": "openai/gpt-4o-mini"
-}
-```
-
-- **`url`** — `https://credit-api.floelabs.xyz/v1` (Vapi appends `/chat/completions`).
-- **`model`** — a **fully-qualified** catalog id, `provider/model` (e.g. `openai/gpt-4o-mini`, `anthropic/claude-haiku-4-5`). A bare `gpt-4o` is rejected — discover valid ids with `GET /v1/models`. See [Floe Inference](../developers/keyless-inference.md).
-- **Auth** — create a Vapi **custom-llm credential** holding your `floe_` agent key. Vapi sends it as `Authorization: Bearer …` on every turn (model-config headers aren't reliable on Vapi; the credential is the supported path).
-
-Every turn is now **metered per token and gated pre-call**: once the agent's cap is hit, the gateway refuses the turn with `402` *before* any tokens are bought. The LLM is the most expensive, most variable leg — up to ~60% of a typical call's cost.
-
-**Verify** → make a test call. It shows up on the ledger as a **gateway row** attributed to the agent, with the per-call cost in the `X-Floe-Cost-USDC` response header.
-
----
-
-## Step 2 — Connect the end-of-call webhook (3 min)
-
-This is Reconcile Mode: Vapi posts each call's real cost to Floe at call-end, so **every leg** (STT, TTS, telephony) lands on the same ledger — not just the LLM.
-
-**Register the connection** (admin — dashboard, or the API with an admin dashboard session):
-
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
-  -H "Content-Type: application/json" \
-  -H "Cookie: <admin dashboard session>" \
-  -d '{ "agentId": <your-agent-id>, "provider": "vapi", "label": "support line" }'
-```
-
-The response returns a `webhookUrl` and a `secret` (shown once):
-
-```json
-{
-  "webhookUrl": "https://credit-api.floelabs.xyz/v1/webhooks/vapi/call-end/<token>",
-  "preCallUrl": "https://credit-api.floelabs.xyz/v1/webhooks/vapi/pre-call/<token>",
-  "secret": "<shown once>"
-}
-```
-
-In **Vapi**: set the assistant's (or org's) **Server URL** to the `webhookUrl`, and set the returned **`secret`** as the server credential. Vapi sends it back in the `X-Vapi-Secret` header on every delivery, and Floe verifies it (a wrong or missing secret is rejected `401`; an unknown/disabled token is `404`). Treat the URL as a secret — rotate with `POST /v1/developer/orchestrators/:id/rotate`.
-
-> **Optional — deny the next call before it connects.** Also set the phone number's Server URL to `preCallUrl?assistantId=<your-assistant-id>`. When the agent is over budget, Floe returns an error Vapi speaks, and the call never starts. Without it, an over-budget agent is still stopped — just at its next Floe-keyed action (Step 3), not at admission.
-
-**Verify** → end a call. A **reconciled debit** appears on the ledger within moments, attributed to the agent (sourced from Vapi's `message.cost`).
-
----
-
-## Step 3 — Set a cap (2 min)
-
-Add a spend policy with the **kill-switch** action so a breach doesn't just decline one call — it suspends the agent.
-
-- **Dashboard** → *Spend Controls* → add a policy (session or window cap) with action **Suspend agent**.
-- **API** → set a policy with `"action": "suspend_agent"`. See [Spend Controls](../developers/spend-controls.md) for the policy shape and windows.
-
-When the cap is crossed, the breaching call gets a `402` (carrying `"auto_suspended": true`) and **the whole agent is suspended — every subsequent call is rejected at authentication with `403`** until you resume it. A runaway campaign dies after call *N*, not call 10,000.
-
-**Verify** → cross the cap → the next call is denied (`403` at admission, or the pre-call hook rejects it if you configured Step 2's `preCallUrl`).
-
----
-
-## Your coverage score
-
-The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **% of spend pre-call enforceable vs post-call reconciled** — across every platform the agent runs on. With Step 1 you govern the LLM leg pre-call; Reconcile Mode (Step 2) puts the rest on the ledger and behind the circuit breaker.
-
-To **raise** it, move more legs onto Floe rails — STT/TTS via [Floe Inference](../developers/keyless-inference.md), telephony via [Floe Phone](../developers/floe-phone.md). The full path is [Graduate to 100% coverage](migrate-to-full-coverage.md).
-
----
-
-{% hint style="info" %}
-**The honest boundary.** Floe enforces **pre-call on the LLM leg** (custom-llm through the gateway). STT, TTS, and telephony stay on Vapi and are governed **post-call — reconciled onto the ledger, with a between-call circuit breaker** (`suspend_agent`). Floe does **not** intervene mid-call: enforcement is either *before* a call (deny the next) or *after* it (reconcile + suspend). It never interrupts a call in progress.
-{% endhint %}
-
----
-
-## Troubleshooting
-
-| Symptom | Cause & fix |
-|---|---|
-| Webhook returns `401` | The `X-Vapi-Secret` Vapi sent doesn't match the connection's secret. Re-set the secret on the Vapi server credential, or rotate it (`POST /v1/developer/orchestrators/:id/rotate`). |
-| Webhook returns `404` | The token in the `webhookUrl` is unknown or the connection is disabled. Re-copy the `webhookUrl` from the connection. |
-| LLM calls fail with `model_not_found` | Use the **fully-qualified** `provider/model` id (`openai/gpt-4o-mini`) — a bare `gpt-4o` is rejected on `/v1/chat/completions`. List valid ids with `GET /v1/models`. |
-| Want to keep paying your own model vendor | Use **BYOK**: pass `X-Floe-Provider-Key: <your key>` (or store it once). Floe meters and charges its service fee only. See [Floe Inference](../developers/keyless-inference.md). |
-
----
-
-## Retell & Bland
-
-The webhook + cap steps (2 and 3) work the same way — register the connection with `provider: "retell"` or `"bland"` and use the returned URLs. The **model leg differs**, so don't copy Step 1 blindly:
-
-- **Retell** — custom-LLM is **not** a URL swap; Retell dials out to a **WebSocket adapter you host** (its own protocol). Use the [retell-custom-llm recipe](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm).
-- **Bland** — **no self-serve custom LLM** (enterprise-only). Skip Step 1 and govern the whole call via **Reconcile Mode** (Steps 2–3); Bland has no pre-call hook, so enforcement is at the agent's next Floe-keyed action after a reconciled breach.
-
-Full per-platform detail: [Govern Vapi / Retell / Bland / Pipecat / LiveKit](voice-orchestrators.md).
-
-==============================================================================
 # Graduate to 100% coverage
 Source: docs/build/migrate-to-full-coverage.md
 URL: https://floe-labs.gitbook.io/docs/the-voice-stack/migrate-to-full-coverage.md
@@ -1898,6 +1782,14 @@ print(res.json()["callId"])
 {% endtabs %}
 
 **Response `201`:** `{ "callId": "CA…", "from": "+14155550123", "to": "+14155559876", "status": "queued" }`. A call that's never answered costs nothing — billing starts when the media stream opens. There is also a dashboard-session variant, `POST /v1/developer/agents/{agentId}/numbers/{numberId}/test-call`, which powers the one-click "the agent calls you" test.
+
+### Pre-dial budget check
+
+Before the call is placed, `POST /v1/calls` runs an admission check so an over-budget or suspended agent can't ring a callee's phone only to be cut off the moment the call connects. If the agent is suspended, or its balance can't cover roughly one minute of calling, or a spend policy blocks the call, the request is denied with **`403` before the call is placed** — you get no `callId` and the callee's phone never rings.
+
+Deny reasons include `insufficient_balance` (top up the agent first), `policy_exceeded` (a spend policy blocks the call), and the suspended states `credit_frozen` / `credit_line_expired` (resolve billing or renew the credit line).
+
+This is the same admission-control principle as the gateway: gate up front, never intervene mid-call. The authoritative money gate is still the reserve taken when the call is answered, so this check stays deliberately conservative — it rejects only clearly-unaffordable or blocked dials.
 
 ## Voice settings — hosted vs webhook
 
@@ -2326,17 +2218,17 @@ URL: https://floe-labs.gitbook.io/docs/the-voice-stack/budget-aware-routing.md
 # Budget-Aware Routing
 
 {% hint style="warning" %}
-**Early access.** Hard-stop at budget is live everywhere today. Budget-advisory headers (`X-Floe-Budget-Advisory`) let your agent taper itself. **Server-side auto-downgrade is in early access** — request it at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+**Availability.** The **hard stop** at budget is live everywhere today. **Advisory taper** is live wherever the operator has enabled the `X-Floe-Budget-Advisory` header (off by default). **Server-side auto-downgrade** and **finish** are in **early access** — request either at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
 {% endhint %}
 
-When an agent nears its budget, Floe can act instead of failing — the job finishes, just cheaper. Instead of a hard `402` at the cap, you pick a behavior up front and Floe applies it as the agent runs.
+When an agent nears its budget you can do more than fail the call — but what's available depends on the mode:
 
 | Mode | Behavior | Availability |
 |------|----------|--------------|
-| **Hard stop** | Suspend the agent and fire your webhook. | **Live** |
-| **Advisory taper** | `X-Floe-Budget-Advisory` on each response lets your agent choose a cheaper model itself. | **Live** |
-| **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access** |
-| **Finish** | Complete the current task, then stop new spend. | **Early access** |
+| **Hard stop** | The breaching call gets a hard `402`. With a `suspend_agent` policy it *also* suspends the agent — and fires an `agent.suspended` webhook if you've registered one; without that action it just declines the single call. | **Live** |
+| **Advisory taper** | When the operator enables it, `X-Floe-Budget-Advisory` on each response lets your agent pick a cheaper model itself. | **Live (operator-enabled; off by default)** |
+| **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
+| **Finish** | Complete the current task, then stop new spend. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
 
 ## Preflight: ask before you spend
 
@@ -2452,6 +2344,331 @@ Human turn-taking gives useful context for why this budget exists at all: resear
 
 - [Spend controls](../developers/spend-controls.md) — what gets enforced pre-transaction and how
 - [Vendor marketplace](../x402-directory/README.md) — endpoints Floe routes today
+
+==============================================================================
+# Vapi — 10-minute setup
+Source: docs/platforms/vapi.md
+URL: https://floe-labs.gitbook.io/docs/platforms/vapi.md
+==============================================================================
+
+# Govern your Vapi spend with Floe — 10 minutes, no migration
+
+Route your Vapi assistant's model leg through Floe and connect its end-of-call webhook, and you get **pre-call budget enforcement on the LLM leg** plus **every call reconciled onto one ledger** — without leaving Vapi or changing vendors. Three steps, ~10 minutes.
+
+**Prerequisites**
+
+- A Floe account + an **agent key** (`floe_…`) — [dashboard](https://dev-dashboard.floelabs.xyz) or `POST /v1/developer/agents/:agentId/keys`.
+- A Vapi assistant you can edit.
+
+> This is the same flow documented in depth (all five platforms) in [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md) — this page is the focused Vapi quickstart.
+
+---
+
+## Step 1 — Route the LLM leg through Floe (2 min)
+
+Vapi's **custom-llm** is OpenAI-compatible and streams, so it points **directly** at Floe's keyless gateway — no shim.
+
+In your assistant's **Model → Custom LLM** settings:
+
+```json
+{
+  "provider": "custom-llm",
+  "url": "https://credit-api.floelabs.xyz/v1",
+  "model": "openai/gpt-4o-mini"
+}
+```
+
+- **`url`** — `https://credit-api.floelabs.xyz/v1` (Vapi appends `/chat/completions`).
+- **`model`** — a **fully-qualified** catalog id, `provider/model` (e.g. `openai/gpt-4o-mini`, `anthropic/claude-haiku-4-5`). A bare `gpt-4o` is rejected — discover valid ids with `GET /v1/models`. See [Floe Inference](../developers/keyless-inference.md).
+- **Auth** — create a Vapi **custom-llm credential** holding your `floe_` agent key. Vapi sends it as `Authorization: Bearer …` on every turn (model-config headers aren't reliable on Vapi; the credential is the supported path).
+
+Every turn is now **metered per token and gated pre-call**: once the agent's cap is hit, the gateway refuses the turn with `402` *before* any tokens are bought. The LLM is the most expensive, most variable leg — up to ~60% of a typical call's cost.
+
+**Verify** → make a test call. It shows up on the ledger as a **gateway row** attributed to the agent, with the per-call cost in the `X-Floe-Cost-USDC` response header.
+
+---
+
+## Step 2 — Connect the end-of-call webhook (3 min)
+
+This is Reconcile Mode: Vapi posts each call's real cost to Floe at call-end, so **every leg** (STT, TTS, telephony) lands on the same ledger — not just the LLM.
+
+**Register the connection** (admin — dashboard, or the API with an admin dashboard session):
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
+  -H "Content-Type: application/json" \
+  -H "Cookie: <admin dashboard session>" \
+  -d '{ "agentId": <your-agent-id>, "provider": "vapi", "label": "support line" }'
+```
+
+The response returns a `webhookUrl` and a `secret` (shown once):
+
+```json
+{
+  "webhookUrl": "https://credit-api.floelabs.xyz/v1/webhooks/vapi/call-end/<token>",
+  "preCallUrl": "https://credit-api.floelabs.xyz/v1/webhooks/vapi/pre-call/<token>",
+  "secret": "<shown once>"
+}
+```
+
+In **Vapi**: set the assistant's (or org's) **Server URL** to the `webhookUrl`, and set the returned **`secret`** as the server credential. Vapi sends it back in the `X-Vapi-Secret` header on every delivery, and Floe verifies it (a wrong or missing secret is rejected `401`; an unknown/disabled token is `404`). Treat the URL as a secret — rotate with `POST /v1/developer/orchestrators/:id/rotate`.
+
+> **Optional — deny the next call before it connects.** Also set the phone number's Server URL to `preCallUrl?assistantId=<your-assistant-id>`. When the agent is over budget, Floe returns an error Vapi speaks, and the call never starts. Without it, an over-budget agent is still stopped — just at its next Floe-keyed action (Step 3), not at admission.
+
+**Verify** → end a call. A **reconciled debit** appears on the ledger within moments, attributed to the agent (sourced from Vapi's `message.cost`).
+
+---
+
+## Step 3 — Set a cap (2 min)
+
+Add a spend policy with the **kill-switch** action so a breach doesn't just decline one call — it suspends the agent.
+
+- **Dashboard** → *Spend Controls* → add a policy (session or window cap) with action **Suspend agent**.
+- **API** → set a policy with `"action": "suspend_agent"`. See [Spend Controls](../developers/spend-controls.md) for the policy shape and windows.
+
+When the cap is crossed, the breaching call gets a `402` (carrying `"auto_suspended": true`) and **the whole agent is suspended — every subsequent call is rejected at authentication with `403`** until you resume it. A runaway campaign dies after call *N*, not call 10,000.
+
+**Verify** → cross the cap → the next call is denied (`403` at admission, or the pre-call hook rejects it if you configured Step 2's `preCallUrl`).
+
+---
+
+## Your coverage score
+
+The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **% of spend pre-call enforceable vs post-call reconciled** — across every platform the agent runs on. With Step 1 you govern the LLM leg pre-call; Reconcile Mode (Step 2) puts the rest on the ledger and behind the circuit breaker.
+
+To **raise** it, move more legs onto Floe rails — STT/TTS via [Floe Inference](../developers/keyless-inference.md), telephony via [Floe Phone](../developers/floe-phone.md). The full path is [Graduate to 100% coverage](../build/migrate-to-full-coverage.md).
+
+---
+
+{% hint style="info" %}
+**The honest boundary.** Floe enforces **pre-call on the LLM leg** (custom-llm through the gateway). STT, TTS, and telephony stay on Vapi and are governed **post-call — reconciled onto the ledger, with a between-call circuit breaker** (`suspend_agent`). Floe does **not** intervene mid-call: enforcement is either *before* a call (deny the next) or *after* it (reconcile + suspend). It never interrupts a call in progress.
+{% endhint %}
+
+---
+
+## Troubleshooting
+
+| Symptom | Cause & fix |
+|---|---|
+| Webhook returns `401` | The `X-Vapi-Secret` Vapi sent doesn't match the connection's secret. Re-set the secret on the Vapi server credential, or rotate it (`POST /v1/developer/orchestrators/:id/rotate`). |
+| Webhook returns `404` | The token in the `webhookUrl` is unknown or the connection is disabled. Re-copy the `webhookUrl` from the connection. |
+| LLM calls fail with `model_not_found` | Use the **fully-qualified** `provider/model` id (`openai/gpt-4o-mini`) — a bare `gpt-4o` is rejected on `/v1/chat/completions`. List valid ids with `GET /v1/models`. |
+| Want to keep paying your own model vendor | Use **BYOK**: pass `X-Floe-Provider-Key: <your key>` (or store it once). Floe meters and charges its service fee only. See [Floe Inference](../developers/keyless-inference.md). |
+
+---
+
+## Retell & Bland
+
+The webhook + cap steps (2 and 3) work the same way — register the connection with `provider: "retell"` or `"bland"` and use the returned URLs. The **model leg differs**, so don't copy Step 1 blindly:
+
+- **Retell** — custom-LLM is **not** a URL swap; Retell dials out to a **WebSocket adapter you host** (its own protocol). Use the [retell-custom-llm recipe](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm).
+- **Bland** — **no self-serve custom LLM** (enterprise-only). Skip Step 1 and govern the whole call via **Reconcile Mode** (Steps 2–3); Bland has no pre-call hook, so enforcement is at the agent's next Floe-keyed action after a reconciled breach.
+
+Full per-platform detail: [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md).
+
+==============================================================================
+# Retell
+Source: docs/platforms/retell.md
+URL: https://floe-labs.gitbook.io/docs/platforms/retell.md
+==============================================================================
+
+# Govern your Retell spend with Floe — no migration
+
+Route your Retell agent's model leg through Floe and connect its end-of-call webhook, and you get **pre-call budget enforcement on the LLM leg** plus **every call reconciled onto one ledger** — without leaving Retell or changing vendors. Three steps.
+
+**Prerequisites**
+
+- A Floe account + an **agent key** (`floe_…`) — [dashboard](https://dev-dashboard.floelabs.xyz) or `POST /v1/developer/agents/:agentId/keys`.
+- A Retell agent you can edit, and your **Retell API key** (you'll need it both to host the adapter and to register the webhook connection).
+- Somewhere to run a small Node server (the recipe adapter) reachable over `wss://`.
+
+> This is the same flow documented in depth (all five platforms) in [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md) — this page is the focused Retell quickstart.
+
+---
+
+## Step 1 — Route the LLM leg through Floe (recipe adapter)
+
+**This is not a URL swap.** Retell's custom-LLM does **not** point at an OpenAI-compatible base URL. Instead, Retell dials **out** to a WebSocket **you host** — `wss://…/llm/<secret>/<call_id>` — and speaks its own protocol (`response_required` in → `response` chunks out). So you run a small adapter that turns each Retell turn into a **streaming Floe gateway call**.
+
+Use the ready-made recipe — a ~150-line server — rather than writing your own:
+
+[**retell-custom-llm recipe**](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm)
+
+```bash
+cp .env.example .env      # RETELL_API_KEY, FLOE_API_KEY, path secret, model
+npm install
+npm start                 # the adapter (expose it, e.g. ngrok → your wss URL)
+npm run setup             # sets the Floe cap, creates the Retell agent
+```
+
+- **`model`** — set a **fully-qualified** catalog id, `provider/model` (e.g. `openai/gpt-4o-mini`, `anthropic/claude-haiku-4-5`). A bare `gpt-4o` is rejected — discover valid ids with `GET /v1/models`. See [Floe Inference](../developers/keyless-inference.md).
+- **Auth** — every turn is metered on your one `floe_` agent key inside the adapter. The Retell socket itself has no auth header; the unguessable path secret (`<secret>` in the URL) **is** the auth, so keep it long.
+
+Every turn is now **metered per token and gated pre-call**: once the agent's cap is hit, the turn that would start past it is refused `402` *before* any tokens are bought. The adapter then speaks a budget message and sets `end_call: true` so Retell hangs up cleanly. The LLM is the most expensive, most variable leg — up to ~60% of a typical call's cost.
+
+**Verify** → make a test call. It shows up on the ledger as a **gateway row** attributed to the agent (`GET /v1/agents/transactions` on your Floe key).
+
+---
+
+## Step 2 — Connect the end-of-call webhook
+
+This is Reconcile Mode: Retell posts each call's real cost to Floe at call-end, so **every leg** (STT, TTS, telephony) lands on the same ledger — not just the LLM.
+
+**Register the connection** (admin — dashboard, or the API with an admin dashboard session). Unlike Vapi, Floe does **not** mint a secret for you — Retell signs its webhooks with **your Retell API key**, so you supply it as the signing secret at registration:
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
+  -H "Content-Type: application/json" \
+  -H "Cookie: <admin dashboard session>" \
+  -d '{ "agentId": <your-agent-id>, "provider": "retell", "label": "support line", "secret": "<your Retell API key>" }'
+```
+
+The response returns the connection URLs:
+
+```json
+{
+  "webhookUrl": "https://credit-api.floelabs.xyz/v1/webhooks/retell/call-end/<token>",
+  "preCallUrl": "https://credit-api.floelabs.xyz/v1/webhooks/retell/pre-call/<token>"
+}
+```
+
+In **Retell**:
+
+- Paste the returned **`call-end`** URL into the **agent's webhook** (end-of-call events).
+- Paste the returned **`pre-call`** URL into the **phone number's inbound webhook**.
+
+Retell signs each delivery with the header **`x-retell-signature`**, in the format `v={ts},d={hex}` — where `{hex}` is the HMAC-SHA256 of `body + ts`, keyed by your Retell API key. Floe recomputes it and rejects a bad signature `401`; it also enforces a **±5-minute** timestamp window to block replays. An unknown or disabled token is `404`. Treat the URLs as secrets — rotate with `POST /v1/developer/orchestrators/:id/rotate`.
+
+**Pre-call deny.** When the agent is over budget, Floe answers the inbound webhook with `{ "call_inbound": { "reject": true } }` and Retell denies the next inbound call **before it connects**. Without the pre-call URL, an over-budget agent is still stopped — just at its next Floe-keyed action (Step 3), not at admission.
+
+**Verify** → end a call. A **reconciled debit** appears on the ledger within moments, attributed to the agent.
+
+---
+
+## Step 3 — Set a cap
+
+Add a spend policy with the **kill-switch** action so a breach doesn't just decline one call — it suspends the agent.
+
+- **Dashboard** → *Spend Controls* → add a policy (session or window cap) with action **Suspend agent**.
+- **API** → set a policy with `"action": "suspend_agent"`. See [Spend Controls](../developers/spend-controls.md) for the policy shape and windows.
+
+When the cap is crossed, the breaching call gets a `402` (carrying `"auto_suspended": true`) and **the whole agent is suspended — every subsequent call is rejected at authentication with `403`** until you resume it. A runaway campaign dies after call *N*, not call 10,000.
+
+**Verify** → cross the cap → the next call is denied (`403` at admission, or the pre-call hook rejects the inbound call if you configured Step 2's `preCallUrl`).
+
+---
+
+## Your coverage score
+
+The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **% of spend pre-call enforceable vs post-call reconciled** — across every platform the agent runs on. With Step 1 you govern the LLM leg pre-call; Reconcile Mode (Step 2) puts the rest on the ledger and behind the circuit breaker. See [Coverage Score](../build/coverage-score.md).
+
+To **raise** it, move more legs onto Floe rails — STT/TTS via [Floe Inference](../developers/keyless-inference.md), telephony via [Floe Phone](../developers/floe-phone.md). The full path is [Graduate to 100% coverage](../build/migrate-to-full-coverage.md).
+
+---
+
+{% hint style="info" %}
+**The honest boundary.** Floe enforces **pre-call on the LLM leg** (the adapter through the gateway). STT, TTS, and telephony stay on Retell and are governed **post-call — reconciled onto the ledger, with a between-call circuit breaker** (`suspend_agent`). Floe does **not** intervene mid-call: enforcement is either *before* a call (deny the next inbound) or *after* it (reconcile + suspend). It never interrupts a call in progress — though the adapter itself will end a call gracefully when a turn breaches the per-call budget.
+{% endhint %}
+
+---
+
+## Troubleshooting
+
+| Symptom | Cause & fix |
+|---|---|
+| Webhook returns `401` | The `x-retell-signature` didn't verify. Confirm the connection's secret is **your current Retell API key** (Floe keys webhooks with it), and that your server clock is within the ±5-minute window. |
+| Webhook returns `404` | The token in the URL is unknown or the connection is disabled. Re-copy the `call-end` / `pre-call` URLs from the connection. |
+| Retell can't reach the custom LLM | The adapter isn't reachable at the agent's `llm_websocket_url`, or the path secret changed. Redeploy **and** update the agent's `llm_websocket_url` (or re-run `npm run setup`) — the URL written at setup carries the old secret. |
+| LLM calls fail with `model_not_found` | Use the **fully-qualified** `provider/model` id (`openai/gpt-4o-mini`) — a bare `gpt-4o` is rejected. List valid ids with `GET /v1/models`. |
+| Want to keep paying your own model vendor | Use **BYOK**: pass `X-Floe-Provider-Key: <your key>` in the adapter (or store it once). Floe meters and charges its service fee only. See [Floe Inference](../developers/keyless-inference.md). |
+
+==============================================================================
+# Bland
+Source: docs/platforms/bland.md
+URL: https://floe-labs.gitbook.io/docs/platforms/bland.md
+==============================================================================
+
+# Govern your Bland spend with Floe — no migration
+
+Connect your Bland agent's end-of-call webhook to Floe and you get **every call reconciled onto one ledger** with a **between-call circuit breaker** — without leaving Bland or changing vendors.
+
+Bland has **no self-serve custom LLM** and there's no adapter recipe for it, so there is **no model-leg step here** — this is a **reconcile-only** flow: connect the webhook, then set a cap. Two steps.
+
+**Prerequisites**
+
+- A Floe account + an **agent key** (`floe_…`) — [dashboard](https://dev-dashboard.floelabs.xyz) or `POST /v1/developer/agents/:agentId/keys`.
+- A Bland agent you can edit.
+
+> This is the same flow documented in depth (all five platforms) in [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md) — this page is the focused Bland quickstart.
+
+---
+
+## Step 1 — Connect the end-of-call webhook
+
+This is Reconcile Mode: Bland posts each call's real cost to Floe at call-end, so **every leg** (model, STT, TTS, telephony) lands on the same ledger.
+
+**Register the connection** (admin — dashboard, or the API with an admin dashboard session). A **signing secret is required at registration** — supply one, then set the same value in Bland so it can sign each delivery:
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/orchestrators \
+  -H "Content-Type: application/json" \
+  -H "Cookie: <admin dashboard session>" \
+  -d '{ "agentId": <your-agent-id>, "provider": "bland", "label": "support line", "secret": "<your signing secret>" }'
+```
+
+The response returns the connection URL:
+
+```json
+{
+  "webhookUrl": "https://credit-api.floelabs.xyz/v1/webhooks/bland/call-end/<token>"
+}
+```
+
+In **Bland**: point the agent's webhook at the returned `webhookUrl`. Bland signs each delivery with the header **`x-webhook-signature`** — a hex **HMAC-SHA256 of the raw request body**, keyed by the signing secret you registered. Floe recomputes it and rejects a bad signature `401`; an unknown or disabled token is `404`. Treat the URL as a secret — rotate with `POST /v1/developer/orchestrators/:id/rotate`.
+
+**Verify** → end a call. A **reconciled debit** appears on the ledger within moments, attributed to the agent.
+
+---
+
+## Step 2 — Set a cap
+
+Add a spend policy with the **kill-switch** action so a breach doesn't just decline one call — it suspends the agent.
+
+- **Dashboard** → *Spend Controls* → add a policy (session or window cap) with action **Suspend agent**.
+- **API** → set a policy with `"action": "suspend_agent"`. See [Spend Controls](../developers/spend-controls.md) for the policy shape and windows.
+
+When the cap is crossed by a reconciled call, **the whole agent is suspended — every subsequent Floe-keyed action is rejected at authentication with `403`** until you resume it.
+
+{% hint style="warning" %}
+Bland has no pre-call webhook, so the breaker works differently here: a reconciled breach suspends the agent, which hard-blocks every subsequent Floe-keyed action — model, STT/TTS, and telephony legs on Floe keys — rather than rejecting the inbound call itself. The more legs you route through Floe, the harder the stop. This is the honest boundary, not a bug.
+{% endhint %}
+
+**Verify** → cross the cap → the agent's next Floe-keyed action is denied `403`.
+
+---
+
+## Your coverage score
+
+The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **% of spend pre-call enforceable vs post-call reconciled** — across every platform the agent runs on. On Bland everything is **post-call reconciled** (there's no pre-call leg to gate), so the breaker's bite depends on how much you route through Floe: **moving legs onto Floe keys is what gives the breaker teeth**. See [Coverage Score](../build/coverage-score.md).
+
+To **raise** it, move more legs onto Floe rails — model and STT/TTS via [Floe Inference](../developers/keyless-inference.md), telephony via [Floe Phone](../developers/floe-phone.md). The full path is [Graduate to 100% coverage](../build/migrate-to-full-coverage.md).
+
+---
+
+{% hint style="info" %}
+**The honest boundary.** On Bland, Floe governs the call **post-call — reconciled onto the ledger, with a between-call circuit breaker** (`suspend_agent`). There is no pre-call hook and no custom-LLM leg to gate, so Floe does **not** deny an inbound call or intervene mid-call: a reconciled breach suspends the agent and hard-blocks its **next** Floe-keyed action. The more legs on Floe keys, the harder that stop lands.
+{% endhint %}
+
+---
+
+## Troubleshooting
+
+| Symptom | Cause & fix |
+|---|---|
+| Webhook returns `401` | The `x-webhook-signature` didn't verify. Confirm Bland is signing with the **same secret** you registered, over the **raw** request body (hex HMAC-SHA256). |
+| Webhook returns `404` | The token in the `webhookUrl` is unknown or the connection is disabled. Re-copy the `webhookUrl` from the connection. |
+| Over-budget agent still placed a call | Bland has **no pre-call hook** — enforcement is post-call. The agent is stopped at its **next Floe-keyed action** after the reconciled breach, not at admission. Route more legs through Floe to tighten the stop. |
+| Want model/STT/TTS on Floe rails | Use [Floe Inference](../developers/keyless-inference.md) (BYOK or keyless) so those legs meter on your `floe_` key and fall under the breaker. |
 
 ==============================================================================
 # Overview
@@ -4422,16 +4639,16 @@ Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) with:
 - Must be reachable and functional at the time of submission
 
 ==============================================================================
-# Agent Wallet
+# Agent Balance
 Source: docs/components/wallet.md
 URL: https://floe-labs.gitbook.io/docs/core-concepts/wallet.md
 ==============================================================================
 
-# 01 · Agent Wallet `GA`
+# 01 · Agent Balance `GA`
 
-Every agent gets a wallet with a dollar balance you fund. You set the spend controls; the agent pays vendors per call, up to the limits you set.
+Every agent gets a funded dollar balance you top up. You set the spend controls; the agent pays vendors per call, up to the limits you set.
 
-That's the whole model: **funded balance → spend controls → pay-per-call.** No keys to manage, no crypto to touch.
+That's the whole model: **funded balance → spend controls → pay-per-call.**
 
 ---
 
@@ -4461,6 +4678,57 @@ await agentkit.run("clear_spend_limit", {});
 
 - [Quickstart](../getting-started/quickstart.md)
 - [Agent Awareness](../developers/agent-awareness.md)
+
+==============================================================================
+# Coverage Score
+Source: docs/build/coverage-score.md
+URL: https://floe-labs.gitbook.io/docs/core-concepts/coverage-score.md
+==============================================================================
+
+# Coverage Score
+
+Every agent in your [dashboard](https://dev-dashboard.floelabs.xyz) carries a **Coverage Score**: the percentage of that agent's known spend Floe can act on, split three ways.
+
+| Bucket | Meaning | Example |
+|---|---|---|
+| **Enforceable pre-call** | The leg runs through Floe's path, so an over-budget request is denied *before* money moves. | Model calls via the custom-LLM slot; STT/TTS on Floe keys; Floe Phone minutes. |
+| **Reconciled** | The cost reaches the ledger at call-end via Reconcile Mode; the circuit breaker acts on the *next* admission. | A Vapi call's cost ingested from the end-of-call webhook. |
+| **Dark** | Spend Floe never sees. It counts against nothing and appears nowhere. | A vendor billed on its own account, with no webhook and no Floe key. |
+
+**Coverage = (enforceable + reconciled) ÷ total known spend.** Dark spend is the known-unknown: legs you've told Floe exist but that never report. Spend on vendors Floe has never heard of can't be counted at all — the score is honest about what it can't see.
+
+## Why no platform can compute this
+
+Vapi sees Vapi spend. Retell sees Retell's. On BYOK, platforms report provider costs as $0 because that spend sits on your own vendor bills. The Coverage Score spans **every** execution path an agent uses — which is only computable from a neutral ledger outside all of them.
+
+## How to raise it
+
+The score tells you which leg to move. In order of typical impact:
+
+1. **Connect the end-of-call webhook** ([setup](../developers/webhooks.md#connect-your-orchestrator-reconcile-mode)) — moves in-call platform legs from *dark* to *reconciled* in one paste.
+2. **Point the custom-LLM slot at Floe** ([Vapi](../platforms/vapi.md) · [Retell](../platforms/retell.md) · [Bland](../platforms/bland.md)) — moves the model leg (~40% of a cascade bill, ~60%+ realtime) from *reconciled* to *enforceable*.
+3. **Move telephony to [Floe Phone](../developers/floe-phone.md)** — enforceable minutes on the same ledger.
+4. **STT/TTS via Floe** *(early access — request at [hello@floelabs.xyz](mailto:hello@floelabs.xyz))*.
+
+## Reading the tile
+
+- **"No coverage score yet"** — no webhook connected; Floe only sees spend you route through it. Connect the webhook and the score computes from the next call.
+- **"Coverage: 100%"** on a keyless agent — every dollar is gateway-routed and enforceable pre-call. This is the ceiling, not an error.
+- **"Computing"** — the first metered calls haven't landed yet.
+
+## API
+
+```
+GET /v1/developer/agents/:agentId/coverage?days=30
+```
+
+Returns the three-way split (as basis points), per-source attribution, and the window total. Requires a developer key (`floe_live_…`).
+
+## The honest boundary
+
+Floe never intervenes mid-call — a dropped call is a worse failure than an expensive one. Enforcement is **admission control**: pre-call where Floe is in the path; at the next admission point everywhere else (the next inbound call on Vapi/Retell; the next Floe-keyed action on Bland, which exposes no pre-call hook; the cooperative pre-call check on self-hosted stacks). The score exists so that boundary is **visible instead of implied**.
+
+> Pre-call where we're in the path. Circuit breaker everywhere else.
 
 ==============================================================================
 # Spend Controls
@@ -5519,7 +5787,7 @@ floe-agent auth set-key floe_live_...  # store the developer key in the OS keych
 | `floe-agent agents keys rotate <agentId\|name> [--key-id <id>] [--label <l>] [--json]` | Atomic revoke + mint. The replacement key is shown once. |
 | `floe-agent agents keys revoke <agentId\|name> [--key-id <id>] [--json]` | Revokes a runtime key immediately. |
 | `floe-agent keys create\|list\|rotate\|revoke [keyId] [--label <l>] [--permissions read\|read_write] [--json]` | Developer (`floe_live_…`) keys on `/v1/developer/keys`. |
-| `floe-agent fund <agentId> [--json]` | The walletless funding handoff: prints the dashboard link where the human adds money by card, Apple Pay, Google Pay, or bank transfer, plus the machine-readable settlement contract (deposit address, chain `8453`, `USDC`) for programmatic treasuries. The agent hands this to a human; it never moves money itself. |
+| `floe-agent fund <agentId> [--json]` | The funding handoff: prints the dashboard link where the human adds money by card, Apple Pay, Google Pay, or bank transfer, plus the machine-readable settlement contract (deposit address, chain `8453`, `USDC`) for programmatic treasuries. The agent hands this to a human; it never moves money itself. |
 
 #### Guardrails
 
@@ -6931,7 +7199,7 @@ URL: https://floe-labs.gitbook.io/docs/developers/fiat-to-x402.md
 
 # From Bank Account to First API Call
 
-Fund your agent with a card or bank transfer, then let it pay for any API. Everything is in dollars — no wallet to set up, no crypto to buy.
+Fund your agent with a card or bank transfer, then let it pay for any API. Everything is in dollars.
 
 ---
 
@@ -6950,7 +7218,7 @@ Your agent never manages a wallet or touches crypto. Floe settles every payment 
 
 ## Step 1 — Sign in to the dashboard
 
-Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with email, Google, or a wallet. Create an agent — Floe provisions everything it needs in the background. No seed phrase, no MetaMask.
+Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with email or Google. Create an agent — Floe provisions everything it needs in the background.
 
 ---
 
@@ -7219,14 +7487,14 @@ When you see `401`, `403`, or any `credit_frozen` / `account_closed` response:
 - [Developer Dashboard](developer-dashboard.md) — how your deployer manages the agent, delegation, and credit line
 
 ==============================================================================
-# Payment Facilitator
+# Pay any vendor API
 Source: docs/developers/x402-facilitator.md
 URL: https://floe-labs.gitbook.io/docs/developers/x402-facilitator.md
 ==============================================================================
 
-# Payment Facilitator
+# Pay any vendor API
 
-Floe is the spend layer: one key pays every vendor per call, governed by server-side spend controls. Fund an agent's balance once, and the facilitator pays each vendor per call from that balance — handling signing, settlement, and verification. No wallet management.
+Floe is the spend layer: one key pays every vendor per call, governed by server-side spend controls. Fund an agent's balance once, and Floe pays each vendor per call from that balance — handling signing, settlement, and verification for you.
 
 > You can also set up agents through the [Developer Dashboard](developer-dashboard.md) — a web UI at `dev-dashboard.floelabs.xyz`.
 
@@ -8615,6 +8883,8 @@ Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "f
 
 Payloads never contain plaintext key material — only a masked `keyPrefix`.
 
+> **Credit utilization alerts (`credit.warning` / `credit.at_limit` / `credit.recovered`) are not registered here.** The webhook registration API below does not accept `credit.*` in its `events` array. Subscribe to them via the credit-thresholds endpoint (`POST /v1/agents/credit-thresholds`) instead — see [Credit API](credit-api.md). Those alerts are delivered over the same webhook endpoints you register on this page.
+
 ### Scopes
 
 Each webhook is scoped to control which events reach it:
@@ -9023,7 +9293,7 @@ The Credit API is the HTTP surface for both Floe's **live spend layer** and its 
 
 > **What's live vs roadmap on this page:**
 > - **Live (spend layer):** Developer Endpoints, Developer Agents, Agent Endpoints (balance, transactions), Agent Awareness Endpoints (credit-remaining, loan-state, spend-limit, credit-thresholds, x402/estimate), and the x402 Proxy Endpoints. `open-credit-line` is **managed plumbing** the facilitator uses to fund your payments.
-> - **Roadmap (on-chain credit product — not generally available):** the `/v1/credit/*` borrow endpoints (`instant-borrow`, `repay`, `repay-and-reborrow`, `status`), `/v1/credit/offers`, `/v1/markets/:id/cost-of-capital`, and direct market/intent matching. Borrowing as a developer-facing product — and any associated rate — is not live. The live way to fund an agent is the [walletless Floe-managed balance](../getting-started/quickstart.md).
+> - **Roadmap (on-chain credit product — not generally available):** the `/v1/credit/*` borrow endpoints (`instant-borrow`, `repay`, `repay-and-reborrow`, `status`), `/v1/credit/offers`, `/v1/markets/:id/cost-of-capital`, and direct market/intent matching. Borrowing as a developer-facing product — and any associated rate — is not live. The live way to fund an agent is the [Floe-managed balance](../getting-started/quickstart.md).
 
 > **See also:** [API Keys](api-keys.md) | [Webhooks](webhooks.md) | [Developer Dashboard](developer-dashboard.md)
 
@@ -9332,7 +9602,7 @@ Giza agents, Olas agents, and Safe multisigs authenticate the same way. The API 
 
 ## Authenticated Endpoints
 
-> **The `/v1/credit/*` borrow endpoints below are roadmap (on-chain credit product), not the live spend layer.** Borrowing as a developer-facing product is not generally available. To fund an agent today, use the [walletless Floe-managed balance](../getting-started/quickstart.md).
+> **The `/v1/credit/*` borrow endpoints below are roadmap (on-chain credit product), not the live spend layer.** Borrowing as a developer-facing product is not generally available. To fund an agent today, use the [Floe-managed balance](../getting-started/quickstart.md).
 
 ### POST /v1/credit/instant-borrow `Roadmap`
 
@@ -10486,7 +10756,7 @@ Webhook payload:
 }
 ```
 
-Subscribe a webhook to credit events using the `events` array on `POST /v1/developer/webhooks`. The `credit.*` and `*` wildcards are supported.
+`credit.warning` / `credit.at_limit` / `credit.recovered` are subscribed **only** through this credit-thresholds endpoint (`POST /v1/agents/credit-thresholds`) — **not** by listing them in the `events` array on `POST /v1/developer/webhooks`. The webhook registration API rejects `credit.*` (and `*`); those event names are not in its allowed set. Delivery still reuses your existing webhook endpoints (URL, secret, retries): register the endpoint once via `POST /v1/developer/webhooks`, then pin it to a threshold with `webhookId`.
 
 | Status | Meaning |
 |---|---|

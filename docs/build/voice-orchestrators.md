@@ -1,5 +1,7 @@
 # Govern voice-orchestrator spend with Floe
 
+> **Setting up one platform?** Start with the quickstart: [Vapi](../platforms/vapi.md) · [Retell](../platforms/retell.md) · [Bland](../platforms/bland.md). This page is the full reference across all five (Pipecat and LiveKit included).
+
 You build on a voice orchestrator and the framework executes the call: STT,
 LLM, TTS, telephony. Floe governs that spend in two complementary ways, and is
 honest about which is which:

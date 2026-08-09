@@ -8,7 +8,7 @@ The Credit API is the HTTP surface for both Floe's **live spend layer** and its 
 
 > **What's live vs roadmap on this page:**
 > - **Live (spend layer):** Developer Endpoints, Developer Agents, Agent Endpoints (balance, transactions), Agent Awareness Endpoints (credit-remaining, loan-state, spend-limit, credit-thresholds, x402/estimate), and the x402 Proxy Endpoints. `open-credit-line` is **managed plumbing** the facilitator uses to fund your payments.
-> - **Roadmap (on-chain credit product — not generally available):** the `/v1/credit/*` borrow endpoints (`instant-borrow`, `repay`, `repay-and-reborrow`, `status`), `/v1/credit/offers`, `/v1/markets/:id/cost-of-capital`, and direct market/intent matching. Borrowing as a developer-facing product — and any associated rate — is not live. The live way to fund an agent is the [walletless Floe-managed balance](../getting-started/quickstart.md).
+> - **Roadmap (on-chain credit product — not generally available):** the `/v1/credit/*` borrow endpoints (`instant-borrow`, `repay`, `repay-and-reborrow`, `status`), `/v1/credit/offers`, `/v1/markets/:id/cost-of-capital`, and direct market/intent matching. Borrowing as a developer-facing product — and any associated rate — is not live. The live way to fund an agent is the [Floe-managed balance](../getting-started/quickstart.md).
 
 > **See also:** [API Keys](api-keys.md) | [Webhooks](webhooks.md) | [Developer Dashboard](developer-dashboard.md)
 
@@ -317,7 +317,7 @@ Giza agents, Olas agents, and Safe multisigs authenticate the same way. The API 
 
 ## Authenticated Endpoints
 
-> **The `/v1/credit/*` borrow endpoints below are roadmap (on-chain credit product), not the live spend layer.** Borrowing as a developer-facing product is not generally available. To fund an agent today, use the [walletless Floe-managed balance](../getting-started/quickstart.md).
+> **The `/v1/credit/*` borrow endpoints below are roadmap (on-chain credit product), not the live spend layer.** Borrowing as a developer-facing product is not generally available. To fund an agent today, use the [Floe-managed balance](../getting-started/quickstart.md).
 
 ### POST /v1/credit/instant-borrow `Roadmap`
 
@@ -1471,7 +1471,7 @@ Webhook payload:
 }
 ```
 
-Subscribe a webhook to credit events using the `events` array on `POST /v1/developer/webhooks`. The `credit.*` and `*` wildcards are supported.
+`credit.warning` / `credit.at_limit` / `credit.recovered` are subscribed **only** through this credit-thresholds endpoint (`POST /v1/agents/credit-thresholds`) — **not** by listing them in the `events` array on `POST /v1/developer/webhooks`. The webhook registration API rejects `credit.*` (and `*`); those event names are not in its allowed set. Delivery still reuses your existing webhook endpoints (URL, secret, retries): register the endpoint once via `POST /v1/developer/webhooks`, then pin it to a threshold with `webhookId`.
 
 | Status | Meaning |
 |---|---|

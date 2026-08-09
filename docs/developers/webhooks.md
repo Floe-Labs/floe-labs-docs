@@ -32,6 +32,8 @@ Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "f
 
 Payloads never contain plaintext key material — only a masked `keyPrefix`.
 
+> **Credit utilization alerts (`credit.warning` / `credit.at_limit` / `credit.recovered`) are not registered here.** The webhook registration API below does not accept `credit.*` in its `events` array. Subscribe to them via the credit-thresholds endpoint (`POST /v1/agents/credit-thresholds`) instead — see [Credit API](credit-api.md). Those alerts are delivered over the same webhook endpoints you register on this page.
+
 ### Scopes
 
 Each webhook is scoped to control which events reach it:

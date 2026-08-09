@@ -202,7 +202,7 @@ floe-agent auth set-key floe_live_...  # store the developer key in the OS keych
 | `floe-agent agents keys rotate <agentId\|name> [--key-id <id>] [--label <l>] [--json]` | Atomic revoke + mint. The replacement key is shown once. |
 | `floe-agent agents keys revoke <agentId\|name> [--key-id <id>] [--json]` | Revokes a runtime key immediately. |
 | `floe-agent keys create\|list\|rotate\|revoke [keyId] [--label <l>] [--permissions read\|read_write] [--json]` | Developer (`floe_live_…`) keys on `/v1/developer/keys`. |
-| `floe-agent fund <agentId> [--json]` | The walletless funding handoff: prints the dashboard link where the human adds money by card, Apple Pay, Google Pay, or bank transfer, plus the machine-readable settlement contract (deposit address, chain `8453`, `USDC`) for programmatic treasuries. The agent hands this to a human; it never moves money itself. |
+| `floe-agent fund <agentId> [--json]` | The funding handoff: prints the dashboard link where the human adds money by card, Apple Pay, Google Pay, or bank transfer, plus the machine-readable settlement contract (deposit address, chain `8453`, `USDC`) for programmatic treasuries. The agent hands this to a human; it never moves money itself. |
 
 #### Guardrails
 

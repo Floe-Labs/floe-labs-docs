@@ -1,17 +1,17 @@
 # Budget-Aware Routing
 
 {% hint style="warning" %}
-**Early access.** Hard-stop at budget is live everywhere today. Budget-advisory headers (`X-Floe-Budget-Advisory`) let your agent taper itself. **Server-side auto-downgrade is in early access** — request it at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+**Availability.** The **hard stop** at budget is live everywhere today. **Advisory taper** is live wherever the operator has enabled the `X-Floe-Budget-Advisory` header (off by default). **Server-side auto-downgrade** and **finish** are in **early access** — request either at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
 {% endhint %}
 
-When an agent nears its budget, Floe can act instead of failing — the job finishes, just cheaper. Instead of a hard `402` at the cap, you pick a behavior up front and Floe applies it as the agent runs.
+When an agent nears its budget you can do more than fail the call — but what's available depends on the mode:
 
 | Mode | Behavior | Availability |
 |------|----------|--------------|
-| **Hard stop** | Suspend the agent and fire your webhook. | **Live** |
-| **Advisory taper** | `X-Floe-Budget-Advisory` on each response lets your agent choose a cheaper model itself. | **Live** |
-| **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access** |
-| **Finish** | Complete the current task, then stop new spend. | **Early access** |
+| **Hard stop** | The breaching call gets a hard `402`. With a `suspend_agent` policy it *also* suspends the agent — and fires an `agent.suspended` webhook if you've registered one; without that action it just declines the single call. | **Live** |
+| **Advisory taper** | When the operator enables it, `X-Floe-Budget-Advisory` on each response lets your agent pick a cheaper model itself. | **Live (operator-enabled; off by default)** |
+| **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
+| **Finish** | Complete the current task, then stop new spend. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
 
 ## Preflight: ask before you spend
 
