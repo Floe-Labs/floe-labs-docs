@@ -4,7 +4,7 @@ icon: compass
 
 # x402 API Directory
 
-**Verified vendor API services** you can reach with Floe — 2,000+ through the proxy. Most are x402-native (they accept USDC on Base and are paid from your agent's Floe-managed balance); a few — like HydraDB under [Memory](database.md) — are free marketplace-shim services that don't charge your balance at all. Every service listed here works with `x402_fetch` or `/v1/proxy/fetch`.
+**Verified vendor API services** you can reach with Floe — the curated set below, plus thousands more reachable through the proxy. Most are x402-native (they accept USDC on Base and are paid from your agent's Floe-managed balance); a few — like HydraDB under [Memory](database.md) — are free marketplace-shim services that don't charge your balance at all. Every service listed here works with `x402_fetch` or `/v1/proxy/fetch`.
 
 ## Floe Verified Services
 
@@ -37,21 +37,6 @@ Or with AgentKit:
 ```typescript
 await agentkit.run("x402_fetch", { url: "https://api.firecrawl.dev/v1/x402/search", method: "POST" });
 ```
-
-## Broader x402 Ecosystem
-
-The directory above is Floe-verified. The broader x402 ecosystem has **46,000+ indexed endpoints** across multiple registries:
-
-| Directory | What it is | Link |
-|-----------|-----------|------|
-| **CDP Bazaar** | Coinbase's canonical index — 46,000+ endpoints | [Browse →](https://docs.cdp.coinbase.com/x402/bazaar) |
-| **x402scan** | Block-explorer-style analytics: servers, sellers, volume | [Browse →](https://x402scan.com) |
-| **x402list.fun** | Searchable directory with category and pricing filters | [Browse →](https://x402list.fun) |
-| **x402station** | Performance and reliability monitoring | [Browse →](https://x402station.com) |
-| **EntRoute** | Machine-first ranked discovery with semantic search | [Browse →](https://entroute.com) |
-| **x402.org Ecosystem** | Foundation-maintained provider and facilitator list | [Browse →](https://x402.org/ecosystem) |
-
-**Most USDC-on-Base x402 endpoints work with Floe credit even when unlisted** — pass the URL to `x402_fetch` or `/v1/proxy/fetch`. Floe settles exact-scheme USDC offers on Base mainnet; the proxy still applies URL parsing, SSRF, and allowlist checks, so a non-conforming vendor fails closed rather than paying.
 
 ## Submit an API
 

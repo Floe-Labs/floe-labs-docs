@@ -56,6 +56,8 @@ Inside your own tenant you still control namespacing: every HydraDB route accept
 
 ## Available shim vendors
 
+The [Voice directory](../x402-directory/voice.md) is the canonical vendor roster (endpoints, request shapes, full pricing); the table below is **shim-specific** — the non-x402 vendors Floe re-exposes as marketplace routes, with the route and its metering unit for each. The dollar figures below are **indicative list prices** (before Floe's margin) that can drift — the [Voice directory](../x402-directory/voice.md) is canonical for exact pricing; you're always billed the metered amount in `X-Floe-Cost-USDC`.
+
 All routes are `POST`, called through `/v1/proxy/fetch` as above. Prices are the vendor's list rate, before Floe's 5% margin — you're billed the metered amount.
 
 | Vendor | Routes | Price (vendor list) | Directory page |

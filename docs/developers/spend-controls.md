@@ -6,7 +6,7 @@ icon: shield-check
 
 Programmable budgets for your agent wallets. Cap spending per vendor, per task, per API, or across your whole team — with optional time windows.
 
-> **Scope: one ledger, one policy set.** Spend controls cap **every paid call Floe settles** — x402 vendors through the proxy (`POST /v1/proxy/fetch`) **and** LLM tokens through the LLM proxy (`POST /v1/llm/chat/completions`, host `credit-api.floelabs.xyz`). Route both through Floe and a single task or session budget bounds the entire conversation cost across every vendor. The one thing a policy can't see is a call you send straight to a provider with your own key, bypassing Floe — so route it through Floe.
+> **Scope: one ledger, one policy set.** Spend controls cap **every paid call Floe settles** — x402 vendors through the proxy (`POST /v1/proxy/fetch`) **and** LLM/voice tokens through the keyless gateway (`POST /v1/chat/completions`, host `credit-api.floelabs.xyz`); the legacy BYOK metered proxy `/v1/llm/chat/completions` is capped the same way. Route both through Floe and a single task or session budget bounds the entire conversation cost across every vendor. The one thing a policy can't see is a call you send straight to a provider with your own key, bypassing Floe — so route it through Floe.
 
 ## Policy Types
 
@@ -17,7 +17,7 @@ Programmable budgets for your agent wallets. Cap spending per vendor, per task, 
 | **API** | Spend to a hostname or domain | Target URL hostname | "$100/week to *.venice.ai" |
 | **Task** | Spend on a specific task ID | `X-Floe-Task-Id` header | "$5 budget for task-research-123" |
 
-All types support **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined).
+Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` kind and the `session` window are **team-scoped only** (`/v1/developer/policies`).
 
 ## Quick Start
 
@@ -98,7 +98,7 @@ Useful for campaign budgets, time-boxed experiments, or scheduled spending windo
 | Kind | Behavior | Use case |
 |------|----------|----------|
 | `rolling` | Resets every `windowSeconds` | Daily/weekly/monthly budgets |
-| `session` | Resets when you call PUT /spend-limit | Manual session caps |
+| `session` | Resets when you call PUT /spend-limit | Manual session caps (team policies only) |
 | `once` | Single-shot cap, expires at `expiresAt` | Pre-borrow task holds |
 
 ## Matching Rules
@@ -296,11 +296,11 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
 
 ```typescript
 {
-  kind: 'vendor' | 'api' | 'task' | 'session',
-  matchKey: string,              // Required except for session
+  kind: 'vendor' | 'api' | 'task',   // per-agent; the 'session' kind is team-only (/v1/developer/policies)
+  matchKey: string,              // Required (except for the team-only 'session' kind)
   matchKind?: 'host_exact' | 'host_suffix' | 'recipient',
   limitRaw: string,              // Raw USDC, 6 decimals (e.g. "5000000" = $5)
-  windowKind?: 'rolling' | 'once' | 'session',
+  windowKind?: 'rolling' | 'once',   // 'session' window is team-only
   windowSeconds?: number,        // Required for rolling (minimum 60)
   effectiveFrom?: number,        // UNIX seconds
   effectiveUntil?: number,       // UNIX seconds

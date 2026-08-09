@@ -19,7 +19,7 @@ client = OpenAI(base_url="https://credit-api.floelabs.xyz/v1", api_key="floe_…
 
 That snippet is exactly what `init` prints — key filled in for a quick local start. For anything checked into source control, read the key from the environment instead: `api_key=os.environ["FLOE_AGENT_KEY"]`.
 
-Every response carries `X-Floe-Cost-USDC`. One key meters chat, embeddings, speech, and transcription across 15+ vendors — one bill, in USDC.
+Every response carries `X-Floe-Cost-USDC`. One key meters chat, embeddings, speech, and transcription across the models in the Floe catalog and the [vendor marketplace](../x402-directory/README.md) — one bill, in USDC.
 
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [MCP Server](mcp-server.md) | [API Keys](api-keys.md)
 
