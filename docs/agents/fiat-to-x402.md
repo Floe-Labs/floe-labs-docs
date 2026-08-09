@@ -1,6 +1,6 @@
 # From Bank Account to First API Call
 
-Fund your agent with a card or bank transfer, then let it pay for any API. Everything is in dollars — no wallet to set up, no crypto to buy.
+Fund your agent with a card or bank transfer, then let it pay for any API. Everything is in dollars.
 
 ---
 
@@ -19,7 +19,7 @@ Your agent never manages a wallet or touches crypto. Floe settles every payment 
 
 ## Step 1 — Sign in to the dashboard
 
-Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with email, Google, or a wallet. Create an agent — Floe provisions everything it needs in the background. No seed phrase, no MetaMask.
+Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with email or Google. Create an agent — Floe provisions everything it needs in the background.
 
 ---
 
@@ -54,7 +54,7 @@ await agentkit.run("x402_fetch", {
 
 ## Step 5 — Top up
 
-When the balance runs low, top up from the dashboard. You can wire a low-balance webhook to be notified before the agent runs dry — see [Webhooks](../developers/webhooks.md).
+When the balance runs low, top up from the dashboard.
 
 ---
 

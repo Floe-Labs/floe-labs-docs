@@ -1,6 +1,6 @@
 # How Floe Works Under the Hood
 
-> **This is the Advanced / on-chain layer.** You do **not** need any of this to use Floe. The live product is walletless: create an agent, fund it with a card, and pay for x402 APIs through the proxy — see the [Quickstart](quickstart.md). This page explains the on-chain protocol that sits underneath, used on the self-custody path. The on-chain working-capital credit path is **in development**.
+> **This is the Advanced / on-chain layer.** You do **not** need any of this to use Floe. The live product is account-based: create an agent, fund it with a card, and pay for x402 APIs through the proxy — see the [Quickstart](quickstart.md). This page explains the on-chain protocol that sits underneath, used on the self-custody path. The on-chain working-capital credit path is **in development**.
 
 The mechanics behind Floe's on-chain protocol — intents, isolated loans, and the matching engine.
 

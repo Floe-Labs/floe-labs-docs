@@ -2,9 +2,9 @@
 icon: zap
 ---
 
-# Payment Facilitator
+# Pay any vendor API
 
-Floe is the spend layer: one key pays every vendor per call, governed by server-side spend controls. Fund an agent's balance once, and the facilitator pays each vendor per call from that balance — handling signing, settlement, and verification. No wallet management.
+Floe is the spend layer: one key pays every vendor per call, governed by server-side spend controls. Fund an agent's balance once, and Floe pays each vendor per call from that balance — handling signing, settlement, and verification for you.
 
 > You can also set up agents through the [Developer Dashboard](developer-dashboard.md) — a web UI at `dev-dashboard.floelabs.xyz`.
 

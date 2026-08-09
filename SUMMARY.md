@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Floe — FinOps for voice AI builders](README.md)
+* [Floe — Spend controls for Voice AI](README.md)
 
 ## Start here
 
@@ -18,13 +18,18 @@
 
 * [The Voice Stack — overview](docs/build/voice-stack.md)
 * [Govern Vapi / Retell / Bland / Pipecat / LiveKit](docs/build/voice-orchestrators.md)
-  * [Vapi quickstart (10 min)](docs/build/vapi.md)
 * [Graduate to 100% coverage](docs/build/migrate-to-full-coverage.md)
 * [Floe Phone — numbers & telephony](docs/developers/floe-phone.md)
 * [Floe Inference — keyless LLM & voice](docs/developers/keyless-inference.md)
 * [Unified Billing & Ledger](docs/build/unified-ledger.md)
 * [Budget-Aware Routing](docs/build/budget-aware-routing.md)
 * [Latency & overhead](docs/build/latency-overhead.md)
+
+## Platforms
+
+* [Vapi — 10-minute setup](docs/platforms/vapi.md)
+* [Retell](docs/platforms/retell.md)
+* [Bland](docs/platforms/bland.md)
 
 ## Vendor Marketplace
 
@@ -45,7 +50,8 @@
 
 ## Core concepts
 
-* [Agent Wallet](docs/components/wallet.md)
+* [Agent Balance](docs/components/wallet.md)
+* [Coverage Score](docs/build/coverage-score.md)
 * [Spend Controls](docs/developers/spend-controls.md)
 * [Agent Awareness](docs/developers/agent-awareness.md)
 
@@ -73,7 +79,7 @@
 * [API Keys](docs/developers/api-keys.md)
 * [From Bank Account to First API Call](docs/agents/fiat-to-x402.md)
 * [Agent Runtime Contract](docs/developers/agent-runtime-contract.md)
-* [Payment Facilitator](docs/developers/x402-facilitator.md)
+* [Pay any vendor API](docs/developers/x402-facilitator.md)
 * [Marketplace Shim](docs/developers/marketplace-shim.md)
 * [MCP Server](docs/developers/mcp-server.md)
 * [Webhooks](docs/developers/webhooks.md)

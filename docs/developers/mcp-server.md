@@ -302,7 +302,7 @@ Agent key. Identity comes from the bearer token, so none of these take a wallet 
 | `set_spend_limit` | Set/update the session cap (resets the window — earlier spend stops counting) |
 | `clear_spend_limit` | Remove the session cap |
 | `list_credit_thresholds` | Registered credit-utilization triggers |
-| `register_credit_threshold` | Fire `credit.warning` / `credit.at_limit` / `credit.recovered` webhooks at a utilization threshold (max 20 per agent) |
+| `register_credit_threshold` | Register a credit-utilization threshold (max 20 per agent) |
 | `delete_credit_threshold` | Remove a threshold by id |
 | `set_allowlist_mode` | Enforcement mode: `off` (default) \| `host` \| `vendor` \| `both` |
 | `get_allowlist_mode` | Read the current mode |

@@ -1,5 +1,7 @@
 # Govern voice-orchestrator spend with Floe
 
+> **Setting up one platform?** Start with the quickstart: [Vapi](../platforms/vapi.md) · [Retell](../platforms/retell.md) · [Bland](../platforms/bland.md). This page is the full reference across all five (Pipecat and LiveKit included).
+
 You build on a voice orchestrator and the framework executes the call: STT,
 LLM, TTS, telephony. Floe governs that spend in two complementary ways, and is
 honest about which is which:
@@ -197,8 +199,7 @@ secret) — update the platform's settings with the new URLs.
   per-API caps keyed to the provider host (`api.vapi.ai`,
   `api.retellai.com`, `api.bland.ai`) all see it. A breached policy with
   `action: "suspend_agent"` suspends the agent (403 on its next call) and
-  fires the `agent.suspended` webhook; near-limit thresholds fire
-  `credit.warning` / `credit.at_limit`.
+  fires the `agent.suspended` webhook.
 - **Does not debit your Floe balance.** That money was paid to the
   orchestrator, not Floe — reconciled spend is a *governance* signal, not a
   second bill. Your spendable balance is untouched; your budgets are not.

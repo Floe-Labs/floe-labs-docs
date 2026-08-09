@@ -220,6 +220,14 @@ print(res.json()["callId"])
 
 **Response `201`:** `{ "callId": "CA…", "from": "+14155550123", "to": "+14155559876", "status": "queued" }`. A call that's never answered costs nothing — billing starts when the media stream opens. There is also a dashboard-session variant, `POST /v1/developer/agents/{agentId}/numbers/{numberId}/test-call`, which powers the one-click "the agent calls you" test.
 
+### Pre-dial budget check
+
+Before the call is placed, `POST /v1/calls` runs an admission check so an over-budget or suspended agent can't ring a callee's phone only to be cut off the moment the call connects. If the agent is suspended, or its balance can't cover roughly one minute of calling, or a spend policy blocks the call, the request is denied with **`403` before the call is placed** — you get no `callId` and the callee's phone never rings.
+
+Deny reasons include `insufficient_balance` (top up the agent first), `policy_exceeded` (a spend policy blocks the call), and the suspended states `credit_frozen` / `credit_line_expired` (resolve billing or renew the credit line).
+
+This is admission control at the *start* of the call, and it's deliberately conservative — the authoritative money gate is the reserve taken when the call is answered, so the pre-dial check rejects only clearly-unaffordable or blocked dials. It's distinct from **live metering**: once a call is answered, Floe meters it per second and ends it if continuing would breach the cap (see above). The pre-dial check just avoids ringing a callee for a call that can't run.
+
 ## Voice settings — hosted vs webhook
 
 `GET | PATCH /v1/developer/agents/{agentId}/voice`

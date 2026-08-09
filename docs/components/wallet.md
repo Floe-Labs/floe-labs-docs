@@ -2,11 +2,11 @@
 icon: wallet
 ---
 
-# 01 · Agent Wallet `GA`
+# 01 · Agent Balance `GA`
 
-Every agent gets a wallet with a dollar balance you fund. You set the spend controls; the agent pays vendors per call, up to the limits you set.
+Every agent gets a funded dollar balance you top up. You set the spend controls; the agent pays vendors per call, up to the limits you set.
 
-That's the whole model: **funded balance → spend controls → pay-per-call.** No keys to manage, no crypto to touch.
+That's the whole model: **funded balance → spend controls → pay-per-call.**
 
 ---
 

@@ -11,7 +11,7 @@ Route your Vapi assistant's model leg through Floe and connect its end-of-call w
 - A Floe account + an **agent key** (`floe_…`) — [dashboard](https://dev-dashboard.floelabs.xyz) or `POST /v1/developer/agents/:agentId/keys`.
 - A Vapi assistant you can edit.
 
-> This is the same flow documented in depth (all five platforms) in [Govern Vapi / Retell / Bland / Pipecat / LiveKit](voice-orchestrators.md) — this page is the focused Vapi quickstart.
+> This is the same flow documented in depth (all five platforms) in [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md) — this page is the focused Vapi quickstart.
 
 ---
 
@@ -85,9 +85,9 @@ When the cap is crossed, the breaching call gets a `402` (carrying `"auto_suspen
 
 ## Your coverage score
 
-The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **% of spend pre-call enforceable vs post-call reconciled** — across every platform the agent runs on. With Step 1 you govern the LLM leg pre-call; Reconcile Mode (Step 2) puts the rest on the ledger and behind the circuit breaker.
+The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **enforceable pre-call vs post-call reconciled vs dark** — across every platform the agent runs on. With Step 1 you govern the LLM leg pre-call; Reconcile Mode (Step 2) puts the rest on the ledger and behind the circuit breaker; anything Floe never sees stays **dark**.
 
-To **raise** it, move more legs onto Floe rails — STT/TTS via [Floe Inference](../developers/keyless-inference.md), telephony via [Floe Phone](../developers/floe-phone.md). The full path is [Graduate to 100% coverage](migrate-to-full-coverage.md).
+To **raise** it, move more legs onto Floe rails — STT/TTS via [Floe Inference](../developers/keyless-inference.md), telephony via [Floe Phone](../developers/floe-phone.md). The full path is [Graduate to 100% coverage](../build/migrate-to-full-coverage.md).
 
 ---
 
@@ -115,4 +115,4 @@ The webhook + cap steps (2 and 3) work the same way — register the connection 
 - **Retell** — custom-LLM is **not** a URL swap; Retell dials out to a **WebSocket adapter you host** (its own protocol). Use the [retell-custom-llm recipe](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm).
 - **Bland** — **no self-serve custom LLM** (enterprise-only). Skip Step 1 and govern the whole call via **Reconcile Mode** (Steps 2–3); Bland has no pre-call hook, so enforcement is at the agent's next Floe-keyed action after a reconciled breach.
 
-Full per-platform detail: [Govern Vapi / Retell / Bland / Pipecat / LiveKit](voice-orchestrators.md).
+Full per-platform detail: [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md).

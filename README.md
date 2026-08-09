@@ -1,30 +1,35 @@
 <p align="center"><img src="https://raw.githubusercontent.com/Floe-Labs/.github/main/profile/banner.png" alt="Floe" width="100%" /></p>
 
-# Floe — FinOps for voice AI builders
+# Floe — Spend controls for Voice AI
 
-**One key for your voice agent's entire bill — LLM, voice, telephony, data.** Every voice-agent call spends across 5–10 vendors in real time. Floe pays all of them per call through a single key, enforces per-agent and per-task budgets, and puts the whole bill on one ledger. Walletless.
+**Your voice agent's whole bill — telephony, STT, LLM, TTS, search — on one ledger, enforced before money moves.**
+
+Every voice-agent call spends across 7–20 vendors in real time, and token and TTS usage varies every conversation — so true per-call cost only exists by joining usage data across providers after the call. Floe is that join, plus enforcement: budgets applied **pre-call where Floe is in the path**, and a **circuit breaker everywhere else**. One ledger, tagged by agent, task, and customer.
 
 [Website](https://floelabs.xyz) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen)](https://github.com/Floe-Labs/floe-labs-docs/blob/main/LICENSE)
 
-No crypto, no wallets to manage. Works with **Pipecat, Vapi, Retell, ElevenLabs, LiveKit, Bland, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP.**
-
-> This repository is the source for the documentation at **[floe-labs.gitbook.io/docs](https://floe-labs.gitbook.io/docs)** — the published site is the best way to read it. Corrections and improvements are welcome; see [CONTRIBUTING.md](https://github.com/Floe-Labs/floe-labs-docs/blob/main/CONTRIBUTING.md).
+> This repository is the source for the documentation at **[floe-labs.gitbook.io/docs](https://floe-labs.gitbook.io/docs)** — the published site is the best way to read it. Corrections welcome; see [CONTRIBUTING.md](https://github.com/Floe-Labs/floe-labs-docs/blob/main/CONTRIBUTING.md).
 
 ---
 
-## Your agent is 4 steps from its first paid API call
+> **Running production agents on Vapi, Retell, or Bland?**
+> Floe governs spend **inside your platform** through its own documented hooks — no migration, no platform cooperation, your keys stay yours. Where the platform allows it, route the model leg through Floe for pre-call enforcement (a custom-LLM URL on **Vapi**, a hosted adapter on **Retell**; **Bland** is reconcile-only). Connect the end-of-call webhook and every call lands on one ledger, with a between-call circuit breaker that stops the agent's next call once it's over budget.
+> → **[Vapi in 10 minutes](docs/platforms/vapi.md)** · [Retell](docs/platforms/retell.md) · [Bland](docs/platforms/bland.md) · [Full orchestrator reference](docs/build/voice-orchestrators.md)
 
-Every account's first agent starts with a **$3 Welcome Credit (300 API credits)** — so your first paid call needs **no card and no funding**. Fund and set budgets later, once you've seen it work.
+---
+
+## Prototyping? Your agent is 4 steps from its first paid call
+
+Every account's first agent starts with a **$3 Welcome Credit (300 API credits)** — so your first paid call needs **no card and no funding**.
 
 ### 1. Create an agent
 
-Go to the [Developer Dashboard](https://dev-dashboard.floelabs.xyz). Sign in with email, Google, or a wallet, and create an agent. Floe provisions everything — a managed wallet and the **$3 Welcome Credit** — automatically. Walletless: no MetaMask, no seed phrase.
-
+Sign in to the [Developer Dashboard](https://dev-dashboard.floelabs.xyz) with email or Google and create an agent. Floe provisions everything — a funded balance and the Welcome Credit — automatically.
 → [Dashboard guide](docs/developers/developer-dashboard.md)
 
-### 2. Connect to your AI tools & models
+### 2. Connect your AI tools
 
 Point your coding agent at Floe and it does the setup — installs a client, provisions an agent, sets guardrails, and makes a real paid call:
 
@@ -32,7 +37,7 @@ Point your coding agent at Floe and it does the setup — installs a client, pro
 Read https://dev-dashboard.floelabs.xyz/agents.md and set up Floe for this project.
 ```
 
-Or wire up a client yourself:
+Or wire a client yourself:
 
 ```bash
 # MCP — Claude Code, one line
@@ -41,16 +46,14 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
 
 # Platform CLI — onboard, mint an agent key, print the base-URL swap
 npx @floelabs/cli init
-
-# The curl below reads $FLOE_API_KEY — export the key init printed (it is not exported for you)
-export FLOE_API_KEY="floe_..."
+export FLOE_API_KEY="floe_..."   # export the key init printed (it is not exported for you)
 ```
 
 → [Set up with your AI tools](docs/getting-started/setup-with-ai-tools.md)
 
 ### 3. Make your first paid call
 
-Spend the **$3 Welcome Credit** — no card needed. Your agent sends one HTTP request; Floe pays the vendor and returns the response with an `X-Floe-Payment-Amount` header showing the cost. The same key pays LLM tokens, so every leg lands on one ledger.
+Spend the **$3 Welcome Credit** — no card needed. Your agent sends one HTTP request; Floe pays the vendor and returns the response with an `X-Floe-Payment-Amount` header showing the cost. The same key pays LLM tokens, and `X-Floe-Task-Id` ties every leg to one budget.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
@@ -60,13 +63,12 @@ curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -d '{"url": "https://api.exa.ai/search", "method": "POST", "body": "{\"query\":\"hello world\"}"}'
 ```
 
-→ [Vendor Marketplace](docs/x402-directory/README.md) — thousands of vendor services · [Floe Inference](docs/developers/keyless-inference.md) — keyless LLM · [Payment facilitator](docs/developers/x402-facilitator.md)
+→ [Vendor Marketplace](docs/x402-directory/README.md) · [Floe Inference](docs/developers/keyless-inference.md)
 
 ### 4. Fund & set budgets
 
-When the Welcome Credit runs low, add money with a card, Apple Pay, Google Pay, or bank transfer — directly in the dashboard, shown in dollars. Then cap what your agent can spend: per day, per task, per vendor, or across your whole team. Enforced server-side, so a runaway loop can't blow your budget. One task budget caps the whole conversation — LLM, voice, telephony, and data together.
-
-→ [Funding guide](docs/getting-started/funding.md) · [Spend Controls](docs/developers/spend-controls.md)
+When the Welcome Credit runs low, add money by card, Apple Pay, Google Pay, or bank transfer — shown in dollars. Then cap what your agent can spend: per day, per task, per vendor, or across your team. Enforced server-side, so a runaway loop can't blow your budget. One task budget caps the whole conversation — LLM, voice, telephony, and data together.
+→ [Funding](docs/getting-started/funding.md) · [Spend Controls](docs/developers/spend-controls.md)
 
 ---
 
@@ -74,21 +76,21 @@ When the Welcome Credit runs low, add money with a card, Apple Pay, Google Pay, 
 
 | Guide | What you get |
 |---|---|
-| **[The Voice Stack](docs/build/voice-stack.md)** | Run a full voice turn — STT → LLM → TTS → telephony — on one key, one budget. |
-| **[Floe Inference](docs/developers/keyless-inference.md)** | Keyless LLM & voice — call any model with just your Floe key, no provider account. |
-| **[Floe Phone](docs/developers/floe-phone.md)** | Give an agent a real phone number; carrier, STT, LLM, and TTS metered on one ledger. |
-| **[Unified Billing & Ledger](docs/build/unified-ledger.md)** | LLM, voice, telephony, and data on one ledger, priced per call. |
-| **[Budget-Aware Routing](docs/build/budget-aware-routing.md)** | Downgrade, finish, or hard-stop as an agent nears its budget — the job still finishes. |
+| **[The Voice Stack](docs/build/voice-stack.md)** | A full voice turn — STT → LLM → TTS → telephony — on one key, one budget. |
+| **[Floe Inference](docs/developers/keyless-inference.md)** | Keyless LLM & voice — any model with just your Floe key. |
+| **[Floe Phone](docs/developers/floe-phone.md)** | A real phone number; carrier, STT, LLM, and TTS metered on one ledger. |
+| **[Unified Billing & Ledger](docs/build/unified-ledger.md)** | Every leg on one ledger, priced per call, attributed per agent, task, and customer. |
+| **[Voice Orchestrators](docs/build/voice-orchestrators.md)** | Connect Vapi / Retell / Bland / Pipecat / LiveKit — Reconcile Mode + circuit breaker. |
+| **[Coverage Score](docs/build/coverage-score.md)** | The % of an agent's spend that's enforceable vs reconciled vs dark — and how to raise it. |
 
 ---
 
 ## Integrate with your framework
 
-Works with **Pipecat, Vapi, Retell, ElevenLabs, LiveKit, Bland, LangChain, CrewAI, OpenAI, Claude, and any framework that speaks HTTP.** Every one follows the same flow — create an agent, get an API key, call the proxy.
-
 | Framework | How |
 |---|---|
-| **Voice pipelines** (Vapi, Retell, Pipecat, LiveKit, Bland, ElevenLabs) | Drop Floe in as the payment layer — route each leg through Floe so it lands on one key and one budget. → [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md) |
+| **Voice platforms** (Vapi, Retell, Bland) | Govern spend inside the platform through its own hooks — model leg where supported (custom-LLM on Vapi/Retell; Bland reconcile-only) + end-of-call webhook. → [Platform setup](docs/platforms/vapi.md) · [Orchestrator reference](docs/build/voice-orchestrators.md) |
+| **Self-hosted pipelines** (Pipecat, LiveKit, ElevenLabs) | Route each leg through Floe — one key, one budget. → [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md) |
 | **Claude / Cursor / MCP** | [MCP Server](docs/developers/mcp-server.md) — one line to connect any MCP client |
 | **LangChain** | [`getLangChainTools` adapter](docs/frameworks/langchain.md) |
 | **CrewAI** | [via MCP server](docs/frameworks/crewai.md) |
@@ -105,21 +107,19 @@ See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookboo
 
 | Capability | What it does |
 |---|---|
-| **[Agent Wallet](docs/components/wallet.md)** | A funded dollar balance per agent, with programmable spend limits. |
+| **[Agent Balance](docs/components/wallet.md)** | A funded dollar balance per agent, with programmable spend limits. |
+| **[Coverage Score](docs/build/coverage-score.md)** | Per-agent: % of spend enforceable pre-call vs reconciled vs dark. |
 | **[Funding](docs/getting-started/funding.md)** | Add money by card, Apple Pay, Google Pay, or bank; withdraw anytime. |
-| **[Payment facilitator](docs/developers/x402-facilitator.md)** | One endpoint pays any vendor API, per call, from the agent's balance. |
+| **[Pay any vendor API](docs/developers/x402-facilitator.md)** | One endpoint pays any vendor API, per call, from the agent's balance. |
 | **[Vendor Marketplace](docs/x402-directory/README.md)** | Vendor API services — LLMs, STT, TTS, telephony, search, browser, memory — thousands reachable through one key. |
-| **[Unified billing & ledger](docs/build/unified-ledger.md)** | LLM, voice, telephony, and data on one ledger, one policy set. |
+| **[Unified billing & ledger](docs/build/unified-ledger.md)** | Every leg on one ledger, one policy set. |
 | **[Spend controls](docs/developers/spend-controls.md)** | Per-day, per-task, per-vendor, per-team budgets — enforced server-side. |
-| **[Budget-aware routing](docs/build/budget-aware-routing.md)** | Downgrade, finish, or hard-stop as budgets tighten. |
 
 ---
 
 ## Why this matters
 
-A voice agent's cost is never just tokens. One conversation pays for telephony, speech-to-text, an LLM, and text-to-speech — 5 to 10 vendors, in real time. If they bill four different ways, you can't answer the only question that matters: what did this call cost, and was it worth it?
-
-Floe answers it. One key pays every vendor per call, per-agent and per-task budgets stop a runaway loop server-side, and the whole bill lands on one ledger — tagged by agent, task, and vendor.
+A voice agent's cost is never just tokens. One conversation pays 7–20 vendors in real time, and if they bill separately you can't answer the only question that matters: what did this call cost, and was it worth it? Floe answers it — and enforces the answer. Pre-call where we're in the path. Circuit breaker everywhere else.
 
 ---
 
