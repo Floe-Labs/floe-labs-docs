@@ -1,12 +1,17 @@
 # Budget-Aware Routing
 
-When an agent nears its budget, Floe acts instead of failing — the job finishes, just cheaper. Instead of a hard `402` at the cap, you pick a behavior up front and Floe applies it as the agent runs. All three are operator-controlled.
+{% hint style="warning" %}
+**Early access.** Hard-stop at budget is live everywhere today. Budget-advisory headers (`X-Floe-Budget-Advisory`) let your agent taper itself. **Server-side auto-downgrade is in early access** — request it at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+{% endhint %}
 
-| Mode | Behavior |
-|------|----------|
-| **Downgrade** | Swap to a cheaper model mid-task and keep going. |
-| **Finish** | Complete the current task, then stop new spend. |
-| **Hard stop** | Suspend the agent and fire your webhook. |
+When an agent nears its budget, Floe can act instead of failing — the job finishes, just cheaper. Instead of a hard `402` at the cap, you pick a behavior up front and Floe applies it as the agent runs.
+
+| Mode | Behavior | Availability |
+|------|----------|--------------|
+| **Hard stop** | Suspend the agent and fire your webhook. | **Live** |
+| **Advisory taper** | `X-Floe-Budget-Advisory` on each response lets your agent choose a cheaper model itself. | **Live** |
+| **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access** |
+| **Finish** | Complete the current task, then stop new spend. | **Early access** |
 
 ## Preflight: ask before you spend
 
