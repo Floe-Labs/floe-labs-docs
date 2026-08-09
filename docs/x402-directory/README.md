@@ -4,7 +4,7 @@ icon: compass
 
 # x402 API Directory
 
-**Verified vendor API services** you can reach with Floe — 2,000+ through the proxy. Most are x402-native (they accept USDC on Base and are paid from your agent's Floe-managed balance); a few — like HydraDB under [Memory](database.md) — are free marketplace-shim services that don't charge your balance at all. Every service listed here works with `x402_fetch` or `/v1/proxy/fetch`.
+**Verified vendor API services** you can reach with Floe — the curated set below, plus thousands more reachable through the proxy. Most are x402-native (they accept USDC on Base and are paid from your agent's Floe-managed balance); a few — like HydraDB under [Memory](database.md) — are free marketplace-shim services that don't charge your balance at all. Every service listed here works with `x402_fetch` or `/v1/proxy/fetch`.
 
 ## Floe Verified Services
 
