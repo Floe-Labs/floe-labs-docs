@@ -28,7 +28,12 @@ Two server endpoints, one on each media leg:
 | **STT** (transcriber) | `wss://credit-api.floelabs.xyz/v1/orchestrator/transcriber` | Vapi streams **stereo PCM** (channel 0 = customer, channel 1 = assistant). Floe fronts **Deepgram multichannel** on a vaulted key and returns transcripts. Metered per **audio-second**. |
 | **TTS** (voice) | `https://credit-api.floelabs.xyz/v1/orchestrator/voice` | Vapi posts the text to speak. Floe fronts **ElevenLabs** on a vaulted key and returns **raw PCM at the requested sample rate**. Metered per **character**. |
 
-Both legs are **pre-call gated**: before the leg runs, Floe checks the agent's balance against the metered cost. If the agent is over budget, the leg **errors instead of running** — you never buy STT/TTS you can't afford. This is stricter than Reconcile Mode (which learns the cost only at call-end); here the transcriber and voice legs are governed on the same pre-call footing as the LLM leg.
+Both legs are gated **before** the money moves — but the timing differs because one is a request and one is a stream:
+
+- **TTS** is **pre-call gated per utterance**: each voice request checks the balance first, and an over-budget request **errors instead of synthesizing** — nothing is bought.
+- **STT** is a long-lived stream, so it's gated **at the start** and **re-checked at ~60-second checkpoints**. If the balance runs out mid-stream, Floe **closes the leg at the next checkpoint** — so the audio already processed up to that cutoff *is* billed (a small, bounded partial interval), but nothing runs past it.
+
+Either way this is stricter than Reconcile Mode (which learns the cost only at call-end): the transcriber and voice legs are governed as they happen, not a session later.
 
 ---
 
@@ -77,9 +82,9 @@ Point the transcriber and voice providers at the two Floe URLs:
 
 ## Metering & pre-call gating
 
-- **STT** is metered per **audio-second** of streamed audio.
-- **TTS** is metered per **character** of synthesized text.
-- Each leg is checked against the agent's Floe balance **before it runs**. Over budget → the leg **errors** (it does not run, and no provider cost is incurred). Combined with a `suspend_agent` [spend policy](../developers/spend-controls.md), a breach on any leg can trip the between-call circuit breaker just like the LLM leg.
+- **STT** is metered per **audio-second** of streamed audio, settled at each ~60-second checkpoint and once more on close.
+- **TTS** is metered per **character** of synthesized text, settled per request.
+- **TTS** is gated **before each request** — over budget → the request errors and no provider cost is incurred. **STT** is gated at the start and re-checked at each checkpoint; if the balance is exhausted it's cut at the next checkpoint, so only the bounded interval already streamed is billed (never a full call's worth). Combined with a `suspend_agent` [spend policy](../developers/spend-controls.md), a breach on any leg can trip the between-call circuit breaker just like the LLM leg.
 
 This raises the agent's [coverage score](../build/coverage-score.md): with STT and TTS on Floe rails, those legs move from **post-call reconciled** to **pre-call enforceable**. The remaining dark leg on a Vapi call is telephony — move it onto [Floe Phone](../developers/floe-phone.md) to close the gap. Full path: [Graduate to 100% coverage](../build/migrate-to-full-coverage.md).
 
