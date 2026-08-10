@@ -42,6 +42,10 @@ In **Vapi**, create a credential holding your `floe_` agent key and attach it to
 
 Get a key from the [dashboard](https://dev-dashboard.floelabs.xyz) or `POST /v1/developer/agents/:agentId/keys`.
 
+{% hint style="warning" %}
+**Use a budgeted `read_write` key — least privilege for a key in a third-party config.** The voice and transcriber legs are `POST`s that *spend* (they buy Deepgram/ElevenLabs), so the key must be **`read_write`** — a read-only key is rejected on every voice request. But since this key lives inside Vapi's config, don't hand out an unbounded spender: set a **per-key budget** on it (Keys section → the key's budget) so a leaked key can't spend past the cap. It's still bounded further by the agent's own [spend policies](../developers/spend-controls.md), and you can rotate it at any time. Match the credential to the leg: a spending leg gets a *budgeted* write key; the read-only Bland admission check (see below) gets only a capability token.
+{% endhint %}
+
 ### 2. Assistant config
 
 Point the transcriber and voice providers at the two Floe URLs:
