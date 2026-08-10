@@ -28,6 +28,7 @@
 ## Platforms
 
 * [Vapi — 10-minute setup](docs/platforms/vapi.md)
+* [Vapi — custom voice & transcriber (experimental)](docs/platforms/vapi-voice.md)
 * [Retell](docs/platforms/retell.md)
 * [Bland](docs/platforms/bland.md)
 
