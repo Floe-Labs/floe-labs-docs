@@ -93,16 +93,23 @@ We are **not** quoting a latency number here. The benchmark is published separat
 
 ---
 
-## Not available on Retell or Bland
+## Retell and Bland — a different mechanism
 
-This is a **Vapi-only** capability — by Retell's and Bland's design, not a Floe gap:
+Putting Floe **in the STT/TTS media path** is Vapi-only, because only Vapi exposes custom voice/transcriber server URLs. On Retell and Bland the media legs stay native — but the call is still **governed on Floe**, using each platform's own hooks. This is a different mechanism, not a dead end.
 
-- **Retell** — its voice (`voice_id`) and transcriber (`custom_stt_config.provider`) are **built-in providers only**. There is no custom server URL to point at Floe, so STT/TTS can't be routed through Floe on Retell.
-- **Bland** — a closed, self-hosted stack with **no custom voice/transcriber hook** at all.
+### Retell — governed three ways (all live)
 
-On both platforms you govern voice spend the same way the base quickstarts describe:
+Retell's voice (`voice_id`) and transcriber (`custom_stt_config.provider`) are built-in providers only, so STT/TTS stay native. Everything else routes through Floe:
 
-- **The model leg** — pre-call, via custom-LLM (**Retell only**, using the [retell-custom-llm recipe](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm)). Bland has no self-serve custom LLM.
-- **Everything else** — post-call, via **Reconcile Mode** (end-of-call webhooks). See [Retell](retell.md) and [Bland](bland.md).
+- **Model leg — pre-call.** Route Retell's custom LLM through Floe (the biggest, most variable cost), using the [retell-custom-llm recipe](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm).
+- **Admission — pre-call.** Retell's `call_inbound` webhook lets Floe **reject an over-budget call before it connects** (`{"call_inbound":{"reject":true}}`). Wired automatically when you connect Retell in [Voice orchestrators](../build/voice-orchestrators.md).
+- **Reconcile — post-call.** The end-of-call cost lands on the ledger. See [Retell](retell.md).
+
+### Bland — reconcile + a Pathway admission gate
+
+Bland runs a closed self-hosted stack with no custom voice/transcriber hook, so STT/TTS stay native. Govern the call two ways:
+
+- **Reconcile — post-call.** Bland's end-of-call cost lands on the ledger; a breach can suspend the agent for the next call. See [Bland](bland.md).
+- **Admission — at call start.** Bland has no native pre-call hook, but its **Pathway Webhook node** does the job: make the first step of your Pathway a Webhook node that calls Floe's admission endpoint, and route to an **End Call** node when the agent is over budget (Bland branches on the response status). This gives Bland real pre-call enforcement, not just after-the-fact accounting.
 
 Full per-platform detail: [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md).
