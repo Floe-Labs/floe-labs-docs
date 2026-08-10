@@ -71,7 +71,7 @@ In **Retell**:
 
 Retell signs each delivery with the header **`x-retell-signature`**, in the format `v={ts},d={hex}` — where `{hex}` is the HMAC-SHA256 of `body + ts`, keyed by your Retell API key. Floe recomputes it and rejects a bad signature `401`; it also enforces a **±5-minute** timestamp window to block replays. An unknown or disabled token is `404`. Treat the URLs as secrets — rotate with `POST /v1/developer/orchestrators/:id/rotate`.
 
-**Pre-call deny.** When the agent is over budget, Floe answers the inbound webhook with `{ "call_inbound": { "reject": true } }` and Retell denies the next inbound call **before it connects**. Without the pre-call URL, an over-budget agent is still stopped — just at its next Floe-keyed action (Step 3), not at admission.
+**Pre-call deny (Retell's `call_inbound` webhook).** On each inbound call Retell POSTs a `call_inbound` event to that URL. When the agent is over budget, Floe answers `{ "call_inbound": { "reject": true } }` and Retell denies the call **before it connects**; when the agent is in budget Floe returns an empty `{ "call_inbound": {} }` and the call proceeds normally. Without the pre-call URL, an over-budget agent is still stopped — just at its next Floe-keyed action (Step 3), not at admission.
 
 **Verify** → end a call. A **reconciled debit** appears on the ledger within moments, attributed to the agent.
 
@@ -100,6 +100,8 @@ To **raise** it, move more legs onto Floe rails — STT/TTS via [Floe Inference]
 
 {% hint style="info" %}
 **The honest boundary.** Floe enforces **pre-call on the LLM leg** (the adapter through the gateway). STT, TTS, and telephony stay on Retell and are governed **post-call — reconciled onto the ledger, with a between-call circuit breaker** (`suspend_agent`). Floe does **not** intervene mid-call: enforcement is either *before* a call (deny the next inbound) or *after* it (reconcile + suspend). It never interrupts a call in progress — though the adapter itself will end a call gracefully when a turn breaches the per-call budget.
+
+Unlike Vapi, Retell won't let Floe into the **media path**: `voice_id` and `custom_stt_config` take Retell's built-in providers only (no custom server URL), so STT/TTS can't be metered pre-call the way Vapi's [custom-transcriber / custom-voice legs](vapi-voice.md) can. So Retell is governed **three ways, all live**: the **model leg** pre-call (Step 1), inbound **admission** pre-call (Step 2's `call_inbound` webhook), and post-call **reconcile** (Step 2's call-end webhook). Full cross-platform reference: [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md).
 {% endhint %}
 
 ---

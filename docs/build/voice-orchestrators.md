@@ -185,10 +185,13 @@ secret) — update the platform's settings with the new URLs.
 2. Pass `webhookUrl` as the `webhook` param on `POST /v1/calls` (or set it on
    the inbound number). Floe verifies `X-Webhook-Signature` and ingests the
    post-call payload (`price` USD, `call_length` minutes).
-3. Bland has **no pre-call hook** — the circuit breaker is: reconciled spend
-   trips your `suspend_agent` policy → the agent's next *Floe-keyed* action
-   (including placing calls via your own dialer) is refused `403`. For live
-   emergencies use Bland's stop APIs.
+3. Bland has **no _native_ pre-call webhook**, but its **Pathway Webhook node**
+   gives you one: make the first node of your Pathway POST the connection's
+   `preCallUrl` and route to **End Call** on a non-`200` (over-budget → `402`).
+   That URL authenticates on its capability token alone (no signature — a static
+   node can't HMAC). See [Bland → Step 2](../platforms/bland.md). Between calls,
+   reconciled spend also trips your `suspend_agent` policy → the agent's next
+   *Floe-keyed* action is refused `403`. For live emergencies use Bland's stop APIs.
 {% endtab %}
 {% endtabs %}
 
