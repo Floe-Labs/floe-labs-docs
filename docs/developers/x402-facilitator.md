@@ -402,7 +402,7 @@ A `429` response body looks like:
   "error": "rate_limit_exceeded",
   "reason": "agent_proxy_limit",
   "retry_after_seconds": 7,
-  "limit_per_minute": 30,
+  "limit_per_minute": 3000,
   "remaining": 0
 }
 ```
