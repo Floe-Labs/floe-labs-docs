@@ -411,7 +411,7 @@ A `429` response body looks like:
 
 | `reason` | Source | Agent action |
 |----------|--------|--------------|
-| `agent_proxy_limit` | Per-agent token bucket (default 30/min, `RC12_RATE_LIMIT_PER_MINUTE`). The standard `/proxy/fetch` ceiling. | Wait `retry_after_seconds`; safe to retry. |
+| `agent_proxy_limit` | Per-agent token bucket (default 3,000/min, `RC12_RATE_LIMIT_PER_MINUTE`). The standard `/proxy/fetch` ceiling — anti-DoS-sized, since every call settles against your own balance. Raised per account on request. | Wait `retry_after_seconds`; safe to retry. |
 | `ip_rate_limit` | Per-IP sliding window (covers `/proxy/check` and `/x402/estimate`). | Wait, or check if the IP is shared with other callers. |
 | `global_rate_limit` | Server-wide protection on the `/v1/*` surface. | Wait longer — may indicate platform overload. |
 
