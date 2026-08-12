@@ -4,7 +4,7 @@ icon: plug
 
 # MCP Server
 
-Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **65 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
+Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **73 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
 
 > **Payments are in MCP now.** `estimate_x402_cost` (or `x402_forecast` for a whole plan) prices the call; `x402_pay` makes it, settles the vendor from the agent's balance, and returns the vendor's response plus the `X-Floe-*` receipt headers. An agent no longer has to leave MCP to spend.
 >
@@ -59,7 +59,7 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 
 | Key | Format | Unlocks | Get one |
 |---|---|---|---|
-| Developer key | `floe_live_…` | Developer-key surface (19 tools — lifecycle 12, observability 4, webhooks 3): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
+| Developer key | `floe_live_…` | Developer-key surface (27 tools — lifecycle 12, observability 4, webhooks 11): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks + delivery logs | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
 | Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe init`, or the dashboard |
 | Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
 | None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
@@ -223,9 +223,9 @@ Each session is scoped to one agent — balances, spend limits, and webhook subs
 
 ---
 
-## Tools Reference (65)
+## Tools Reference (73)
 
-Sixty-five tools in eight capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
+Seventy-three tools in eight capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
 
 | Group | Tools | What it's for |
 |---|---|---|
@@ -234,7 +234,7 @@ Sixty-five tools in eight capability groups. The **Group** name is what you pass
 | [`payments`](#payment-execution-1) | 1 | `x402_pay` — the tool that actually spends |
 | [`pricing`](#cost-preflight-5) | 5 | Price a call or a whole plan before spending |
 | [`spend`](#spend-governance-and-awareness-14) | 14 | Caps, thresholds, merchant allowlist, reputation |
-| [`webhooks`](#webhooks-3) | 3 | Push notifications for account events |
+| [`webhooks`](#webhooks-11) | 11 | Push notifications for account events + the delivery log |
 | [`docs`](#docs-1) | 1 | Search these docs from inside MCP |
 | [`lending`](#advanced-lending-protocol-25) | 25 | On-chain protocol layer (advanced / self-custody) |
 
@@ -311,17 +311,25 @@ Agent key. Identity comes from the bearer token, so none of these take a wallet 
 | `list_allowlist` | The agent's allowlist entries and their caps |
 | `get_agent_reputation` | Unified credit reputation: 0-100 score, A-E band, confidence, collateral multiplier. 404 until first computed |
 
-### Webhooks (3)
+### Webhooks (11)
 
 Developer key.
 
 | Tool | Description |
 |------|-------------|
-| `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks |
+| `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
+| `list_webhook_events` | The live event catalog: 30 events with name, title, description, category, and scope |
+| `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
+| `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
+| `delete_webhook` | Delete an endpoint permanently |
 | `test_webhook` | Send a signed test delivery to verify connectivity and signature handling |
+| `rotate_webhook_secret` | Rotate the signing secret. Returns the new secret **once** |
+| `list_webhook_deliveries` | Account-wide delivery log, newest first, cursor-paginated, with filters for endpoint, event, agent wallet, status, time range, and delivery/correlation id. 30-day retention |
+| `get_webhook_delivery` | One delivery in full: the sent payload, the sanitized response body, and the next retry time |
+| `retry_webhook_delivery` | Manually redeliver a failed delivery. Receivers should dedupe on `X-Floe-Delivery-Id` |
 
-Event catalog and signature verification: [Webhooks](webhooks.md).
+Event catalog, delivery semantics, and signature verification: [Webhooks](webhooks.md).
 
 ### Docs (1)
 
@@ -469,18 +477,53 @@ check_x402_url    url              string   required  http/https  (no key requir
 
 ```text
 create_webhook    url          string    required  https endpoint, ≤2048 chars
-                  events       string[]  required  ≥1 event name, validated server-side. Catalog:
-                                                   loan.health_warning, loan.expiry_warning,
-                                                   loan.liquidated, loan.repaid, agent.created,
-                                                   key.created, key.rotated, x402.first_settlement
-                  scope        string    default "global"   global | wallet | loan
-                  scope_value  string    conditional  required for wallet (address) and loan (numeric
-                                                      id); rejected for global
+                  events       string[]  required  ≥1 entry: exact event name, "*", or a prefix
+                                                   wildcard like "call.*". Validated server-side —
+                                                   list_webhook_events is the live catalog
+                  scope        string    default "global"   global | wallet | agent | loan
+                  scope_value  string    conditional  required for wallet/agent (0x wallet address —
+                                                      for agent, the agent's WALLET address, not its
+                                                      numeric id) and loan (numeric id); rejected
+                                                      for global
                   description  string    optional  ≤256 chars
 
-list_webhooks     — no arguments —
+list_webhooks          — no arguments —
 
-test_webhook      webhook_id   integer   required  positive, from list_webhooks
+list_webhook_events    — no arguments —
+
+get_webhook            webhook_id   integer   required  positive, from list_webhooks
+
+update_webhook         webhook_id   integer   required  positive, from list_webhooks
+                       url          string    optional  https endpoint, ≤2048 chars
+                       events       string[]  optional  replacement list; names/wildcards as above
+                       active       boolean   optional  false pauses deliveries, true resumes
+                       description  string    optional  ≤256 chars
+                       (at least one of url / events / active / description)
+
+delete_webhook         webhook_id   integer   required  positive, from list_webhooks
+
+test_webhook           webhook_id   integer   required  positive, from list_webhooks
+
+rotate_webhook_secret  webhook_id   integer   required  positive, from list_webhooks
+
+list_webhook_deliveries
+                  endpoint_id   integer  optional  filter to one webhook id
+                  event         string   optional  exact event name (no wildcards)
+                  agent_wallet  string   optional  0x wallet address
+                  status        string   optional  pending | success | failed | retrying
+                  from          string   optional  ISO timestamp lower bound
+                  to            string   optional  ISO timestamp upper bound
+                  id_search     string   optional  matches a delivery id OR correlation id
+                                                   (call session id, job id, loan id)
+                  cursor        string   optional  from a previous response's nextCursor
+                  limit         integer  default 50   1-100
+
+get_webhook_delivery      delivery_id  string  required  the hex delivery id (from
+                                                         list_webhook_deliveries or the
+                                                         X-Floe-Delivery-Id header)
+
+retry_webhook_delivery    webhook_id   integer  required  webhook the delivery belongs to
+                          delivery_id  string   required  the hex delivery id
 ```
 
 ### Docs

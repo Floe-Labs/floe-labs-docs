@@ -41,7 +41,7 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
 
 ## What you get
 
-All 65 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, and docs search. See the [MCP Server reference](../developers/mcp-server.md) for the full tool catalog.
+All 73 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, and docs search. See the [MCP Server reference](../developers/mcp-server.md) for the full tool catalog.
 
 Narrow the set with scope params — `?read_only=true` or `?features=spend,pricing,payments` on the endpoint URL.
 

@@ -102,6 +102,16 @@ function handleFirstSettlement(event: Record<string, unknown>): void {
   // TODO: Mark the agent activated
 }
 
+function handleCallEnded(event: Record<string, unknown>): void {
+  console.log(`Call ended for agent ${event.agentWalletAddress}`);
+  // TODO: Reconcile the call's cost against your own records
+}
+
+function handleMarketplacePaymentSettled(event: Record<string, unknown>): void {
+  console.log(`Marketplace payment settled for agent ${event.agentWalletAddress}`);
+  // TODO: Record the spend in your billing ledger
+}
+
 // ── Express Server ──
 
 const app = express();
@@ -156,6 +166,12 @@ app.post(
         break;
       case "x402.first_settlement":
         handleFirstSettlement(event);
+        break;
+      case "call.ended":
+        handleCallEnded(event);
+        break;
+      case "marketplace.payment.settled":
+        handleMarketplacePaymentSettled(event);
         break;
       default:
         console.log(`Unknown event type: ${event.event}`);

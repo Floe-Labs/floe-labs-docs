@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 58 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 59 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -28,6 +28,7 @@
 - Budget-Aware Routing — https://floe-labs.gitbook.io/docs/the-voice-stack/budget-aware-routing.md
 - Latency & overhead — https://floe-labs.gitbook.io/docs/the-voice-stack/latency-overhead.md
 - Vapi — 10-minute setup — https://floe-labs.gitbook.io/docs/platforms/vapi.md
+- Vapi — custom voice & transcriber (experimental) — https://floe-labs.gitbook.io/docs/platforms/vapi-voice.md
 - Retell — https://floe-labs.gitbook.io/docs/platforms/retell.md
 - Bland — https://floe-labs.gitbook.io/docs/platforms/bland.md
 - Overview — https://floe-labs.gitbook.io/docs/vendor-marketplace/x402-directory.md
@@ -283,7 +284,7 @@ One-click install links — the config carries the endpoint URL only, never a ke
 - Cursor — `cursor://anysphere.cursor-deeplink/mcp/install?name=floe&config=eyJ1cmwiOiJodHRwczovL21jcC5mbG9lbGFicy54eXovbWNwIn0`
 - VS Code — [`https://vscode.dev/redirect/mcp/install?name=floe&config=…`](https://vscode.dev/redirect/mcp/install?name=floe&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.floelabs.xyz%2Fmcp%22%7D)
 
-65 tools, full reference: [MCP Server](../developers/mcp-server.md).
+73 tools, full reference: [MCP Server](../developers/mcp-server.md).
 {% endtab %}
 {% tab title="CLI" %}
 
@@ -396,7 +397,8 @@ One real metered call against the **$3 welcome credit** your first agent starts 
 | Watch the money | `get_usage_summary` / `get_activity` | `floe usage` / `floe activity` |
 | Billing + CSV export | — (CLI only) | `floe billing mtd\|invoice\|export` |
 | Open a credit line | `get_credit_line_bounds` + `open_credit_line` | `floe credit bounds` / `floe credit open` |
-| Webhooks | `create_webhook` / `list_webhooks` / `test_webhook` | `floe webhooks create\|list\|test` |
+| Webhooks | `create_webhook` / `list_webhooks` / `test_webhook` + catalog, update/delete, secret rotation | `floe webhooks create\|list\|test\|events` |
+| Webhook delivery logs | `list_webhook_deliveries` / `get_webhook_delivery` / `retry_webhook_delivery` | `floe webhooks logs\|deliveries` |
 | Move money / cash out | — (CLI only) | `floe funds` · `floe cashout` |
 | Hand funding to a human | `get_funding_instructions` | `floe funds address` / `floe funds topup` |
 | Phone, BYOK, orchestrators, team | — (CLI only) | `floe phone` · `floe providers` · `floe orchestrators` · `floe team` |
@@ -404,7 +406,7 @@ One real metered call against the **$3 welcome credit** your first agent starts 
 ## Next steps
 
 - [Quickstart](quickstart.md) — create an agent, connect your tools, first paid call
-- [MCP Server](../developers/mcp-server.md) — all 65 tools with input schemas
+- [MCP Server](../developers/mcp-server.md) — all 73 tools with input schemas
 - [Floe CLI](../developers/cli.md) — every command, flag, and exit code
 - [Spend Controls](../developers/spend-controls.md) — the guardrails to set before you let it run
 
@@ -1322,10 +1324,13 @@ secret) — update the platform's settings with the new URLs.
 2. Pass `webhookUrl` as the `webhook` param on `POST /v1/calls` (or set it on
    the inbound number). Floe verifies `X-Webhook-Signature` and ingests the
    post-call payload (`price` USD, `call_length` minutes).
-3. Bland has **no pre-call hook** — the circuit breaker is: reconciled spend
-   trips your `suspend_agent` policy → the agent's next *Floe-keyed* action
-   (including placing calls via your own dialer) is refused `403`. For live
-   emergencies use Bland's stop APIs.
+3. Bland has **no _native_ pre-call webhook**, but its **Pathway Webhook node**
+   gives you one: make the first node of your Pathway POST the connection's
+   `preCallUrl` and route to **End Call** on a non-`200` (over-budget → `402`).
+   That URL authenticates on its capability token alone (no signature — a static
+   node can't HMAC). See [Bland → Step 2](../platforms/bland.md). Between calls,
+   reconciled spend also trips your `suspend_agent` policy → the agent's next
+   *Floe-keyed* action is refused `403`. For live emergencies use Bland's stop APIs.
 {% endtab %}
 {% endtabs %}
 
@@ -2152,7 +2157,7 @@ Successful calls return the provider's response verbatim. Upstream errors pass t
 | `402` | Balance / spend ceiling reached (`budget_exhausted`) |
 | `404` | Unknown or disabled model id |
 | `422` | No source can price the requested usage (`no_priceable_source`, from `/estimate`) |
-| `429` | Per-agent rate limit exceeded |
+| `429` | Per-agent rate limit exceeded. Keyless calls default to 300 requests/min (they ride Floe's pooled upstream quota); BYOK calls — your own provider key, per-request or stored — default to 3,000 requests/min. A BYOK call whose key fails upstream and falls back onto a pooled rail re-qualifies under the keyless window (`rate_limited` with `retry_after_seconds` in the body). Limits can be raised per account on request. |
 | `503` | Floe Inference isn't enabled on this deployment, or no source is available for the model |
 
 See the full [Error Codes](../reference/error-codes.md) reference for the rest of the Floe API.
@@ -2472,6 +2477,133 @@ The webhook + cap steps (2 and 3) work the same way — register the connection 
 Full per-platform detail: [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md).
 
 ==============================================================================
+# Vapi — custom voice & transcriber (experimental)
+Source: docs/platforms/vapi-voice.md
+URL: https://floe-labs.gitbook.io/docs/platforms/vapi-voice.md
+==============================================================================
+
+# Govern your Vapi voice legs with Floe (experimental)
+
+The [Vapi quickstart](vapi.md) governs the **LLM leg** pre-call and reconciles the rest post-call. This page goes one step further: route Vapi's **STT and TTS legs** through Floe too, so the transcriber and voice legs are **metered and gated pre-call on the agent's balance** — not just reconciled after the fact.
+
+Floe implements Vapi's **custom-transcriber** (STT) and **custom-voice** (TTS) server contracts. Vapi streams audio to Floe, Floe fronts the underlying provider on a vaulted key, meters the leg on the agent's Floe balance, and returns the result. The provider keys never touch your assistant.
+
+{% hint style="warning" %}
+**Experimental — off by default.** These media-path providers sit behind the server flag `ORCHESTRATOR_VOICE_ENABLED` and stay **off** until a published media-path latency benchmark clears the bar. Routing STT/TTS through Floe adds latency on the media path — see [Honest latency framing](#honest-latency-framing) below. Treat this as a preview, not GA. If the flag is off for your account, the two URLs below return an error and you should keep STT/TTS native on Vapi (governed post-call via [Reconcile Mode](vapi.md#step-2-connect-the-end-of-call-webhook-3-min)).
+{% endhint %}
+
+**Prerequisites**
+
+- Everything in the [Vapi quickstart](vapi.md) (agent key + a Vapi assistant you can edit).
+- `ORCHESTRATOR_VOICE_ENABLED` on for your account (experimental access).
+
+---
+
+## What it does
+
+Two server endpoints, one on each media leg:
+
+| Leg | Endpoint | What Floe does |
+|---|---|---|
+| **STT** (transcriber) | `wss://credit-api.floelabs.xyz/v1/orchestrator/transcriber` | Vapi streams **stereo PCM** (channel 0 = customer, channel 1 = assistant). Floe fronts **Deepgram multichannel** on a vaulted key and returns transcripts. Metered per **audio-second**. |
+| **TTS** (voice) | `https://credit-api.floelabs.xyz/v1/orchestrator/voice` | Vapi posts the text to speak. Floe fronts **ElevenLabs** on a vaulted key and returns **raw PCM at the requested sample rate**. Metered per **character**. |
+
+Both legs are gated **before** the money moves — but the timing differs because one is a request and one is a stream:
+
+- **TTS** is **pre-call gated per utterance**: each voice request checks the balance first, and an over-budget request **errors instead of synthesizing** — nothing is bought.
+- **STT** is a long-lived stream, so it's gated **at the start** and **re-checked at ~60-second checkpoints**. If the balance runs out mid-stream, Floe **closes the leg at the next checkpoint** — so the audio already processed up to that cutoff *is* billed (a small, bounded partial interval), but nothing runs past it.
+
+Either way this is stricter than Reconcile Mode (which learns the cost only at call-end): the transcriber and voice legs are governed as they happen, not a session later.
+
+---
+
+## Setup
+
+### 1. Bearer credential
+
+Both providers authenticate with the agent's `floe_…` key as a **Bearer credential** — the same key you use for the LLM leg.
+
+In **Vapi**, create a credential holding your `floe_` agent key and attach it to both the custom-transcriber and custom-voice providers. Vapi sends it as `Authorization: Bearer floe_…` on the transcriber WebSocket handshake and on every voice request.
+
+Get a key from the [dashboard](https://dev-dashboard.floelabs.xyz) or `POST /v1/developer/agents/:agentId/keys`.
+
+{% hint style="warning" %}
+**Use a budgeted `read_write` key — least privilege for a key in a third-party config.** The voice and transcriber legs are `POST`s that *spend* (they buy Deepgram/ElevenLabs), so the key must be **`read_write`** — a read-only key is rejected on every voice request. But since this key lives inside Vapi's config, don't hand out an unbounded spender: set a **per-key budget** on it (Keys section → the key's budget) so a leaked key can't spend past the cap. It's still bounded further by the agent's own [spend policies](../developers/spend-controls.md), and you can rotate it at any time. Match the credential to the leg: a spending leg gets a *budgeted* write key; the read-only Bland admission check (see below) gets only a capability token.
+{% endhint %}
+
+### 2. Assistant config
+
+Point the transcriber and voice providers at the two Floe URLs:
+
+```json
+{
+  "transcriber": {
+    "provider": "custom-transcriber",
+    "server": {
+      "url": "wss://credit-api.floelabs.xyz/v1/orchestrator/transcriber"
+    }
+  },
+  "voice": {
+    "provider": "custom-voice",
+    "server": {
+      "url": "https://credit-api.floelabs.xyz/v1/orchestrator/voice"
+    }
+  }
+}
+```
+
+- **`transcriber.server.url`** — the `wss://` transcriber endpoint. Vapi opens the socket and streams stereo PCM; Floe returns transcripts multichannel.
+- **`voice.server.url`** — the `https://` voice endpoint. Vapi posts the text and the requested sample rate; Floe returns raw PCM at that rate.
+- **Auth** — attach the `floe_` Bearer credential to **both** providers (Step 1).
+
+**Verify** → make a test call. The STT and TTS legs now show up on the [ledger](../build/unified-ledger.md) as **pre-call metered rows** attributed to the agent — audio-seconds for the transcriber, characters for the voice — alongside the LLM leg from the [quickstart](vapi.md).
+
+---
+
+## Metering & pre-call gating
+
+- **STT** is metered per **audio-second** of streamed audio, settled at each ~60-second checkpoint and once more on close.
+- **TTS** is metered per **character** of synthesized text, settled per request.
+- **TTS** is gated **before each request** — over budget → the request errors and no provider cost is incurred. **STT** is gated at the start and re-checked at each checkpoint; if the balance is exhausted it's cut at the next checkpoint, so only the bounded interval already streamed is billed (never a full call's worth). Combined with a `suspend_agent` [spend policy](../developers/spend-controls.md), a breach on any leg can trip the between-call circuit breaker just like the LLM leg.
+
+This raises the agent's [coverage score](../build/coverage-score.md): with STT and TTS on Floe rails, those legs move from **post-call reconciled** to **pre-call enforceable**. The remaining dark leg on a Vapi call is telephony — move it onto [Floe Phone](../developers/floe-phone.md) to close the gap. Full path: [Graduate to 100% coverage](../build/migrate-to-full-coverage.md).
+
+---
+
+## Honest latency framing
+
+Routing STT/TTS through Floe inserts Floe on the **media path** — audio flows Vapi → Floe → provider and back on every leg. That adds latency versus Vapi calling Deepgram/ElevenLabs directly. This is real, it is measured, and it is why the surface is **flag-gated**: `ORCHESTRATOR_VOICE_ENABLED` stays off until a media-path latency benchmark clears the bar.
+
+We are **not** quoting a latency number here. The benchmark is published separately (coming) — see [Latency & overhead](../build/latency-overhead.md). Until then, treat these providers as a preview for testing the metering/gating behavior, not a production media path.
+
+{% hint style="info" %}
+**The honest boundary.** With these providers on, Floe enforces on the **LLM, STT, and TTS legs**; only telephony stays post-call reconciled. Enforcement timing differs by leg: the LLM turn and each TTS utterance are gated **before** they run (over budget → that unit errors, nothing is bought). The STT transcriber is a long-lived stream, so it's gated at the start **and re-checked on a ~60-second checkpoint** — if the balance runs out mid-stream, Floe closes the transcriber leg at that checkpoint. It doesn't reach into an LLM or TTS unit already in flight, and it never silently drops audio: a leg either runs, errors before it starts, or is cleanly closed at a checkpoint.
+{% endhint %}
+
+---
+
+## Retell and Bland — a different mechanism
+
+Putting Floe **in the STT/TTS media path** is Vapi-only, because only Vapi exposes custom voice/transcriber server URLs. On Retell and Bland the media legs stay native — but the call is still **governed on Floe**, using each platform's own hooks. This is a different mechanism, not a dead end.
+
+### Retell — governed three ways (all live)
+
+Retell's voice (`voice_id`) and transcriber (`custom_stt_config.provider`) are built-in providers only, so STT/TTS stay native. Everything else routes through Floe:
+
+- **Model leg — pre-call.** Route Retell's custom LLM through Floe (the biggest, most variable cost), using the [retell-custom-llm recipe](https://github.com/Floe-Labs/floe-cookbook/tree/main/retell-custom-llm).
+- **Admission — pre-call.** Retell's `call_inbound` webhook lets Floe **reject an over-budget call before it connects** (`{"call_inbound":{"reject":true}}`). Wired automatically when you connect Retell in [Voice orchestrators](../build/voice-orchestrators.md).
+- **Reconcile — post-call.** The end-of-call cost lands on the ledger. See [Retell](retell.md).
+
+### Bland — reconcile + a Pathway admission gate
+
+Bland runs a closed self-hosted stack with no custom voice/transcriber hook, so STT/TTS stay native. Govern the call two ways:
+
+- **Reconcile — post-call.** Bland's end-of-call cost lands on the ledger; a breach can suspend the agent for the next call. See [Bland](bland.md).
+- **Admission — at call start.** Bland has no native pre-call hook, but its **Pathway Webhook node** does the job: make the first step of your Pathway a Webhook node that calls Floe's admission endpoint, and route to an **End Call** node when the agent is over budget (Bland branches on the response status). This gives Bland real pre-call enforcement, not just after-the-fact accounting.
+
+Full per-platform detail: [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md).
+
+==============================================================================
 # Retell
 Source: docs/platforms/retell.md
 URL: https://floe-labs.gitbook.io/docs/platforms/retell.md
@@ -2546,7 +2678,7 @@ In **Retell**:
 
 Retell signs each delivery with the header **`x-retell-signature`**, in the format `v={ts},d={hex}` — where `{hex}` is the HMAC-SHA256 of `body + ts`, keyed by your Retell API key. Floe recomputes it and rejects a bad signature `401`; it also enforces a **±5-minute** timestamp window to block replays. An unknown or disabled token is `404`. Treat the URLs as secrets — rotate with `POST /v1/developer/orchestrators/:id/rotate`.
 
-**Pre-call deny.** When the agent is over budget, Floe answers the inbound webhook with `{ "call_inbound": { "reject": true } }` and Retell denies the next inbound call **before it connects**. Without the pre-call URL, an over-budget agent is still stopped — just at its next Floe-keyed action (Step 3), not at admission.
+**Pre-call deny (Retell's `call_inbound` webhook).** On each inbound call Retell POSTs a `call_inbound` event to that URL. When the agent is over budget, Floe answers `{ "call_inbound": { "reject": true } }` and Retell denies the call **before it connects**; when the agent is in budget Floe returns an empty `{ "call_inbound": {} }` and the call proceeds normally. Without the pre-call URL, an over-budget agent is still stopped — just at its next Floe-keyed action (Step 3), not at admission.
 
 **Verify** → end a call. A **reconciled debit** appears on the ledger within moments, attributed to the agent.
 
@@ -2575,6 +2707,8 @@ To **raise** it, move more legs onto Floe rails — STT/TTS via [Floe Inference]
 
 {% hint style="info" %}
 **The honest boundary.** Floe enforces **pre-call on the LLM leg** (the adapter through the gateway). STT, TTS, and telephony stay on Retell and are governed **post-call — reconciled onto the ledger, with a between-call circuit breaker** (`suspend_agent`). Floe does **not** intervene mid-call: enforcement is either *before* a call (deny the next inbound) or *after* it (reconcile + suspend). It never interrupts a call in progress — though the adapter itself will end a call gracefully when a turn breaches the per-call budget.
+
+Unlike Vapi, Retell won't let Floe into the **media path**: `voice_id` and `custom_stt_config` take Retell's built-in providers only (no custom server URL), so STT/TTS can't be metered pre-call the way Vapi's [custom-transcriber / custom-voice legs](vapi-voice.md) can. So Retell is governed **three ways, all live**: the **model leg** pre-call (Step 1), inbound **admission** pre-call (Step 2's `call_inbound` webhook), and post-call **reconcile** (Step 2's call-end webhook). Full cross-platform reference: [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md).
 {% endhint %}
 
 ---
@@ -2597,14 +2731,15 @@ URL: https://floe-labs.gitbook.io/docs/platforms/bland.md
 
 # Govern your Bland spend with Floe — no migration
 
-Connect your Bland agent's end-of-call webhook to Floe and you get **every call reconciled onto one ledger** with a **between-call circuit breaker** — without leaving Bland or changing vendors.
+Connect your Bland agent's end-of-call webhook to Floe and you get **every call reconciled onto one ledger** with a **between-call circuit breaker** — then add one **Webhook node** to your Bland Pathway to get **pre-call admission** on top, so an over-budget agent is turned away *before* the conversation starts. No leaving Bland, no changing vendors.
 
-Bland has **no self-serve custom LLM** and there's no adapter recipe for it, so there is **no model-leg step here** — this is a **reconcile-only** flow: connect the webhook, then set a cap. Two steps.
+Bland has **no self-serve custom LLM** and there's no adapter recipe for it, so there is **no model-leg step here**. But Bland is **not** reconcile-only: its **Pathway Webhook node** gives you a real pre-call gate. Three steps — reconcile, admit, cap.
 
 **Prerequisites**
 
 - A Floe account + an **agent key** (`floe_…`) — [dashboard](https://dev-dashboard.floelabs.xyz) or `POST /v1/developer/agents/:agentId/keys`.
 - A Bland agent you can edit.
+- A Bland **Pathway** you can edit — needed for pre-call admission (Step 2).
 
 > This is the same flow documented in depth (all five platforms) in [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md) — this page is the focused Bland quickstart.
 
@@ -2627,17 +2762,49 @@ The response returns the connection URL:
 
 ```json
 {
-  "webhookUrl": "https://credit-api.floelabs.xyz/v1/webhooks/bland/call-end/<token>"
+  "webhookUrl": "https://credit-api.floelabs.xyz/v1/webhooks/bland/call-end/<token>",
+  "preCallUrl": "https://credit-api.floelabs.xyz/v1/webhooks/bland/pre-call/<token>"
 }
 ```
 
 In **Bland**: point the agent's webhook at the returned `webhookUrl`. Bland signs each delivery with the header **`x-webhook-signature`** — a hex **HMAC-SHA256 of the raw request body**, keyed by the signing secret you registered. Floe recomputes it and rejects a bad signature `401`; an unknown or disabled token is `404`. Treat the URL as a secret — rotate with `POST /v1/developer/orchestrators/:id/rotate`.
 
+The same connection also exposes a **`preCallUrl`** (also shown on the Orchestrators connection card) — you'll wire that into your Pathway in **Step 2** for pre-call admission.
+
 **Verify** → end a call. A **reconciled debit** appears on the ledger within moments, attributed to the agent.
 
 ---
 
-## Step 2 — Set a cap
+## Step 2 — Add pre-call admission (Pathway Webhook node)
+
+Bland has no *native* pre-call webhook — but its **Pathway Webhook node** does the job. Make the **first node** of your Bland Pathway a **Webhook node** that asks Floe whether this agent may proceed, and branch on the answer. An over-budget agent is routed straight to hang-up before the conversation begins — **real pre-call enforcement, not just after-the-fact accounting**.
+
+Use the **`preCallUrl`** from the same connection (shown on the Orchestrators connection card, form `https://credit-api.floelabs.xyz/v1/webhooks/bland/pre-call/<token>`).
+
+In your Bland **Pathway**:
+
+1. Add a **Webhook node** as the **first node** of the pathway, set to **POST** the `preCallUrl`.
+2. Enable **"Response Data"** on the node so the pathway can branch on the HTTP status.
+3. Add a **conditional edge** off the node:
+   - **non-200** (e.g. `402`) → route to an **End Call** node.
+   - **200** → continue to your normal first node.
+
+Floe answers:
+
+```jsonc
+// 200 — admit
+{ "allowed": true }
+// 402 — over budget → route to End Call
+{ "allowed": false, "reason": "..." }
+```
+
+**Auth — no signature header.** This pre-call URL authenticates on its **capability token alone** (the `<token>` in the URL). A static Pathway Webhook node can't compute an HMAC and the check is read-only, so there is **no** `x-webhook-signature` here (unlike the Step 1 call-end webhook). Treat the URL as a secret; rotate it with `POST /v1/developer/orchestrators/:id/rotate`.
+
+**Verify** → cross the cap (Step 3), then start a call. The Pathway's first hop gets `402` / `{ "allowed": false }` and routes straight to **End Call** — the conversation never begins.
+
+---
+
+## Step 3 — Set a cap
 
 Add a spend policy with the **kill-switch** action so a breach doesn't just decline one call — it suspends the agent.
 
@@ -2647,23 +2814,23 @@ Add a spend policy with the **kill-switch** action so a breach doesn't just decl
 When the cap is crossed by a reconciled call, **the whole agent is suspended — every subsequent Floe-keyed action is rejected at authentication with `403`** until you resume it.
 
 {% hint style="warning" %}
-Bland has no pre-call webhook, so the breaker works differently here: a reconciled breach suspends the agent, which hard-blocks every subsequent Floe-keyed action — model, STT/TTS, and telephony legs on Floe keys — rather than rejecting the inbound call itself. The more legs you route through Floe, the harder the stop. This is the honest boundary, not a bug.
+Bland has no *native* pre-call webhook, so admission runs through the **Pathway Webhook node** (Step 2) rather than a phone-number hook: the pathway's first hop asks Floe and routes an over-budget agent to **End Call** before the conversation starts. The reconcile-driven `suspend_agent` breaker (this step) is the backstop — a reconciled breach hard-blocks every subsequent Floe-keyed action (model, STT/TTS, telephony legs on Floe keys). Together: the Pathway node stops the *next* call at admission, and the breaker guarantees a runaway dies after call *N*, not call 10,000. The more legs you route through Floe, the harder the stop.
 {% endhint %}
 
-**Verify** → cross the cap → the agent's next Floe-keyed action is denied `403`.
+**Verify** → cross the cap → the next call's Pathway admission node gets `402` (Step 2), and the agent's next Floe-keyed action is denied `403`.
 
 ---
 
 ## Your coverage score
 
-The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **enforceable pre-call vs post-call reconciled vs dark** — across every platform the agent runs on. On Bland, the legs Bland runs are all **post-call reconciled** (no pre-call hook, no custom-LLM to gate); pre-call enforcement comes only from legs you run on **Floe rails** instead, and anything Floe never sees stays **dark**. So the breaker's bite grows the more you move onto Floe rails. See [Coverage Score](../build/coverage-score.md).
+The per-agent **coverage score** in the [dashboard](https://dev-dashboard.floelabs.xyz) shows the split — **enforceable pre-call vs post-call reconciled vs dark** — across every platform the agent runs on. On Bland, the individual legs Bland runs (model, STT, TTS, telephony) are all **post-call reconciled** — there's no custom-LLM or media-path swap to meter a single leg pre-call. What the **Pathway Webhook node** (Step 2) adds is **whole-call admission**: it gates the *call* before it starts even though it can't meter one leg. Anything Floe never sees stays **dark**, so the breaker's bite still grows the more legs you move onto **Floe rails**. See [Coverage Score](../build/coverage-score.md).
 
 To **raise** it, move more legs onto Floe rails — model and STT/TTS via [Floe Inference](../developers/keyless-inference.md), telephony via [Floe Phone](../developers/floe-phone.md). The full path is [Graduate to 100% coverage](../build/migrate-to-full-coverage.md).
 
 ---
 
 {% hint style="info" %}
-**The honest boundary.** On Bland, Floe governs the call **post-call — reconciled onto the ledger, with a between-call circuit breaker** (`suspend_agent`). There is no pre-call hook and no custom-LLM leg to gate, so Floe does **not** deny an inbound call or intervene mid-call: a reconciled breach suspends the agent and hard-blocks its **next** Floe-keyed action. The more legs on Floe keys, the harder that stop lands.
+**The honest boundary.** Bland has no custom-LLM leg to meter and no *native* pre-call webhook, so Floe can't gate a single leg pre-call or interrupt a call in progress. What you **can** do: **admit or reject the whole call before it starts** via the Pathway Webhook node (Step 2), and **reconcile every call post-call** behind a between-call circuit breaker (`suspend_agent`, Step 3). A reconciled breach suspends the agent and hard-blocks its **next** Floe-keyed action; the Pathway node turns the next call away at admission. The more legs on Floe keys, the harder that stop lands. Full cross-platform reference: [Govern Vapi / Retell / Bland / Pipecat / LiveKit](../build/voice-orchestrators.md).
 {% endhint %}
 
 ---
@@ -2674,7 +2841,9 @@ To **raise** it, move more legs onto Floe rails — model and STT/TTS via [Floe 
 |---|---|
 | Webhook returns `401` | The `x-webhook-signature` didn't verify. Confirm Bland is signing with the **same secret** you registered, over the **raw** request body (hex HMAC-SHA256). |
 | Webhook returns `404` | The token in the `webhookUrl` is unknown or the connection is disabled. Re-copy the `webhookUrl` from the connection. |
-| Over-budget agent still placed a call | Bland has **no pre-call hook** — enforcement is post-call. The agent is stopped at its **next Floe-keyed action** after the reconciled breach, not at admission. Route more legs through Floe to tighten the stop. |
+| Over-budget agent still connected the call | If you added the **Pathway Webhook node** (Step 2), confirm it's the **first** node, that "Response Data" is enabled, and that the conditional edge routes **non-200 → End Call**. Without that node, admission is post-call only: the agent is stopped at its **next Floe-keyed action** after the reconciled breach, not at this call's start. |
+| Pathway pre-call node returns `404` (or asks for a signature) | The `<token>` in the `preCallUrl` is unknown or the connection is disabled — re-copy the `preCallUrl` from the connection card. The pre-call URL authenticates on its **token alone**; don't add an `x-webhook-signature` header to this node. |
+| Pathway continues past a budget breach | The conditional edge isn't branching on status. Enable **"Response Data"** and edge on **non-200 → End Call**; Floe returns `402` `{ "allowed": false }` when over budget. |
 | Want model/STT/TTS on Floe rails | Use [Floe Inference](../developers/keyless-inference.md) (BYOK or keyless) so those legs meter on your `floe_` key and fall under the breaker. |
 
 ==============================================================================
@@ -5416,7 +5585,7 @@ A native `floe-agent` adapter for the OpenAI Agents SDK is in development. Until
 }
 ```
 
-Your OpenAI agent now has access to all 65 Floe MCP tools.
+Your OpenAI agent now has access to all 73 Floe MCP tools.
 
 ## Roadmap
 
@@ -5473,7 +5642,7 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
 
 ## What you get
 
-All 65 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, and docs search. See the [MCP Server reference](../developers/mcp-server.md) for the full tool catalog.
+All 73 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, and docs search. See the [MCP Server reference](../developers/mcp-server.md) for the full tool catalog.
 
 Narrow the set with scope params — `?read_only=true` or `?features=spend,pricing,payments` on the endpoint URL.
 
@@ -5659,7 +5828,7 @@ const tools = await getLangChainTools(agentkit);
 
 ### MCP Server (Claude Desktop / Cursor)
 
-Wrap this provider's actions (30 with `floeActionProvider()` alone, 54 with `x402ActionProvider()` too) as MCP tools in Claude Desktop / Cursor. For the hosted server and its 65 tools — including agent lifecycle, key minting, and `x402_pay` — use [MCP Server](mcp-server.md) instead; it needs no wallet provider.
+Wrap this provider's actions (30 with `floeActionProvider()` alone, 54 with `x402ActionProvider()` too) as MCP tools in Claude Desktop / Cursor. For the hosted server and its 73 tools — including agent lifecycle, key minting, and `x402_pay` — use [MCP Server](mcp-server.md) instead; it needs no wallet provider.
 
 ```bash
 npm install @coinbase/agentkit-model-context-protocol @modelcontextprotocol/sdk
@@ -6814,19 +6983,22 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | Subcommand | Does |
 |---|---|
 | `list` | All webhooks on your developer account (max 10) |
-| `create <url> --events <e1,e2,…>` | Register an endpoint — the `whsec_…` signing secret is shown exactly once at creation. `--scope global\|wallet\|loan --scope-value <v>`, `--description <text>` |
+| `create <url> --events <e1,e2,…>` | Register an endpoint — the `whsec_…` signing secret is shown exactly once at creation. `--scope global\|wallet\|agent\|loan --scope-value <v>`, `--description <text>` |
+| `events` | The live event catalog — every subscribable event with its category and scope |
 | `get <id>` | One webhook + delivery success/failure counts |
 | `pause <id>` / `enable <id>` | Toggle deliveries without losing the endpoint config |
 | `delete <id>` | Remove the webhook and stop all deliveries |
 | `test <id>` | Send a signed test event; exits `1` if the delivery fails |
 | `rotate-secret <id>` | Mint a new `whsec_…` (shown once) — the old secret stops verifying immediately |
-| `deliveries <id> [--limit <1-100>]` | Recent delivery attempts; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
+| `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
+| `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: `loan.health_warning` · `loan.expiry_warning` · `loan.liquidated` · `loan.repaid` · `agent.created` · `agent.suspended` · `key.created` · `key.rotated` · `x402.first_settlement` · `provider_key.created` · `provider_key.updated` · `provider_key.deleted`. Scopes: `global` (default) · `wallet --scope-value 0x…` · `loan --scope-value <loanId>`.
+Events: 30 across six categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
-floe webhooks create https://api.acme.com/hooks/floe --events key.rotated,agent.suspended
+floe webhooks create https://api.acme.com/hooks/floe --events call.*,marketplace.payment.settled
 floe webhooks test 3 && echo "endpoint verified"
+floe webhooks logs --status failed --event call.ended --limit 20
 ```
 
 ### `floe models`
@@ -7899,7 +8071,7 @@ A `429` response body looks like:
   "error": "rate_limit_exceeded",
   "reason": "agent_proxy_limit",
   "retry_after_seconds": 7,
-  "limit_per_minute": 30,
+  "limit_per_minute": 3000,
   "remaining": 0
 }
 ```
@@ -7908,7 +8080,7 @@ A `429` response body looks like:
 
 | `reason` | Source | Agent action |
 |----------|--------|--------------|
-| `agent_proxy_limit` | Per-agent token bucket (default 30/min, `RC12_RATE_LIMIT_PER_MINUTE`). The standard `/proxy/fetch` ceiling. | Wait `retry_after_seconds`; safe to retry. |
+| `agent_proxy_limit` | Per-agent token bucket (default 3,000/min, `RC12_RATE_LIMIT_PER_MINUTE`). The standard `/proxy/fetch` ceiling — anti-DoS-sized, since every call settles against your own balance. Raised per account on request. | Wait `retry_after_seconds`; safe to retry. |
 | `ip_rate_limit` | Per-IP sliding window (covers `/proxy/check` and `/x402/estimate`). | Wait, or check if the IP is shared with other callers. |
 | `global_rate_limit` | Server-wide protection on the `/v1/*` surface. | Wait longer — may indicate platform overload. |
 
@@ -8090,7 +8262,7 @@ URL: https://floe-labs.gitbook.io/docs/developers/mcp-server.md
 
 # MCP Server
 
-Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **65 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
+Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **73 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
 
 > **Payments are in MCP now.** `estimate_x402_cost` (or `x402_forecast` for a whole plan) prices the call; `x402_pay` makes it, settles the vendor from the agent's balance, and returns the vendor's response plus the `X-Floe-*` receipt headers. An agent no longer has to leave MCP to spend.
 >
@@ -8145,7 +8317,7 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 
 | Key | Format | Unlocks | Get one |
 |---|---|---|---|
-| Developer key | `floe_live_…` | Developer-key surface (19 tools — lifecycle 12, observability 4, webhooks 3): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
+| Developer key | `floe_live_…` | Developer-key surface (27 tools — lifecycle 12, observability 4, webhooks 11): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks + delivery logs | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
 | Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe init`, or the dashboard |
 | Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
 | None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
@@ -8309,9 +8481,9 @@ Each session is scoped to one agent — balances, spend limits, and webhook subs
 
 ---
 
-## Tools Reference (65)
+## Tools Reference (73)
 
-Sixty-five tools in eight capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
+Seventy-three tools in eight capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
 
 | Group | Tools | What it's for |
 |---|---|---|
@@ -8320,7 +8492,7 @@ Sixty-five tools in eight capability groups. The **Group** name is what you pass
 | [`payments`](#payment-execution-1) | 1 | `x402_pay` — the tool that actually spends |
 | [`pricing`](#cost-preflight-5) | 5 | Price a call or a whole plan before spending |
 | [`spend`](#spend-governance-and-awareness-14) | 14 | Caps, thresholds, merchant allowlist, reputation |
-| [`webhooks`](#webhooks-3) | 3 | Push notifications for account events |
+| [`webhooks`](#webhooks-11) | 11 | Push notifications for account events + the delivery log |
 | [`docs`](#docs-1) | 1 | Search these docs from inside MCP |
 | [`lending`](#advanced-lending-protocol-25) | 25 | On-chain protocol layer (advanced / self-custody) |
 
@@ -8397,17 +8569,25 @@ Agent key. Identity comes from the bearer token, so none of these take a wallet 
 | `list_allowlist` | The agent's allowlist entries and their caps |
 | `get_agent_reputation` | Unified credit reputation: 0-100 score, A-E band, confidence, collateral multiplier. 404 until first computed |
 
-### Webhooks (3)
+### Webhooks (11)
 
 Developer key.
 
 | Tool | Description |
 |------|-------------|
-| `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks |
+| `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
+| `list_webhook_events` | The live event catalog: 30 events with name, title, description, category, and scope |
+| `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
+| `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
+| `delete_webhook` | Delete an endpoint permanently |
 | `test_webhook` | Send a signed test delivery to verify connectivity and signature handling |
+| `rotate_webhook_secret` | Rotate the signing secret. Returns the new secret **once** |
+| `list_webhook_deliveries` | Account-wide delivery log, newest first, cursor-paginated, with filters for endpoint, event, agent wallet, status, time range, and delivery/correlation id. 30-day retention |
+| `get_webhook_delivery` | One delivery in full: the sent payload, the sanitized response body, and the next retry time |
+| `retry_webhook_delivery` | Manually redeliver a failed delivery. Receivers should dedupe on `X-Floe-Delivery-Id` |
 
-Event catalog and signature verification: [Webhooks](webhooks.md).
+Event catalog, delivery semantics, and signature verification: [Webhooks](webhooks.md).
 
 ### Docs (1)
 
@@ -8555,18 +8735,53 @@ check_x402_url    url              string   required  http/https  (no key requir
 
 ```text
 create_webhook    url          string    required  https endpoint, ≤2048 chars
-                  events       string[]  required  ≥1 event name, validated server-side. Catalog:
-                                                   loan.health_warning, loan.expiry_warning,
-                                                   loan.liquidated, loan.repaid, agent.created,
-                                                   key.created, key.rotated, x402.first_settlement
-                  scope        string    default "global"   global | wallet | loan
-                  scope_value  string    conditional  required for wallet (address) and loan (numeric
-                                                      id); rejected for global
+                  events       string[]  required  ≥1 entry: exact event name, "*", or a prefix
+                                                   wildcard like "call.*". Validated server-side —
+                                                   list_webhook_events is the live catalog
+                  scope        string    default "global"   global | wallet | agent | loan
+                  scope_value  string    conditional  required for wallet/agent (0x wallet address —
+                                                      for agent, the agent's WALLET address, not its
+                                                      numeric id) and loan (numeric id); rejected
+                                                      for global
                   description  string    optional  ≤256 chars
 
-list_webhooks     — no arguments —
+list_webhooks          — no arguments —
 
-test_webhook      webhook_id   integer   required  positive, from list_webhooks
+list_webhook_events    — no arguments —
+
+get_webhook            webhook_id   integer   required  positive, from list_webhooks
+
+update_webhook         webhook_id   integer   required  positive, from list_webhooks
+                       url          string    optional  https endpoint, ≤2048 chars
+                       events       string[]  optional  replacement list; names/wildcards as above
+                       active       boolean   optional  false pauses deliveries, true resumes
+                       description  string    optional  ≤256 chars
+                       (at least one of url / events / active / description)
+
+delete_webhook         webhook_id   integer   required  positive, from list_webhooks
+
+test_webhook           webhook_id   integer   required  positive, from list_webhooks
+
+rotate_webhook_secret  webhook_id   integer   required  positive, from list_webhooks
+
+list_webhook_deliveries
+                  endpoint_id   integer  optional  filter to one webhook id
+                  event         string   optional  exact event name (no wildcards)
+                  agent_wallet  string   optional  0x wallet address
+                  status        string   optional  pending | success | failed | retrying
+                  from          string   optional  ISO timestamp lower bound
+                  to            string   optional  ISO timestamp upper bound
+                  id_search     string   optional  matches a delivery id OR correlation id
+                                                   (call session id, job id, loan id)
+                  cursor        string   optional  from a previous response's nextCursor
+                  limit         integer  default 50   1-100
+
+get_webhook_delivery      delivery_id  string  required  the hex delivery id (from
+                                                         list_webhook_deliveries or the
+                                                         X-Floe-Delivery-Id header)
+
+retry_webhook_delivery    webhook_id   integer  required  webhook the delivery belongs to
+                          delivery_id  string   required  the hex delivery id
 ```
 
 ### Docs
@@ -8864,7 +9079,7 @@ URL: https://floe-labs.gitbook.io/docs/developers/webhooks.md
 
 Floe uses webhooks in **two directions**:
 
-1. **Events Floe sends you** — register a URL and Floe POSTs it when something happens on your account (an agent is provisioned, a key is rotated, an agent is suspended by a spend policy). Use these to drive activation checklists, audit logs, and spend alerts instead of polling.
+1. **Events Floe sends you** — register a URL and Floe POSTs it when something happens on your account (an agent is provisioned, a loan nears liquidation, a call ends, a marketplace payment settles). Use these to drive activation checklists, audit logs, and spend alerts instead of polling.
 2. **Cost you report to Floe (Reconcile Mode)** — get every call's cost onto one ledger so one budget spans your whole stack. On **hosted platforms (Vapi, Retell, Bland)** you point the platform's own end-of-call cost webhook at Floe. On **self-hosted stacks (Pipecat, LiveKit)** there is no such webhook — your agent self-reports each call's cost to Floe. Enforcement then differs by platform (see [Connect your orchestrator](#connect-your-orchestrator-reconcile-mode)).
 
 **Base URL:** `https://credit-api.floelabs.xyz`
@@ -8875,20 +9090,93 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
+Floe emits **30 events across six categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
-| Event | Trigger | Key data fields |
-|-------|---------|-----------------|
-| `agent.created` | An agent finished provisioning and is active | `agentId`, `name`, `agentWalletAddress`, `privyWalletAddress`, `fundingMode`, `delegationTxHash`, `actorWallet` |
-| `agent.suspended` | A `suspend_agent` spend policy tripped — a pre-call breach or a reconciled orchestrator cost pushed the agent over its cap | `agentId`, `policyId`, `reason` |
-| `key.created` | A developer or agent API key was minted | `keyId`, `keyType`, `keyPrefix`, `label`, `actorWallet` |
-| `key.rotated` | An API key was rotated | `keyId`, `rotatedFromKeyId`, `keyType`, `keyPrefix`, `label`, `actorWallet` |
-| `provider_key.created` | A stored BYOK provider key was added | `provider`, `keyPrefix`, `label`, `enabled`, `actorWallet` |
-| `provider_key.updated` | A stored BYOK key was enabled or disabled | `provider`, `enabled`, `actorWallet` |
-| `provider_key.deleted` | A stored BYOK key was deleted | `provider`, `actorWallet` |
-| `x402.first_settlement` | An agent's first metered vendor payment settled — an onboarding milestone | `agentId`, `agentWalletAddress`, `url`, `amountRaw`, `txHash` |
+#### Loan events
+
+Routed on the loan ID — subscribe with `loan` scope to follow one loan, or `global` for all.
+
+| Event | Fires when |
+|-------|-----------|
+| `loan.health_warning` | A loan's collateral ratio is approaching its liquidation threshold — top up collateral or repay to avoid liquidation |
+| `loan.expiry_warning` | A loan is nearing its maturity date and is still outstanding |
+| `loan.overdue` | A loan passed its maturity date without being repaid |
+| `loan.liquidated` | A loan was liquidated — collateral was seized to cover the outstanding debt |
+| `loan.repaid` | A loan was fully repaid and closed |
+
+#### Agent lifecycle events
+
+Routed on the agent's wallet address.
+
+| Event | Fires when |
+|-------|-----------|
+| `agent.created` | A new agent finished provisioning and is ready to spend |
+| `agent.suspended` | An agent was suspended by a spend-policy kill-switch — its requests return `403` until you reactivate it |
+| `key.created` | A new API key was minted for an agent |
+| `key.rotated` | An API key was rotated; the previous key no longer authenticates |
+| `x402.first_settlement` | The agent's first x402 payment settled — the activation milestone for a new integration |
+| `provider_key.created` | A bring-your-own provider key was stored |
+| `provider_key.updated` | A stored provider key was enabled, disabled, or otherwise modified |
+| `provider_key.deleted` | A stored provider key was removed |
+
+#### Credit events
+
+Threshold crossings on an agent's credit utilization, routed on the agent's wallet address.
+
+| Event | Fires when |
+|-------|-----------|
+| `credit.warning` | Credit utilization crossed one of your subscribed thresholds from below |
+| `credit.at_limit` | Utilization crossed a threshold at or above 95% — the agent is effectively out of credit |
+| `credit.recovered` | Utilization dropped back below a previously crossed threshold |
+
+#### Call events
+
+Voice call lifecycle, routed on the agent's wallet address. Delivery rows carry the provider call ID (or Twilio CallSid) as the correlation ID.
+
+| Event | Fires when |
+|-------|-----------|
+| `call.started` | A Floe Phone call began (Floe-provisioned numbers only) |
+| `call.ended` | A voice call finished — includes duration and settled cost legs where available |
+| `call.report.ready` | The post-call report is available — a sanitized summary and transcript extract from the voice provider |
+| `call.recording.ready` | The voice provider published a recording URL for a finished call |
+| `call.analyzed` | Post-call analysis arrived from the voice provider (success evaluation, structured data, sentiment) |
+| `call.rejected` | An incoming call was denied before it started (spend policy, budget, or a fail-closed guard) |
+
+#### Phone number events
+
+Rented number lifecycle, routed on the agent's wallet address.
+
+| Event | Fires when |
+|-------|-----------|
+| `phone.number.grace` | A rented phone number entered its expiry grace period — renew it to keep the number |
+| `phone.number.released` | A rented phone number was released and is no longer attached to your agent |
+
+#### Marketplace events
+
+Vendor spend events, routed on the agent's wallet address — except the two `vendor.*` events, which are **platform-wide broadcasts** delivered to every subscribed webhook regardless of scope.
+
+| Event | Fires when |
+|-------|-----------|
+| `marketplace.job.completed` | An asynchronous marketplace vendor job finished — carries the job ID as the correlation ID |
+| `marketplace.payment.settled` | A marketplace request's payment settled — fired per call, on either the x402 or credit rail |
+| `marketplace.spend_cap.hit` | An agent hit a marketplace spend cap and the request was blocked |
+| `marketplace.tripwire.triggered` | A metering anomaly tripwire fired (for example an STT duration divergence) — informational only, nothing is auto-suspended |
+| `marketplace.vendor.degraded` | A marketplace vendor's health probe flipped to down — platform-wide broadcast |
+| `marketplace.vendor.recovered` | A previously degraded marketplace vendor is healthy again — platform-wide broadcast |
 
 Payloads never contain plaintext key material — only a masked `keyPrefix`.
+
+### Wildcard subscriptions
+
+The `events` array accepts three forms:
+
+- **Exact names** — `"call.ended"`, `"loan.liquidated"`
+- **The global wildcard** — `"*"` subscribes to every event
+- **Prefix wildcards** — `"<prefix>.*"`, matched at every dot level: `"call.*"` covers all six call events (including `call.report.ready`), and `"call.report.*"` is also valid
+
+A prefix wildcard must cover at least one catalog event — a typo like `"lone.*"` is rejected at creation instead of silently never matching. Wildcard subscriptions automatically pick up new events added under the prefix later.
 
 ### Scopes
 
@@ -8896,10 +9184,16 @@ Each webhook is scoped to control which events reach it:
 
 | Scope | Description | `scopeValue` |
 |-------|-------------|--------------|
-| `global` | Every event on your account | Not required |
+| `global` | Every event on your account | Not accepted |
 | `wallet` | Only events for one agent | The agent's wallet address (`0x...`) |
+| `agent` | Only events for one agent (synonym of `wallet`) | The agent's **wallet address** (`0x...`) — never the numeric agent ID |
+| `loan` | Only events for one loan | The numeric loan ID |
 
-`wallet` scope filters on the event's agent wallet, so it only narrows the **agent-level** events (`agent.created`, `agent.suspended`, `x402.first_settlement`). Account-level events (`key.*`, `provider_key.*`) carry no agent wallet and are delivered only to `global` webhooks.
+`wallet` and `agent` behave identically — both filter on the event's agent wallet address; `agent` is the value the dashboard's per-agent screen uses. `loan` filters on the event's loan ID. A `global` webhook receives everything it subscribes to.
+
+Two exceptions ignore scope entirely: `marketplace.vendor.degraded` and `marketplace.vendor.recovered` are platform-wide broadcasts sent to every webhook subscribed to them.
+
+> **Scope is immutable.** `scope` and `scopeValue` cannot be changed after creation — to re-scope, delete the webhook and create a new one.
 
 ---
 
@@ -8910,8 +9204,8 @@ Each webhook is scoped to control which events reach it:
 1. Go to [dev-dashboard.floelabs.xyz/webhooks](https://dev-dashboard.floelabs.xyz/webhooks)
 2. Click **Create Webhook**
 3. Enter your endpoint URL (must be HTTPS)
-4. Select the events you want to receive
-5. Choose scope: `global` or `wallet`
+4. Select the events you want to receive — per-category select-all covers a whole group
+5. Choose scope: `global`, `wallet`, `agent`, or `loan`
 6. Click **Create** — your webhook secret is displayed once
 
 Copy the secret immediately. You need it to verify webhook signatures.
@@ -8924,9 +9218,9 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks" \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://your-server.com/webhooks/floe",
-    "events": ["agent.suspended", "x402.first_settlement"],
+    "events": ["agent.suspended", "call.*", "x402.first_settlement"],
     "scope": "global",
-    "description": "Spend + activation alerts"
+    "description": "Spend + call + activation alerts"
   }'
 ```
 
@@ -8937,13 +9231,13 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks" \
   "webhook": {
     "id": 17,
     "url": "https://your-server.com/webhooks/floe",
-    "events": ["agent.suspended", "x402.first_settlement"],
+    "secret": "whsec_a1b2c3d4e5f6...",
+    "events": ["agent.suspended", "call.*", "x402.first_settlement"],
     "scope": "global",
     "scopeValue": null,
-    "description": "Spend + activation alerts",
-    "secret": "whsec_a1b2c3d4e5f6...",
     "active": true,
-    "createdAt": "2026-08-07T12:00:00.000Z"
+    "description": "Spend + call + activation alerts",
+    "createdAt": "2026-08-11T12:00:00.000Z"
   }
 }
 ```
@@ -8954,32 +9248,90 @@ The `secret` is shown only at creation (and when you rotate it). Store it secure
 
 ## API endpoints
 
-All endpoints require a developer key (`floe_live_*`) in the `Authorization` header, or a dashboard session.
+All endpoints require a developer key (`floe_live_*`) in the `Authorization` header, or a dashboard session. Agent keys (`floe_*`) are rejected on every `/v1/developer` route.
 
 ### POST /v1/developer/webhooks
 
-Register a new webhook endpoint.
+Register a new webhook endpoint. Maximum **10 webhooks** per account.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `url` | string | Yes | HTTPS endpoint to receive events |
-| `events` | string[] | Yes | One or more event names from the catalog above |
-| `scope` | string | Yes | `global` or `wallet` |
-| `scopeValue` | string | Conditional | The agent wallet address — required for `wallet` scope |
-| `description` | string | No | Human-readable label |
+| `url` | string | Yes | Endpoint to receive events — max 2048 chars; HTTPS required in production, and private/internal addresses are rejected |
+| `events` | string[] | Yes | At least one event name, `*`, or `<prefix>.*` wildcard |
+| `scope` | string | Yes | `global`, `wallet`, `agent`, or `loan` |
+| `scopeValue` | string | Conditional | Required for non-global scopes: a `0x` wallet address for `wallet`/`agent`, a numeric loan ID for `loan`. Must be absent for `global` |
+| `description` | string | No | Human-readable label, max 256 chars |
 
 ### GET /v1/developer/webhooks
 
-List all registered webhooks.
+List all registered webhooks. Secrets are never included.
 
 ```bash
 curl "https://credit-api.floelabs.xyz/v1/developer/webhooks" \
   -H "Authorization: Bearer floe_live_YOUR_KEY"
 ```
 
+### GET /v1/developer/webhooks/events
+
+The live event catalog — every subscribable event with its name, title, description, category, and scope dimension. This is the source of truth for what you can subscribe to; the CLI equivalent is `floe webhooks events`.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhooks/events" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+**Response (truncated):**
+
+```json
+{
+  "events": [
+    {
+      "name": "call.ended",
+      "title": "Call ended",
+      "description": "A voice call finished. Includes duration and settled cost legs where available.",
+      "category": "call",
+      "scope": "agent"
+    }
+  ]
+}
+```
+
+### GET /v1/developer/webhooks/:id
+
+Fetch a single webhook, including a rollup of its delivery outcomes.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhooks/17" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "webhook": {
+    "id": 17,
+    "url": "https://your-server.com/webhooks/floe",
+    "events": ["agent.suspended", "call.*", "x402.first_settlement"],
+    "scope": "global",
+    "scopeValue": null,
+    "active": true,
+    "description": "Spend + call + activation alerts",
+    "createdAt": "2026-08-11T12:00:00.000Z"
+  },
+  "deliveryStats": {
+    "pending": 0,
+    "success": 240,
+    "failed": 2,
+    "retrying": 1,
+    "total": 243
+  }
+}
+```
+
 ### PATCH /v1/developer/webhooks/:id
 
-Update a webhook's URL, events, active state, or description.
+Update a webhook's `url`, `events`, `active` state, or `description`. `scope` and `scopeValue` are not updatable — recreate the webhook to change them. URL updates pass the same HTTPS and private-address checks as creation.
 
 ```bash
 curl -X PATCH "https://credit-api.floelabs.xyz/v1/developer/webhooks/17" \
@@ -9002,7 +9354,7 @@ curl -X DELETE "https://credit-api.floelabs.xyz/v1/developer/webhooks/17" \
 
 ### POST /v1/developer/webhooks/:id/test
 
-Send a test event to your endpoint. The test payload uses realistic data but does not correspond to a real event.
+Send a test delivery to your endpoint. The payload's `event` is `"test"` and uses realistic-looking placeholder data. Test deliveries are one-shot — a failed test is never retried (and cannot be retried manually).
 
 ```bash
 curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/test" \
@@ -9011,7 +9363,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/test" \
 
 ### POST /v1/developer/webhooks/:id/rotate-secret
 
-Generate a new HMAC secret. The old secret stops working immediately. Update your server's verification logic before rotating in production.
+Generate a new HMAC secret. The old secret stops working immediately, and the new one is returned only in this response. Update your server's verification logic before rotating in production.
 
 ```bash
 curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/rotate-secret" \
@@ -9026,10 +9378,10 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/rotate-se
 
 ### GET /v1/developer/webhooks/:id/deliveries
 
-View the delivery log for a webhook — recent attempts, status codes, and timestamps.
+Recent deliveries for one endpoint. Query params: `limit` (default 50, max 100) and `offset`.
 
 ```bash
-curl "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/deliveries" \
+curl "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/deliveries?limit=20" \
   -H "Authorization: Bearer floe_live_YOUR_KEY"
 ```
 
@@ -9046,13 +9398,99 @@ curl "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/deliveries" \
       "status": "success",
       "attempt": 1,
       "error": null,
-      "createdAt": "2026-08-07T14:30:00.000Z"
+      "createdAt": "2026-08-11T14:30:00.000Z"
     }
   ]
 }
 ```
 
-Re-drive a failed delivery with `POST /v1/developer/webhooks/:id/deliveries/:deliveryId/retry`.
+### POST /v1/developer/webhooks/:id/deliveries/:deliveryId/retry
+
+Manually re-send a past delivery. The retry is signed with a fresh timestamp so your replay-protection window accepts it, and it keeps the original delivery's `agentWallet` and correlation ID so it stays findable under the same log filters. Test deliveries cannot be retried.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/deliveries/del_xyz789/retry" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+---
+
+## Delivery logs
+
+Beyond the per-endpoint list, Floe keeps an **account-wide delivery log** across all your webhooks — the same data behind the dashboard's Logs tab. Use it to answer "did my server get the `call.ended` for this call?" without knowing which endpoint it went to. The CLI equivalent is `floe webhooks logs`, which takes the same filters.
+
+Delivery logs are retained for **30 days**.
+
+### GET /v1/developer/webhook-deliveries
+
+Filterable, cursor-paginated log of every delivery on your account, newest first.
+
+| Query param | Description |
+|-------------|-------------|
+| `endpoint` | Numeric webhook ID — only deliveries to that endpoint |
+| `event` | Exact event name (e.g. `call.ended` — wildcards apply to subscriptions, not this filter) |
+| `agent` | A `0x` agent wallet address |
+| `status` | `pending`, `success`, `failed`, or `retrying` |
+| `from` / `to` | ISO 8601 timestamp bounds on the delivery time |
+| `id` | Searches both delivery IDs **and** correlation IDs — pass a call session ID, Twilio CallSid, or job ID to find every delivery for that call or job |
+| `cursor` | Opaque pagination cursor — pass a previous page's `nextCursor` verbatim |
+| `limit` | Page size, default 50, max 100 |
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhook-deliveries?limit=20" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+A filtered query — failed `call.ended` deliveries for one agent:
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhook-deliveries?status=failed&event=call.ended&agent=0xYourAgentWallet" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "deliveries": [
+    {
+      "id": 412,
+      "deliveryId": "a1b2c3d4e5f6...",
+      "webhookId": 17,
+      "webhookUrl": "https://your-server.com/webhooks/floe",
+      "event": "call.ended",
+      "status": "failed",
+      "statusCode": 500,
+      "attempt": 3,
+      "error": "HTTP 500",
+      "agentWallet": "0xyouragentwallet...",
+      "correlationId": "CA9d3f...",
+      "createdAt": "2026-08-11T14:30:00.000Z"
+    }
+  ],
+  "nextCursor": "eyJ0cyI6Ii4uLiIsImlkIjo0MTJ9",
+  "hasMore": true
+}
+```
+
+List rows are deliberately lightweight — they carry no payloads or response bodies. When `hasMore` is `true`, pass `nextCursor` back as `cursor` for the next page.
+
+### GET /v1/developer/webhook-deliveries/:deliveryId
+
+Full detail for one delivery. The path parameter is the hex `deliveryId` (the value in `X-Floe-Delivery-Id` and in list rows) — **not** the numeric row `id`.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhook-deliveries/a1b2c3d4e5f6..." \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+The response includes everything from the list row plus:
+
+| Field | Description |
+|-------|-------------|
+| `payload` | Exactly what was POSTed to your endpoint |
+| `responseBody` | Your server's response body, sanitized and capped at 1 KB |
+| `nextRetryAt` | When the next automatic retry is scheduled, if the delivery is `retrying` |
 
 ---
 
@@ -9066,9 +9504,11 @@ Every delivery is a JSON POST to your endpoint. Fields are spread at the top lev
   "agentId": "0xAgentWalletAddress...",
   "policyId": 12,
   "reason": "policy:12",
-  "firedAt": "2026-08-07T14:30:00.000Z"
+  "firedAt": "2026-08-11T14:30:00.000Z"
 }
 ```
+
+Alongside each delivery, the log records the agent wallet and a correlation ID (a call session ID, Twilio CallSid, job ID, or loan ID) so you can trace a delivery back to the thing that fired it.
 
 ---
 
@@ -9090,8 +9530,8 @@ HMAC-SHA256(secret, "{X-Floe-Timestamp}.{raw_request_body}")
 
 Always verify the signature against the **raw** request body before processing the event. This prevents forged requests from reaching your business logic.
 
-### Node.js verification
-
+{% tabs %}
+{% tab title="TypeScript" %}
 ```typescript
 import crypto from "crypto";
 
@@ -9118,9 +9558,9 @@ function verifyWebhookSignature(
   );
 }
 ```
+{% endtab %}
 
-### Python verification
-
+{% tab title="Python" %}
 ```python
 import hmac
 import hashlib
@@ -9145,6 +9585,8 @@ def verify_webhook_signature(
 
     return hmac.compare_digest(signature, expected)
 ```
+{% endtab %}
+{% endtabs %}
 
 See the full handler examples: [TypeScript](https://github.com/Floe-Labs/floe-labs-docs/blob/main/examples/webhook-handler.ts) | [Python](https://github.com/Floe-Labs/floe-labs-docs/blob/main/examples/webhook-handler.py)
 
@@ -9153,11 +9595,12 @@ See the full handler examples: [TypeScript](https://github.com/Floe-Labs/floe-la
 ## Delivery guarantees
 
 - **At-least-once delivery.** Your endpoint may receive the same event more than once. Use `X-Floe-Delivery-Id` for idempotency.
-- **3 attempts maximum.** If your endpoint does not respond with a `2xx` status code, Floe retries with backoff.
-- **Retry schedule:** attempt 1 immediately, attempt 2 after 1 minute, attempt 3 after 5 minutes.
-- **Delivery states:** `retrying` (attempts in flight) → `success` (2xx received) or `failed` (all attempts exhausted).
+- **10-second timeout.** Your endpoint must respond within 10 seconds or the attempt counts as failed. Return `2xx` immediately and process asynchronously.
+- **3 attempts maximum.** If your endpoint does not respond with a `2xx` status code, Floe retries: attempt 2 fires 60 seconds after the first failure, attempt 3 fires 300 seconds after that.
+- **Delivery statuses:** `pending` (queued) → `success` (2xx received), or `retrying` (a failed attempt with retries remaining) → `success` or `failed` (all 3 attempts exhausted).
+- **Test deliveries are one-shot.** A failed test stays `failed` — it is never retried, automatically or manually.
 
-After 3 failed attempts the delivery is marked `failed`. Inspect failures in the dashboard or via `GET /v1/developer/webhooks/:id/deliveries`.
+After a delivery goes `failed`, re-drive it manually with [`POST /v1/developer/webhooks/:id/deliveries/:deliveryId/retry`](#post-v1developerwebhooksiddeliveriesdeliveryidretry). Inspect failures in the dashboard, the per-endpoint list, or the account-wide [delivery log](#delivery-logs) — logs are retained for 30 days.
 
 ---
 
@@ -9272,10 +9715,11 @@ For quick testing without deploying a server:
 ## Best practices
 
 - **Always verify signatures.** Never process a payload without checking `X-Floe-Signature` against the raw body. This prevents spoofed requests.
-- **Respond with `2xx` quickly.** Return a `200` as soon as you receive the payload. Process the event asynchronously in a background job or queue.
+- **Respond with `2xx` quickly.** Return a `200` as soon as you receive the payload — the delivery times out after 10 seconds. Process the event asynchronously in a background job or queue.
 - **Implement idempotency.** Store `X-Floe-Delivery-Id` and skip duplicates. Retries can send the same event more than once.
 - **Use HTTPS endpoints.** Floe only delivers to HTTPS URLs in production.
-- **Monitor delivery logs.** Check the dashboard or `GET /v1/developer/webhooks/:id/deliveries` periodically for failed deliveries.
+- **Monitor delivery logs.** Check the dashboard, `GET /v1/developer/webhooks/:id/deliveries`, or the account-wide `GET /v1/developer/webhook-deliveries` log (`floe webhooks logs`) periodically for failed deliveries.
+- **Prefer wildcards over long event lists.** Subscribing to `call.*` keeps you current as new call events ship; enumerate exact names only when you need to exclude some.
 - **Rotate secrets with a short window.** `rotate-secret` returns the new secret and invalidates the old one immediately — there is no overlap period. Install the returned secret in your verifier right away; any deliveries signed with the old secret during the swap fail signature and retry (3 attempts over ~6 minutes), so keep the window short.
 
 ## Next steps
@@ -9283,6 +9727,7 @@ For quick testing without deploying a server:
 - **[Voice orchestrators](../build/voice-orchestrators.md)** — the full connect-and-reconcile walkthrough for Vapi / Retell / Bland / Pipecat / LiveKit.
 - **[Webhook Handler (TypeScript)](https://github.com/Floe-Labs/floe-labs-docs/blob/main/examples/webhook-handler.ts)** — Express.js example with signature verification.
 - **[Webhook Handler (Python)](https://github.com/Floe-Labs/floe-labs-docs/blob/main/examples/webhook-handler.py)** — Flask example with HMAC verification.
+- **[Floe CLI](cli.md)** — `floe webhooks` manages endpoints, tests deliveries, and tails logs from the terminal.
 - **[API Keys](api-keys.md)** — create your developer key to register webhooks.
 - **[Developer Dashboard](developer-dashboard.md)** — manage webhooks through the web UI.
 
@@ -10985,24 +11430,28 @@ Endpoints: `POST /v1/developer/agents`, `POST/GET/DELETE /v1/developer/agents/:a
 
 ## Webhooks
 
-Endpoints: `POST/GET/PATCH/DELETE /v1/developer/webhooks`, `POST /v1/developer/webhooks/:id/rotate-secret`, `POST /v1/developer/webhooks/:id/test`
+Endpoints: `POST/GET/PATCH/DELETE /v1/developer/webhooks`, `GET /v1/developer/webhooks/events`, `POST /v1/developer/webhooks/:id/rotate-secret`, `POST /v1/developer/webhooks/:id/test`, `GET /v1/developer/webhooks/:id/deliveries` (+ `/:deliveryId/retry`), `GET /v1/developer/webhook-deliveries` (+ `/:deliveryId`)
 
 | Status | `error` | Cause | Fix |
 |---|---|---|---|
 | 400 | `url must be HTTPS` | Webhook URL is plain HTTP | Use HTTPS (enforced even for localhost in non-dev) |
 | 400 | `blocked_destination` | Webhook URL resolved to a private IP or blocked range (SSRF guard) | Use a public HTTPS endpoint, or set `SSRF_ALLOW_LOCALHOST=1` for local development |
-| 400 | `events must be a non-empty array` | No events selected | Pick at least one |
-| 400 | `Invalid scope` | Scope is not `global` / `wallet` / `loan` | Use one of the three |
-| 400 | `scopeValue required for non-global scope` | `scope` is `wallet` or `loan` but `scopeValue` is missing | Supply the wallet address or loan ID |
+| 400 | `events must be a non-empty array` | No events selected | Pick at least one — exact names, `*`, or a prefix wildcard like `call.*` that matches at least one catalog event (`GET /webhooks/events`) |
+| 400 | `invalid_scope` | Scope is not `global` / `wallet` / `agent` / `loan`, or the scopeValue doesn't fit it | `wallet`/`agent` take a `0x` wallet address (for `agent`, the agent's **wallet** address, not its numeric id); `loan` takes a numeric loan id; `global` takes none |
+| 400 | `scopeValue required for non-global scope` | `scope` is `wallet`, `agent`, or `loan` but `scopeValue` is missing | Supply the wallet address or loan ID |
+| 400 | `Limit exceeded` | The account already has 10 webhooks | Delete one first (max 10 per account) |
+| 400 | `invalid_filter` | A `GET /webhook-deliveries` filter is malformed (non-numeric `endpoint`, bad `agent` address, unknown `status`, unparseable `from`/`to`) | Fix the named filter; the error says which |
+| 400 | `invalid_cursor` | `cursor` is not an opaque value from a previous response | Pass `nextCursor` verbatim, or drop it to restart from the newest rows |
 | 404 | `Webhook not found` | Editing/deleting a webhook that doesn't belong to you | Check ownership |
+| 404 | `delivery_not_found` | Unknown `deliveryId`, a delivery on someone else's webhook, or a row past the 30-day retention window | List via `GET /v1/developer/webhook-deliveries` and use the hex `deliveryId` (not the numeric row id) |
 
-### Clearing scope
+### Scope is immutable
 
-To convert a `wallet`-scoped or `loan`-scoped webhook back to `global`, PATCH with `{ "scope": "global", "scopeValue": null }`. Omitting `scopeValue` keeps the existing value; explicit `null` clears it.
+`PATCH /v1/developer/webhooks/:id` updates `url`, `events`, `active`, and `description` only — `scope`/`scopeValue` cannot be changed after creation. To re-scope an endpoint, delete it and create a new one.
 
 ### Delivery errors (on your server's side)
 
-If Floe cannot deliver a webhook, the delivery row is marked `failed` and retried with exponential backoff. Common causes visible in the webhook detail page:
+If Floe cannot deliver a webhook, the delivery is retried up to 3 total attempts (1 minute, then 5 minutes after the first failure) and then marked `failed`; test deliveries are never retried. Common causes visible in the delivery log:
 
 - **`HTTP 5xx from target`** — your server returned an error. Fix your handler; Floe will retry.
 - **`Signature verification expected but no secret on webhook`** — webhook record lost its secret. Rotate via `/rotate-secret`.
@@ -11320,9 +11769,22 @@ URL: https://floe-labs.gitbook.io/docs/reference/changelog.md
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **65 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **73 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
+
+Developer webhooks grew from 8 loan/key events to a **30-event catalog** with an account-wide delivery log, and every surface — API, dashboard, CLI, MCP — now speaks the same contract.
+
+* **30 events in six categories** — loan (5), agent/key lifecycle (8), credit utilization (3), voice calls (6: `call.started` … `call.rejected`), phone numbers (2), and marketplace (6: `marketplace.job.completed`, `marketplace.payment.settled`, spend-cap/tripwire, vendor `degraded`/`recovered` platform broadcasts). Subscribe to exact names, `*`, or prefix wildcards like `call.*`; `GET /v1/developer/webhooks/events` (or `floe webhooks events`) serves the live catalog so it never goes stale in your code.
+* **A fourth scope: `agent`.** Scope an endpoint to one agent by its **wallet address** — what the dashboard's per-agent webhooks tab creates. `global`, `wallet`, and `loan` unchanged; scope is immutable after creation.
+* **Account-wide delivery logs.** `GET /v1/developer/webhook-deliveries` lists every delivery across endpoints, newest first, with cursor pagination and filters (endpoint, event, agent wallet, status, time range, delivery/correlation id); the per-delivery detail returns the exact payload sent and the sanitized response body. 30-day retention. In the dashboard: Webhooks → Logs tab; in the CLI: `floe webhooks logs`.
+* **Failed deliveries now retry** — up to 3 attempts (+1 min, +5 min) for every event source, not just loan events. Receivers should dedupe on the `X-Floe-Delivery-Id` header; test deliveries stay one-shot.
+* **MCP server 0.4.0 — 73 tools (was 65).** The `webhooks` group grew 3 → 11: `list_webhook_events`, `get_webhook`, `update_webhook`, `delete_webhook`, `rotate_webhook_secret`, `list_webhook_deliveries`, `get_webhook_delivery`, `retry_webhook_delivery`, and `create_webhook` learned the `agent` scope + wildcards.
+* **CLI 0.3.0** adds `floe webhooks events` and `floe webhooks logs`, and `--scope agent` on create.
+
+→ [Webhooks](developers/webhooks.md) · [MCP Server](developers/mcp-server.md) · [Floe CLI](developers/cli.md)
 
 ### v1.20.0 — `@floelabs/cli` 0.2.0: full dashboard parity, 32 commands (August 2026)
 

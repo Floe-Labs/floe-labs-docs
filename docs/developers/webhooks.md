@@ -6,7 +6,7 @@ icon: webhook
 
 Floe uses webhooks in **two directions**:
 
-1. **Events Floe sends you** — register a URL and Floe POSTs it when something happens on your account (an agent is provisioned, a key is rotated, an agent is suspended by a spend policy). Use these to drive activation checklists, audit logs, and spend alerts instead of polling.
+1. **Events Floe sends you** — register a URL and Floe POSTs it when something happens on your account (an agent is provisioned, a loan nears liquidation, a call ends, a marketplace payment settles). Use these to drive activation checklists, audit logs, and spend alerts instead of polling.
 2. **Cost you report to Floe (Reconcile Mode)** — get every call's cost onto one ledger so one budget spans your whole stack. On **hosted platforms (Vapi, Retell, Bland)** you point the platform's own end-of-call cost webhook at Floe. On **self-hosted stacks (Pipecat, LiveKit)** there is no such webhook — your agent self-reports each call's cost to Floe. Enforcement then differs by platform (see [Connect your orchestrator](#connect-your-orchestrator-reconcile-mode)).
 
 **Base URL:** `https://credit-api.floelabs.xyz`
@@ -17,20 +17,93 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
+Floe emits **30 events across six categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
-| Event | Trigger | Key data fields |
-|-------|---------|-----------------|
-| `agent.created` | An agent finished provisioning and is active | `agentId`, `name`, `agentWalletAddress`, `privyWalletAddress`, `fundingMode`, `delegationTxHash`, `actorWallet` |
-| `agent.suspended` | A `suspend_agent` spend policy tripped — a pre-call breach or a reconciled orchestrator cost pushed the agent over its cap | `agentId`, `policyId`, `reason` |
-| `key.created` | A developer or agent API key was minted | `keyId`, `keyType`, `keyPrefix`, `label`, `actorWallet` |
-| `key.rotated` | An API key was rotated | `keyId`, `rotatedFromKeyId`, `keyType`, `keyPrefix`, `label`, `actorWallet` |
-| `provider_key.created` | A stored BYOK provider key was added | `provider`, `keyPrefix`, `label`, `enabled`, `actorWallet` |
-| `provider_key.updated` | A stored BYOK key was enabled or disabled | `provider`, `enabled`, `actorWallet` |
-| `provider_key.deleted` | A stored BYOK key was deleted | `provider`, `actorWallet` |
-| `x402.first_settlement` | An agent's first metered vendor payment settled — an onboarding milestone | `agentId`, `agentWalletAddress`, `url`, `amountRaw`, `txHash` |
+#### Loan events
+
+Routed on the loan ID — subscribe with `loan` scope to follow one loan, or `global` for all.
+
+| Event | Fires when |
+|-------|-----------|
+| `loan.health_warning` | A loan's collateral ratio is approaching its liquidation threshold — top up collateral or repay to avoid liquidation |
+| `loan.expiry_warning` | A loan is nearing its maturity date and is still outstanding |
+| `loan.overdue` | A loan passed its maturity date without being repaid |
+| `loan.liquidated` | A loan was liquidated — collateral was seized to cover the outstanding debt |
+| `loan.repaid` | A loan was fully repaid and closed |
+
+#### Agent lifecycle events
+
+Routed on the agent's wallet address.
+
+| Event | Fires when |
+|-------|-----------|
+| `agent.created` | A new agent finished provisioning and is ready to spend |
+| `agent.suspended` | An agent was suspended by a spend-policy kill-switch — its requests return `403` until you reactivate it |
+| `key.created` | A new API key was minted for an agent |
+| `key.rotated` | An API key was rotated; the previous key no longer authenticates |
+| `x402.first_settlement` | The agent's first x402 payment settled — the activation milestone for a new integration |
+| `provider_key.created` | A bring-your-own provider key was stored |
+| `provider_key.updated` | A stored provider key was enabled, disabled, or otherwise modified |
+| `provider_key.deleted` | A stored provider key was removed |
+
+#### Credit events
+
+Threshold crossings on an agent's credit utilization, routed on the agent's wallet address.
+
+| Event | Fires when |
+|-------|-----------|
+| `credit.warning` | Credit utilization crossed one of your subscribed thresholds from below |
+| `credit.at_limit` | Utilization crossed a threshold at or above 95% — the agent is effectively out of credit |
+| `credit.recovered` | Utilization dropped back below a previously crossed threshold |
+
+#### Call events
+
+Voice call lifecycle, routed on the agent's wallet address. Delivery rows carry the provider call ID (or Twilio CallSid) as the correlation ID.
+
+| Event | Fires when |
+|-------|-----------|
+| `call.started` | A Floe Phone call began (Floe-provisioned numbers only) |
+| `call.ended` | A voice call finished — includes duration and settled cost legs where available |
+| `call.report.ready` | The post-call report is available — a sanitized summary and transcript extract from the voice provider |
+| `call.recording.ready` | The voice provider published a recording URL for a finished call |
+| `call.analyzed` | Post-call analysis arrived from the voice provider (success evaluation, structured data, sentiment) |
+| `call.rejected` | An incoming call was denied before it started (spend policy, budget, or a fail-closed guard) |
+
+#### Phone number events
+
+Rented number lifecycle, routed on the agent's wallet address.
+
+| Event | Fires when |
+|-------|-----------|
+| `phone.number.grace` | A rented phone number entered its expiry grace period — renew it to keep the number |
+| `phone.number.released` | A rented phone number was released and is no longer attached to your agent |
+
+#### Marketplace events
+
+Vendor spend events, routed on the agent's wallet address — except the two `vendor.*` events, which are **platform-wide broadcasts** delivered to every subscribed webhook regardless of scope.
+
+| Event | Fires when |
+|-------|-----------|
+| `marketplace.job.completed` | An asynchronous marketplace vendor job finished — carries the job ID as the correlation ID |
+| `marketplace.payment.settled` | A marketplace request's payment settled — fired per call, on either the x402 or credit rail |
+| `marketplace.spend_cap.hit` | An agent hit a marketplace spend cap and the request was blocked |
+| `marketplace.tripwire.triggered` | A metering anomaly tripwire fired (for example an STT duration divergence) — informational only, nothing is auto-suspended |
+| `marketplace.vendor.degraded` | A marketplace vendor's health probe flipped to down — platform-wide broadcast |
+| `marketplace.vendor.recovered` | A previously degraded marketplace vendor is healthy again — platform-wide broadcast |
 
 Payloads never contain plaintext key material — only a masked `keyPrefix`.
+
+### Wildcard subscriptions
+
+The `events` array accepts three forms:
+
+- **Exact names** — `"call.ended"`, `"loan.liquidated"`
+- **The global wildcard** — `"*"` subscribes to every event
+- **Prefix wildcards** — `"<prefix>.*"`, matched at every dot level: `"call.*"` covers all six call events (including `call.report.ready`), and `"call.report.*"` is also valid
+
+A prefix wildcard must cover at least one catalog event — a typo like `"lone.*"` is rejected at creation instead of silently never matching. Wildcard subscriptions automatically pick up new events added under the prefix later.
 
 ### Scopes
 
@@ -38,10 +111,16 @@ Each webhook is scoped to control which events reach it:
 
 | Scope | Description | `scopeValue` |
 |-------|-------------|--------------|
-| `global` | Every event on your account | Not required |
+| `global` | Every event on your account | Not accepted |
 | `wallet` | Only events for one agent | The agent's wallet address (`0x...`) |
+| `agent` | Only events for one agent (synonym of `wallet`) | The agent's **wallet address** (`0x...`) — never the numeric agent ID |
+| `loan` | Only events for one loan | The numeric loan ID |
 
-`wallet` scope filters on the event's agent wallet, so it only narrows the **agent-level** events (`agent.created`, `agent.suspended`, `x402.first_settlement`). Account-level events (`key.*`, `provider_key.*`) carry no agent wallet and are delivered only to `global` webhooks.
+`wallet` and `agent` behave identically — both filter on the event's agent wallet address; `agent` is the value the dashboard's per-agent screen uses. `loan` filters on the event's loan ID. A `global` webhook receives everything it subscribes to.
+
+Two exceptions ignore scope entirely: `marketplace.vendor.degraded` and `marketplace.vendor.recovered` are platform-wide broadcasts sent to every webhook subscribed to them.
+
+> **Scope is immutable.** `scope` and `scopeValue` cannot be changed after creation — to re-scope, delete the webhook and create a new one.
 
 ---
 
@@ -52,8 +131,8 @@ Each webhook is scoped to control which events reach it:
 1. Go to [dev-dashboard.floelabs.xyz/webhooks](https://dev-dashboard.floelabs.xyz/webhooks)
 2. Click **Create Webhook**
 3. Enter your endpoint URL (must be HTTPS)
-4. Select the events you want to receive
-5. Choose scope: `global` or `wallet`
+4. Select the events you want to receive — per-category select-all covers a whole group
+5. Choose scope: `global`, `wallet`, `agent`, or `loan`
 6. Click **Create** — your webhook secret is displayed once
 
 Copy the secret immediately. You need it to verify webhook signatures.
@@ -66,9 +145,9 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks" \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://your-server.com/webhooks/floe",
-    "events": ["agent.suspended", "x402.first_settlement"],
+    "events": ["agent.suspended", "call.*", "x402.first_settlement"],
     "scope": "global",
-    "description": "Spend + activation alerts"
+    "description": "Spend + call + activation alerts"
   }'
 ```
 
@@ -79,13 +158,13 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks" \
   "webhook": {
     "id": 17,
     "url": "https://your-server.com/webhooks/floe",
-    "events": ["agent.suspended", "x402.first_settlement"],
+    "secret": "whsec_a1b2c3d4e5f6...",
+    "events": ["agent.suspended", "call.*", "x402.first_settlement"],
     "scope": "global",
     "scopeValue": null,
-    "description": "Spend + activation alerts",
-    "secret": "whsec_a1b2c3d4e5f6...",
     "active": true,
-    "createdAt": "2026-08-07T12:00:00.000Z"
+    "description": "Spend + call + activation alerts",
+    "createdAt": "2026-08-11T12:00:00.000Z"
   }
 }
 ```
@@ -96,32 +175,90 @@ The `secret` is shown only at creation (and when you rotate it). Store it secure
 
 ## API endpoints
 
-All endpoints require a developer key (`floe_live_*`) in the `Authorization` header, or a dashboard session.
+All endpoints require a developer key (`floe_live_*`) in the `Authorization` header, or a dashboard session. Agent keys (`floe_*`) are rejected on every `/v1/developer` route.
 
 ### POST /v1/developer/webhooks
 
-Register a new webhook endpoint.
+Register a new webhook endpoint. Maximum **10 webhooks** per account.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `url` | string | Yes | HTTPS endpoint to receive events |
-| `events` | string[] | Yes | One or more event names from the catalog above |
-| `scope` | string | Yes | `global` or `wallet` |
-| `scopeValue` | string | Conditional | The agent wallet address — required for `wallet` scope |
-| `description` | string | No | Human-readable label |
+| `url` | string | Yes | Endpoint to receive events — max 2048 chars; HTTPS required in production, and private/internal addresses are rejected |
+| `events` | string[] | Yes | At least one event name, `*`, or `<prefix>.*` wildcard |
+| `scope` | string | Yes | `global`, `wallet`, `agent`, or `loan` |
+| `scopeValue` | string | Conditional | Required for non-global scopes: a `0x` wallet address for `wallet`/`agent`, a numeric loan ID for `loan`. Must be absent for `global` |
+| `description` | string | No | Human-readable label, max 256 chars |
 
 ### GET /v1/developer/webhooks
 
-List all registered webhooks.
+List all registered webhooks. Secrets are never included.
 
 ```bash
 curl "https://credit-api.floelabs.xyz/v1/developer/webhooks" \
   -H "Authorization: Bearer floe_live_YOUR_KEY"
 ```
 
+### GET /v1/developer/webhooks/events
+
+The live event catalog — every subscribable event with its name, title, description, category, and scope dimension. This is the source of truth for what you can subscribe to; the CLI equivalent is `floe webhooks events`.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhooks/events" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+**Response (truncated):**
+
+```json
+{
+  "events": [
+    {
+      "name": "call.ended",
+      "title": "Call ended",
+      "description": "A voice call finished. Includes duration and settled cost legs where available.",
+      "category": "call",
+      "scope": "agent"
+    }
+  ]
+}
+```
+
+### GET /v1/developer/webhooks/:id
+
+Fetch a single webhook, including a rollup of its delivery outcomes.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhooks/17" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "webhook": {
+    "id": 17,
+    "url": "https://your-server.com/webhooks/floe",
+    "events": ["agent.suspended", "call.*", "x402.first_settlement"],
+    "scope": "global",
+    "scopeValue": null,
+    "active": true,
+    "description": "Spend + call + activation alerts",
+    "createdAt": "2026-08-11T12:00:00.000Z"
+  },
+  "deliveryStats": {
+    "pending": 0,
+    "success": 240,
+    "failed": 2,
+    "retrying": 1,
+    "total": 243
+  }
+}
+```
+
 ### PATCH /v1/developer/webhooks/:id
 
-Update a webhook's URL, events, active state, or description.
+Update a webhook's `url`, `events`, `active` state, or `description`. `scope` and `scopeValue` are not updatable — recreate the webhook to change them. URL updates pass the same HTTPS and private-address checks as creation.
 
 ```bash
 curl -X PATCH "https://credit-api.floelabs.xyz/v1/developer/webhooks/17" \
@@ -144,7 +281,7 @@ curl -X DELETE "https://credit-api.floelabs.xyz/v1/developer/webhooks/17" \
 
 ### POST /v1/developer/webhooks/:id/test
 
-Send a test event to your endpoint. The test payload uses realistic data but does not correspond to a real event.
+Send a test delivery to your endpoint. The payload's `event` is `"test"` and uses realistic-looking placeholder data. Test deliveries are one-shot — a failed test is never retried (and cannot be retried manually).
 
 ```bash
 curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/test" \
@@ -153,7 +290,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/test" \
 
 ### POST /v1/developer/webhooks/:id/rotate-secret
 
-Generate a new HMAC secret. The old secret stops working immediately. Update your server's verification logic before rotating in production.
+Generate a new HMAC secret. The old secret stops working immediately, and the new one is returned only in this response. Update your server's verification logic before rotating in production.
 
 ```bash
 curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/rotate-secret" \
@@ -168,10 +305,10 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/rotate-se
 
 ### GET /v1/developer/webhooks/:id/deliveries
 
-View the delivery log for a webhook — recent attempts, status codes, and timestamps.
+Recent deliveries for one endpoint. Query params: `limit` (default 50, max 100) and `offset`.
 
 ```bash
-curl "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/deliveries" \
+curl "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/deliveries?limit=20" \
   -H "Authorization: Bearer floe_live_YOUR_KEY"
 ```
 
@@ -188,13 +325,99 @@ curl "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/deliveries" \
       "status": "success",
       "attempt": 1,
       "error": null,
-      "createdAt": "2026-08-07T14:30:00.000Z"
+      "createdAt": "2026-08-11T14:30:00.000Z"
     }
   ]
 }
 ```
 
-Re-drive a failed delivery with `POST /v1/developer/webhooks/:id/deliveries/:deliveryId/retry`.
+### POST /v1/developer/webhooks/:id/deliveries/:deliveryId/retry
+
+Manually re-send a past delivery. The retry is signed with a fresh timestamp so your replay-protection window accepts it, and it keeps the original delivery's `agentWallet` and correlation ID so it stays findable under the same log filters. Test deliveries cannot be retried.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/webhooks/17/deliveries/del_xyz789/retry" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+---
+
+## Delivery logs
+
+Beyond the per-endpoint list, Floe keeps an **account-wide delivery log** across all your webhooks — the same data behind the dashboard's Logs tab. Use it to answer "did my server get the `call.ended` for this call?" without knowing which endpoint it went to. The CLI equivalent is `floe webhooks logs`, which takes the same filters.
+
+Delivery logs are retained for **30 days**.
+
+### GET /v1/developer/webhook-deliveries
+
+Filterable, cursor-paginated log of every delivery on your account, newest first.
+
+| Query param | Description |
+|-------------|-------------|
+| `endpoint` | Numeric webhook ID — only deliveries to that endpoint |
+| `event` | Exact event name (e.g. `call.ended` — wildcards apply to subscriptions, not this filter) |
+| `agent` | A `0x` agent wallet address |
+| `status` | `pending`, `success`, `failed`, or `retrying` |
+| `from` / `to` | ISO 8601 timestamp bounds on the delivery time |
+| `id` | Searches both delivery IDs **and** correlation IDs — pass a call session ID, Twilio CallSid, or job ID to find every delivery for that call or job |
+| `cursor` | Opaque pagination cursor — pass a previous page's `nextCursor` verbatim |
+| `limit` | Page size, default 50, max 100 |
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhook-deliveries?limit=20" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+A filtered query — failed `call.ended` deliveries for one agent:
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhook-deliveries?status=failed&event=call.ended&agent=0xYourAgentWallet" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "deliveries": [
+    {
+      "id": 412,
+      "deliveryId": "a1b2c3d4e5f6...",
+      "webhookId": 17,
+      "webhookUrl": "https://your-server.com/webhooks/floe",
+      "event": "call.ended",
+      "status": "failed",
+      "statusCode": 500,
+      "attempt": 3,
+      "error": "HTTP 500",
+      "agentWallet": "0xyouragentwallet...",
+      "correlationId": "CA9d3f...",
+      "createdAt": "2026-08-11T14:30:00.000Z"
+    }
+  ],
+  "nextCursor": "eyJ0cyI6Ii4uLiIsImlkIjo0MTJ9",
+  "hasMore": true
+}
+```
+
+List rows are deliberately lightweight — they carry no payloads or response bodies. When `hasMore` is `true`, pass `nextCursor` back as `cursor` for the next page.
+
+### GET /v1/developer/webhook-deliveries/:deliveryId
+
+Full detail for one delivery. The path parameter is the hex `deliveryId` (the value in `X-Floe-Delivery-Id` and in list rows) — **not** the numeric row `id`.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/webhook-deliveries/a1b2c3d4e5f6..." \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+The response includes everything from the list row plus:
+
+| Field | Description |
+|-------|-------------|
+| `payload` | Exactly what was POSTed to your endpoint |
+| `responseBody` | Your server's response body, sanitized and capped at 1 KB |
+| `nextRetryAt` | When the next automatic retry is scheduled, if the delivery is `retrying` |
 
 ---
 
@@ -208,9 +431,11 @@ Every delivery is a JSON POST to your endpoint. Fields are spread at the top lev
   "agentId": "0xAgentWalletAddress...",
   "policyId": 12,
   "reason": "policy:12",
-  "firedAt": "2026-08-07T14:30:00.000Z"
+  "firedAt": "2026-08-11T14:30:00.000Z"
 }
 ```
+
+Alongside each delivery, the log records the agent wallet and a correlation ID (a call session ID, Twilio CallSid, job ID, or loan ID) so you can trace a delivery back to the thing that fired it.
 
 ---
 
@@ -232,8 +457,8 @@ HMAC-SHA256(secret, "{X-Floe-Timestamp}.{raw_request_body}")
 
 Always verify the signature against the **raw** request body before processing the event. This prevents forged requests from reaching your business logic.
 
-### Node.js verification
-
+{% tabs %}
+{% tab title="TypeScript" %}
 ```typescript
 import crypto from "crypto";
 
@@ -260,9 +485,9 @@ function verifyWebhookSignature(
   );
 }
 ```
+{% endtab %}
 
-### Python verification
-
+{% tab title="Python" %}
 ```python
 import hmac
 import hashlib
@@ -287,6 +512,8 @@ def verify_webhook_signature(
 
     return hmac.compare_digest(signature, expected)
 ```
+{% endtab %}
+{% endtabs %}
 
 See the full handler examples: [TypeScript](https://github.com/Floe-Labs/floe-labs-docs/blob/main/examples/webhook-handler.ts) | [Python](https://github.com/Floe-Labs/floe-labs-docs/blob/main/examples/webhook-handler.py)
 
@@ -295,11 +522,12 @@ See the full handler examples: [TypeScript](https://github.com/Floe-Labs/floe-la
 ## Delivery guarantees
 
 - **At-least-once delivery.** Your endpoint may receive the same event more than once. Use `X-Floe-Delivery-Id` for idempotency.
-- **3 attempts maximum.** If your endpoint does not respond with a `2xx` status code, Floe retries with backoff.
-- **Retry schedule:** attempt 1 immediately, attempt 2 after 1 minute, attempt 3 after 5 minutes.
-- **Delivery states:** `retrying` (attempts in flight) → `success` (2xx received) or `failed` (all attempts exhausted).
+- **10-second timeout.** Your endpoint must respond within 10 seconds or the attempt counts as failed. Return `2xx` immediately and process asynchronously.
+- **3 attempts maximum.** If your endpoint does not respond with a `2xx` status code, Floe retries: attempt 2 fires 60 seconds after the first failure, attempt 3 fires 300 seconds after that.
+- **Delivery statuses:** `pending` (queued) → `success` (2xx received), or `retrying` (a failed attempt with retries remaining) → `success` or `failed` (all 3 attempts exhausted).
+- **Test deliveries are one-shot.** A failed test stays `failed` — it is never retried, automatically or manually.
 
-After 3 failed attempts the delivery is marked `failed`. Inspect failures in the dashboard or via `GET /v1/developer/webhooks/:id/deliveries`.
+After a delivery goes `failed`, re-drive it manually with [`POST /v1/developer/webhooks/:id/deliveries/:deliveryId/retry`](#post-v1developerwebhooksiddeliveriesdeliveryidretry). Inspect failures in the dashboard, the per-endpoint list, or the account-wide [delivery log](#delivery-logs) — logs are retained for 30 days.
 
 ---
 
@@ -414,10 +642,11 @@ For quick testing without deploying a server:
 ## Best practices
 
 - **Always verify signatures.** Never process a payload without checking `X-Floe-Signature` against the raw body. This prevents spoofed requests.
-- **Respond with `2xx` quickly.** Return a `200` as soon as you receive the payload. Process the event asynchronously in a background job or queue.
+- **Respond with `2xx` quickly.** Return a `200` as soon as you receive the payload — the delivery times out after 10 seconds. Process the event asynchronously in a background job or queue.
 - **Implement idempotency.** Store `X-Floe-Delivery-Id` and skip duplicates. Retries can send the same event more than once.
 - **Use HTTPS endpoints.** Floe only delivers to HTTPS URLs in production.
-- **Monitor delivery logs.** Check the dashboard or `GET /v1/developer/webhooks/:id/deliveries` periodically for failed deliveries.
+- **Monitor delivery logs.** Check the dashboard, `GET /v1/developer/webhooks/:id/deliveries`, or the account-wide `GET /v1/developer/webhook-deliveries` log (`floe webhooks logs`) periodically for failed deliveries.
+- **Prefer wildcards over long event lists.** Subscribing to `call.*` keeps you current as new call events ship; enumerate exact names only when you need to exclude some.
 - **Rotate secrets with a short window.** `rotate-secret` returns the new secret and invalidates the old one immediately — there is no overlap period. Install the returned secret in your verifier right away; any deliveries signed with the old secret during the swap fail signature and retry (3 attempts over ~6 minutes), so keep the window short.
 
 ## Next steps
@@ -425,5 +654,6 @@ For quick testing without deploying a server:
 - **[Voice orchestrators](../build/voice-orchestrators.md)** — the full connect-and-reconcile walkthrough for Vapi / Retell / Bland / Pipecat / LiveKit.
 - **[Webhook Handler (TypeScript)](https://github.com/Floe-Labs/floe-labs-docs/blob/main/examples/webhook-handler.ts)** — Express.js example with signature verification.
 - **[Webhook Handler (Python)](https://github.com/Floe-Labs/floe-labs-docs/blob/main/examples/webhook-handler.py)** — Flask example with HMAC verification.
+- **[Floe CLI](cli.md)** — `floe webhooks` manages endpoints, tests deliveries, and tails logs from the terminal.
 - **[API Keys](api-keys.md)** — create your developer key to register webhooks.
 - **[Developer Dashboard](developer-dashboard.md)** — manage webhooks through the web UI.

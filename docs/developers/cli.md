@@ -479,19 +479,22 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | Subcommand | Does |
 |---|---|
 | `list` | All webhooks on your developer account (max 10) |
-| `create <url> --events <e1,e2,…>` | Register an endpoint — the `whsec_…` signing secret is shown exactly once at creation. `--scope global\|wallet\|loan --scope-value <v>`, `--description <text>` |
+| `create <url> --events <e1,e2,…>` | Register an endpoint — the `whsec_…` signing secret is shown exactly once at creation. `--scope global\|wallet\|agent\|loan --scope-value <v>`, `--description <text>` |
+| `events` | The live event catalog — every subscribable event with its category and scope |
 | `get <id>` | One webhook + delivery success/failure counts |
 | `pause <id>` / `enable <id>` | Toggle deliveries without losing the endpoint config |
 | `delete <id>` | Remove the webhook and stop all deliveries |
 | `test <id>` | Send a signed test event; exits `1` if the delivery fails |
 | `rotate-secret <id>` | Mint a new `whsec_…` (shown once) — the old secret stops verifying immediately |
-| `deliveries <id> [--limit <1-100>]` | Recent delivery attempts; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
+| `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
+| `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: `loan.health_warning` · `loan.expiry_warning` · `loan.liquidated` · `loan.repaid` · `agent.created` · `agent.suspended` · `key.created` · `key.rotated` · `x402.first_settlement` · `provider_key.created` · `provider_key.updated` · `provider_key.deleted`. Scopes: `global` (default) · `wallet --scope-value 0x…` · `loan --scope-value <loanId>`.
+Events: 30 across six categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
-floe webhooks create https://api.acme.com/hooks/floe --events key.rotated,agent.suspended
+floe webhooks create https://api.acme.com/hooks/floe --events call.*,marketplace.payment.settled
 floe webhooks test 3 && echo "endpoint verified"
+floe webhooks logs --status failed --event call.ended --limit 20
 ```
 
 ### `floe models`

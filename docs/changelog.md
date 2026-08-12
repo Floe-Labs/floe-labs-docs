@@ -6,9 +6,22 @@ icon: swap
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **65 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **73 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
+
+Developer webhooks grew from 8 loan/key events to a **30-event catalog** with an account-wide delivery log, and every surface — API, dashboard, CLI, MCP — now speaks the same contract.
+
+* **30 events in six categories** — loan (5), agent/key lifecycle (8), credit utilization (3), voice calls (6: `call.started` … `call.rejected`), phone numbers (2), and marketplace (6: `marketplace.job.completed`, `marketplace.payment.settled`, spend-cap/tripwire, vendor `degraded`/`recovered` platform broadcasts). Subscribe to exact names, `*`, or prefix wildcards like `call.*`; `GET /v1/developer/webhooks/events` (or `floe webhooks events`) serves the live catalog so it never goes stale in your code.
+* **A fourth scope: `agent`.** Scope an endpoint to one agent by its **wallet address** — what the dashboard's per-agent webhooks tab creates. `global`, `wallet`, and `loan` unchanged; scope is immutable after creation.
+* **Account-wide delivery logs.** `GET /v1/developer/webhook-deliveries` lists every delivery across endpoints, newest first, with cursor pagination and filters (endpoint, event, agent wallet, status, time range, delivery/correlation id); the per-delivery detail returns the exact payload sent and the sanitized response body. 30-day retention. In the dashboard: Webhooks → Logs tab; in the CLI: `floe webhooks logs`.
+* **Failed deliveries now retry** — up to 3 attempts (+1 min, +5 min) for every event source, not just loan events. Receivers should dedupe on the `X-Floe-Delivery-Id` header; test deliveries stay one-shot.
+* **MCP server 0.4.0 — 73 tools (was 65).** The `webhooks` group grew 3 → 11: `list_webhook_events`, `get_webhook`, `update_webhook`, `delete_webhook`, `rotate_webhook_secret`, `list_webhook_deliveries`, `get_webhook_delivery`, `retry_webhook_delivery`, and `create_webhook` learned the `agent` scope + wildcards.
+* **CLI 0.3.0** adds `floe webhooks events` and `floe webhooks logs`, and `--scope agent` on create.
+
+→ [Webhooks](developers/webhooks.md) · [MCP Server](developers/mcp-server.md) · [Floe CLI](developers/cli.md)
 
 ### v1.20.0 — `@floelabs/cli` 0.2.0: full dashboard parity, 32 commands (August 2026)
 
