@@ -76,7 +76,7 @@ One-click install links — the config carries the endpoint URL only, never a ke
 - Cursor — `cursor://anysphere.cursor-deeplink/mcp/install?name=floe&config=eyJ1cmwiOiJodHRwczovL21jcC5mbG9lbGFicy54eXovbWNwIn0`
 - VS Code — [`https://vscode.dev/redirect/mcp/install?name=floe&config=…`](https://vscode.dev/redirect/mcp/install?name=floe&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.floelabs.xyz%2Fmcp%22%7D)
 
-65 tools, full reference: [MCP Server](../developers/mcp-server.md).
+73 tools, full reference: [MCP Server](../developers/mcp-server.md).
 {% endtab %}
 {% tab title="CLI" %}
 
@@ -189,7 +189,8 @@ One real metered call against the **$3 welcome credit** your first agent starts 
 | Watch the money | `get_usage_summary` / `get_activity` | `floe usage` / `floe activity` |
 | Billing + CSV export | — (CLI only) | `floe billing mtd\|invoice\|export` |
 | Open a credit line | `get_credit_line_bounds` + `open_credit_line` | `floe credit bounds` / `floe credit open` |
-| Webhooks | `create_webhook` / `list_webhooks` / `test_webhook` | `floe webhooks create\|list\|test` |
+| Webhooks | `create_webhook` / `list_webhooks` / `test_webhook` + catalog, update/delete, secret rotation | `floe webhooks create\|list\|test\|events` |
+| Webhook delivery logs | `list_webhook_deliveries` / `get_webhook_delivery` / `retry_webhook_delivery` | `floe webhooks logs\|deliveries` |
 | Move money / cash out | — (CLI only) | `floe funds` · `floe cashout` |
 | Hand funding to a human | `get_funding_instructions` | `floe funds address` / `floe funds topup` |
 | Phone, BYOK, orchestrators, team | — (CLI only) | `floe phone` · `floe providers` · `floe orchestrators` · `floe team` |
@@ -197,6 +198,6 @@ One real metered call against the **$3 welcome credit** your first agent starts 
 ## Next steps
 
 - [Quickstart](quickstart.md) — create an agent, connect your tools, first paid call
-- [MCP Server](../developers/mcp-server.md) — all 65 tools with input schemas
+- [MCP Server](../developers/mcp-server.md) — all 73 tools with input schemas
 - [Floe CLI](../developers/cli.md) — every command, flag, and exit code
 - [Spend Controls](../developers/spend-controls.md) — the guardrails to set before you let it run

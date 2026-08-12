@@ -133,24 +133,28 @@ Endpoints: `POST /v1/developer/agents`, `POST/GET/DELETE /v1/developer/agents/:a
 
 ## Webhooks
 
-Endpoints: `POST/GET/PATCH/DELETE /v1/developer/webhooks`, `POST /v1/developer/webhooks/:id/rotate-secret`, `POST /v1/developer/webhooks/:id/test`
+Endpoints: `POST/GET /v1/developer/webhooks`, `GET/PATCH/DELETE /v1/developer/webhooks/:id`, `GET /v1/developer/webhooks/events`, `POST /v1/developer/webhooks/:id/rotate-secret`, `POST /v1/developer/webhooks/:id/test`, `GET /v1/developer/webhooks/:id/deliveries`, `POST /v1/developer/webhooks/:id/deliveries/:deliveryId/retry`, `GET /v1/developer/webhook-deliveries` (+ `/:deliveryId`)
 
 | Status | `error` | Cause | Fix |
 |---|---|---|---|
 | 400 | `url must be HTTPS` | Webhook URL is plain HTTP | Use HTTPS (enforced even for localhost in non-dev) |
 | 400 | `blocked_destination` | Webhook URL resolved to a private IP or blocked range (SSRF guard) | Use a public HTTPS endpoint, or set `SSRF_ALLOW_LOCALHOST=1` for local development |
-| 400 | `events must be a non-empty array` | No events selected | Pick at least one |
-| 400 | `Invalid scope` | Scope is not `global` / `wallet` / `loan` | Use one of the three |
-| 400 | `scopeValue required for non-global scope` | `scope` is `wallet` or `loan` but `scopeValue` is missing | Supply the wallet address or loan ID |
+| 400 | `events must be a non-empty array` | No events selected | Pick at least one — exact names, `*`, or a prefix wildcard like `call.*` that matches at least one catalog event (`GET /webhooks/events`) |
+| 400 | `invalid_scope` | Scope is not `global` / `wallet` / `agent` / `loan`, or the scopeValue doesn't fit it | `wallet`/`agent` take a `0x` wallet address (for `agent`, the agent's **wallet** address, not its numeric id); `loan` takes a numeric loan id; `global` takes none |
+| 400 | `scopeValue required for non-global scope` | `scope` is `wallet`, `agent`, or `loan` but `scopeValue` is missing | Supply the wallet address or loan ID |
+| 400 | `Limit exceeded` | The account already has 10 webhooks | Delete one first (max 10 per account) |
+| 400 | `invalid_filter` | A `GET /webhook-deliveries` filter is malformed (non-numeric `endpoint`, bad `agent` address, unknown `status`, unparseable `from`/`to`) | Fix the named filter; the error says which |
+| 400 | `invalid_cursor` | `cursor` is not an opaque value from a previous response | Pass `nextCursor` verbatim, or drop it to restart from the newest rows |
 | 404 | `Webhook not found` | Editing/deleting a webhook that doesn't belong to you | Check ownership |
+| 404 | `delivery_not_found` | Unknown `deliveryId`, a delivery on someone else's webhook, or a row past the 30-day retention window | List via `GET /v1/developer/webhook-deliveries` and use the hex `deliveryId` (not the numeric row id) |
 
-### Clearing scope
+### Scope is immutable
 
-To convert a `wallet`-scoped or `loan`-scoped webhook back to `global`, PATCH with `{ "scope": "global", "scopeValue": null }`. Omitting `scopeValue` keeps the existing value; explicit `null` clears it.
+`PATCH /v1/developer/webhooks/:id` updates `url`, `events`, `active`, and `description` only — `scope`/`scopeValue` cannot be changed after creation. To re-scope an endpoint, delete it and create a new one.
 
 ### Delivery errors (on your server's side)
 
-If Floe cannot deliver a webhook, the delivery row is marked `failed` and retried with exponential backoff. Common causes visible in the webhook detail page:
+If Floe cannot deliver a webhook, the delivery is retried up to 3 total attempts (attempt 2 fires 60 seconds after the first failure; attempt 3 fires 300 seconds after attempt 2) and then marked `failed`; test deliveries are never retried. Common causes visible in the delivery log:
 
 - **`HTTP 5xx from target`** — your server returned an error. Fix your handler; Floe will retry.
 - **`Signature verification expected but no secret on webhook`** — webhook record lost its secret. Rotate via `/rotate-secret`.

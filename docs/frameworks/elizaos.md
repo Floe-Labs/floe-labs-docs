@@ -21,7 +21,7 @@ A native ElizaOS plugin for Floe is on the roadmap. Until it ships, ElizaOS agen
 }
 ```
 
-ElizaOS picks up the 65 Floe MCP tools automatically.
+ElizaOS picks up the 73 server-exposed Floe MCP tools automatically. A `floe_live_…` developer key unlocks the lifecycle, observability, and webhook tools; runtime tools like `x402_pay` and the spend controls need an agent key (`floe_…`).
 
 ## Roadmap
 

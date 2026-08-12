@@ -106,6 +106,16 @@ def handle_first_settlement(event: dict) -> None:
     # TODO: Mark the agent activated
 
 
+def handle_call_ended(event: dict) -> None:
+    print(f"Call ended for agent {event.get('agentWalletAddress')}")
+    # TODO: Reconcile the call's cost against your own records
+
+
+def handle_marketplace_payment_settled(event: dict) -> None:
+    print(f"Marketplace payment settled for agent {event.get('agentWalletAddress')}")
+    # TODO: Record the spend in your billing ledger
+
+
 # ── Event Router ──
 
 EVENT_HANDLERS = {
@@ -113,6 +123,8 @@ EVENT_HANDLERS = {
     "agent.suspended": handle_agent_suspended,
     "key.rotated": handle_key_rotated,
     "x402.first_settlement": handle_first_settlement,
+    "call.ended": handle_call_ended,
+    "marketplace.payment.settled": handle_marketplace_payment_settled,
 }
 
 
