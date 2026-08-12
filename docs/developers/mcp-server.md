@@ -514,7 +514,7 @@ list_webhook_deliveries
                   from          string   optional  ISO timestamp lower bound
                   to            string   optional  ISO timestamp upper bound
                   id_search     string   optional  matches a delivery id OR correlation id
-                                                   (call session id, job id, loan id)
+                                                   (call session id, Twilio CallSid, job id, loan id)
                   cursor        string   optional  from a previous response's nextCursor
                   limit         integer  default 50   1-100
 

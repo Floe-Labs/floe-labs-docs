@@ -82,7 +82,7 @@ Rented number lifecycle, routed on the agent's wallet address.
 
 #### Marketplace events
 
-Vendor spend events, routed on the agent's wallet address — except the two `vendor.*` events, which are **platform-wide broadcasts** delivered to every subscribed webhook regardless of scope.
+Vendor spend events, routed on the agent's wallet address — except the two `marketplace.vendor.*` events, which are **platform-wide broadcasts** delivered to every subscribed webhook regardless of scope.
 
 | Event | Fires when |
 |-------|-----------|
@@ -359,7 +359,7 @@ Filterable, cursor-paginated log of every delivery on your account, newest first
 | `agent` | A `0x` agent wallet address |
 | `status` | `pending`, `success`, `failed`, or `retrying` |
 | `from` / `to` | ISO 8601 timestamp bounds on the delivery time |
-| `id` | Searches both delivery IDs **and** correlation IDs — pass a call session ID, Twilio CallSid, or job ID to find every delivery for that call or job |
+| `id` | Searches both delivery IDs **and** correlation IDs — pass a call session ID, Twilio CallSid, job ID, or loan ID to find every delivery for that call, job, or loan |
 | `cursor` | Opaque pagination cursor — pass a previous page's `nextCursor` verbatim |
 | `limit` | Page size, default 50, max 100 |
 

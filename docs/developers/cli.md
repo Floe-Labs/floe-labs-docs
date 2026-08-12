@@ -492,7 +492,7 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 Events: 30 across six categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
-floe webhooks create https://api.acme.com/hooks/floe --events call.*,marketplace.payment.settled
+floe webhooks create https://api.acme.com/hooks/floe --events 'call.*,marketplace.payment.settled'
 floe webhooks test 3 && echo "endpoint verified"
 floe webhooks logs --status failed --event call.ended --limit 20
 ```

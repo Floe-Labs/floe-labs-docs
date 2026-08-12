@@ -133,7 +133,7 @@ Endpoints: `POST /v1/developer/agents`, `POST/GET/DELETE /v1/developer/agents/:a
 
 ## Webhooks
 
-Endpoints: `POST/GET/PATCH/DELETE /v1/developer/webhooks`, `GET /v1/developer/webhooks/events`, `POST /v1/developer/webhooks/:id/rotate-secret`, `POST /v1/developer/webhooks/:id/test`, `GET /v1/developer/webhooks/:id/deliveries` (+ `/:deliveryId/retry`), `GET /v1/developer/webhook-deliveries` (+ `/:deliveryId`)
+Endpoints: `POST/GET /v1/developer/webhooks`, `GET/PATCH/DELETE /v1/developer/webhooks/:id`, `GET /v1/developer/webhooks/events`, `POST /v1/developer/webhooks/:id/rotate-secret`, `POST /v1/developer/webhooks/:id/test`, `GET /v1/developer/webhooks/:id/deliveries`, `POST /v1/developer/webhooks/:id/deliveries/:deliveryId/retry`, `GET /v1/developer/webhook-deliveries` (+ `/:deliveryId`)
 
 | Status | `error` | Cause | Fix |
 |---|---|---|---|
@@ -154,7 +154,7 @@ Endpoints: `POST/GET/PATCH/DELETE /v1/developer/webhooks`, `GET /v1/developer/we
 
 ### Delivery errors (on your server's side)
 
-If Floe cannot deliver a webhook, the delivery is retried up to 3 total attempts (1 minute, then 5 minutes after the first failure) and then marked `failed`; test deliveries are never retried. Common causes visible in the delivery log:
+If Floe cannot deliver a webhook, the delivery is retried up to 3 total attempts (attempt 2 fires 60 seconds after the first failure; attempt 3 fires 300 seconds after attempt 2) and then marked `failed`; test deliveries are never retried. Common causes visible in the delivery log:
 
 - **`HTTP 5xx from target`** — your server returned an error. Fix your handler; Floe will retry.
 - **`Signature verification expected but no secret on webhook`** — webhook record lost its secret. Rotate via `/rotate-secret`.
