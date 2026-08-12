@@ -328,7 +328,7 @@ Successful calls return the provider's response verbatim. Upstream errors pass t
 | `402` | Balance / spend ceiling reached (`budget_exhausted`) |
 | `404` | Unknown or disabled model id |
 | `422` | No source can price the requested usage (`no_priceable_source`, from `/estimate`) |
-| `429` | Per-agent rate limit exceeded |
+| `429` | Per-agent rate limit exceeded. Keyless calls default to 300 requests/min (they ride Floe's pooled upstream quota); BYOK calls — your own provider key, per-request or stored — default to 3,000 requests/min. A BYOK call whose key fails upstream and falls back onto a pooled rail re-qualifies under the keyless window (`rate_limited` with `retry_after_seconds` in the body). Limits can be raised per account on request. |
 | `503` | Floe Inference isn't enabled on this deployment, or no source is available for the model |
 
 See the full [Error Codes](../reference/error-codes.md) reference for the rest of the Floe API.
