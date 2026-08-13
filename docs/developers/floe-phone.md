@@ -23,7 +23,7 @@ When someone dials the agent's number, Floe answers into its media pipeline: cal
 
 Usage prices are upstream cost plus Floe's standard 5% margin; the number rental is a flat monthly price. The rental price is locked in when you buy the number; catalog price changes only affect future purchases. Each call produces itemized ledger rows (`phone://{number}/call/{callId}` for transport, `…/stt` and `…/tts` for the voice legs, plus — on hosted-mode calls — the model's own gateway rows; webhook mode uses your model, so no LLM leg is billed) — you can see exactly where a cent went.
 
-**Runaway calls are cut off mid-flight.** An upper bound (default $2.00) is reserved when a call starts; spend is metered live during the call, and if the next turn wouldn't fit — or a [spend policy](spend-controls.md) or session cap would breach — Floe hangs up the call. A carrier-side usage trigger acts as an async backstop and suspends the account's phone service if carrier spend crosses its monthly threshold.
+**Runaway calls are cut off mid-flight.** An upper bound (default $2.00, or the call's own `maxSpendRaw` if you set one — see [Per-call budgets](#per-call-budgets--attribution)) is reserved when a call starts; spend is metered live during the call, and if the next turn wouldn't fit — or a [spend policy](spend-controls.md) or session cap would breach — Floe hangs up the call. A carrier-side usage trigger acts as an async backstop and suspends the account's phone service if carrier spend crosses its monthly threshold.
 
 **No auto-recharge, by design.** If the agent balance can't cover a monthly renewal, the number enters a grace period (7 days) and keeps working; if the balance isn't funded by the end of it, the number is released.
 
@@ -218,7 +218,43 @@ print(res.json()["callId"])
 {% endtab %}
 {% endtabs %}
 
-**Response `201`:** `{ "callId": "CA…", "from": "+14155550123", "to": "+14155559876", "status": "queued" }`. A call that's never answered costs nothing — billing starts when the media stream opens. There is also a dashboard-session variant, `POST /v1/developer/agents/{agentId}/numbers/{numberId}/test-call`, which powers the one-click "the agent calls you" test.
+**Response `201`:** `{ "callId": "CA…", "from": "+14155550123", "to": "+14155559876", "status": "queued", "taskId": "ca…" }`. A call that's never answered costs nothing — billing starts when the media stream opens. There is also a dashboard-session variant, `POST /v1/developer/agents/{agentId}/numbers/{numberId}/test-call`, which powers the one-click "the agent calls you" test.
+
+### Per-call budgets & attribution
+
+Every call is a **task**. Each ledger row a call produces — transport, STT, TTS, and (hosted mode) the LLM leg — is stamped with one shared task id: the value of the `X-Floe-Task-Id` header if you sent one on `POST /v1/calls`, otherwise the lowercased `callId`. The id is echoed back as `taskId` in the `201` response. That means one query over the ledger by task id returns the *complete* itemized cost of one call — and if your webhook-mode backend tags its own LLM and tool calls with the same id (pass `X-Floe-Task-Id: <callId lowercased>` on its [keyless-inference](keyless-inference.md) and `/v1/proxy/fetch` calls), the brain's spend lands in the same rollup. One call, one task id, every leg.
+
+Optional request extras on `POST /v1/calls`:
+
+| Field | Where | What it does |
+| --- | --- | --- |
+| `X-Floe-Task-Id` | header | Task id stamped on every ledger leg of this call (≤128 chars, lowercased). Defaults to the lowercased call id. |
+| `X-Floe-Customer-Id` | header | Opaque end-customer attribution (≤128 chars, lowercased) — lands on the same rows for the cross-source ledger. |
+| `maxSpendRaw` | body | Per-call reserve cap, raw 6-decimal USDC (e.g. `"500000"` = $0.50). Clamped to the platform per-call ceiling ($2.00 default), rejected with `400 max_spend_too_low` if it can't cover one minute of calling. |
+
+To make a per-call budget *enforced* rather than just attributed, create a [task spend policy](spend-controls.md) whose `matchKey` is the task id — the reserve at answer, every hosted LLM turn, and any tool call tagged with that task id are then gated by it. The pre-dial check evaluates the task policy too, so an exhausted task budget denies with `403` *before* the callee's phone rings.
+
+{% hint style="warning" %}
+**The reserve counts against the task budget while the call is live.** Policy spend includes pending reservations, so the full per-call reserve (default $2.00, or your `maxSpendRaw`) is held against the task budget for the duration of the call and settles down to actual cost at hangup. Set the task policy's limit at or above the reserve — a task budget smaller than the reserve refuses the call at answer. In webhook mode, budget your backend's LLM/tool legs *on top of* the reserve if they share the task id.
+{% endhint %}
+
+## Call status & hangup
+
+`GET /v1/calls/{callId}` — agent key. Poll a placed call's progress (dialers use this to detect call end):
+
+```json
+{ "callId": "CA…", "status": "in_progress", "terminal": false }
+```
+
+`status` is `pending` (queued / ringing / never answered), `in_progress` (live), `completed`, or `failed`; `terminal` is `true` once the call can no longer change. Only the owning agent's calls are visible — anything else reads as `pending`.
+
+`POST /v1/calls/{callId}/hangup` — agent key. End a live call (or cancel one that is still ringing) from outside the conversation:
+
+```json
+{ "callId": "CA…", "status": "ending" }
+```
+
+Returns `202` when the hangup was issued, or `200` with `"terminal": true` when the call had already ended (idempotent). This is the out-of-band control lever — a compliance system killing a call after an opt-out, or a dialer cancelling a runaway campaign. For ending a call *from within the conversation*, use the webhook `"end"` directive below.
 
 ### Pre-dial budget check
 
@@ -235,7 +271,39 @@ This is admission control at the *start* of the call, and it's deliberately cons
 Two ways to run the conversation, switchable any time — the setting is read at call setup, so a PATCH applies to the next call with zero downtime:
 
 * **`hosted`** (default) — Floe runs the model through [keyless inference](keyless-inference.md) using your `systemPrompt`. No server needed. The LLM leg bills per-token like any gateway call.
-* **`webhook`** — Floe streams each finished caller utterance to your `webhookUrl` (`POST`, JSON: `{ type: "agent.message", channel: "voice", callId, text, recentHistory }`) and your backend replies with NDJSON text chunks: `{"text":"…","interim":true}` lines for progress, `{"text":"…"}` for what gets spoken. You bring your own model — no LLM leg is billed.
+* **`webhook`** — Floe streams each finished caller utterance to your `webhookUrl` and your backend replies with NDJSON text chunks. You bring your own model — no LLM leg is billed.
+
+### The webhook contract
+
+Each finished caller utterance arrives as a `POST` to your `webhookUrl`:
+
+```json
+{
+  "type": "agent.message",
+  "channel": "voice",
+  "callId": "CA…",
+  "from": "+14155550123",
+  "to": "+14155559876",
+  "direction": "outbound",
+  "text": "what does this cost?",
+  "recentHistory": [ { "role": "user", "content": "…" }, { "role": "assistant", "content": "…" } ]
+}
+```
+
+`from`/`to` are the real call parties — on an outbound call `to` is the callee, on inbound `from` is the caller — and `direction` tells you which kind of call this is without keeping your own call-id map. `recentHistory` is the last 10 turns (your backend keeps its own state if it wants more). Floe sends no auth header on this request, so put a secret in the URL path (`https://your-server/voice/<random-token>`) and require it.
+
+Reply with NDJSON, one JSON object per line:
+
+```
+{"text":"Let me check that","interim":true}
+{"text":"It's four cents so far — transport, transcription, and speech, itemized."}
+```
+
+* `{"text":"…","interim":true}` — progress lines; used only as a fallback if no final line arrives.
+* `{"text":"…"}` — final lines; concatenated in order and spoken (capped at 1500 characters per turn).
+* `{"text":"Goodbye!","end":true}` — speak the final text, then **hang up gracefully**. A text-less `{"end":true}` hangs up silently. This is the in-band call-end directive — the natural way to finish a conversation, honor an opt-out ("take me off your list" → confirm → end), or wrap up when a budget is nearly exhausted. `end` is honored on final lines only.
+
+Your backend has 30 seconds to respond; a non-2xx, timeout, or empty reply ends the call (`llm_refused`). Keep replies fast — the caller is waiting on the line.
 
 ```bash
 curl -X PATCH https://credit-api.floelabs.xyz/v1/developer/agents/42/voice \
@@ -245,6 +313,15 @@ curl -X PATCH https://credit-api.floelabs.xyz/v1/developer/agents/42/voice \
 ```
 
 PATCH fields (all optional; empty string clears): `voiceMode`, `systemPrompt` (hosted), `beginMessage` (spoken on connect), `voice` (TTS voice id), `model` (gateway model slug, default `openai/gpt-5.4-mini`), `webhookUrl` (required for webhook mode, https only).
+
+## Call lifecycle webhooks
+
+Subscribe a [developer webhook](webhooks.md) to `call.*` to close the loop without polling. Floe Phone emits:
+
+* **`call.started`** — the call was answered. Payload: `{ agentWalletAddress, callId, phoneNumber, direction, from, to }`.
+* **`call.ended`** — the call finished and settled. Payload: `{ agentWalletAddress, callId, phoneNumber, direction, reason, durationSeconds, transportRaw, sttRaw, ttsRaw, taskId, customerId }` — the per-leg costs are the settled ledger amounts, so this one event is a complete per-call cost receipt. `reason` is the termination cause (`call_ended`, `agent_ended`, `budget_exhausted`, `reserve_exhausted`, `max_duration`, `llm_refused`, …). If the media session crashed and the carrier's status callback settled the call instead, the same event arrives with `reason: "backstop_settled"`, `backstop: true`, and `sttRaw`/`ttsRaw` of `"0"` (unknown legs settle toward you, not against you).
+
+Both events correlate on `callId`.
 
 ## Dashboard
 
