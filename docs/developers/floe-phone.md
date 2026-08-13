@@ -23,7 +23,7 @@ When someone dials the agent's number, Floe answers into its media pipeline: cal
 
 Usage prices are upstream cost plus Floe's standard 5% margin; the number rental is a flat monthly price. The rental price is locked in when you buy the number; catalog price changes only affect future purchases. Each call produces itemized ledger rows (`phone://{number}/call/{callId}` for transport, `…/stt` and `…/tts` for the voice legs, plus — on hosted-mode calls — the model's own gateway rows; webhook mode uses your model, so no LLM leg is billed) — you can see exactly where a cent went.
 
-**Runaway calls are cut off mid-flight.** An upper bound (default $2.00, or the call's own `maxSpendRaw` if you set one — see [Per-call budgets](#per-call-budgets--attribution)) is reserved when a call starts; spend is metered live during the call, and if the next turn wouldn't fit — or a [spend policy](spend-controls.md) or session cap would breach — Floe hangs up the call. A carrier-side usage trigger acts as an async backstop and suspends the account's phone service if carrier spend crosses its monthly threshold.
+**Runaway calls are cut off mid-flight.** An upper bound (default $2.00, or the call's own `maxSpendRaw` if you set one — see [Per-call budgets](#per-call-budgets-attribution)) is reserved when a call starts; spend is metered live during the call, and if the next turn wouldn't fit — or a [spend policy](spend-controls.md) or session cap would breach — Floe hangs up the call. A carrier-side usage trigger acts as an async backstop and suspends the account's phone service if carrier spend crosses its monthly threshold.
 
 **No auto-recharge, by design.** If the agent balance can't cover a monthly renewal, the number enters a grace period (7 days) and keeps working; if the balance isn't funded by the end of it, the number is released.
 
@@ -246,7 +246,7 @@ To make a per-call budget *enforced* rather than just attributed, create a [task
 { "callId": "CA…", "status": "in_progress", "terminal": false }
 ```
 
-`status` is `pending` (queued / ringing / never answered), `in_progress` (live), `completed`, or `failed`; `terminal` is `true` once the call can no longer change. Only the owning agent's calls are visible — anything else reads as `pending`.
+`status` is `pending` (queued / ringing / never answered), `in_progress` (live), `ending` (a hangup was issued and is being processed — transitions to a terminal status shortly), `completed`, or `failed`; `terminal` is `true` once the call can no longer change. Only the owning agent's calls are visible — anything else reads as `pending`.
 
 `POST /v1/calls/{callId}/hangup` — agent key. End a live call (or cancel one that is still ringing) from outside the conversation:
 
@@ -294,7 +294,7 @@ Each finished caller utterance arrives as a `POST` to your `webhookUrl`:
 
 Reply with NDJSON, one JSON object per line:
 
-```
+```ndjson
 {"text":"Let me check that","interim":true}
 {"text":"It's four cents so far — transport, transcription, and speech, itemized."}
 ```
@@ -321,7 +321,7 @@ Subscribe a [developer webhook](webhooks.md) to `call.*` to close the loop witho
 * **`call.started`** — the call was answered. Payload: `{ agentWalletAddress, callId, phoneNumber, direction, from, to }`.
 * **`call.ended`** — the call finished and settled. Payload: `{ agentWalletAddress, callId, phoneNumber, direction, reason, durationSeconds, transportRaw, sttRaw, ttsRaw, taskId, customerId }` — the per-leg costs are the settled ledger amounts, so this one event is a complete per-call cost receipt. `reason` is the termination cause (`call_ended`, `agent_ended`, `budget_exhausted`, `reserve_exhausted`, `max_duration`, `llm_refused`, …). If the media session crashed and the carrier's status callback settled the call instead, the same event arrives with `reason: "backstop_settled"`, `backstop: true`, and `sttRaw`/`ttsRaw` of `"0"` (unknown legs settle toward you, not against you).
 
-Both events correlate on `callId`.
+Both events correlate on `callId`. Delivery is at-least-once — retries of the same delivery share a stable `X-Floe-Delivery-Id`, so [deduplicate on that header](webhooks.md) and route your handler on the `event` field; use `callId` only to correlate the lifecycle events with each other.
 
 ## Dashboard
 
