@@ -53,6 +53,7 @@
 
 * [Agent Balance](docs/components/wallet.md)
 * [Coverage Score](docs/build/coverage-score.md)
+* [Ledger sync — BYOK & self-hosted coverage](docs/build/ledger-sync.md)
 * [Spend Controls](docs/developers/spend-controls.md)
 * [Agent Awareness](docs/developers/agent-awareness.md)
 
@@ -88,6 +89,7 @@
 ## API Reference
 
 * [REST API](docs/developers/credit-api.md)
+* [Ledger Sync API](docs/developers/ledger-sync-api.md)
 * [OpenAPI Specification](https://credit-api.floelabs.xyz/.well-known/openapi.yaml)
 
 ## Reference

@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 59 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 61 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -44,6 +44,7 @@
 - Submit an API — https://floe-labs.gitbook.io/docs/vendor-marketplace/submit.md
 - Agent Balance — https://floe-labs.gitbook.io/docs/core-concepts/wallet.md
 - Coverage Score — https://floe-labs.gitbook.io/docs/core-concepts/coverage-score.md
+- Ledger sync — BYOK & self-hosted coverage — https://floe-labs.gitbook.io/docs/core-concepts/ledger-sync.md
 - Spend Controls — https://floe-labs.gitbook.io/docs/core-concepts/spend-controls.md
 - Agent Awareness — https://floe-labs.gitbook.io/docs/core-concepts/agent-awareness.md
 - Plain HTTP / REST — https://floe-labs.gitbook.io/docs/frameworks/http.md
@@ -65,6 +66,7 @@
 - MCP Server — https://floe-labs.gitbook.io/docs/developers/mcp-server.md
 - Webhooks — https://floe-labs.gitbook.io/docs/developers/webhooks.md
 - REST API — https://floe-labs.gitbook.io/docs/api-reference/credit-api.md
+- Ledger Sync API — https://floe-labs.gitbook.io/docs/api-reference/ledger-sync-api.md
 - Error Codes — https://floe-labs.gitbook.io/docs/reference/error-codes.md
 - Environment Variables — https://floe-labs.gitbook.io/docs/reference/environment-variables.md
 - Changelog — https://floe-labs.gitbook.io/docs/reference/changelog.md
@@ -1594,7 +1596,7 @@ When someone dials the agent's number, Floe answers into its media pipeline: cal
 
 Usage prices are upstream cost plus Floe's standard 5% margin; the number rental is a flat monthly price. The rental price is locked in when you buy the number; catalog price changes only affect future purchases. Each call produces itemized ledger rows (`phone://{number}/call/{callId}` for transport, `…/stt` and `…/tts` for the voice legs, plus — on hosted-mode calls — the model's own gateway rows; webhook mode uses your model, so no LLM leg is billed) — you can see exactly where a cent went.
 
-**Runaway calls are cut off mid-flight.** An upper bound (default $2.00) is reserved when a call starts; spend is metered live during the call, and if the next turn wouldn't fit — or a [spend policy](spend-controls.md) or session cap would breach — Floe hangs up the call. A carrier-side usage trigger acts as an async backstop and suspends the account's phone service if carrier spend crosses its monthly threshold.
+**Runaway calls are cut off mid-flight.** An upper bound (default $2.00, or the call's own `maxSpendRaw` if you set one — see [Per-call budgets](#per-call-budgets-attribution)) is reserved when a call starts; spend is metered live during the call, and if the next turn wouldn't fit — or a [spend policy](spend-controls.md) or session cap would breach — Floe hangs up the call. A carrier-side usage trigger acts as an async backstop and suspends the account's phone service if carrier spend crosses its monthly threshold.
 
 **No auto-recharge, by design.** If the agent balance can't cover a monthly renewal, the number enters a grace period (7 days) and keeps working; if the balance isn't funded by the end of it, the number is released.
 
@@ -1789,7 +1791,43 @@ print(res.json()["callId"])
 {% endtab %}
 {% endtabs %}
 
-**Response `201`:** `{ "callId": "CA…", "from": "+14155550123", "to": "+14155559876", "status": "queued" }`. A call that's never answered costs nothing — billing starts when the media stream opens. There is also a dashboard-session variant, `POST /v1/developer/agents/{agentId}/numbers/{numberId}/test-call`, which powers the one-click "the agent calls you" test.
+**Response `201`:** `{ "callId": "CA…", "from": "+14155550123", "to": "+14155559876", "status": "queued", "taskId": "ca…" }`. A call that's never answered costs nothing — billing starts when the media stream opens. There is also a dashboard-session variant, `POST /v1/developer/agents/{agentId}/numbers/{numberId}/test-call`, which powers the one-click "the agent calls you" test.
+
+### Per-call budgets & attribution
+
+Every call is a **task**. Each ledger row a call produces — transport, STT, TTS, and (hosted mode) the LLM leg — is stamped with one shared task id: the value of the `X-Floe-Task-Id` header if you sent one on `POST /v1/calls`, otherwise the lowercased `callId`. The id is echoed back as `taskId` in the `201` response. That means one query over the ledger by task id returns the *complete* itemized cost of one call — and if your webhook-mode backend tags its own LLM and tool calls with the same id (pass `X-Floe-Task-Id: <callId lowercased>` on its [keyless-inference](keyless-inference.md) and `/v1/proxy/fetch` calls), the brain's spend lands in the same rollup. One call, one task id, every leg.
+
+Optional request extras on `POST /v1/calls`:
+
+| Field | Where | What it does |
+| --- | --- | --- |
+| `X-Floe-Task-Id` | header | Task id stamped on every ledger leg of this call (≤128 chars, lowercased). Defaults to the lowercased call id. |
+| `X-Floe-Customer-Id` | header | Opaque end-customer attribution (≤128 chars, lowercased) — lands on the same rows for the cross-source ledger. |
+| `maxSpendRaw` | body | Per-call reserve cap, raw 6-decimal USDC (e.g. `"500000"` = $0.50). Clamped to the platform per-call ceiling ($2.00 default), rejected with `400 max_spend_too_low` if it can't cover one minute of calling. |
+
+To make a per-call budget *enforced* rather than just attributed, create a [task spend policy](spend-controls.md) whose `matchKey` is the task id — the reserve at answer, every hosted LLM turn, and any tool call tagged with that task id are then gated by it. The pre-dial check evaluates the task policy too, so an exhausted task budget denies with `403` *before* the callee's phone rings.
+
+{% hint style="warning" %}
+**The reserve counts against the task budget while the call is live.** Policy spend includes pending reservations, so the full per-call reserve (default $2.00, or your `maxSpendRaw`) is held against the task budget for the duration of the call and settles down to actual cost at hangup. Set the task policy's limit at or above the reserve — a task budget smaller than the reserve refuses the call at answer. In webhook mode, budget your backend's LLM/tool legs *on top of* the reserve if they share the task id.
+{% endhint %}
+
+## Call status & hangup
+
+`GET /v1/calls/{callId}` — agent key. Poll a placed call's progress (dialers use this to detect call end):
+
+```json
+{ "callId": "CA…", "status": "in_progress", "terminal": false }
+```
+
+`status` is `pending` (queued / ringing / never answered), `in_progress` (live), `ending` (a hangup was issued and is being processed — transitions to a terminal status shortly), `completed`, or `failed`; `terminal` is `true` once the call can no longer change. Only the owning agent's calls are visible — anything else reads as `pending`.
+
+`POST /v1/calls/{callId}/hangup` — agent key. End a live call (or cancel one that is still ringing) from outside the conversation:
+
+```json
+{ "callId": "CA…", "status": "ending" }
+```
+
+Returns `202` when the hangup was issued, or `200` with `"terminal": true` when the call had already ended (idempotent). This is the out-of-band control lever — a compliance system killing a call after an opt-out, or a dialer cancelling a runaway campaign. For ending a call *from within the conversation*, use the webhook `"end"` directive below.
 
 ### Pre-dial budget check
 
@@ -1806,7 +1844,39 @@ This is admission control at the *start* of the call, and it's deliberately cons
 Two ways to run the conversation, switchable any time — the setting is read at call setup, so a PATCH applies to the next call with zero downtime:
 
 * **`hosted`** (default) — Floe runs the model through [keyless inference](keyless-inference.md) using your `systemPrompt`. No server needed. The LLM leg bills per-token like any gateway call.
-* **`webhook`** — Floe streams each finished caller utterance to your `webhookUrl` (`POST`, JSON: `{ type: "agent.message", channel: "voice", callId, text, recentHistory }`) and your backend replies with NDJSON text chunks: `{"text":"…","interim":true}` lines for progress, `{"text":"…"}` for what gets spoken. You bring your own model — no LLM leg is billed.
+* **`webhook`** — Floe streams each finished caller utterance to your `webhookUrl` and your backend replies with NDJSON text chunks. You bring your own model — no LLM leg is billed.
+
+### The webhook contract
+
+Each finished caller utterance arrives as a `POST` to your `webhookUrl`:
+
+```json
+{
+  "type": "agent.message",
+  "channel": "voice",
+  "callId": "CA…",
+  "from": "+14155550123",
+  "to": "+14155559876",
+  "direction": "outbound",
+  "text": "what does this cost?",
+  "recentHistory": [ { "role": "user", "content": "…" }, { "role": "assistant", "content": "…" } ]
+}
+```
+
+`from`/`to` are the real call parties — on an outbound call `to` is the callee, on inbound `from` is the caller — and `direction` tells you which kind of call this is without keeping your own call-id map. `recentHistory` is the last 10 turns (your backend keeps its own state if it wants more). Floe sends no auth header on this request, so put a secret in the URL path (`https://your-server/voice/<random-token>`) and require it.
+
+Reply with NDJSON, one JSON object per line:
+
+```ndjson
+{"text":"Let me check that","interim":true}
+{"text":"It's four cents so far — transport, transcription, and speech, itemized."}
+```
+
+* `{"text":"…","interim":true}` — progress lines; used only as a fallback if no final line arrives.
+* `{"text":"…"}` — final lines; concatenated in order and spoken (capped at 1500 characters per turn).
+* `{"text":"Goodbye!","end":true}` — speak the final text, then **hang up gracefully**. A text-less `{"end":true}` hangs up silently. This is the in-band call-end directive — the natural way to finish a conversation, honor an opt-out ("take me off your list" → confirm → end), or wrap up when a budget is nearly exhausted. `end` is honored on final lines only.
+
+Your backend has 30 seconds to respond; a non-2xx, timeout, or empty reply ends the call (`llm_refused`). Keep replies fast — the caller is waiting on the line.
 
 ```bash
 curl -X PATCH https://credit-api.floelabs.xyz/v1/developer/agents/42/voice \
@@ -1816,6 +1886,15 @@ curl -X PATCH https://credit-api.floelabs.xyz/v1/developer/agents/42/voice \
 ```
 
 PATCH fields (all optional; empty string clears): `voiceMode`, `systemPrompt` (hosted), `beginMessage` (spoken on connect), `voice` (TTS voice id), `model` (gateway model slug, default `openai/gpt-5.4-mini`), `webhookUrl` (required for webhook mode, https only).
+
+## Call lifecycle webhooks
+
+Subscribe a [developer webhook](webhooks.md) to `call.*` to close the loop without polling. Floe Phone emits:
+
+* **`call.started`** — the call was answered. Payload: `{ agentWalletAddress, callId, phoneNumber, direction, from, to }`.
+* **`call.ended`** — the call finished and settled. Payload: `{ agentWalletAddress, callId, phoneNumber, direction, reason, durationSeconds, transportRaw, sttRaw, ttsRaw, taskId, customerId }` — the per-leg costs are the settled ledger amounts, so this one event is a complete per-call cost receipt. `reason` is the termination cause (`call_ended`, `agent_ended`, `budget_exhausted`, `reserve_exhausted`, `max_duration`, `llm_refused`, …). If the media session crashed and the carrier's status callback settled the call instead, the same event arrives with `reason: "backstop_settled"`, `backstop: true`, and `sttRaw`/`ttsRaw` of `"0"` (unknown legs settle toward you, not against you).
+
+Both events correlate on `callId`. Delivery is at-least-once — retries of the same delivery share a stable `X-Floe-Delivery-Id`, so [deduplicate on that header](webhooks.md) and route your handler on the `event` field; use `callId` only to correlate the lifecycle events with each other.
 
 ## Dashboard
 
@@ -2157,7 +2236,7 @@ Successful calls return the provider's response verbatim. Upstream errors pass t
 | `402` | Balance / spend ceiling reached (`budget_exhausted`) |
 | `404` | Unknown or disabled model id |
 | `422` | No source can price the requested usage (`no_priceable_source`, from `/estimate`) |
-| `429` | Per-agent rate limit exceeded |
+| `429` | Per-agent rate limit exceeded. Keyless calls default to 300 requests/min (they ride Floe's pooled upstream quota); BYOK calls — your own provider key, per-request or stored — default to 3,000 requests/min. A BYOK call whose key fails upstream and falls back onto a pooled rail re-qualifies under the keyless window (`rate_limited` with `retry_after_seconds` in the body). Limits can be raised per account on request. |
 | `503` | Floe Inference isn't enabled on this deployment, or no source is available for the model |
 
 See the full [Error Codes](../reference/error-codes.md) reference for the rest of the Floe API.
@@ -2528,7 +2607,7 @@ In **Vapi**, create a credential holding your `floe_` agent key and attach it to
 Get a key from the [dashboard](https://dev-dashboard.floelabs.xyz) or `POST /v1/developer/agents/:agentId/keys`.
 
 {% hint style="warning" %}
-**Use a budgeted `read_write` key — least privilege for a key in a third-party config.** The voice and transcriber legs are `POST`s that *spend* (they buy Deepgram/ElevenLabs), so the key must be **`read_write`** — a read-only key is rejected on every voice request. But since this key lives inside Vapi's config, don't hand out an unbounded spender: set a **per-key budget** on it (Keys section → the key's budget) so a leaked key can't spend past the cap. It's still bounded further by the agent's own [spend policies](../developers/spend-controls.md), and you can rotate it at any time. Match the credential to the leg: a spending leg gets a *budgeted* write key; the read-only Bland admission check (see below) gets only a capability token.
+**Use a `read_write` key, and keep the blast radius tight.** The voice and transcriber legs are `POST`s that *spend* (they buy Deepgram/ElevenLabs), so the key must be **`read_write`** — a read-only key is rejected on every voice request. Since this key lives inside Vapi's config, bound what a leak can cost: a leaked key is limited by this agent's **wallet balance** and [spend policies](../developers/spend-controls.md) (e.g. a `suspend_agent` cap) — keep those tight, and **rotate** the key to revoke. (A per-key budget caps the model/proxy legs today; it does **not** yet gate the voice media legs — until then, the wallet balance + spend policy are the bound on voice.) Match the credential to the leg: a spending leg gets a `read_write` key; the read-only Bland admission check (see below) gets only a capability token.
 {% endhint %}
 
 ### 2. Assistant config
@@ -4886,6 +4965,8 @@ The score tells you which leg to move. In order of typical impact:
 3. **Move telephony to [Floe Phone](../developers/floe-phone.md)** — enforceable minutes on the same ledger.
 4. **STT/TTS via Floe** *(early access — request at [hello@floelabs.xyz](mailto:hello@floelabs.xyz))*.
 
+For spend Floe never routes at all — **BYOK** LLM calls, self-hosted models, off-path tools — routing isn't an option yet, so it stays *dark*. [Ledger sync](ledger-sync.md) pushes `floe-guard`'s local spend ledger to Reconcile Mode, moving that spend from *dark* to *reconciled* so the score counts it (budget only — it moves no balance).
+
 ## Reading the tile
 
 - **"No coverage score yet"** — no webhook connected; Floe only sees spend you route through it. Connect the webhook and the score computes from the next call.
@@ -4905,6 +4986,117 @@ Returns `totals` — `knownRaw`, `enforceableRaw`, `reconciledRaw` (raw USDC) pl
 On calls Floe doesn't run — the orchestrator owns the media path — enforcement is **admission control, never mid-call**: an over-budget request is refused *before* it starts, and a reconciled breach denies the **next** admission (the next inbound call on Vapi/Retell **when a pre-call URL is configured**; otherwise the agent's next Floe-keyed action — always the case on Bland, which has no pre-call hook; a cooperative pre-call check on self-hosted stacks). The one exception is **Floe-native duration-billed legs** — streaming STT and Floe Phone run through Floe's own path and are metered live, cut off mid-stream at the cap. The score exists so that boundary is **visible instead of implied**.
 
 > Pre-call where we're in the path. Circuit breaker everywhere else.
+
+==============================================================================
+# Ledger sync — BYOK & self-hosted coverage
+Source: docs/build/ledger-sync.md
+URL: https://floe-labs.gitbook.io/docs/core-concepts/ledger-sync.md
+==============================================================================
+
+# Ledger sync — coverage for BYOK & self-hosted spend
+
+{% hint style="info" %}
+**Rolling out.** The client methods and `floe-guard push` CLI ship in the guard library today; the server endpoint (`POST /v1/agents/ledger/sync`) is rolling out. If a sync returns `404`, the endpoint isn't enabled for your account yet — request access at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+{% endhint %}
+
+Your [Coverage Score](coverage-score.md) can only count spend Floe can see. Floe sees the calls it routes — the gateway, the x402 proxy, Floe Phone. It **cannot** see a call it never touched: an LLM you hit with your own provider key (BYOK), a model you self-host, a tool you pay for off Floe's path. That spend is **dark** — it counts against nothing and appears nowhere.
+
+Ledger sync closes that gap. The open-source [`floe-guard`](https://github.com/Floe-Labs/floe-guard) library already keeps a local, priced ledger of every call your agent makes. This feature lets it **push that ledger to Floe's [Reconcile Mode](../developers/webhooks.md#connect-your-orchestrator-reconcile-mode)**, so dark spend becomes **reconciled** — visible on the score, attributable in your billing, and on the path to full coverage.
+
+## Trust & privacy first
+
+This is opt-in, explicit, and quiet by default. Nothing about it phones home.
+
+- **Off by default. Zero telemetry.** The guard sends nothing anywhere until you both (a) opt in with an API key and (b) explicitly call `sync()`. No background flush, no ambient reporting.
+- **The request body is exactly your `export_log()` output** — priced spend events only: `timestamp`, `kind`, `model_or_tool`, token counts, `cost_usd`. That's it.
+- **No prompts. No content. No identifiers.** The only free-form field that ever leaves the process is an optional `label` **you** set. There is no user id, no request payload, no transcript, no IP.
+- **The client validates before it sends.** Anything outside the documented event schema is rejected locally — a malformed or over-broad row never leaves your process.
+- **Revocable.** `disable_sync()` turns it back off and clears the stored key. No key on disk means no possible send.
+
+If you can't send content you don't have, you can't leak it. The guard never captures prompts in the first place — it prices calls, it doesn't record them.
+
+## Turn it on
+
+You need a **`read_write`** agent key (`floe_…`) — mint one from the [Developer Dashboard](../developers/developer-dashboard.md) or `POST /v1/developer/agents/:id/keys` with `"permissions": "read_write"`. A read-only key is rejected.
+
+### Programmatic
+
+{% tabs %}
+{% tab title="Python" %}
+```python
+from floe_guard import BudgetGuard
+
+guard = BudgetGuard(limit_usd=25.0)
+
+# ... your agent runs, guard prices each call into its local ledger ...
+
+guard.enable_sync(api_key="floe_…")   # opt in once (stores the key)
+result = guard.sync()                  # explicit send of the current ledger
+print(result)  # {'synced': 128, 'duplicates': 0, 'rejected': 0}
+
+guard.disable_sync()                   # revoke — clears the key, stops all sends
+```
+{% endtab %}
+
+{% tab title="TypeScript" %}
+```typescript
+import { BudgetGuard } from "floe-guard";
+
+const guard = new BudgetGuard({ limitUsd: 25.0 });
+
+// ... your agent runs, guard prices each call into its local ledger ...
+
+guard.enableSync({ apiKey: "floe_…" });   // opt in once (stores the key)
+const result = await guard.sync();         // explicit send of the current ledger
+console.log(result); // { synced: 128, duplicates: 0, rejected: 0 }
+
+guard.disableSync();                        // revoke — clears the key, stops all sends
+```
+{% endtab %}
+{% endtabs %}
+
+`sync()` is safe to call repeatedly: re-sending events Floe has already seen dedupes server-side (they land in `duplicates`, not double-counted). Call it on a timer, at task boundaries, or once at shutdown — whatever fits your run.
+
+### CLI
+
+If your ledger already lives on disk as newline-delimited JSON (one `export_log()` event per line), push it directly:
+
+```bash
+floe-guard push ledger.jsonl --key floe_…
+```
+
+Or pipe `export_log()` output straight in:
+
+```bash
+your-agent --dump-ledger | floe-guard push - --key floe_…
+```
+
+Both print the same `{ synced, duplicates, rejected }` summary the programmatic call returns.
+
+## What it does to your Coverage Score
+
+Synced spend lands in the **reconciled** bucket (see the [three-way split](coverage-score.md)). Two things follow from that, and both are deliberate:
+
+- **It *lowers* your enforceable percentage.** This spend is real, but Floe didn't gate it — so it's honest to count it as reconciled, not enforceable. A score that quietly ignored your BYOK bill would be lying. Reconciling it is the first step; the second is moving those legs onto Floe rails so they become enforceable pre-call. That's the ["graduate to 100% coverage"](migrate-to-full-coverage.md) path — you can't graduate a leg the score can't see.
+- **It's budget, not balance.** A synced row reports spend that already happened, for coverage and attribution. It **moves no money**, debits no balance, and **never suspends the agent**. Ledger sync reconciles history; it does not enforce.
+
+Watch the effect on the **Coverage Score card** in your [dashboard](https://dev-dashboard.floelabs.xyz) — dark spend drops, reconciled rises, and the score names which legs to move next.
+
+## When to reach for this
+
+- You call an LLM or tool with **your own provider key** and want its cost on the same score as your Floe-routed spend.
+- You **self-host** a model (vLLM, Ollama, a private endpoint) that Floe never sees.
+- You have **off-path** paid calls — a vendor billed on its own account — that you're not ready to move onto the [proxy](../developers/x402-facilitator.md) yet, but want counted.
+
+If a leg *can* run through Floe, routing it there is strictly better — it becomes enforceable pre-call, not just reconciled after. Ledger sync is for the spend that can't (yet).
+
+## Related
+
+- [Coverage Score](coverage-score.md) — the enforceable / reconciled / dark split this feeds.
+- [`POST /v1/agents/ledger/sync`](../developers/ledger-sync-api.md) — the endpoint reference.
+- [Reconcile Mode](../developers/webhooks.md#connect-your-orchestrator-reconcile-mode) — the other way cost reaches the ledger (hosted orchestrators).
+- [Graduate to 100% coverage](migrate-to-full-coverage.md) — moving reconciled legs onto Floe rails.
+- [Budget-Aware Routing](budget-aware-routing.md) — `floe-guard`'s local hard-stop and advisory taper.
 
 ==============================================================================
 # Spend Controls
@@ -8071,7 +8263,7 @@ A `429` response body looks like:
   "error": "rate_limit_exceeded",
   "reason": "agent_proxy_limit",
   "retry_after_seconds": 7,
-  "limit_per_minute": 30,
+  "limit_per_minute": 3000,
   "remaining": 0
 }
 ```
@@ -8080,7 +8272,7 @@ A `429` response body looks like:
 
 | `reason` | Source | Agent action |
 |----------|--------|--------------|
-| `agent_proxy_limit` | Per-agent token bucket (default 30/min, `RC12_RATE_LIMIT_PER_MINUTE`). The standard `/proxy/fetch` ceiling. | Wait `retry_after_seconds`; safe to retry. |
+| `agent_proxy_limit` | Per-agent token bucket (default 3,000/min, `RC12_RATE_LIMIT_PER_MINUTE`). The standard `/proxy/fetch` ceiling — anti-DoS-sized, since every call settles against your own balance. Raised per account on request. | Wait `retry_after_seconds`; safe to retry. |
 | `ip_rate_limit` | Per-IP sliding window (covers `/proxy/check` and `/x402/estimate`). | Wait, or check if the IP is shared with other callers. |
 | `global_rate_limit` | Server-wide protection on the `/v1/*` surface. | Wait longer — may indicate platform overload. |
 
@@ -9610,6 +9802,7 @@ The webhooks above are events Floe sends **you**. Reconcile Mode is the other di
 
 - **Hosted (Vapi, Retell, Bland)** — Floe ingests the platform's own end-of-call cost webhook. You paste the `call-end` URL into the platform.
 - **Self-hosted (Pipecat, LiveKit)** — there is no platform cost webhook. Your agent **self-reports** each call's cost to Floe's `call-end` URL, signed with `X-Floe-Signature`.
+- **BYOK / off-path LLM & tool spend** — for priced calls Floe never routes (your own provider key, a self-hosted model), the [`floe-guard`](https://github.com/Floe-Labs/floe-guard) library can push its local spend ledger to Reconcile Mode via [`POST /v1/agents/ledger/sync`](ledger-sync-api.md). See the [ledger sync guide](../build/ledger-sync.md).
 
 **Enforcement at the cap is also platform-specific** — Floe can only stop a call where it sits in the path:
 
@@ -11292,6 +11485,105 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/proxy/fetch" \
 | 403 | Account frozen or closed |
 | 429 | Rate limit exceeded |
 | 502 | Target URL unreachable |
+
+==============================================================================
+# Ledger Sync API
+Source: docs/developers/ledger-sync-api.md
+URL: https://floe-labs.gitbook.io/docs/api-reference/ledger-sync-api.md
+==============================================================================
+
+# Ledger Sync API
+
+`POST /v1/agents/ledger/sync` ingests a `floe-guard` local spend ledger into Floe's [Reconcile Mode](webhooks.md#connect-your-orchestrator-reconcile-mode). Each synced event becomes a **reconciled** row on the agent's ledger — visible on the [Coverage Score](../build/coverage-score.md), attributable in billing, and **moving no balance**.
+
+For the guide, the privacy model, and the client/CLI examples, see [Ledger sync — coverage for BYOK & self-hosted spend](../build/ledger-sync.md).
+
+{% hint style="info" %}
+**Rolling out.** This endpoint is being enabled per account. A `404` means it isn't live for you yet — request access at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+{% endhint %}
+
+**Base URL:** `https://credit-api.floelabs.xyz`
+
+## Authentication
+
+An **agent** runtime key with **`read_write`** permission, sent as a bearer token:
+
+```
+Authorization: Bearer floe_<hex>
+```
+
+This is the agent's `floe_…` key (mint via `POST /v1/developer/agents/:id/keys` with `"permissions": "read_write"`, or the [dashboard](developer-dashboard.md)) — **not** a `floe_live_…` developer key, and **not** a read-only agent key. Both are rejected `401`. See [API Keys](api-keys.md) for the key-type table.
+
+## Request
+
+```
+Content-Type: application/x-ndjson
+```
+
+The body is newline-delimited JSON: **one `export_log()` event per line**. This is exactly what the `floe-guard` client sends — priced spend events only.
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/agents/ledger/sync" \
+  -H "Authorization: Bearer floe_YOUR_AGENT_KEY" \
+  -H "Content-Type: application/x-ndjson" \
+  --data-binary $'{"timestamp":"2026-08-16T14:30:00Z","kind":"llm","model_or_tool":"openai/gpt-4o","prompt_tokens":1200,"completion_tokens":420,"cost_usd":0.0064,"label":"nightly-crawl"}\n{"timestamp":"2026-08-16T14:30:12Z","kind":"tool","model_or_tool":"exa.search","prompt_tokens":null,"completion_tokens":null,"cost_usd":0.01}'
+```
+
+### Event fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `timestamp` | string | Yes | When the spend occurred (ISO 8601). |
+| `kind` | string | Yes | `"llm"` or `"tool"`. |
+| `model_or_tool` | string | Yes | The model id (`openai/gpt-4o`) or tool identifier the cost is attributed to. |
+| `prompt_tokens` | number \| null | Yes | Input tokens for `llm` events; `null` for `tool` events. |
+| `completion_tokens` | number \| null | Yes | Output tokens for `llm` events; `null` for `tool` events. |
+| `cost_usd` | number | Yes | Priced cost of the call, in **USD** (a decimal, e.g. `0.0064`). This is the guard's local USD ledger value echoed verbatim — note it is **not** the raw 6-decimal USDC-units convention used elsewhere in this API. |
+| `label` | string | No | The one free-form field you may set — used for attribution. The only caller-supplied identifier the endpoint accepts; there is no field for prompts, content, or user ids. |
+| `reserved` | boolean | No | Marks a held-but-not-yet-settled row from the guard's reservation flow. Optional. |
+
+Any line whose shape falls outside this schema is counted in `rejected` (see below) — it does not fail the whole request.
+
+## Response
+
+`200 OK`:
+
+```json
+{
+  "synced": 128,
+  "duplicates": 3,
+  "rejected": 1
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `synced` | Events written as new reconciled ledger rows. |
+| `duplicates` | Events already present (idempotent re-sync) — counted, not re-written. |
+| `rejected` | Malformed or schema-invalid lines that were skipped. |
+
+**Idempotent.** Re-syncing the same events is safe — repeats land in `duplicates`, never double-counted. Call `sync()` on a timer or at shutdown without bookkeeping.
+
+**Writes a reconciled row. Moves no balance.** Ingest counts against coverage and attribution; it debits nothing and never suspends the agent.
+
+## Limits & errors
+
+| Status | Condition | Notes |
+|--------|-----------|-------|
+| `400` | Empty or unparseable body | No line could be read. Nothing is written. |
+| `401` | Missing / invalid key, developer key, or read-only agent key | Needs a `read_write` agent key. |
+| `404` | Endpoint not enabled for this account | Rolling out — see the availability note above. |
+| `413` | Body > **1 MiB**, or > **5000 events** in one request | Split the ledger into smaller batches. |
+| `429` | Per-agent rate limit exceeded | Back off and retry; `sync()` less frequently. |
+
+Malformed **lines** inside an otherwise-valid body are not an error — they're tallied in the `200` response's `rejected` count. A `400` is reserved for a body that yields **no** usable lines at all.
+
+## Related
+
+- [Ledger sync guide](../build/ledger-sync.md) — problem, privacy model, client & CLI usage.
+- [Coverage Score](../build/coverage-score.md) — where synced spend shows up (reconciled bucket).
+- [Reconcile Mode](webhooks.md#connect-your-orchestrator-reconcile-mode) — the hosted-orchestrator path to the same ledger.
+- [Credit REST API](credit-api.md) — the rest of the agent & developer surface.
 
 ==============================================================================
 # Error Codes

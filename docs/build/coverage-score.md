@@ -27,6 +27,8 @@ The score tells you which leg to move. In order of typical impact:
 3. **Move telephony to [Floe Phone](../developers/floe-phone.md)** — enforceable minutes on the same ledger.
 4. **STT/TTS via Floe** *(early access — request at [hello@floelabs.xyz](mailto:hello@floelabs.xyz))*.
 
+For spend Floe never routes at all — **BYOK** LLM calls, self-hosted models, off-path tools — routing isn't an option yet, so it stays *dark*. [Ledger sync](ledger-sync.md) pushes `floe-guard`'s local spend ledger to Reconcile Mode, moving that spend from *dark* to *reconciled* so the score counts it (budget only — it moves no balance).
+
 ## Reading the tile
 
 - **"No coverage score yet"** — no webhook connected; Floe only sees spend you route through it. Connect the webhook and the score computes from the next call.
