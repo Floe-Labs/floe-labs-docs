@@ -6,7 +6,7 @@ Common questions about using Floe.
 
 ### What is Floe?
 
-Floe is the **spend layer for AI agents**. You create an agent in the dashboard (Floe provisions a custodial wallet — no seed phrase), fund it with a card or bank transfer, and the agent pays for any x402 API through one Floe proxy endpoint — governed by programmable spend controls. No crypto experience needed.
+Floe is **spend controls for Voice AI** — one ledger for your voice agent's whole bill (telephony, STT, LLM, TTS, search), enforced before money moves. You create an agent in the dashboard (Floe provisions a custodial wallet — no seed phrase), fund it with a card or bank transfer, and the agent pays for any x402 API through one Floe proxy endpoint — governed by programmable spend controls. No crypto experience needed.
 
 ### What can my agent do today?
 
