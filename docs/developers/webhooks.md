@@ -537,6 +537,7 @@ The webhooks above are events Floe sends **you**. Reconcile Mode is the other di
 
 - **Hosted (Vapi, Retell, Bland)** — Floe ingests the platform's own end-of-call cost webhook. You paste the `call-end` URL into the platform.
 - **Self-hosted (Pipecat, LiveKit)** — there is no platform cost webhook. Your agent **self-reports** each call's cost to Floe's `call-end` URL, signed with `X-Floe-Signature`.
+- **BYOK / off-path LLM & tool spend** — for priced calls Floe never routes (your own provider key, a self-hosted model), the [`floe-guard`](https://github.com/Floe-Labs/floe-guard) library can push its local spend ledger to Reconcile Mode via [`POST /v1/agents/ledger/sync`](ledger-sync-api.md). See the [ledger sync guide](../build/ledger-sync.md).
 
 **Enforcement at the cap is also platform-specific** — Floe can only stop a call where it sits in the path:
 
