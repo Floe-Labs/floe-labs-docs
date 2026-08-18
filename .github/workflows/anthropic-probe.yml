@@ -1,0 +1,98 @@
+# Anthropic API probe — on-demand diagnostic for the docs-sync 429s.
+#
+# claude-code-action hides the real API error unless show_full_output is on,
+# and this repo is PUBLIC, so we don't want Claude's tool output (which would
+# include the private monorepo diff) in the logs. This workflow instead sends
+# two raw /v1/messages requests with the same ANTHROPIC_API_KEY secret and
+# prints only the HTTP status, the anthropic-ratelimit-* headers and the error
+# body — nothing else. Cost per run: < $0.15 (the large probe is ~25k input
+# tokens with max_tokens=1; the small probe is a few tokens).
+#
+# How to read the result:
+#   small=200, large=429  -> a single Claude-Code-sized request is larger than
+#                            the org's input-tokens-per-minute limit for this
+#                            model (Evaluation tier / workspace override).
+#   small=429, large=429  -> every request is blocked (spend cap, workspace
+#                            override, RPM=0, or the key is in a locked org).
+#   small=200, large=200  -> the limit is not size-related; the 429 in CI is a
+#                            burst / acceleration limit or something else —
+#                            compare the printed *-limit headers with the
+#                            published tier table.
+name: Anthropic API probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: 'Model to probe'
+        required: false
+        default: 'claude-opus-5'
+        type: string
+      large_words:
+        description: 'Approx. size (in words ≈ tokens) of the large probe'
+        required: false
+        default: '25000'
+        type: string
+
+permissions: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      MODEL: ${{ inputs.model }}
+      LARGE_WORDS: ${{ inputs.large_words }}
+    steps:
+      - name: Probe /v1/messages (small, then Claude-Code-sized)
+        run: |
+          set +e
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is empty"; exit 1
+          fi
+
+          probe () {
+            local label="$1" body_file="$2"
+            local hdr="$RUNNER_TEMP/$label.headers" out="$RUNNER_TEMP/$label.body"
+            local status
+            status=$(curl -sS -o "$out" -D "$hdr" -w '%{http_code}' \
+              https://api.anthropic.com/v1/messages \
+              -H "x-api-key: $ANTHROPIC_API_KEY" \
+              -H "anthropic-version: 2023-06-01" \
+              -H "content-type: application/json" \
+              --data-binary @"$body_file")
+            echo "::group::$label probe -> HTTP $status"
+            echo "--- rate-limit / retry headers"
+            grep -i -E '^(retry-after|anthropic-ratelimit-|anthropic-workspace-id|request-id|x-should-retry)' "$hdr" || echo "(none)"
+            if [ "$status" != "200" ]; then
+              echo "--- error body"
+              cat "$out"; echo
+            else
+              echo "--- usage"
+              python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(json.dumps(d.get("usage"), indent=1))' "$out"
+            fi
+            echo "::endgroup::"
+            echo "$label=$status" >> "$GITHUB_STEP_SUMMARY"
+          }
+
+          # Small probe: a few input tokens.
+          python3 - "$MODEL" > "$RUNNER_TEMP/small.json" <<'EOF'
+          import json, sys
+          print(json.dumps({"model": sys.argv[1], "max_tokens": 1,
+                            "messages": [{"role": "user", "content": "hi"}]}))
+          EOF
+          probe small "$RUNNER_TEMP/small.json"
+
+          # Large probe: roughly the size of Claude Code's first request
+          # (system prompt + tool schemas + prompt ≈ 20–30k uncached tokens).
+          python3 - "$MODEL" "$LARGE_WORDS" > "$RUNNER_TEMP/large.json" <<'EOF'
+          import json, sys
+          filler = " ".join(["lorem"] * int(sys.argv[2]))
+          print(json.dumps({"model": sys.argv[1], "max_tokens": 1,
+                            "messages": [{"role": "user",
+                                          "content": filler + "\n\nReply with one word."}]}))
+          EOF
+          probe large "$RUNNER_TEMP/large.json"
+
+          echo "Probe finished — see the groups above and the job summary."
