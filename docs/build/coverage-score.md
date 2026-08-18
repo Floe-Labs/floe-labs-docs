@@ -31,13 +31,14 @@ For spend Floe never routes at all — **BYOK** LLM calls, self-hosted models, o
 
 ## Reading the tile
 
-The dashboard shows the score on the agent overview and, rolled up across every agent, on the account home. When the window is empty the tile tells you *why*:
+The dashboard shows the score on the agent overview and, rolled up across every agent, on the account home. When the window is empty the tile tells you *why*. The rules are checked in this order — first match wins:
 
-- **"No coverage score yet"** — no end-of-call webhook connected; Floe only sees spend you route through it. **Connect webhook (2 min) →** opens the agent's Voice orchestrators card; the score computes from the next call.
-- **"Coverage: 100%"** on a keyless agent — every dollar is gateway-routed and enforceable pre-call. This is the ceiling, not an error. (Calls that landed at $0 — free-tier models — still count: the tile shows 100% by call count until the first metered call.)
-- **"Computing"** — the account routes on its own vendor keys (BYOK), or a webhook is connected and the first call-end hasn't landed yet. The first score renders after the first metered call.
+1. **A score** — any spend in the window. On a keyless agent that is **"Coverage: 100%"**: every dollar is gateway-routed and enforceable (pre-call on request legs, live on Floe-native duration-billed legs). This is the ceiling, not an error.
+2. **"Coverage: 100%" by call count** — no spend yet, but Floe-routed calls landed at $0 (free-tier models, or BYOK on a $0 service fee). Every call went through Floe's gate; the money score renders with the first metered call.
+3. **"Computing"** — nothing metered yet, but the account routes on its own vendor keys (BYOK), or an end-of-call webhook is connected and the first call-end hasn't landed.
+4. **"No coverage score yet"** — no spend, no routed calls, no BYOK, no webhook. Floe only sees spend you route through it. **Connect webhook (2 min) →** opens the agent's Voice orchestrators card; the score computes from the next call.
 
-The account tile uses the same rules across the whole fleet; its **Connect webhook** button takes you to the first agent that has no webhook yet.
+So a keyless agent with routed calls never sees "No coverage score yet" — rules 1–2 win. The account tile uses the same rules across the whole fleet; its **Connect webhook** button takes you to the first agent that has no webhook yet.
 
 ## API
 
@@ -45,7 +46,11 @@ The account tile uses the same rules across the whole fleet; its **Connect webho
 GET /v1/developer/agents/:agentId/coverage?days=30
 ```
 
-Returns `totals` — `knownRaw`, `enforceableRaw`, `reconciledRaw` (raw USDC) plus `coverageBps` (the enforceable-plus-reconciled share in basis points; `null` when there's no spend in the window) — a `bySource` breakdown (`class`, `calls`, `costRaw`), a daily `series`, `calls` (`total`, `enforceable`, `reconciled`, `byok` — call counts over the same rows; `byok` is the subset served on your own vendor key), and `dark: "unknown"` (spend on platforms never wired to Floe can't be counted). Accepts any developer credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set.
+Returns `totals` — `knownRaw`, `enforceableRaw`, `reconciledRaw` (raw USDC) plus `coverageBps` (the enforceable-plus-reconciled share in basis points; `null` when there's no spend in the window) — a `bySource` breakdown (`class`, `calls`, `costRaw`), a daily `series`, `calls`, and `dark: "unknown"` (spend on platforms never wired to Floe can't be counted).
+
+`calls` counts the same rows `totals` sums: `total`, `enforceable`, `reconciled`, `byok`. `enforceable` and `reconciled` are mutually exclusive and sum to `total`; `byok` is a **subset of `enforceable`** (gateway calls served on your own vendor key — rail `byok`) and never overlaps `reconciled` (spend pushed by [ledger sync](ledger-sync.md) lands as reconciled rows, not `byok`). Don't add `byok` to the other two.
+
+**Zero-spend windows:** `coverageBps` is `null` whenever `knownRaw` is `0`, even if calls landed at $0. Clients should read `calls.*` in that case — `calls.enforceable > 0 && calls.reconciled == 0` is what the dashboard renders as "Coverage: 100%" by call count; `calls.total == 0` is genuinely no activity. `null` never means "0% covered". Accepts any developer credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set.
 
 ## The honest boundary
 
