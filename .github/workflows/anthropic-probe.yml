@@ -21,6 +21,11 @@
 name: Anthropic API probe
 
 on:
+  # workflow_dispatch only works once the file is on the default branch, so
+  # while this lives on its own branch a push to that branch runs it too.
+  push:
+    branches: [ci/anthropic-probe]
+    paths: ['.github/workflows/anthropic-probe.yml']
   workflow_dispatch:
     inputs:
       model:
@@ -42,8 +47,8 @@ jobs:
     timeout-minutes: 5
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      MODEL: ${{ inputs.model }}
-      LARGE_WORDS: ${{ inputs.large_words }}
+      MODEL: ${{ inputs.model || 'claude-opus-5' }}
+      LARGE_WORDS: ${{ inputs.large_words || '25000' }}
     steps:
       - name: Probe /v1/messages (small, then Claude-Code-sized)
         run: |
