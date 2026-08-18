@@ -2305,7 +2305,7 @@ URL: https://floe-labs.gitbook.io/docs/the-voice-stack/budget-aware-routing.md
 # Budget-Aware Routing
 
 {% hint style="warning" %}
-**Availability.** The **hard stop** at budget is live everywhere today. **Advisory taper** is live wherever the operator has enabled the `X-Floe-Budget-Advisory` header (off by default). **Server-side auto-downgrade** and **finish** are in **early access** — request either at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+**Availability.** The **hard stop** at budget is live everywhere today. **Advisory taper** is **enabled on the hosted API** (`credit-api.floelabs.xyz`) — self-hosters opt in by setting `BUDGET_ADVISORY_ENABLED=1` (off by default). **Server-side auto-downgrade** and **finish** are in **early access** — request either at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
 {% endhint %}
 
 When an agent nears its budget you can do more than fail the call — but what's available depends on the mode:
@@ -2313,7 +2313,7 @@ When an agent nears its budget you can do more than fail the call — but what's
 | Mode | Behavior | Availability |
 |------|----------|--------------|
 | **Hard stop** | The breaching call gets a hard `402`. With a `suspend_agent` policy it *also* suspends the agent — and fires an `agent.suspended` webhook if you've registered one; without that action it just declines the single call. | **Live** |
-| **Advisory taper** | When the operator enables it, `X-Floe-Budget-Advisory` on each response lets your agent pick a cheaper model itself. | **Live (operator-enabled; off by default)** |
+| **Advisory taper** | `X-Floe-Budget-Advisory` on each response lets your agent pick a cheaper model itself. | **Live — on for the hosted API; opt-in (`BUDGET_ADVISORY_ENABLED`) when self-hosting** |
 | **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
 | **Finish** | Complete the current task, then stop new spend. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
 
@@ -5744,7 +5744,7 @@ Because both `Floe402Tool` and `FloeLLM` route through Floe, one policy bounds t
 
 ## Budget awareness (optional)
 
-Beyond the hard cap, a crew can *see* how much room it has left and plan accordingly. When your operator enables it, every paid response carries an **`X-Floe-Budget-Advisory`** header reporting remaining headroom on the tightest active cap — so an agent can downgrade to a cheaper model or change path **before** it hits a hard `402`. It's off by default; see the [Agent Runtime Contract](../developers/agent-runtime-contract.md#context-aware-spend-advisory).
+Beyond the hard cap, a crew can *see* how much room it has left and plan accordingly. When enabled (the hosted API enables it; self-hosters opt in with `BUDGET_ADVISORY_ENABLED=1`, off by default), every paid response carries an **`X-Floe-Budget-Advisory`** header reporting remaining headroom on the tightest active cap — so an agent can downgrade to a cheaper model or change path **before** it hits a hard `402`. See the [Agent Runtime Contract](../developers/agent-runtime-contract.md#context-aware-spend-advisory).
 
 **This is a soft signal.** LLMs honor it unreliably — a model can ignore its own instructions. Budget awareness is upside for cleaner planning; the **spend control is the real protection**. Don't rely on the advisory to stop a loop. Rely on the cap.
 
@@ -7730,13 +7730,13 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 |---|---|---|
 | `X-Floe-Cost-USDC` | **every** 2xx | Raw USDC units (6-decimal integer string) charged for this request. `0` when the target was free (a passthrough). Consume it to budget, attribute, or surface cost upstream. |
 | `X-Floe-Payment` | **every** 2xx | `paid` (Floe signed an x402 payment — see the cost header) or `passthrough` (the target was free, cost `0`). Branch on this so you never have to infer free-vs-paid from the presence of the cost header. |
-| `X-Floe-Budget-Advisory` | 2xx after a paid call (when enabled) | JSON describing how close you are to your tightest active spend cap. Use it to downgrade models or change path *before* you hit a hard `402`. See [Context-Aware Spend Advisory](#context-aware-spend-advisory). Off by default. |
+| `X-Floe-Budget-Advisory` | 2xx after a paid call (when enabled) | JSON describing how close you are to your tightest active spend cap. Use it to downgrade models or change path *before* you hit a hard `402`. See [Context-Aware Spend Advisory](#context-aware-spend-advisory). **On for the hosted API**; opt-in (`BUDGET_ADVISORY_ENABLED`) when self-hosting. |
 | `X-Floe-RateLimit-Advisory` | keyless-gateway responses (when enabled) | The upstream provider's rate-limit headroom, normalized across providers (OpenAI / Anthropic / `Retry-After`) into one `near_limit` signal so you can back off before the 429 wall. See [Keyless Inference → Rate-Limit Advisory](keyless-inference.md#rate-limit-advisory-cross-provider-backpressure). Off by default. |
 | `X-Floe-Idempotent-Replay: true` | only on replays | The body you received is a cached replay of a prior request with the same `Idempotency-Key`. No new payment occurred. |
 
 ## Context-Aware Spend Advisory
 
-When enabled by your operator, paid 2xx responses carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, or per-vendor caps your operator has set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
+The hosted API (`credit-api.floelabs.xyz`) enables this; self-hosters turn it on with `BUDGET_ADVISORY_ENABLED=1`. Paid 2xx responses then carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, or per-vendor caps your operator has set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
 
 ```jsonc
 // X-Floe-Budget-Advisory (parsed)
@@ -11832,6 +11832,8 @@ Every environment variable the Floe Credit API (`apps/api`) reads at startup or 
 | `X402_VALID_BEFORE_SECONDS` | — | Server | EIP-3009 `validBefore` offset (default 90) |
 | `X402_DOMAIN_ALLOWLIST` | — | Server | Comma-separated list of allowed upstream domains (empty = allow all public) |
 | `SSRF_ALLOW_LOCALHOST` | — | Server | `1` / `true` to permit `localhost` and private-IP targets (dev only) |
+| `BUDGET_ADVISORY_ENABLED` | — | Server | `1` / `true` to emit the `X-Floe-Budget-Advisory` taper hint on paid responses. **On for the hosted API; off by default when self-hosting.** |
+| `BUDGET_ADVISORY_NEAR_LIMIT_BPS` | — | Server | Headroom threshold (bps, `0`–`10000`) at which the advisory flips to `near_limit`. Unset = default |
 | `MONITORING_URL` | — | Server | Monitoring API base URL (default `http://localhost:4000`) |
 | `MONITORING_INTERNAL_KEY` | — | Server | Shared secret for monitoring push |
 | `CONTRACT_ADDRESS` | — | Server | Legacy — prefer `LENDING_INTENT_MATCHER` |
@@ -11959,6 +11961,25 @@ Use this when running a private facilitator for a specific agent fleet. Leaving 
 
 ### `SSRF_ALLOW_LOCALHOST`
 Set to `1` or `true` to permit `localhost`, `127.0.0.0/8`, and RFC1918 targets. **Only use in development.** In production this bypasses the primary SSRF defense — an attacker who controls an agent's target URL could enumerate and attack internal services.
+
+---
+
+## Advisory headers
+
+### `BUDGET_ADVISORY_ENABLED`
+Set to `1` or `true` to emit the [`X-Floe-Budget-Advisory`](../developers/agent-runtime-contract.md#context-aware-spend-advisory) header on paid responses — a passive taper hint telling the agent how close it is to its tightest active cap, so it can downgrade *before* a hard `402`. It never blocks a call; the hard spend cap is the real protection.
+
+- **Default:** off. **The hosted API (`credit-api.floelabs.xyz`) has this enabled** — self-hosters get the same signal by setting it:
+
+  ```
+  # Proactive taper hints (optional):
+  BUDGET_ADVISORY_ENABLED=1
+  ```
+
+- Best-effort: the header is omitted on any response where no credit line or policy cap applies (e.g. provisioning still in flight). When off, it is not emitted and is stripped from the CORS `expose-headers` list, so responses stay byte-identical.
+
+### `BUDGET_ADVISORY_NEAR_LIMIT_BPS`
+Headroom threshold, in basis points (`0`–`10000`), at which the advisory's `near_limit` flag flips true. Leave unset to use the built-in default. Ignored unless `BUDGET_ADVISORY_ENABLED` is on.
 
 ---
 

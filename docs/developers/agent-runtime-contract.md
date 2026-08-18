@@ -68,13 +68,13 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 |---|---|---|
 | `X-Floe-Cost-USDC` | **every** 2xx | Raw USDC units (6-decimal integer string) charged for this request. `0` when the target was free (a passthrough). Consume it to budget, attribute, or surface cost upstream. |
 | `X-Floe-Payment` | **every** 2xx | `paid` (Floe signed an x402 payment — see the cost header) or `passthrough` (the target was free, cost `0`). Branch on this so you never have to infer free-vs-paid from the presence of the cost header. |
-| `X-Floe-Budget-Advisory` | 2xx after a paid call (when enabled) | JSON describing how close you are to your tightest active spend cap. Use it to downgrade models or change path *before* you hit a hard `402`. See [Context-Aware Spend Advisory](#context-aware-spend-advisory). Off by default. |
+| `X-Floe-Budget-Advisory` | 2xx after a paid call (when enabled) | JSON describing how close you are to your tightest active spend cap. Use it to downgrade models or change path *before* you hit a hard `402`. See [Context-Aware Spend Advisory](#context-aware-spend-advisory). **On for the hosted API**; opt-in (`BUDGET_ADVISORY_ENABLED`) when self-hosting. |
 | `X-Floe-RateLimit-Advisory` | keyless-gateway responses (when enabled) | The upstream provider's rate-limit headroom, normalized across providers (OpenAI / Anthropic / `Retry-After`) into one `near_limit` signal so you can back off before the 429 wall. See [Keyless Inference → Rate-Limit Advisory](keyless-inference.md#rate-limit-advisory-cross-provider-backpressure). Off by default. |
 | `X-Floe-Idempotent-Replay: true` | only on replays | The body you received is a cached replay of a prior request with the same `Idempotency-Key`. No new payment occurred. |
 
 ## Context-Aware Spend Advisory
 
-When enabled by your operator, paid 2xx responses carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, or per-vendor caps your operator has set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
+The hosted API (`credit-api.floelabs.xyz`) enables this; self-hosters turn it on with `BUDGET_ADVISORY_ENABLED=1`. Paid 2xx responses then carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, or per-vendor caps your operator has set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
 
 ```jsonc
 // X-Floe-Budget-Advisory (parsed)

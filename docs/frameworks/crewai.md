@@ -114,7 +114,7 @@ Because both `Floe402Tool` and `FloeLLM` route through Floe, one policy bounds t
 
 ## Budget awareness (optional)
 
-Beyond the hard cap, a crew can *see* how much room it has left and plan accordingly. When your operator enables it, every paid response carries an **`X-Floe-Budget-Advisory`** header reporting remaining headroom on the tightest active cap — so an agent can downgrade to a cheaper model or change path **before** it hits a hard `402`. It's off by default; see the [Agent Runtime Contract](../developers/agent-runtime-contract.md#context-aware-spend-advisory).
+Beyond the hard cap, a crew can *see* how much room it has left and plan accordingly. When enabled (the hosted API enables it; self-hosters opt in with `BUDGET_ADVISORY_ENABLED=1`, off by default), every paid response carries an **`X-Floe-Budget-Advisory`** header reporting remaining headroom on the tightest active cap — so an agent can downgrade to a cheaper model or change path **before** it hits a hard `402`. See the [Agent Runtime Contract](../developers/agent-runtime-contract.md#context-aware-spend-advisory).
 
 **This is a soft signal.** LLMs honor it unreliably — a model can ignore its own instructions. Budget awareness is upside for cleaner planning; the **spend control is the real protection**. Don't rely on the advisory to stop a loop. Rely on the cap.
 

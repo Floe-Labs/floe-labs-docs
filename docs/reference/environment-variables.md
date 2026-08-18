@@ -33,6 +33,8 @@ Every environment variable the Floe Credit API (`apps/api`) reads at startup or 
 | `X402_VALID_BEFORE_SECONDS` | — | Server | EIP-3009 `validBefore` offset (default 90) |
 | `X402_DOMAIN_ALLOWLIST` | — | Server | Comma-separated list of allowed upstream domains (empty = allow all public) |
 | `SSRF_ALLOW_LOCALHOST` | — | Server | `1` / `true` to permit `localhost` and private-IP targets (dev only) |
+| `BUDGET_ADVISORY_ENABLED` | — | Server | `1` / `true` to emit the `X-Floe-Budget-Advisory` taper hint on paid responses. **On for the hosted API; off by default when self-hosting.** |
+| `BUDGET_ADVISORY_NEAR_LIMIT_BPS` | — | Server | Headroom threshold (bps, `0`–`10000`) at which the advisory flips to `near_limit`. Unset = default |
 | `MONITORING_URL` | — | Server | Monitoring API base URL (default `http://localhost:4000`) |
 | `MONITORING_INTERNAL_KEY` | — | Server | Shared secret for monitoring push |
 | `CONTRACT_ADDRESS` | — | Server | Legacy — prefer `LENDING_INTENT_MATCHER` |
@@ -160,6 +162,25 @@ Use this when running a private facilitator for a specific agent fleet. Leaving 
 
 ### `SSRF_ALLOW_LOCALHOST`
 Set to `1` or `true` to permit `localhost`, `127.0.0.0/8`, and RFC1918 targets. **Only use in development.** In production this bypasses the primary SSRF defense — an attacker who controls an agent's target URL could enumerate and attack internal services.
+
+---
+
+## Advisory headers
+
+### `BUDGET_ADVISORY_ENABLED`
+Set to `1` or `true` to emit the [`X-Floe-Budget-Advisory`](../developers/agent-runtime-contract.md#context-aware-spend-advisory) header on paid responses — a passive taper hint telling the agent how close it is to its tightest active cap, so it can downgrade *before* a hard `402`. It never blocks a call; the hard spend cap is the real protection.
+
+- **Default:** off. **The hosted API (`credit-api.floelabs.xyz`) has this enabled** — self-hosters get the same signal by setting it:
+
+  ```
+  # Proactive taper hints (optional):
+  BUDGET_ADVISORY_ENABLED=1
+  ```
+
+- Best-effort: the header is omitted on any response where no credit line or policy cap applies (e.g. provisioning still in flight). When off, it is not emitted and is stripped from the CORS `expose-headers` list, so responses stay byte-identical.
+
+### `BUDGET_ADVISORY_NEAR_LIMIT_BPS`
+Headroom threshold, in basis points (`0`–`10000`), at which the advisory's `near_limit` flag flips true. Leave unset to use the built-in default. Ignored unless `BUDGET_ADVISORY_ENABLED` is on.
 
 ---
 
