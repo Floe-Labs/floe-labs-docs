@@ -34,7 +34,7 @@ Every environment variable the Floe Credit API (`apps/api`) reads at startup or 
 | `X402_DOMAIN_ALLOWLIST` | — | Server | Comma-separated list of allowed upstream domains (empty = allow all public) |
 | `SSRF_ALLOW_LOCALHOST` | — | Server | `1` / `true` to permit `localhost` and private-IP targets (dev only) |
 | `BUDGET_ADVISORY_ENABLED` | — | Server | `1` / `true` to emit the `X-Floe-Budget-Advisory` taper hint on paid responses. **On for the hosted API; off by default when self-hosting.** |
-| `BUDGET_ADVISORY_NEAR_LIMIT_BPS` | — | Server | Headroom threshold (bps, `0`–`10000`) at which the advisory flips to `near_limit`. Unset = library default |
+| `BUDGET_ADVISORY_NEAR_LIMIT_BPS` | — | Server | Headroom threshold (bps, `0`–`10000`) at which the advisory flips to `near_limit`. Unset = default |
 | `MONITORING_URL` | — | Server | Monitoring API base URL (default `http://localhost:4000`) |
 | `MONITORING_INTERNAL_KEY` | — | Server | Shared secret for monitoring push |
 | `CONTRACT_ADDRESS` | — | Server | Legacy — prefer `LENDING_INTENT_MATCHER` |
@@ -180,7 +180,7 @@ Set to `1` or `true` to emit the [`X-Floe-Budget-Advisory`](../developers/agent-
 - Best-effort: the header is omitted on any response where no credit line or policy cap applies (e.g. provisioning still in flight). When off, it is not emitted and is stripped from the CORS `expose-headers` list, so responses stay byte-identical.
 
 ### `BUDGET_ADVISORY_NEAR_LIMIT_BPS`
-Headroom threshold, in basis points (`0`–`10000`), at which the advisory's `near_limit` flag flips true. Leave unset to use the library default. Ignored unless `BUDGET_ADVISORY_ENABLED` is on.
+Headroom threshold, in basis points (`0`–`10000`), at which the advisory's `near_limit` flag flips true. Leave unset to use the built-in default. Ignored unless `BUDGET_ADVISORY_ENABLED` is on.
 
 ---
 

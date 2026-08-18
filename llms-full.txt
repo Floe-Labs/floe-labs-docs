@@ -5744,7 +5744,7 @@ Because both `Floe402Tool` and `FloeLLM` route through Floe, one policy bounds t
 
 ## Budget awareness (optional)
 
-Beyond the hard cap, a crew can *see* how much room it has left and plan accordingly. When your operator enables it, every paid response carries an **`X-Floe-Budget-Advisory`** header reporting remaining headroom on the tightest active cap — so an agent can downgrade to a cheaper model or change path **before** it hits a hard `402`. It's enabled on the hosted API and opt-in (`BUDGET_ADVISORY_ENABLED`) when self-hosting; see the [Agent Runtime Contract](../developers/agent-runtime-contract.md#context-aware-spend-advisory).
+Beyond the hard cap, a crew can *see* how much room it has left and plan accordingly. When enabled (the hosted API enables it; self-hosters opt in with `BUDGET_ADVISORY_ENABLED=1`, off by default), every paid response carries an **`X-Floe-Budget-Advisory`** header reporting remaining headroom on the tightest active cap — so an agent can downgrade to a cheaper model or change path **before** it hits a hard `402`. See the [Agent Runtime Contract](../developers/agent-runtime-contract.md#context-aware-spend-advisory).
 
 **This is a soft signal.** LLMs honor it unreliably — a model can ignore its own instructions. Budget awareness is upside for cleaner planning; the **spend control is the real protection**. Don't rely on the advisory to stop a loop. Rely on the cap.
 
@@ -11833,7 +11833,7 @@ Every environment variable the Floe Credit API (`apps/api`) reads at startup or 
 | `X402_DOMAIN_ALLOWLIST` | — | Server | Comma-separated list of allowed upstream domains (empty = allow all public) |
 | `SSRF_ALLOW_LOCALHOST` | — | Server | `1` / `true` to permit `localhost` and private-IP targets (dev only) |
 | `BUDGET_ADVISORY_ENABLED` | — | Server | `1` / `true` to emit the `X-Floe-Budget-Advisory` taper hint on paid responses. **On for the hosted API; off by default when self-hosting.** |
-| `BUDGET_ADVISORY_NEAR_LIMIT_BPS` | — | Server | Headroom threshold (bps, `0`–`10000`) at which the advisory flips to `near_limit`. Unset = library default |
+| `BUDGET_ADVISORY_NEAR_LIMIT_BPS` | — | Server | Headroom threshold (bps, `0`–`10000`) at which the advisory flips to `near_limit`. Unset = default |
 | `MONITORING_URL` | — | Server | Monitoring API base URL (default `http://localhost:4000`) |
 | `MONITORING_INTERNAL_KEY` | — | Server | Shared secret for monitoring push |
 | `CONTRACT_ADDRESS` | — | Server | Legacy — prefer `LENDING_INTENT_MATCHER` |
@@ -11979,7 +11979,7 @@ Set to `1` or `true` to emit the [`X-Floe-Budget-Advisory`](../developers/agent-
 - Best-effort: the header is omitted on any response where no credit line or policy cap applies (e.g. provisioning still in flight). When off, it is not emitted and is stripped from the CORS `expose-headers` list, so responses stay byte-identical.
 
 ### `BUDGET_ADVISORY_NEAR_LIMIT_BPS`
-Headroom threshold, in basis points (`0`–`10000`), at which the advisory's `near_limit` flag flips true. Leave unset to use the library default. Ignored unless `BUDGET_ADVISORY_ENABLED` is on.
+Headroom threshold, in basis points (`0`–`10000`), at which the advisory's `near_limit` flag flips true. Leave unset to use the built-in default. Ignored unless `BUDGET_ADVISORY_ENABLED` is on.
 
 ---
 
