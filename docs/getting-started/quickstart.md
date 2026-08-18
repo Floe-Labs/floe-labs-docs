@@ -175,7 +175,8 @@ That's a full STT → LLM → TTS turn — three legs, one key, one bill — off
 `pipecat-floe` is published — `pip install pipecat-floe` works today (0.3.0). **`livekit-plugins-floe` is not on PyPI yet** (it's pending a merge into `livekit/agents`). Do **not** `pip install livekit-plugins-floe` — it will 404. Until it lands, install from source / the open PR:
 
 ```bash
-pip install "git+https://github.com/Floe-Labs/livekit-plugins-floe.git@main"
+# It's a plugin package inside the livekit/agents PR (Floe-Labs/livekit#6890), not a standalone repo:
+pip install "git+https://github.com/achris7/agents.git@feat/livekit-plugins-floe#subdirectory=livekit-plugins/livekit-plugins-floe"
 ```
 
 Watch the [pipeline integration guide](integrate-existing-pipeline.md) and the [changelog](../changelog.md) for the PyPI release. If you'd rather not wait, the plain OpenAI-compatible base-URL swap (`openai.LLM(base_url="https://credit-api.floelabs.xyz/v1", api_key=FLOE_API_KEY)`) works on LiveKit today — you just don't get the built-in `floe.enable_cost_receipts` line.
