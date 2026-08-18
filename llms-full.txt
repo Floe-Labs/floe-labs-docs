@@ -4969,9 +4969,13 @@ For spend Floe never routes at all — **BYOK** LLM calls, self-hosted models, o
 
 ## Reading the tile
 
-- **"No coverage score yet"** — no webhook connected; Floe only sees spend you route through it. Connect the webhook and the score computes from the next call.
-- **"Coverage: 100%"** on a keyless agent — every dollar is gateway-routed and enforceable pre-call. This is the ceiling, not an error.
-- **"Computing"** — the first metered calls haven't landed yet.
+The dashboard shows the score on the agent overview and, rolled up across every agent, on the account home. When the window is empty the tile tells you *why*:
+
+- **"No coverage score yet"** — no end-of-call webhook connected; Floe only sees spend you route through it. **Connect webhook (2 min) →** opens the agent's Voice orchestrators card; the score computes from the next call.
+- **"Coverage: 100%"** on a keyless agent — every dollar is gateway-routed and enforceable pre-call. This is the ceiling, not an error. (Calls that landed at $0 — free-tier models — still count: the tile shows 100% by call count until the first metered call.)
+- **"Computing"** — the account routes on its own vendor keys (BYOK), or a webhook is connected and the first call-end hasn't landed yet. The first score renders after the first metered call.
+
+The account tile uses the same rules across the whole fleet; its **Connect webhook** button takes you to the first agent that has no webhook yet.
 
 ## API
 
@@ -4979,7 +4983,7 @@ For spend Floe never routes at all — **BYOK** LLM calls, self-hosted models, o
 GET /v1/developer/agents/:agentId/coverage?days=30
 ```
 
-Returns `totals` — `knownRaw`, `enforceableRaw`, `reconciledRaw` (raw USDC) plus `coverageBps` (the enforceable-plus-reconciled share in basis points; `null` when there's no spend in the window) — a `bySource` breakdown (`class`, `calls`, `costRaw`), a daily `series`, and `dark: "unknown"` (spend on platforms never wired to Floe can't be counted). Accepts any developer credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set.
+Returns `totals` — `knownRaw`, `enforceableRaw`, `reconciledRaw` (raw USDC) plus `coverageBps` (the enforceable-plus-reconciled share in basis points; `null` when there's no spend in the window) — a `bySource` breakdown (`class`, `calls`, `costRaw`), a daily `series`, `calls` (`total`, `enforceable`, `reconciled`, `byok` — call counts over the same rows; `byok` is the subset served on your own vendor key), and `dark: "unknown"` (spend on platforms never wired to Floe can't be counted). Accepts any developer credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set.
 
 ## The honest boundary
 
