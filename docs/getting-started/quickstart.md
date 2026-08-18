@@ -7,7 +7,7 @@ icon: rocket
 Run a voice turn — STT → LLM → TTS — through Floe and watch the **per-turn receipt** print on the very first call:
 
 ```text
-floe · gpt-4o · $0.0012 est · left $99.88
+floe · gpt-4o · $0.0012 est · left $…
 ```
 
 One key meters every leg, and a spend cap you set server-side bounds the whole run. There are two ways in — pick the track that fits you:
@@ -63,7 +63,7 @@ llm = FloeLLMService(
 Cost receipts are **on by default** (`cost_receipts=True`). The first time that `llm` completes a turn inside a running pipeline, it logs:
 
 ```text
-floe · gpt-4o · $0.0012 est · left $99.88
+floe · gpt-4o · $0.0012 est · left $…
 ```
 
 The cost is priced locally (free, offline, no extra call); `left $…` appears when a Floe key is present. Set `cost_receipts=False` to silence it.
@@ -90,7 +90,7 @@ floe.enable_cost_receipts(session)   # logs `floe · gpt-4o · $… est · left 
 
 Wire all three legs through Floe so the whole turn lands on one key and one budget.
 
-**Pipecat** — the runnable reference is [`examples/bot.py`](https://github.com/Floe-Labs/pipecat-floe/blob/main/examples/bot.py) in `pipecat-floe`. The three legs are just three services in the pipeline (add your `provider_key` to each to keep them on your own vendor keys):
+**Pipecat** — the runnable reference is [`examples/bot.py`](https://github.com/Floe-Labs/pipecat-floe/blob/main/examples/bot.py) in `pipecat-floe`. The three legs are just three services in the pipeline (each service takes an optional `provider_key`; pass it to keep that leg on your own vendor key, or omit it to run the leg keyless on Floe's keys):
 
 ```python
 from pipecat_floe import FloeSTTService, FloeLLMService, FloeTTSService
@@ -175,7 +175,8 @@ That's a full STT → LLM → TTS turn — three legs, one key, one bill — off
 `pipecat-floe` is published — `pip install pipecat-floe` works today (0.3.0). **`livekit-plugins-floe` is not on PyPI yet** (it's pending a merge into `livekit/agents`). Do **not** `pip install livekit-plugins-floe` — it will 404. Until it lands, install from source / the open PR:
 
 ```bash
-# It's a plugin package inside the livekit/agents PR (Floe-Labs/livekit#6890), not a standalone repo:
+# Preview only — a plugin package inside the livekit/agents#6890 PR branch, not a standalone repo.
+# For production, wait for the PyPI release (below) rather than pinning an unmerged branch.
 pip install "git+https://github.com/achris7/agents.git@feat/livekit-plugins-floe#subdirectory=livekit-plugins/livekit-plugins-floe"
 ```
 
