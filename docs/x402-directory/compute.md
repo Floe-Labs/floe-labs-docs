@@ -67,7 +67,7 @@ The ceiling is checked **before** any upstream request runs, so spend stops at t
 | **Credit line** (opt-in) | Remaining credit-line headroom (credit limit − drawn) | `{"error":"budget_exhausted","scope":"credit_line","remaining_raw":"0"}` |
 | Either, with a session cap | Whichever binds first | `{"error":"budget_exhausted","scope":"session","remaining_raw":"0"}` |
 
-On a pay-as-you-go agent, a borrow limit staged for a later credit-line upgrade (`--credit-limit` on the CLI, `borrowLimitRaw` on the API) is **not** a spend allowance — only funded balance is spendable. Top up the agent, or [open a credit line](../developers/x402-facilitator.md), to raise the ceiling.
+On a pay-as-you-go agent, a borrow limit staged for a later credit-line upgrade (`--credit-limit` on the CLI, `borrowLimitRaw` on the API) is **not** a spend allowance — only funded balance is spendable. Top up the agent, or [open a credit line](../developers/credit-api.md#post-v1developeragentsagentidopen-credit-line), to raise the ceiling.
 
 ---
 

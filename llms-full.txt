@@ -504,160 +504,203 @@ URL: https://floe-labs.gitbook.io/docs/start-here/quickstart.md
 
 # Quickstart (5 minutes)
 
-Create an agent, connect your tools, and make your first paid API call on the **$3 Welcome Credit** — no card required. Cap spending with server-side controls you set — per task, day, vendor, or team (set them once you've seen it work). That's the whole product: **a funded balance with budgets enforced server-side.**
+Run a voice turn — STT → LLM → TTS — through Floe and watch the **per-turn receipt** print on the very first call:
 
-> **$3 Welcome Credit (300 API credits).** Roughly 300 calls at a typical ~$0.01/call — the cheapest vendors (like $0.001 Exa Contents) stretch it into the thousands. Your first agent can start paying for APIs today, no card required. The grant is once per account, not per agent. [Get started →](https://dev-dashboard.floelabs.xyz)
+```text
+floe · gpt-4o · $0.0012 est · left $…
+```
+
+One key meters every leg, and a spend cap you set server-side bounds the whole run. There are two ways in — pick the track that fits you:
+
+| Track | Who it's for | Keys |
+|---|---|---|
+| **[Track 1 — BYOK](#track-1-byok-keep-your-keys)** | You already pay OpenAI / Deepgram and want Floe's metering, budgets, and one ledger over the top | Your own vendor keys ride `X-Floe-Provider-Key`; Floe bills only its fee |
+| **[Track 2 — Keyless](#track-2-keyless-welcome-credit)** | You want to make a paid call in the next two minutes with no vendor accounts at all | None — Floe holds the provider keys, you spend the **$3 Welcome Credit** |
+
+Both tracks are the same code with one line different (a `provider_key`). Both print the receipt on turn one.
+
+> **$3 Welcome Credit (300 API credits).** Track 2 starts on the house — no card, once per account (not per agent). Roughly 300 calls at a typical ~$0.01/call. [Get a key →](https://dev-dashboard.floelabs.xyz)
 
 ---
 
-## 1. Create an agent
+## Get a Floe key (both tracks)
 
-Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email or Google, and click **New agent**. Copy the API key (starts with `floe_…`) — it's shown once. Export it so the examples below can read it:
-
-```bash
-export FLOE_API_KEY="floe_..."
-```
-
-Floe provisions everything your agent needs in the background — a funded balance and the **$3 Welcome Credit** (granted once per account, not per agent).
-
-## 2. Connect to your AI tools & models
-
-Point your coding agent at Floe and it does the setup for you — installs a client, provisions an agent, sets guardrails, and makes a real paid call. Paste this into Claude Code, Cursor, or Codex:
+Every call is metered on a Floe agent key, whether or not you bring your own vendor keys. Point your coding agent at Floe and it does the setup for you:
 
 ```text
 Read https://dev-dashboard.floelabs.xyz/agents.md and set up Floe for this project.
 ```
 
-`agents.md` is an executable runbook written for agents: it triages what you already have, installs the right client, states the key-handling rules, provisions an agent, and ends with a settled paid call.
+`agents.md` is an executable runbook written for agents: it triages what you already have, installs the right client, states the key-handling rules, provisions an agent, and ends with a settled paid call. It covers **both** tracks — it'll ask whether you're bringing your own vendor keys (BYOK) or spending the Welcome Credit (keyless).
 
-Prefer to wire it up yourself? Pick one client:
-
-{% tabs %}
-{% tab title="Skill" %}
-Install the Floe agent skill so Claude Code / Cursor knows the whole workflow — onboard, migrate, cap spend, show the receipt:
+Prefer to do it by hand? Open [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), sign in with email or Google, click **New agent**, and copy the key (starts with `floe_…`, shown once). Export it:
 
 ```bash
-npx skills add floe-labs/agent-skills
+export FLOE_API_KEY="floe_..."
 ```
 
-Full guide: [Claude Code / Agent Skills](claude-code-skill.md).
-{% endtab %}
-{% tab title="MCP" %}
-Claude Code, one line:
+---
 
-```bash
-claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
-  --header "Authorization: Bearer YOUR_FLOE_KEY"
-```
+## Track 1 — BYOK (keep your keys)
 
-Any client that takes JSON (Cursor `.cursor/mcp.json`, VS Code):
+You already have an OpenAI key, a Deepgram key, whatever. Keep using them. Floe rides on top: it meters every call, enforces your spend caps, and settles the whole voice turn on one ledger — while the upstream call runs on *your* vendor key. Your vendor key travels as `X-Floe-Provider-Key`, is used for that one request, and is discarded — Floe never stores it. Floe bills only its own service fee, so the receipt reflects Floe's cut, not your vendor invoice.
 
-```json
-{
-  "mcpServers": {
-    "floe": {
-      "type": "http",
-      "url": "https://mcp.floelabs.xyz/mcp",
-      "headers": { "Authorization": "Bearer YOUR_FLOE_KEY" }
-    }
-  }
-}
-```
+### Step 1 — the receipt, on turn one
 
-Full reference: [MCP Server](../developers/mcp-server.md). Deep links and per-client configs: [Set up with your AI tools](setup-with-ai-tools.md).
-{% endtab %}
-{% tab title="CLI" %}
-```bash
-npx @floelabs/cli init   # onboard: create or select an agent, mint its key, get the base-URL swap
-npm i -g @floelabs/cli   # keeps the `floe` bin around for the commands below
-floe status --json       # am I set up? balance, budgets, active agent + key
-```
-
-And everything else lives on the same bin — `floe chat "hi"` for a metered LLM call, `floe budget set 5 --per day` to cap spend, `floe activity` to watch the money. Full reference: [Floe CLI](../developers/cli.md).
-{% endtab %}
-{% tab title="SDK" %}
-```bash
-pip install floe-agentkit-actions      # Python
-npm install floe-agent                 # TypeScript
-```
-
-The SDK takes an **agent** key (`floe_…`), not a `floe_live_…` developer key. See [Set up with your AI tools](setup-with-ai-tools.md).
-{% endtab %}
-{% endtabs %}
-
-## 3. Make your first paid call
-
-Spend the **$3 Welcome Credit** — no card needed. Install the SDK and call `fetch`. If the API is x402-gated, payment happens automatically; if it's free, the request passes through. Either way, your agent's balance updates.
-
-{% tabs %}
-{% tab title="Python" %}
-```bash
-pip install floe-agentkit-actions
-```
+**Pipecat** (`pip install pipecat-floe` — 0.3.0 is live on PyPI). Swap your `OpenAILLMService` for `FloeLLMService` and pass your OpenAI key as `provider_key`:
 
 ```python
 import os
-from floe_agentkit_actions import FloeAgent
+from pipecat_floe import FloeLLMService
 
-agent = FloeAgent(api_key=os.environ["FLOE_API_KEY"])
-
-# Pay for an API. The price (if any) is debited from your balance.
-result = agent.fetch("https://api.example.com/premium")
-print(result.body)
-print(f"Spent ${result.cost:.4f} on this call.")
-
-# Check what you have left.
-print(f"Balance: ${agent.balance():.2f}")
+llm = FloeLLMService(
+    model="openai/gpt-4o",                      # fully-qualified provider/model
+    provider_key=os.environ["OPENAI_API_KEY"],  # BYOK → rides X-Floe-Provider-Key, used then discarded
+    # api_key defaults to FLOE_API_KEY from the env — that's what the call is metered on
+)
 ```
-{% endtab %}
-{% tab title="TypeScript" %}
+
+Cost receipts are **on by default** (`cost_receipts=True`). The first time that `llm` completes a turn inside a running pipeline, it logs:
+
+```text
+floe · gpt-4o · $0.0012 est · left $…
+```
+
+The cost is priced locally (free, offline, no extra call); `left $…` appears when a Floe key is present. Set `cost_receipts=False` to silence it.
+
+**LiveKit** (see the [install note](#livekit-install-not-yet-on-pypi) — not on PyPI yet). The `floe.LLM` plugin takes the same `provider_key`, and `floe.enable_cost_receipts(session)` turns on the same receipt line across the session:
+
+```python
+import os
+from livekit.plugins import floe
+from livekit.agents import AgentSession
+
+session = AgentSession(
+    llm=floe.LLM(
+        model="openai/gpt-4o",
+        provider_key=os.environ["OPENAI_API_KEY"],  # BYOK → X-Floe-Provider-Key
+        # api_key defaults to FLOE_API_KEY
+    ),
+    # ... stt, tts, vad
+)
+floe.enable_cost_receipts(session)   # logs `floe · gpt-4o · $… est · left $…` per turn
+```
+
+### Step 2 — the full voice turn (STT → LLM → TTS)
+
+Wire all three legs through Floe so the whole turn lands on one key and one budget.
+
+**Pipecat** — the runnable reference is [`examples/bot.py`](https://github.com/Floe-Labs/pipecat-floe/blob/main/examples/bot.py) in `pipecat-floe`. The three legs are just three services in the pipeline (each service takes an optional `provider_key`; pass it to keep that leg on your own vendor key, or omit it to run the leg keyless on Floe's keys):
+
+```python
+from pipecat_floe import FloeSTTService, FloeLLMService, FloeTTSService
+
+stt = FloeSTTService(model="deepgram/nova-3")
+llm = FloeLLMService(model="openai/gpt-4o", provider_key=os.environ["OPENAI_API_KEY"])
+tts = FloeTTSService(model="openai/tts-1", voice="alloy")
+# ... drop stt, llm, tts into a Pipeline([...]) — see examples/bot.py for the full runner
+```
+
 ```bash
-npm install floe-agent
+pip install pipecat-floe          # 0.3.0
+python bot.py                     # connect an audio client to ws://localhost:8765
 ```
 
-```typescript
-import { FloeAgent } from "floe-agent";
+**LiveKit** — build one `AgentSession` with `floe.STT` / `floe.LLM` / `floe.TTS`, then `floe.enable_cost_receipts(session)` and `session.start(...)`. See the [LiveKit install note](#livekit-install-not-yet-on-pypi) first.
 
-const agent = new FloeAgent({ apiKey: process.env.FLOE_API_KEY! });
+> **Scope note:** Floe caps and meters the calls that route through it. On BYOK, the *model/voice* legs run on your vendor keys — Floe meters them and shows the receipt, and bills its service fee; your vendor still invoices you directly for the underlying tokens.
 
-// Pay for an API. The price (if any) is debited from your balance.
-const result = await agent.fetch("https://api.example.com/premium");
-console.log(result.body);
-console.log(`Spent $${result.cost.toFixed(4)} on this call.`);
+Model ids are fully-qualified `provider/model`. Resolve the live set — and, once published, per-model pricing and which rail applies — at [`GET /v1/models`](../developers/keyless-inference.md) with your Floe agent key.
 
-// Check what you have left.
-console.log(`Balance: $${(await agent.balance()).toFixed(2)}`);
+---
+
+## Track 2 — Keyless (Welcome Credit)
+
+No vendor accounts, no card. Floe holds the provider keys; you spend the **$3 Welcome Credit** (once per account). It's the same code as Track 1 with the `provider_key` line removed — Floe supplies the upstream key and bills the full call to your balance.
+
+### Step 1 — the receipt, on turn one
+
+**Pipecat:**
+
+```python
+from pipecat_floe import FloeLLMService
+
+llm = FloeLLMService(model="openai/gpt-4o")   # no provider_key → Floe uses its own keys
+# api_key defaults to FLOE_API_KEY; the call is metered on your Welcome Credit
 ```
-{% endtab %}
-{% tab title="CLI" %}
+
+First completed turn logs the same line — cost debited from your balance:
+
+```text
+floe · gpt-4o · $0.0012 est · left $3.00
+```
+
+**LiveKit** (see the [install note](#livekit-install-not-yet-on-pypi)):
+
+```python
+from livekit.plugins import floe
+from livekit.agents import AgentSession
+
+session = AgentSession(
+    llm=floe.LLM(model="openai/gpt-4o"),   # no provider_key → keyless
+    # ... stt, tts, vad
+)
+floe.enable_cost_receipts(session)
+```
+
+### Step 2 — the full voice turn (STT → LLM → TTS)
+
+Identical to Track 1, minus the `provider_key`s — every leg runs on Floe's keys and bills to your balance:
+
+```python
+from pipecat_floe import FloeSTTService, FloeLLMService, FloeTTSService
+
+stt = FloeSTTService(model="deepgram/nova-3")
+llm = FloeLLMService(model="openai/gpt-4o")
+tts = FloeTTSService(model="openai/tts-1", voice="alloy")
+# ... same Pipeline([...]) as examples/bot.py
+```
 
 ```bash
-floe test                # one real metered call — the key is already in your keychain from `floe init`
+pip install pipecat-floe          # 0.3.0
+python bot.py
 ```
 
-That's a fraction of a cent against the **$3 Welcome Credit** — the settled cost prints from the `X-Floe-Cost-USDC` receipt header. `floe test --voice` runs a full STT → LLM → TTS turn: three legs, one key, one bill.
-{% endtab %}
-{% endtabs %}
+That's a full STT → LLM → TTS turn — three legs, one key, one bill — off the Welcome Credit, no card.
 
-That's the entire happy path — one HTTP call with your Floe key.
+---
 
-## 4. Fund & set budgets (later)
+## LiveKit install (not yet on PyPI)
 
-You don't need any of this to make your first call — the Welcome Credit covers it. Come back once you've seen the loop work.
+`pipecat-floe` is published — `pip install pipecat-floe` works today (0.3.0). **`livekit-plugins-floe` is not on PyPI yet** (it's pending a merge into `livekit/agents`). Do **not** `pip install livekit-plugins-floe` — it will 404. Until it lands, install from source / the open PR:
 
-- **Fund it.** When the Welcome Credit runs low, click **Fund Wallet** on the agent and pay with **card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds. Suggested first amount: **$10**. See [Funding your agent](funding.md).
-- **Set a spend control.** Cap what the agent can spend — per call, per day, per vendor, or across your whole team. Enforced server-side, so a runaway loop can't blow your budget. See [Spend Controls](../developers/spend-controls.md). (Scope note: Floe caps x402 payments made through the proxy, not LLM token bills you pay with your own provider key.)
+```bash
+# Preview only — a plugin package inside the livekit/agents#6890 PR branch, not a standalone repo.
+# For production, wait for the PyPI release (below) rather than pinning an unmerged branch.
+pip install "git+https://github.com/achris7/agents.git@feat/livekit-plugins-floe#subdirectory=livekit-plugins/livekit-plugins-floe"
+```
+
+Watch the [pipeline integration guide](integrate-existing-pipeline.md) and the [changelog](../changelog.md) for the PyPI release. If you'd rather not wait, the plain OpenAI-compatible base-URL swap (`openai.LLM(base_url="https://credit-api.floelabs.xyz/v1", api_key=FLOE_API_KEY)`) works on LiveKit today — you just don't get the built-in `floe.enable_cost_receipts` line.
+
+---
+
+## Fund & set budgets (later)
+
+You don't need this to make your first call — Track 2 rides the Welcome Credit, and Track 1 rides your own vendor keys. Come back once you've seen the loop work.
+
+- **Fund it.** When the Welcome Credit runs low, click **Fund Wallet** on the agent and pay with **card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds. See [Funding your agent](funding.md).
+- **Set a spend control.** Cap what the agent can spend — per call, per day, per vendor, or across your team. Enforced server-side, so a runaway loop can't blow your budget. See [Spend Controls](../developers/spend-controls.md).
 
 ## What's next
 
-- [Set up with your AI tools](setup-with-ai-tools.md) — deep links and per-client MCP configs
 - [Add Floe to your existing pipeline](integrate-existing-pipeline.md) — drop Floe into Vapi, Retell, Pipecat, LiveKit, and more
 - [The Voice Stack](../build/voice-stack.md) — run a full voice turn — STT, LLM, TTS, telephony — on one key, one budget
+- [Keyless inference & the model catalog](../developers/keyless-inference.md) — every gateway model, resolved live at `GET /v1/models`
 - [Floe CLI](../developers/cli.md) — every command, flag, and exit code
 
 ---
 
-That's it — you made a paid API call on the Welcome Credit, all in dollars.
+Two tracks, one receipt: BYOK to keep your keys, keyless to skip them — either way the cost prints on turn one, in dollars.
 
 ==============================================================================
 # Installation
@@ -1686,7 +1729,18 @@ The first month's rental (`monthlyRentalRaw`, raw 6-decimal USDC — `2000000` =
 
 `GET /v1/developer/agents/{agentId}/numbers`
 
-Returns all of the agent's numbers, newest first, **including released history**. `status` is one of:
+Returns all of the agent's numbers, newest first, **including released history**, alongside `rentalRaw` — the current first-month rental quote (raw 6-decimal USDC, margin included; `2000000` = $2.00). It is the exact amount a purchase reserves, priced through the same path as the charge so the quote can't drift from it. Read it before a buy to show the price up front, and to turn a `402` into "$X spendable · $2.00 required" instead of a bare insufficient-balance error. `rentalRaw` is `null` only when the phone catalog isn't seeded — a purchase would return `503` in that state.
+
+```json
+{
+  "numbers": [
+    { "id": 7, "phoneNumber": "+14155550123", "status": "active", "...": "…" }
+  ],
+  "rentalRaw": "2000000"
+}
+```
+
+`status` is one of:
 
 * `active` — provisioned, rental current.
 * `grace` — the last renewal debit failed; the number works until `graceUntil`, then it is released. Fund the agent balance to keep it.
@@ -2992,7 +3046,7 @@ Two ways to buy compute through the spend layer:
 
 **Chat:** `POST https://credit-api.floelabs.xyz/v1/llm/chat/completions` · OpenAI-compatible
 **Embeddings:** `POST https://credit-api.floelabs.xyz/v1/llm/embeddings`
-**Price:** at-cost per token (+5% buffer) · debited from your Floe credit line · capped server-side
+**Price:** at-cost per token (+5% buffer) · debited from your Floe agent balance · capped server-side
 
 Call **any** model OpenAI or Anthropic ships — pass the model id in the request body. There is **no model allowlist and no model lock**: if a provider sells it and Floe can price it, the proxy serves it. The featured models below are just current favorites, not a fixed menu.
 
@@ -3000,7 +3054,7 @@ Two headers do the work:
 
 | Header | Value | Purpose |
 |--------|-------|---------|
-| `Authorization` | `Bearer floe_<agent key>` | Authenticates the agent and bills its credit line |
+| `Authorization` | `Bearer floe_<agent key>` | Authenticates the agent and bills its Floe balance |
 | `X-Floe-Provider-Key` | `<your OpenAI/Anthropic key>` | Pass-through key used to call upstream — never stored |
 
 This BYOK proxy prices from Floe's maintained LiteLLM cost map — there's **no model allowlist**; pass any model your provider serves. (The **keyless** gateway's catalog is separate — see [Keyless Inference](../developers/keyless-inference.md) or `GET /v1/models`.) The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header.
@@ -3032,7 +3086,17 @@ curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
   -d '{"model":"gpt-5.5","messages":[{"role":"user","content":"Hello from Floe"}]}'
 ```
 
-When the credit line (or session cap) is exhausted, the call is refused with `402` **before** any upstream request runs — spend stops at the cap.
+### When the ceiling is hit
+
+The ceiling is checked **before** any upstream request runs, so spend stops at the cap and a refused call costs nothing. Which ceiling applies depends on how the agent is funded:
+
+| Funding mode | Ceiling | `402` response body |
+|---|---|---|
+| **Pay-as-you-go** (default) | The agent's **spendable balance** — deposits and welcome credit, minus settled and in-flight spend and any held task budgets | `{"error":"budget_exhausted","scope":"wallet","remaining_raw":"0"}` |
+| **Credit line** (opt-in) | Remaining credit-line headroom (credit limit − drawn) | `{"error":"budget_exhausted","scope":"credit_line","remaining_raw":"0"}` |
+| Either, with a session cap | Whichever binds first | `{"error":"budget_exhausted","scope":"session","remaining_raw":"0"}` |
+
+On a pay-as-you-go agent, a borrow limit staged for a later credit-line upgrade (`--credit-limit` on the CLI, `borrowLimitRaw` on the API) is **not** a spend allowance — only funded balance is spendable. Top up the agent, or [open a credit line](../developers/credit-api.md#post-v1developeragentsagentidopen-credit-line), to raise the ceiling.
 
 ---
 
