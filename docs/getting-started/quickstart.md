@@ -110,7 +110,7 @@ python bot.py                     # connect an audio client to ws://localhost:87
 
 > **Scope note:** Floe caps and meters the calls that route through it. On BYOK, the *model/voice* legs run on your vendor keys — Floe meters them and shows the receipt, and bills its service fee; your vendor still invoices you directly for the underlying tokens.
 
-Model ids are fully-qualified `provider/model`. Resolve the live set — and, once published, per-model pricing and which rail applies — at [`GET /v1/models`](../developers/keyless-inference.md) with your Floe agent key.
+Model ids are fully-qualified `provider/model`. Resolve the live set at [`GET /v1/models`](../developers/keyless-inference.md) with your Floe agent key — add [`?include=pricing`](../developers/keyless-inference.md#catalog-pricing-includepricing) to get each model's rates on both rails: the per-model keyless rate, and the flat BYOK service fee that applies here on Track 1.
 
 ---
 

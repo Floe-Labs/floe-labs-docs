@@ -10,6 +10,17 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.22.0 — Catalog pricing on `GET /v1/models` (August 2026)
+
+Model discovery can now quote itself. `GET /v1/models?include=pricing` returns each model's rates on **both rails**, so you can compare cost before you route instead of calling `/v1/estimate` model by model.
+
+* **Opt-in, so nothing breaks.** Without `?include=pricing` the response is byte-for-byte the lean OpenAI `Model` shape it has always been — no `pricing` key. Callers that only resolve ids are unaffected.
+* **`funded` is per model.** On the keyless rail Floe holds the upstream key, so each model quotes `input` / `output` / `cached_input` in USDC per 1M tokens — the cheapest serving source's rate card plus that source's margin, the same pricing core `POST /v1/estimate` uses.
+* **`byok` is flat and model-agnostic.** With your own provider key Floe never sees the vendor rate, so it reports only its own `service_fee_usdc` per call and `upstream: "at_vendor_rate"`. That block is identical across every model.
+* **Nulls, not guesses.** `input`/`output` are `null` for models that don't bill in tokens (TTS per character, STT per audio second, realtime per audio token — price those with `/v1/estimate`), and `cached_input` is `null` when the chosen source seeds no explicit cached rate.
+
+→ [Floe Inference — catalog pricing](developers/keyless-inference.md#catalog-pricing-includepricing)
+
 ### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
 
 Developer webhooks grew from 8 loan/key events to a **30-event catalog** with an account-wide delivery log, and every surface — API, dashboard, CLI, MCP — now speaks the same contract.

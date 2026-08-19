@@ -108,7 +108,7 @@ All are drop-in OpenAI-compatible:
 | Transcription (batch) | `POST /v1/audio/transcriptions` | `audio.transcriptions.create` |
 | Transcription (streaming) | `WS /v1/audio/transcriptions/stream?model=…` | — (Floe extension) |
 | Realtime voice | `WS /v1/realtime?model=…` | Realtime API |
-| List models | `GET /v1/models` | `models.list` |
+| List models | `GET /v1/models` (add `?include=pricing` for rates) | `models.list` |
 | Cost estimate | `POST /v1/estimate` | — (Floe extension) |
 
 ## Models
@@ -213,6 +213,51 @@ print(res.choices[0].message.content)
 ```
 {% endtab %}
 {% endtabs %}
+
+## Catalog pricing (`?include=pricing`)
+
+`GET /v1/models` is byte-lean by default — the plain OpenAI `Model` shape, for callers that only need ids. Add **`?include=pricing`** and each entry gains a `pricing` block with both rails, so you can compare models before you route:
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/models?include=pricing" \
+  -H "Authorization: Bearer $FLOE_KEY"
+```
+
+```jsonc
+{
+  "id": "openai/gpt-4o",
+  "object": "model",
+  "created": 1735689600,
+  "owned_by": "floe",
+  "modality": "text",
+  "context_window": 128000,
+  "pricing": {
+    "unit": "per_1m_tokens",
+    "currency": "usdc",
+    "funded": {                        // keyless rail — per model
+      "input": "2.625000",             // upstream $2.50 + 5% margin
+      "output": "10.500000",
+      "cached_input": "1.312500"
+    },
+    "byok": {                          // your key — flat, model-agnostic
+      "service_fee_usdc": "0.002000",
+      "upstream": "at_vendor_rate"
+    }
+  }
+}
+```
+
+The two rails are **asymmetric on purpose**:
+
+- **`funded`** — the keyless rail. Floe holds the upstream key, so the price is **per model**: the rate card of the cheapest source that can serve it, plus that source's margin — the same source and the same math [`POST /v1/estimate`](#estimate-before-you-spend) prices against. Rates are USDC per 1M tokens.
+- **`byok`** — your own provider key. Floe never sees your vendor rate, so it can't quote it: `upstream` is always `at_vendor_rate` (your vendor invoices you directly) and `service_fee_usdc` is the **flat per-call fee** Floe charges on top. This block is **identical for every model**.
+
+Nothing is fabricated. A field is `null` rather than guessed:
+
+- `input` / `output` are `null` for models that don't bill in tokens (TTS bills per character, STT per audio second, realtime voice per audio token) — price those with `POST /v1/estimate`, which takes the right unit vector.
+- `cached_input` is `null` when the chosen source seeds no explicit cached rate. At bill time such a call falls back to the input rate; discovery won't invent a cached price you didn't opt into.
+
+Omit `include=pricing` and the response is unchanged — no `pricing` key, same bytes as before.
 
 ## Estimate before you spend
 
