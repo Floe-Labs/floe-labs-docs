@@ -17,7 +17,7 @@ Two ways to buy compute through the spend layer:
 
 **Chat:** `POST https://credit-api.floelabs.xyz/v1/llm/chat/completions` · OpenAI-compatible
 **Embeddings:** `POST https://credit-api.floelabs.xyz/v1/llm/embeddings`
-**Price:** at-cost per token (+5% buffer) · debited from your Floe credit line · capped server-side
+**Price:** at-cost per token (+5% buffer) · debited from your Floe agent balance · capped server-side
 
 Call **any** model OpenAI or Anthropic ships — pass the model id in the request body. There is **no model allowlist and no model lock**: if a provider sells it and Floe can price it, the proxy serves it. The featured models below are just current favorites, not a fixed menu.
 
@@ -25,7 +25,7 @@ Two headers do the work:
 
 | Header | Value | Purpose |
 |--------|-------|---------|
-| `Authorization` | `Bearer floe_<agent key>` | Authenticates the agent and bills its credit line |
+| `Authorization` | `Bearer floe_<agent key>` | Authenticates the agent and bills its Floe balance |
 | `X-Floe-Provider-Key` | `<your OpenAI/Anthropic key>` | Pass-through key used to call upstream — never stored |
 
 This BYOK proxy prices from Floe's maintained LiteLLM cost map — there's **no model allowlist**; pass any model your provider serves. (The **keyless** gateway's catalog is separate — see [Keyless Inference](../developers/keyless-inference.md) or `GET /v1/models`.) The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header.
@@ -57,7 +57,17 @@ curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
   -d '{"model":"gpt-5.5","messages":[{"role":"user","content":"Hello from Floe"}]}'
 ```
 
-When the credit line (or session cap) is exhausted, the call is refused with `402` **before** any upstream request runs — spend stops at the cap.
+### When the ceiling is hit
+
+The ceiling is checked **before** any upstream request runs, so spend stops at the cap and a refused call costs nothing. Which ceiling applies depends on how the agent is funded:
+
+| Funding mode | Ceiling | `402` response body |
+|---|---|---|
+| **Pay-as-you-go** (default) | The agent's **spendable balance** — deposits and welcome credit, minus settled and in-flight spend and any held task budgets | `{"error":"budget_exhausted","scope":"wallet","remaining_raw":"0"}` |
+| **Credit line** (opt-in) | Remaining credit-line headroom (credit limit − drawn) | `{"error":"budget_exhausted","scope":"credit_line","remaining_raw":"0"}` |
+| Either, with a session cap | Whichever binds first | `{"error":"budget_exhausted","scope":"session","remaining_raw":"0"}` |
+
+On a pay-as-you-go agent, a borrow limit staged for a later credit-line upgrade (`--credit-limit` on the CLI, `borrowLimitRaw` on the API) is **not** a spend allowance — only funded balance is spendable. Top up the agent, or [open a credit line](../developers/x402-facilitator.md), to raise the ceiling.
 
 ---
 

@@ -113,7 +113,18 @@ The first month's rental (`monthlyRentalRaw`, raw 6-decimal USDC — `2000000` =
 
 `GET /v1/developer/agents/{agentId}/numbers`
 
-Returns all of the agent's numbers, newest first, **including released history**. `status` is one of:
+Returns all of the agent's numbers, newest first, **including released history**, alongside `rentalRaw` — the current first-month rental quote (raw 6-decimal USDC, margin included; `2000000` = $2.00). It is the exact amount a purchase reserves, priced through the same path as the charge so the quote can't drift from it. Read it before a buy to show the price up front, and to turn a `402` into "$X spendable · $2.00 required" instead of a bare insufficient-balance error. `rentalRaw` is `null` only when the phone catalog isn't seeded — a purchase would return `503` in that state.
+
+```json
+{
+  "numbers": [
+    { "id": 7, "phoneNumber": "+14155550123", "status": "active", "...": "…" }
+  ],
+  "rentalRaw": "2000000"
+}
+```
+
+`status` is one of:
 
 * `active` — provisioned, rental current.
 * `grace` — the last renewal debit failed; the number works until `graceUntil`, then it is released. Fund the agent balance to keep it.
