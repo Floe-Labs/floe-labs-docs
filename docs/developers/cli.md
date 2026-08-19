@@ -548,7 +548,7 @@ Floe Phone: give an agent a real US phone number, metered on the same ledger. De
 | Subcommand | Does |
 |---|---|
 | `search [--area-code <c>]` | Preview purchasable US local numbers (free); buy an exact one with `buy --number` |
-| `buy [--number <e164> \| --area-code <c>]` | Buy a number and bind it to the agent — the **first month's rental debits the agent balance immediately** (confirms; `--yes` to skip) |
+| `buy (--area-code <c> \| --number <e164>)` | Buy a number in a US area code (**required** — or an exact `--number` from `search`) and bind it to the agent — the **first month's rental debits the agent balance immediately** (confirms; `--yes` to skip) |
 | `list [--all]` | The agent's numbers, history included; `--all` shows every number across your fleet with 7-day calls and month-to-date spend |
 | `release <numberId>` | Release a number permanently — **irreversible**; type the number back to confirm (`--yes` to skip) |
 | `calls <numberId> [--limit <n>]` | Recent carrier call history (default 50) |
