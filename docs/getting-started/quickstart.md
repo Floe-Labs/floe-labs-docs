@@ -90,7 +90,7 @@ floe.enable_cost_receipts(session)   # logs `floe · gpt-4o · $… est · left 
 
 Wire all three legs through Floe so the whole turn lands on one key and one budget.
 
-**Pipecat** — the runnable reference is [`examples/bot.py`](https://github.com/Floe-Labs/pipecat-floe/blob/main/examples/bot.py) in `pipecat-floe`. The three legs are just three services in the pipeline (each service takes an optional `provider_key`; pass it to keep that leg on your own vendor key, or omit it to run the leg keyless on Floe's keys):
+**Pipecat** — the runnable reference is [`examples/bot.py`](https://github.com/Floe-Labs/pipecat-floe/blob/main/examples/bot.py) in `pipecat-floe`. The three legs are just three services in the pipeline. The LLM and TTS services take an optional `provider_key` — pass it to keep that leg on your own vendor key, or omit it to run the leg keyless on Floe's keys. The STT leg streams over Floe's own WebSocket protocol on Floe-managed Deepgram, so it has no `provider_key` and always runs keyless:
 
 ```python
 from pipecat_floe import FloeSTTService, FloeLLMService, FloeTTSService
@@ -106,7 +106,7 @@ pip install pipecat-floe          # 0.3.0
 python bot.py                     # connect an audio client to ws://localhost:8765
 ```
 
-**LiveKit** — build one `AgentSession` with `floe.STT` / `floe.LLM` / `floe.TTS`, then `floe.enable_cost_receipts(session)` and `session.start(...)`. See the [LiveKit install note](#livekit-install-not-yet-on-pypi) first.
+**LiveKit** — the plugin ships `floe.LLM` only: build the `AgentSession` with `floe.LLM` plus your usual LiveKit STT and TTS plugins, then `floe.enable_cost_receipts(session)` and `session.start(...)`. Floe's receipts and budget controls cover the Floe-routed LLM leg; the STT/TTS legs stay on their own plugins and billing. See the [LiveKit install note](#livekit-install-not-yet-on-pypi) first.
 
 > **Scope note:** Floe caps and meters the calls that route through it. On BYOK, the *model/voice* legs run on your vendor keys — Floe meters them and shows the receipt, and bills its service fee; your vendor still invoices you directly for the underlying tokens.
 
