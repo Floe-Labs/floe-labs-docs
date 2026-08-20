@@ -37,7 +37,7 @@ Authorization: Bearer floe_live_...
 
 ## Buy a number
 
-One US local voice number per agent, bound at purchase, provisioned instantly. `areaCode` is optional — omit it for any available US number.
+One US local voice number per agent, bound at purchase, provisioned instantly. Tell Floe **which** number to buy: either an `areaCode` (3 digits, 2xx–9xx) and the carrier picks one in that area, or an exact `phoneNumber` in E.164 (`+1…`) to buy a specific number. One of the two is required — there is no "any US number" purchase — and `phoneNumber` wins when both are sent.
 
 `POST /v1/developer/agents/{agentId}/numbers`
 
@@ -107,7 +107,7 @@ print(res.json()["number"]["phoneNumber"])  # "+14155550123"
 
 The first month's rental (`monthlyRentalRaw`, raw 6-decimal USDC — `2000000` = $2.00) is debited from the agent balance at purchase and returned in the `X-Floe-Cost-USDC` response header. The debit appears on the ledger as `phone://{number}/rental`.
 
-**Errors:** `402 insufficient_balance` (fund the agent first), `402 policy_exceeded` / `spend_limit_exceeded` (a spend policy blocked the debit), `409 number_exists` (the agent already has a number), `409 no_numbers_available` (try another area code), `409 agent_unavailable` (agent suspended or closed).
+**Errors:** `400 area_code_required` (neither `areaCode` nor `phoneNumber` was sent), `400 invalid_area_code` (US area codes are 3 digits, 2xx–9xx), `402 insufficient_balance` (fund the agent first), `402 policy_exceeded` / `spend_limit_exceeded` (a spend policy blocked the debit), `409 number_exists` (the agent already has a number), `409 no_numbers_available` (try another area code), `409 agent_unavailable` (agent suspended or closed). Every error body carries a human-readable `detail` alongside the `error` code. Both `400`s are returned before anything is reserved, so a rejected request never costs the agent balance.
 
 ## List numbers
 
