@@ -148,9 +148,10 @@ jobs:
 
       # The action hides Claude's transcript (show_full_output is off because
       # this repo is public and the monorepo diff is private). Surface just the
-      # turn count and the commands that were permission-denied — no tool
-      # output, no file contents — so the next failure is diagnosable from the
-      # job log alone.
+      # turn count and which tools were permission-denied — no command
+      # arguments, no tool output, no file contents (denied command strings can
+      # embed private monorepo content and this log is public) — so the next
+      # failure is diagnosable from the job log alone.
       - name: Report turn budget and permission denials
         if: always()
         continue-on-error: true
@@ -161,5 +162,5 @@ jobs:
             .[] | select(.type == "result") |
             "turns=\(.num_turns) subtype=\(.subtype) denials=\((.permission_denials // []) | length)",
             ((.permission_denials // [])[] |
-              "  denied: \(.tool_name) \(.tool_input.command // .tool_input.file_path // "")")
+              "  denied: \(.tool_name)")
           ' "$f"
