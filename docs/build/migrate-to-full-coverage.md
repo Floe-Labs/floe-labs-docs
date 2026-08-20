@@ -47,7 +47,9 @@ recipe (LLM + TTS swaps, STT note) and
 
 Illustrative 3-minute outbound call, typical talk ratio (~40% caller / ~60%
 agent speech, ~1.5k LLM tokens/turn × 12 turns). Recompute for your profile
-with `POST /v1/estimate` — rates move; the *structure* is the point.
+with the [cost calculator](https://dev-dashboard.floelabs.xyz/calculator) (pick
+your STT/LLM/TTS/telephony stack, no key needed) or `POST /v1/estimate` — rates
+move; the *structure* is the point.
 
 | | Orchestrator + Floe LLM | Full path on Floe |
 |---|---|---|

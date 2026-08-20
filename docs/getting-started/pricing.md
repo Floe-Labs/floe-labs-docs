@@ -6,6 +6,12 @@ icon: tag
 
 You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it. No subscription, no minimums, no seat fees. Every call tells you exactly what it cost, and you can price a call **before** you make it.
 
+## Size a voice agent before you write code
+
+The [voice agent cost calculator](https://dev-dashboard.floelabs.xyz/calculator) prices a whole cascaded STT → LLM → TTS pipeline — no key, no sign-in. Pick a model for each leg, choose your telephony (Floe Phone inbound, outbound, or none for WebRTC/in-app audio), set your average call length and monthly volume, and it returns cost **per minute, per call, and per month** with a per-leg breakdown.
+
+Rates come from the same gateway rate cards Floe meters against, with Floe's routing margin already included — so the estimate is what you'd actually pay. Defaults assume ~150 spoken words/minute at a 50% agent talk share; open **Edit usage assumptions** to set LLM tokens/minute and TTS characters/minute for your own agent.
+
 ## Read what a call cost
 
 Every paid response carries two headers:
