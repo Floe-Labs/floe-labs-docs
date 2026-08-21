@@ -14,6 +14,7 @@ For the agent-runtime subset (the error matrix that appears on `/v1/proxy/fetch`
 - [Developer auth (SIWE + JWT)](#developer-auth)
 - [Developer keys (`/v1/developer/keys`)](#developer-keys)
 - [Agent registration (`/v1/agents/*`)](#agent-registration)
+- [Floe Phone numbers (`/v1/developer/agents/:agentId/numbers`, `/v1/numbers`)](#floe-phone-numbers)
 - [Webhooks (`/v1/developer/webhooks/*`)](#webhooks)
 - [Admin (`/v1/admin/*`)](#admin)
 - [Self-hosting startup errors](#self-hosting-startup-errors)
@@ -128,6 +129,25 @@ Endpoints: `POST /v1/developer/agents`, `POST/GET/DELETE /v1/developer/agents/:a
 | 502 | `delegation_failed` | Server-side `setOperator` tx threw | Inspect `detail`; retry once Privy / facilitator are healthy |
 | 503 | `agent_creation_unavailable` | `privyService` or `agentDelegationService` not initialized at boot | Self-hosters: set `PRIVY_APP_ID` / `PRIVY_APP_SECRET` / `PRIVY_AUTHORIZATION_PRIVATE_KEY` and `FACILITATOR_PRIVATE_KEY` |
 | 503 | `winddown_unavailable` | `POST /:id/close` called without `WinddownService` configured AND agent has active loans | Configure the winddown service or close manually via on-chain repay |
+
+---
+
+## Floe Phone numbers
+
+Endpoints: `POST /v1/developer/agents/:agentId/numbers` (developer key / dashboard) and `POST /v1/numbers` (agent key) — both run the same purchase core, so the codes are identical. Every error body carries a human-readable `detail` next to the `error` code. Full flow: [Floe Phone](../developers/floe-phone.md).
+
+| Status | `error` | Cause | Fix |
+|---|---|---|---|
+| 400 | `area_code_required` | Body has neither `areaCode` nor `phoneNumber` — the carrier picks a number by area code or exact E.164, never "any US number". Refused before anything is reserved or charged | Send `areaCode` (3-digit US, `2xx`–`9xx`) or an exact `phoneNumber` from `GET …/numbers/search` |
+| 400 | `invalid_area_code` | `areaCode` is not 3 digits with a leading `2`–`9` | Fix the code (e.g. `415`) |
+| 402 | `insufficient_balance` | The agent's spendable balance can't cover the first month's rental (`available` / `required` in the body) | Fund the agent, then retry |
+| 402 | `spend_limit_exceeded` / `policy_exceeded` | A session limit or spend policy blocked the rental debit | Raise the limit / adjust the policy |
+| 403 | `telephony_suspended` | Phone service is suspended for this account | Contact support |
+| 409 | `number_exists` | The agent already has a live number (one per agent); the body includes it as `number` | Reuse it, or release it first |
+| 409 | `no_numbers_available` | Nothing purchasable in that area code, or the exact `phoneNumber` was taken | Try another area code / search again |
+| 409 | `agent_unavailable` / `agent_not_ready` | Agent is suspended/closed, or its wallet isn't provisioned yet | Use an active, provisioned agent |
+| 502 | `provisioning_failed` | Carrier-side purchase failed — the reservation was released, nothing was charged | Retry, or pick another area code |
+| 503 | `telephony_unavailable` | Floe Phone isn't configured on this deployment, or the phone rate card isn't seeded | Self-hosters: set `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` and run `pnpm --filter @floe/api seed:catalog` |
 
 ---
 

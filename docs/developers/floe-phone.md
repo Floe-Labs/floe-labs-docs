@@ -37,7 +37,7 @@ Authorization: Bearer floe_live_...
 
 ## Buy a number
 
-One US local voice number per agent, bound at purchase, provisioned instantly. `areaCode` is optional — omit it for any available US number.
+One US local voice number per agent, bound at purchase; provisioning starts immediately. `areaCode` (a 3-digit US area code, `2xx`–`9xx`) is **required** — the carrier picks a number within it. The only alternative is `phoneNumber`: an exact E.164 from a prior [search](#search-before-you-buy) (see-then-buy); if both are sent, `phoneNumber` wins. There is no "any US number" purchase — a request with neither is refused with `400 area_code_required` before anything is reserved or charged.
 
 `POST /v1/developer/agents/{agentId}/numbers`
 
@@ -107,7 +107,23 @@ print(res.json()["number"]["phoneNumber"])  # "+14155550123"
 
 The first month's rental (`monthlyRentalRaw`, raw 6-decimal USDC — `2000000` = $2.00) is debited from the agent balance at purchase and returned in the `X-Floe-Cost-USDC` response header. The debit appears on the ledger as `phone://{number}/rental`.
 
-**Errors:** `402 insufficient_balance` (fund the agent first), `402 policy_exceeded` / `spend_limit_exceeded` (a spend policy blocked the debit), `409 number_exists` (the agent already has a number), `409 no_numbers_available` (try another area code), `409 agent_unavailable` (agent suspended or closed).
+**Errors:** `400 area_code_required` (send `areaCode` or an exact `phoneNumber`), `400 invalid_area_code` (3 digits, `2xx`–`9xx`), `402 insufficient_balance` (fund the agent first), `402 policy_exceeded` / `spend_limit_exceeded` (a spend policy blocked the debit), `403 telephony_suspended` (phone service is suspended for this account — contact support), `409 number_exists` (the agent already has a number), `409 no_numbers_available` (nothing purchasable in that area code, or the exact number was taken — try another area code or search again), `409 agent_unavailable` / `agent_not_ready` (agent suspended/closed, or its wallet isn't provisioned yet), `502 provisioning_failed` (carrier-side failure — nothing was charged; retry or pick another area code), `503 telephony_unavailable` (Floe Phone isn't configured on this deployment — see the [error-code reference](../reference/error-codes.md#floe-phone-numbers)). Every error body carries a human-readable `detail` alongside the `error` code.
+
+### Search before you buy
+
+Preview purchasable numbers in an area code (free, no side effects), then buy an exact one by passing its `phoneNumber` to the endpoint above.
+
+`GET /v1/developer/agents/{agentId}/numbers/search?areaCode=415`
+
+```json
+{
+  "numbers": [
+    { "phoneNumber": "+14155550123", "friendlyName": "(415) 555-0123", "locality": "San Francisco", "region": "CA" }
+  ]
+}
+```
+
+Search also accepts `areaCode` omitted (a broad US preview), but **buying** always needs either `areaCode` or an exact `phoneNumber`. Only numbers purchasable without an address on file are returned. Search does **not** reserve anything — another buyer can claim a number between your search and your purchase, in which case the buy returns `409 no_numbers_available`; search again and pick another.
 
 ## List numbers
 
