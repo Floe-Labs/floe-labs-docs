@@ -595,9 +595,9 @@ Wire all three legs through Floe so the whole turn lands on one key and one budg
 ```python
 from pipecat_floe import FloeSTTService, FloeLLMService, FloeTTSService
 
-stt = FloeSTTService(model="deepgram/nova-3")
+stt = FloeSTTService(model="deepgram/nova-3")   # streaming STT — always on Floe's managed keys
 llm = FloeLLMService(model="openai/gpt-4o", provider_key=os.environ["OPENAI_API_KEY"])
-tts = FloeTTSService(model="openai/tts-1", voice="alloy")
+tts = FloeTTSService(model="openai/tts-1", voice="alloy", provider_key=os.environ["OPENAI_API_KEY"])
 # ... drop stt, llm, tts into a Pipeline([...]) — see examples/bot.py for the full runner
 ```
 
@@ -2096,7 +2096,7 @@ Every id on this keyless gateway is fully qualified as `provider/model` — copy
 | Qwen | `qwen/qwen3.6-35b-a3b` · `qwen/qwen3.5-397b` · `qwen/qwen3.5-9b` · `qwen/qwen3-coder-480b` · `qwen/qwen3-next-80b` · `qwen/qwen3-235b-a22b-thinking` · `qwen/qwen3-235b-a22b-instruct` · `qwen/qwen3-32b` · `qwen/qwen-2.5-72b` |
 | Mistral | `mistral/mistral-large` · `mistral/mistral-medium` · `mistral/mistral-small` · `mistral/mistral-small-3.2-24b` · `mistral/mistral-nemo` · `mistral/magistral-medium` · `mistral/codestral` |
 | Moonshot (Kimi) | `moonshot/kimi-k3` · `moonshot/kimi-k2.7-code` · `moonshot/kimi-k2.6` · `moonshot/kimi-k2.5` · `moonshot/moonshot-v1-8k` |
-| z.ai (GLM) | `zai/glm-5.2` · `zai/glm-4.7-flash` · `zai/glm-4.6` · `zai/glm-4.5-air` |
+| z.ai (GLM) | `zai/glm-5.3` · `zai/glm-5.2` · `zai/glm-4.7-flash` · `zai/glm-4.6` · `zai/glm-4.5-air` |
 | xAI | `xai/grok-4.5` · `xai/grok-4.3` · `xai/grok-build-0.1` |
 | Cohere | `cohere/command-a` · `cohere/command-r` · `cohere/command-r7b` |
 | Perplexity (web-search) | `perplexity/sonar-reasoning-pro` · `perplexity/sonar-pro` · `perplexity/sonar` |

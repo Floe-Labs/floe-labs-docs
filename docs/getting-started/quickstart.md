@@ -95,9 +95,9 @@ Wire all three legs through Floe so the whole turn lands on one key and one budg
 ```python
 from pipecat_floe import FloeSTTService, FloeLLMService, FloeTTSService
 
-stt = FloeSTTService(model="deepgram/nova-3")
+stt = FloeSTTService(model="deepgram/nova-3")   # streaming STT — always on Floe's managed keys
 llm = FloeLLMService(model="openai/gpt-4o", provider_key=os.environ["OPENAI_API_KEY"])
-tts = FloeTTSService(model="openai/tts-1", voice="alloy")
+tts = FloeTTSService(model="openai/tts-1", voice="alloy", provider_key=os.environ["OPENAI_API_KEY"])
 # ... drop stt, llm, tts into a Pipeline([...]) — see examples/bot.py for the full runner
 ```
 
