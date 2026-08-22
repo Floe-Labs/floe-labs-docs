@@ -1861,7 +1861,7 @@ Optional request extras on `POST /v1/calls`:
 | Field | Where | What it does |
 | --- | --- | --- |
 | `X-Floe-Task-Id` | header | Task id stamped on every ledger leg of this call (≤128 chars, lowercased). Defaults to the lowercased call id. |
-| `X-Floe-Customer-Id` | header | Opaque end-customer attribution (≤128 chars, lowercased) — lands on the same rows for the cross-source ledger. |
+| `X-Floe-Customer-Id` | header | Opaque end-customer attribution (≤128 chars, lowercased) — lands on the same rows for the cross-source ledger. Falls back to the agent's `defaultCustomerId`, which is also what inbound calls attribute to. Under [strict attribution](../build/unified-ledger.md#attribute-spend-to-an-end-customer) a call that resolves neither is refused `400 customer_id_required` **pre-dial** — a call already in progress is never cut for a missing tag. |
 | `maxSpendRaw` | body | Per-call reserve cap, raw 6-decimal USDC (e.g. `"500000"` = $0.50). Clamped to the platform per-call ceiling ($2.00 default), rejected with `400 max_spend_too_low` if it can't cover one minute of calling. |
 
 To make a per-call budget *enforced* rather than just attributed, create a [task spend policy](spend-controls.md) whose `matchKey` is the task id — the reserve at answer, every hosted LLM turn, and any tool call tagged with that task id are then gated by it. The pre-dial check evaluates the task policy too, so an exhausted task budget denies with `403` *before* the callee's phone rings.
@@ -2262,6 +2262,7 @@ Authenticate with the **`Authorization: Bearer <floe key>`** header — **keyles
 | `encoding` | `linear16` · `mulaw` · `alaw` | raw PCM frame encoding |
 | `sample_rate` | `8000`–`48000` | rejected outside this range |
 | `language` | e.g. `en` | optional |
+| `customer_id` | opaque, ≤128 chars | optional end-customer tag for the ledger — the browser-safe equivalent of the `X-Floe-Customer-Id` header (a customer tag isn't auth material, so unlike the key it's fine in the query string). Falls back to the agent's `defaultCustomerId`. See [Attribute spend to an end customer](../build/unified-ledger.md#attribute-spend-to-an-end-customer). |
 
 **Client → server:** raw **PCM binary frames** in the declared `encoding`/`sample_rate`.
 
@@ -2344,6 +2345,31 @@ Tag every leg of a job with the `X-Floe-Task-Id` header — on the proxy call an
 ```
 
 A $0.50 cap on `call-8842` is a ceiling for the whole conversation, no matter how the cost splits across the four vendors that served it. See [Spend Controls](../developers/spend-controls.md) for policy types and windows.
+
+## Attribute spend to an end customer
+
+If you run agents on behalf of clients, tag each metered call with the end customer it belongs to. `X-Floe-Customer-Id` is an opaque id (≤128 chars, lowercased server-side) that lands on the ledger row for every paid surface — `/v1/proxy/fetch`, the keyless gateway (`/v1/chat/completions`, `/v1/embeddings`, `/v1/audio/*`), the BYOK metered proxy `/v1/llm/chat/completions`, `/v1/venice/*`, the streaming STT and realtime WebSockets, and `POST /v1/calls`.
+
+```bash
+-H "X-Floe-Customer-Id: acme-corp"
+```
+
+Attribution only — it never affects budgets. Use `X-Floe-Task-Id` for caps.
+
+**Bind a default on the agent instead.** If an agent is dedicated to one end client, you don't need the header at all — set the agent's default and every metered call it makes attributes to that customer:
+
+```bash
+curl -X PATCH https://credit-api.floelabs.xyz/v1/developer/agents/1 \
+  -H "Authorization: Bearer $FLOE_DEV_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "defaultCustomerId": "acme-corp" }'
+```
+
+Send `"defaultCustomerId": null` to clear it. Resolution order is **header → agent default → untagged**, so a multi-tenant agent can still override per call. The agent's current value is returned as `defaultCustomerId` on `GET /v1/developer/agents/:agentId`. Inbound Floe Phone calls — where no caller-supplied tag exists — pick up the agent default too.
+
+**Require attribution account-wide.** By default untagged calls are fine; they just land on the ledger with no customer. If an untagged call means a hole in a client invoice, switch the account to strict mode (owner or admin only, from **Settings → Client attribution** in the dashboard, or `PATCH /v1/developer/me` with `{ "customerAttribution": "required" }`). Any metered call that resolves neither a header nor an agent default is then refused with `400 customer_id_required` — **before** any upstream spend, and before the WebSocket handshake completes on the streaming surfaces. Set it back to `"optional"` to turn enforcement off.
+
+> **Roll it out carefully.** Strict mode is account-wide and takes effect immediately on every agent and every metered surface. Set agent defaults first, or try it in staging, so a missing tag doesn't start failing production calls. Mid-call legs are never cut: an in-progress phone call keeps running even if its attribution is missing — enforcement happens pre-dial on `POST /v1/calls`.
 
 ## Keyless inference
 
@@ -7790,6 +7816,7 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 | `Idempotency-Key: <opaque>` | **recommended** | Stripe-style retry key, ≤255 chars (typically a UUIDv4). Same key + same agent within 10 minutes replays the cached response — including its status, headers, and body — instead of running a second payment. Without this header, a retry after a network failure can double-charge you. See [x402 Facilitator → Idempotency](x402-facilitator.md#idempotency). |
 | `X-Floe-Task-Id: <opaque>` | optional | Task tag (≤128 chars, lowercased server-side). Spend accrues against any per-task budget with this id — see [Spend Controls](spend-controls.md). |
 | `X-Floe-Action-Id: <opaque>` | optional | Decision/action tag (≤128 chars, lowercased server-side). Attributes this call's cost to one action of your run for the cost-vs-outcome eval view — see [Outcome-Linked Spend Attribution](#outcome-linked-spend-attribution). Accepted on **every** paid surface (x402 proxy, marketplace, keyless gateway, `/v1/llm`, `/v1/venice`, realtime). |
+| `X-Floe-Customer-Id: <opaque>` | optional | End-customer tag (≤128 chars, lowercased server-side) for per-client rebilling. Falls back to the agent's `defaultCustomerId` when omitted. Attribution only — it never affects budgets. Accepted on every paid surface. If the account runs **strict attribution**, a call that resolves neither is refused `400 customer_id_required` — see [Unified Ledger → Attribute spend to an end customer](../build/unified-ledger.md#attribute-spend-to-an-end-customer). |
 | `X-Floe-Task-Value: <bps>` | optional | Task-value multiplier in basis points (`10000` = 1×, integer 1..100000). Scales the effective cap of policies whose operator set value-scaling bounds — and only inside those bounds; policies without bounds ignore it entirely. See [Spend Controls → Value-Aware Caps](spend-controls.md#value-aware-caps-x-floe-task-value). |
 
 **Response**
@@ -7889,6 +7916,7 @@ Notes:
 | 200 | — | Success — the merchant paid and replied | — | Consume the body |
 | 400 | `blocked_destination` | SSRF guard blocked the target URL | **No** | Fix the URL; do not retry |
 | 400 | `Invalid request` | Your request body failed schema validation | **No** | Fix the request |
+| 400 | `customer_id_required` | The account requires end-customer attribution and this call resolved none. Refused before any spend; body carries a `next` block with the remediation route | **No** | Send `X-Floe-Customer-Id`, set the agent's `defaultCustomerId` (`PATCH /v1/developer/agents/:agentId`), or switch attribution back to optional |
 | 401 | `wrong_credential_type` | A non-agent credential (e.g. a `floe_live_*` dev key, dashboard session, or wallet signature) was sent — valid on other `/v1` endpoints but not `/v1/proxy/*` | **No** | Mint a `floe_*` agent key and send it as the Bearer token |
 | 401 | `Missing or invalid Authorization header` | No credential at all, or a malformed one | **No** | Alert operator — the agent key is missing or broken |
 | 402 | `insufficient_balance` | Credit line exhausted; body includes `available` and `required` | **Wait** | Back off; poll `GET /v1/agents/balance`. Retry only once `available >= required` |
@@ -11685,6 +11713,7 @@ These are the errors your agent will see at runtime. This section is a condensed
 | Status | `error` | Summary |
 |---|---|---|
 | 400 | `blocked_destination` | SSRF guard blocked the target URL. Do not retry. |
+| 400 | `customer_id_required` | The account requires end-customer attribution and this call resolved neither an `X-Floe-Customer-Id` header nor the agent's `defaultCustomerId`. Refused before any spend. Body carries a `next` block pointing at `PATCH /v1/developer/agents/:agentId`. Returned on every metered surface; the streaming WebSockets refuse the handshake with the same body. |
 | 401 | `wrong_credential_type` | A non-agent credential (e.g. a `floe_live_*` dev key, dashboard session, or wallet signature) was sent. Use a `floe_*` agent key. |
 | 401 | `Missing or invalid Authorization header` | No credential at all, or a malformed one. |
 | 402 | `insufficient_balance` | Credit line exhausted. Body has `available` and `required`. |
@@ -12173,6 +12202,17 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **73 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.22.0 — End-customer attribution: agent defaults + strict mode (August 2026)
+
+`X-Floe-Customer-Id` grew from an optional tag on a few surfaces into a full per-client rebilling primitive: a default you can bind to an agent, and an account-wide switch that makes untagged spend an error instead of a hole in a client invoice.
+
+* **Agent default customer id.** `PATCH /v1/developer/agents/:agentId { "defaultCustomerId": "acme-corp" }` (`null` clears it) binds an agent to one end client. Resolution is **header → agent default → untagged**, so a multi-tenant agent still overrides per call. Normalized like the header (trimmed, lowercased, ≤128 chars) and returned as `defaultCustomerId` on the agent record. Inbound Floe Phone calls, which have no caller-supplied tag, attribute to the default too.
+* **Strict attribution.** `PATCH /v1/developer/me { "customerAttribution": "required" }` — owner or admin only, also a toggle under dashboard **Settings → Client attribution** — makes any metered call that resolves no customer id fail with `400 customer_id_required`, refused **before** any upstream spend. The streaming surfaces refuse the WebSocket handshake with the same body; `POST /v1/calls` refuses pre-dial, and a call already in progress is never cut for a missing tag. Default stays `optional` — no behaviour change unless you opt in.
+* **The header now rides every metered surface** — x402 proxy, keyless gateway, the BYOK metered proxy `/v1/llm/chat/completions`, `/v1/venice/*`, streaming STT, realtime, and the orchestrator transcriber. Browsers that can't set handshake headers pass `?customer_id=` on the streaming STT and realtime WebSockets.
+* **Unattributed spend on the dashboard.** The **Client attribution** card in Settings shows the last 30 days of spend that landed with no customer id, across both ledgers — check it reads zero before you flip strict mode on. Each agent page gains a **Default customer** field.
+
+→ [Unified Billing & Ledger](build/unified-ledger.md#attribute-spend-to-an-end-customer) · [Agent Runtime Contract](developers/agent-runtime-contract.md) · [Error Codes](reference/error-codes.md)
 
 ### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
 

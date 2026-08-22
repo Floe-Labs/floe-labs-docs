@@ -742,6 +742,47 @@ paths:
                         nullable: true
         "404":
           description: Agent not found or not owned by caller
+    patch:
+      tags: [Developer]
+      summary: Update agent settings
+      description: |
+        Updates editable per-agent settings. Today the only field is
+        `defaultCustomerId` — the end customer this agent's metered calls
+        attribute to when the caller sends no `X-Floe-Customer-Id` header.
+        Normalized the same way as the header (trimmed, lowercased, ≤128
+        chars). Send `null` to clear the default.
+      operationId: devUpdateAgent
+      security:
+        - developerSession: []
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                defaultCustomerId:
+                  type: string
+                  nullable: true
+                  minLength: 1
+                  maxLength: 128
+      responses:
+        "200":
+          description: Updated agent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManagedAgent"
+        "400":
+          description: Invalid request body
+        "404":
+          description: Agent not found or not owned by caller
 
   /v1/developer/agents/{agentId}/close:
     post:
@@ -1582,6 +1623,12 @@ components:
           type: string
         delegationTxHash:
           type: string
+        defaultCustomerId:
+          type: string
+          nullable: true
+          description: >-
+            Default end-customer attribution for this agent's metered calls.
+            An X-Floe-Customer-Id header overrides it per call. null when unset.
         createdAt:
           type: string
           format: date-time

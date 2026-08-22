@@ -10,6 +10,17 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.22.0 — End-customer attribution: agent defaults + strict mode (August 2026)
+
+`X-Floe-Customer-Id` grew from an optional tag on a few surfaces into a full per-client rebilling primitive: a default you can bind to an agent, and an account-wide switch that makes untagged spend an error instead of a hole in a client invoice.
+
+* **Agent default customer id.** `PATCH /v1/developer/agents/:agentId { "defaultCustomerId": "acme-corp" }` (`null` clears it) binds an agent to one end client. Resolution is **header → agent default → untagged**, so a multi-tenant agent still overrides per call. Normalized like the header (trimmed, lowercased, ≤128 chars) and returned as `defaultCustomerId` on the agent record. Inbound Floe Phone calls, which have no caller-supplied tag, attribute to the default too.
+* **Strict attribution.** `PATCH /v1/developer/me { "customerAttribution": "required" }` — owner or admin only, also a toggle under dashboard **Settings → Client attribution** — makes any metered call that resolves no customer id fail with `400 customer_id_required`, refused **before** any upstream spend. The streaming surfaces refuse the WebSocket handshake with the same body; `POST /v1/calls` refuses pre-dial, and a call already in progress is never cut for a missing tag. Default stays `optional` — no behaviour change unless you opt in.
+* **The header now rides every metered surface** — x402 proxy, keyless gateway, the BYOK metered proxy `/v1/llm/chat/completions`, `/v1/venice/*`, streaming STT, realtime, and the orchestrator transcriber. Browsers that can't set handshake headers pass `?customer_id=` on the streaming STT and realtime WebSockets.
+* **Unattributed spend on the dashboard.** The **Client attribution** card in Settings shows the last 30 days of spend that landed with no customer id, across both ledgers — check it reads zero before you flip strict mode on. Each agent page gains a **Default customer** field.
+
+→ [Unified Billing & Ledger](build/unified-ledger.md#attribute-spend-to-an-end-customer) · [Agent Runtime Contract](developers/agent-runtime-contract.md) · [Error Codes](reference/error-codes.md)
+
 ### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
 
 Developer webhooks grew from 8 loan/key events to a **30-event catalog** with an account-wide delivery log, and every surface — API, dashboard, CLI, MCP — now speaks the same contract.

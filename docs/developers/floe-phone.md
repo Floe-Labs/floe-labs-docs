@@ -245,7 +245,7 @@ Optional request extras on `POST /v1/calls`:
 | Field | Where | What it does |
 | --- | --- | --- |
 | `X-Floe-Task-Id` | header | Task id stamped on every ledger leg of this call (≤128 chars, lowercased). Defaults to the lowercased call id. |
-| `X-Floe-Customer-Id` | header | Opaque end-customer attribution (≤128 chars, lowercased) — lands on the same rows for the cross-source ledger. |
+| `X-Floe-Customer-Id` | header | Opaque end-customer attribution (≤128 chars, lowercased) — lands on the same rows for the cross-source ledger. Falls back to the agent's `defaultCustomerId`, which is also what inbound calls attribute to. Under [strict attribution](../build/unified-ledger.md#attribute-spend-to-an-end-customer) a call that resolves neither is refused `400 customer_id_required` **pre-dial** — a call already in progress is never cut for a missing tag. |
 | `maxSpendRaw` | body | Per-call reserve cap, raw 6-decimal USDC (e.g. `"500000"` = $0.50). Clamped to the platform per-call ceiling ($2.00 default), rejected with `400 max_spend_too_low` if it can't cover one minute of calling. |
 
 To make a per-call budget *enforced* rather than just attributed, create a [task spend policy](spend-controls.md) whose `matchKey` is the task id — the reserve at answer, every hosted LLM turn, and any tool call tagged with that task id are then gated by it. The pre-dial check evaluates the task policy too, so an exhausted task budget denies with `403` *before* the callee's phone rings.

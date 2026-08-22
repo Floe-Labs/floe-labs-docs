@@ -295,6 +295,7 @@ Authenticate with the **`Authorization: Bearer <floe key>`** header — **keyles
 | `encoding` | `linear16` · `mulaw` · `alaw` | raw PCM frame encoding |
 | `sample_rate` | `8000`–`48000` | rejected outside this range |
 | `language` | e.g. `en` | optional |
+| `customer_id` | opaque, ≤128 chars | optional end-customer tag for the ledger — the browser-safe equivalent of the `X-Floe-Customer-Id` header (a customer tag isn't auth material, so unlike the key it's fine in the query string). Falls back to the agent's `defaultCustomerId`. See [Attribute spend to an end customer](../build/unified-ledger.md#attribute-spend-to-an-end-customer). |
 
 **Client → server:** raw **PCM binary frames** in the declared `encoding`/`sample_rate`.
 

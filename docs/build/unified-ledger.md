@@ -37,6 +37,31 @@ Tag every leg of a job with the `X-Floe-Task-Id` header — on the proxy call an
 
 A $0.50 cap on `call-8842` is a ceiling for the whole conversation, no matter how the cost splits across the four vendors that served it. See [Spend Controls](../developers/spend-controls.md) for policy types and windows.
 
+## Attribute spend to an end customer
+
+If you run agents on behalf of clients, tag each metered call with the end customer it belongs to. `X-Floe-Customer-Id` is an opaque id (≤128 chars, lowercased server-side) that lands on the ledger row for every paid surface — `/v1/proxy/fetch`, the keyless gateway (`/v1/chat/completions`, `/v1/embeddings`, `/v1/audio/*`), the BYOK metered proxy `/v1/llm/chat/completions`, `/v1/venice/*`, the streaming STT and realtime WebSockets, and `POST /v1/calls`.
+
+```bash
+-H "X-Floe-Customer-Id: acme-corp"
+```
+
+Attribution only — it never affects budgets. Use `X-Floe-Task-Id` for caps.
+
+**Bind a default on the agent instead.** If an agent is dedicated to one end client, you don't need the header at all — set the agent's default and every metered call it makes attributes to that customer:
+
+```bash
+curl -X PATCH https://credit-api.floelabs.xyz/v1/developer/agents/1 \
+  -H "Authorization: Bearer $FLOE_DEV_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "defaultCustomerId": "acme-corp" }'
+```
+
+Send `"defaultCustomerId": null` to clear it. Resolution order is **header → agent default → untagged**, so a multi-tenant agent can still override per call. The agent's current value is returned as `defaultCustomerId` on `GET /v1/developer/agents/:agentId`. Inbound Floe Phone calls — where no caller-supplied tag exists — pick up the agent default too.
+
+**Require attribution account-wide.** By default untagged calls are fine; they just land on the ledger with no customer. If an untagged call means a hole in a client invoice, switch the account to strict mode (owner or admin only, from **Settings → Client attribution** in the dashboard, or `PATCH /v1/developer/me` with `{ "customerAttribution": "required" }`). Any metered call that resolves neither a header nor an agent default is then refused with `400 customer_id_required` — **before** any upstream spend, and before the WebSocket handshake completes on the streaming surfaces. Set it back to `"optional"` to turn enforcement off.
+
+> **Roll it out carefully.** Strict mode is account-wide and takes effect immediately on every agent and every metered surface. Set agent defaults first, or try it in staging, so a missing tag doesn't start failing production calls. Mid-call legs are never cut: an in-progress phone call keeps running even if its attribution is missing — enforcement happens pre-dial on `POST /v1/calls`.
+
 ## Keyless inference
 
 You can go one step further and drop the vendor accounts entirely. With keyless inference, you call LLM and voice models with no vendor account at all — Floe holds the upstream relationship and bills you per call from the same balance. Same ledger, same tags, one fewer key to manage.
