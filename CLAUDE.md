@@ -4,7 +4,7 @@ Guidance for Claude Code (and the `claude-docs-sync` bot) when editing this repo
 
 ## What this repo is
 
-`floe-labs-docs` is the **public documentation** for [Floe](https://dev-dashboard.floelabs.xyz) — spend controls for voice AI agents. It is a **GitBook-hosted Markdown site** synced from `main`: there is no build step, no bundler, no test suite. Merging Markdown to `main` publishes it. The repo also ships two agent-consumable artifacts (`llms.txt`, `openapi/floe-api.yaml`) and is the source of record for the x402 vendor directory (`x402-directory/entries/*.json`).
+`floe-labs-docs` is the **public documentation** for [Floe](https://dev-dashboard.floelabs.xyz) — cost visibility and margin for voice AI: what every call actually costs, across every vendor. It is a **GitBook-hosted Markdown site** synced from `main`: there is no build step, no bundler, no test suite. Merging Markdown to `main` publishes it. The repo also ships two agent-consumable artifacts (`llms.txt`, `openapi/floe-api.yaml`) and is the source of record for the x402 vendor directory (`x402-directory/entries/*.json`).
 
 Human contributor rules live in [CONTRIBUTING.md](CONTRIBUTING.md); everything below adds the detail an automated editor needs.
 
@@ -61,9 +61,9 @@ scripts/
 
 ## Product context for writing
 
-Floe is **spend controls for voice AI**: a voice agent's whole bill — telephony, STT, LLM, TTS, search — on one ledger, enforced before money moves. Walletless onboarding (no crypto), fiat funding, and one API key that pays any vendor API — x402 vendors through the payment proxy (`/v1/proxy/fetch`) and LLM/voice through the keyless Floe Inference gateway (`/v1/chat/completions`, `/v1/embeddings`, `/v1/audio/*`, marketplace shim; the older BYOK metered proxy is `/v1/llm/chat/completions`) — from a prepaid balance, governed by programmable server-side spend controls. Floe Inference, the LLM proxy, spend controls, value-aware caps, quality throttle, budget-aware routing, Floe Phone, and the coverage score are **live** — describe them as live; never add "feature-flagged" or "coming soon" hedges to them.
+Floe tells voice-AI teams **what every call actually costs** — across every vendor (telephony, STT, LLM, TTS, search) — on one ledger, tagged by client and campaign, so they can see margin per contract; budgets are enforced where Floe is in the path. Walletless onboarding (no crypto), fiat funding, and one API key that pays any vendor API — x402 vendors through the payment proxy (`/v1/proxy/fetch`) and LLM/voice through the keyless Floe Inference gateway (`/v1/chat/completions`, `/v1/embeddings`, `/v1/audio/*`, marketplace shim; the older BYOK metered proxy is `/v1/llm/chat/completions`) — from a prepaid balance, governed by programmable server-side spend controls. Floe Inference, the LLM proxy, spend controls, value-aware caps, quality throttle, budget-aware routing, Floe Phone, and the coverage score are **live** — describe them as live; never add "feature-flagged" or "coming soon" hedges to them.
 
-**Primary audience: voice operators** (Vapi / Retell / Bland / Pipecat / LiveKit / CrewAI). The through-line is "one key for the whole voice bill". Lead every quickstart and guide with that job-to-be-done.
+**Primary audience: voice operators** (Vapi / Retell / Bland / Pipecat / LiveKit / CrewAI). The through-line is "one key for the whole voice bill — and know what every call actually costs". Lead every quickstart and guide with that job-to-be-done. Keep guides developer-focused: the cost-truth / margin framing is the positioning lead (homepage, overviews), not a reason to turn a setup guide into a finance pitch.
 
 **Out of scope for these docs: the on-chain lending protocol.** Deposit/borrow, LTV, liquidation, same-token/volatile markets, intent matching / solvers, dual-oracle / circuit breaker, flash loans, secured/unsecured working capital, and the credit & trust bureau are **not** part of the public spend-layer docs. Don't add them to the primary path or the changelog. (This is a documentation scoping decision, not a feature retraction.)
 
