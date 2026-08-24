@@ -14,6 +14,17 @@ Every voice call your agent makes spends money across a dozen vendors — the ph
 
 ---
 
+## From cost to margin, in four moves
+
+- **Cost** — every leg of the call (telephony, STT, LLM, TTS, tools) priced across every vendor the moment it ends, on one ledger. No estimates, no month-end. Tagged by agent, client, and campaign.
+- **Margin** — a rate card and markup per client join what the call *cost* to what you *charge*: margin per client, per campaign, per contract — the P&L finance builds by hand, including the client you're quietly losing money on.
+- **Invoice** — bill your own customers off the actuals: white-label statements and invoices through **your** Stripe, your brand. Floe never touches the money.
+- **Price the next deal** — you sell outcomes, you pay for minutes; Floe joins the two, so you price on actuals, not a blended guess.
+
+Budgets are enforced **before** the spend where Floe is in the path, with a between-call circuit breaker everywhere else. **Start free; pay when it pays you.**
+
+---
+
 > **Running production agents on Vapi, Retell, or Bland?**
 > Floe governs spend **inside your platform** through its own documented hooks — no migration, no platform cooperation, your keys stay yours. Where the platform allows it, route the model leg through Floe for pre-call enforcement (a custom-LLM URL on **Vapi**, a hosted adapter on **Retell**; **Bland** is reconcile-only). Connect the end-of-call webhook and every call lands on one ledger, with a between-call circuit breaker that stops the agent's next call once it's over budget.
 > → **[Vapi in 10 minutes](docs/platforms/vapi.md)** · [Retell](docs/platforms/retell.md) · [Bland](docs/platforms/bland.md) · [Full orchestrator reference](docs/build/voice-orchestrators.md)
