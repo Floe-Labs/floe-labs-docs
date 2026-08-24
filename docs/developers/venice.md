@@ -1,6 +1,6 @@
 # Venice AI — metered model inference
 
-Floe is the spend layer for AI agents: fund with fiat, pay any vendor API with one key, and govern every call with programmable server-side spend controls. Through that one key, run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per use** — tokens, characters, or audio seconds — from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
+Floe meters what every call actually costs across every vendor: fund with fiat, pay any vendor API with one key, and govern every call with programmable server-side spend controls. Through that one key, run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per use** — tokens, characters, or audio seconds — from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
 
 Venice is the first model-inference provider in Floe's [vendor marketplace](../x402-directory/README.md). Access is **OpenAI-compatible**: point any OpenAI SDK at Floe with your Floe agent key — no Venice account, no Venice key, no wallet.
 
