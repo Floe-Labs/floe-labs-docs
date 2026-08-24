@@ -28,6 +28,7 @@ These are the errors your agent will see at runtime. This section is a condensed
 | Status | `error` | Summary |
 |---|---|---|
 | 400 | `blocked_destination` | SSRF guard blocked the target URL. Do not retry. |
+| 400 | `customer_id_required` | The account requires end-customer attribution and this call resolved none. Refused before any spend, on every metered surface. Send `X-Floe-Customer-Id`, or set a default customer on the agent or its project — see [Client rebilling](../developers/rebilling.md#require-a-tag-on-every-call). The body's `next` block carries the same remediation. |
 | 401 | `wrong_credential_type` | A non-agent credential (e.g. a `floe_live_*` dev key, dashboard session, or wallet signature) was sent. Use a `floe_*` agent key. |
 | 401 | `Missing or invalid Authorization header` | No credential at all, or a malformed one. |
 | 402 | `insufficient_balance` | Credit line exhausted. Body has `available` and `required`. |

@@ -81,6 +81,7 @@
 * [API Keys](docs/developers/api-keys.md)
 * [From Bank Account to First API Call](docs/agents/fiat-to-x402.md)
 * [Agent Runtime Contract](docs/developers/agent-runtime-contract.md)
+* [Client rebilling](docs/developers/rebilling.md)
 * [Pay any vendor API](docs/developers/x402-facilitator.md)
 * [Marketplace Shim](docs/developers/marketplace-shim.md)
 * [MCP Server](docs/developers/mcp-server.md)

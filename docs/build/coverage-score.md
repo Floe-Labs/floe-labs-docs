@@ -50,6 +50,8 @@ Returns `totals` — `knownRaw`, `enforceableRaw`, `reconciledRaw` (raw USDC) pl
 
 `calls` counts the same rows `totals` sums: `total`, `enforceable`, `reconciled`, `byok`. `enforceable` and `reconciled` are mutually exclusive and sum to `total`; `byok` is a **subset of `enforceable`** (gateway calls served on your own vendor key — rail `byok`) and never overlaps `reconciled` (spend pushed by [ledger sync](ledger-sync.md) lands as reconciled rows, not `byok`). Don't add `byok` to the other two.
 
+An `attribution` block sits alongside `calls`, summed over the same rows: `attributedRaw`, `attributedCalls`, and `attributionBps` — the share of known spend carrying an end-customer tag (`null` when there's no spend in the window, same as `coverageBps`). It's the readiness signal for [client rebilling](../developers/rebilling.md): at 100%, no invoice has a hole and strict attribution is safe to switch on.
+
 **Zero-spend windows:** `coverageBps` is `null` whenever `knownRaw` is `0`, even if calls landed at $0. Clients should read `calls.*` in that case — `calls.enforceable > 0 && calls.reconciled == 0` is what the dashboard renders as "Coverage: 100%" by call count; `calls.total == 0` is genuinely no activity. `null` never means "0% covered". Accepts any developer credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set.
 
 ## The honest boundary

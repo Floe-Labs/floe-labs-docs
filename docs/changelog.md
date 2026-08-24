@@ -10,6 +10,21 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.22.0 — Client rebilling: per-customer rate cards, margin, and statements (August 2026)
+
+Agencies and builders who bill their own end-clients can now do it from Floe's ledger instead of a spreadsheet: tag spend per client, price each client, and close a billing period into an immutable statement.
+
+* **Attribution, with no code change.** The end-customer on a metered call resolves `X-Floe-Customer-Id` header → the agent's default customer → the agent's **project** default → untagged. Set a default once with `PATCH /v1/developer/agents/:agentId` (`defaultCustomerId`, `projectId`) or on a project, and every metered call — Floe Inference, the x402 proxy, Floe Phone including inbound — attributes automatically. Both writes now require the admin role.
+* **Projects.** `GET | POST /v1/developer/projects` and `PATCH /v1/developer/projects/:id` group agents under one client engagement and carry a default customer.
+* **Strict attribution.** `PATCH /v1/developer/profile` with `{"customerAttribution":"required"}` refuses untagged metered calls **before any spend** with `400 customer_id_required` (with a machine-readable `next` remediation block) across the gateway, the proxy, the STT/realtime WebSocket handshakes, and outbound calls. Calls already in progress are never dropped.
+* **Rate cards — versioned and append-only.** `fixed` retainers, `per_unit` (`audio_minute` / `request`, with included allotments), and `cost_plus` margin rules compose additively. "Editing" appends version N+1; `effectiveFrom` is monotonic (`400 effective_from_regression`), old versions keep rating their era, and drafts rate nothing until activated. `POST /v1/developer/rate-cards/preview` rates up to 6 candidate cards against the client's real last-30-days usage using the same arithmetic the close job uses.
+* **Cost, revenue, margin per client.** `GET /v1/developer/customers` lists every end-customer seen in the ledger with its pricing status; `GET /v1/developer/customers/:customerId/transactions` returns each metered row with per-row revenue and margin where the pricing model defines one, `taskId` for rolling phone-call legs up into one call, and an explicit `truncated` flag at 2,000 rows.
+* **Billing periods & immutable statements.** `open → closed → issued`, with audit-trailed manual charges and credits while open. Close segments the period at every card-version boundary (retainers prorated per segment), snapshots line items with their version and cents-plus-remainder amounts, refuses `409 unrated_usage` rather than invoicing $0, and is idempotent — change the rate card tomorrow and last month's statement doesn't move.
+* **Coverage gained an `attribution` block** (`attributedRaw`, `attributedCalls`, `attributionBps`) over the same rows as the coverage score — the readiness signal for flipping strict attribution on.
+* Floe produces the statement and its CSV export; invoicing and collection stay on your own stack.
+
+→ [Client rebilling](developers/rebilling.md) · [Coverage Score](build/coverage-score.md) · [Error Codes](reference/error-codes.md)
+
 ### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
 
 Developer webhooks grew from 8 loan/key events to a **30-event catalog** with an account-wide delivery log, and every surface — API, dashboard, CLI, MCP — now speaks the same contract.
