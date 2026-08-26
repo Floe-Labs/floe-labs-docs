@@ -32,6 +32,8 @@ That's it. Your agent's balance updates and it can immediately call paid APIs. E
 
 There's no hard minimum, but card payments have a Coinbase-imposed floor around $5.
 
+Not sure how much to load? [Estimate your monthly spend](https://dev-dashboard.floelabs.xyz/calculator).
+
 ---
 
 ## Low-balance alerts

@@ -119,7 +119,7 @@ See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookboo
 
 ## Why this matters
 
-A voice agent's cost is never just tokens. One conversation pays 7–20 vendors in real time, and if they bill separately you can't answer the only question that matters: what did this call cost, and was it worth it? Floe answers it — and enforces the answer. Pre-call where we're in the path. Circuit breaker everywhere else.
+A voice agent's cost is never just tokens. One conversation pays 7–20 vendors in real time, and if they bill separately you can't answer the only question that matters: what did this call cost, and was it worth it? Floe answers it — and enforces the answer. Pre-call where we're in the path. Circuit breaker everywhere else. [See what a call costs](https://dev-dashboard.floelabs.xyz/calculator).
 
 ---
 
