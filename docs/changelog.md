@@ -10,6 +10,20 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.22.0 — Plans: Free / Pro / Agency / Enterprise, and client invoicing through your own Stripe (August 2026)
+
+Floe now has plans. The usage-based model is unchanged — you still pay the vendor's rate plus Floe's fee on the volume that flows through it, and **no plan ever declines an agent call**. What plans gate is the developer surface: reporting depth, fleet-wide controls, and the client-invoicing tooling agencies rebill with.
+
+* **Four plans.** Free $0 (up to $2K/mo tracked spend, 7-day history) · **Pro** $99/mo or $950/yr (up to $10K/mo, attribution reports, fleet-wide policies and the `suspend_agent` hard stop, CSV exports, credit-threshold alerts, 12-month history) · **Agency** $499/mo or $4,790/yr (up to $50K/mo, rate cards, client invoicing, up to 30 billed clients, unlimited history) · **Enterprise** custom, uncapped. Per-agent budgets, policies, the ledger, Floe Inference, and the x402 proxy stay on every plan including Free.
+* **Caps are soft, history is a clamp.** Crossing 80% or 100% of the monthly tracked-spend cap raises a banner and fires the new `billing.usage_threshold` webhook — nothing is blocked. Analytics, ledger, activity, and usage reads are narrowed to the plan's history window and echo `historyFloor` + `historyClamped`, so a clamp is never mistaken for an empty result. Older data isn't deleted; upgrading brings it back.
+* **`GET /v1/developer/billing/plan`** returns the effective plan, its limits and features, and month-to-date usage against the caps (plus 12 months of history at `/billing/plan/usage-history`); `GET /v1/developer/profile` carries the same summary as `developer.plan`. Upgrades run through `POST /billing/checkout`, changes and cancellations through `POST /billing/portal` — both admin-only **and** session-only: a `floe_live_` key gets `403 session_required`, so a leaked key can never open a billing page.
+* **Gated endpoints answer `403 plan_required`** with the plan you need, the plan you're on, the `feature`, an `upgradeUrl`, and a `next` hint. Policies created on a higher plan keep enforcing after a downgrade.
+* **Client invoicing (Agency).** Connect your own Stripe account and send a closed billing period to a client as a real Stripe invoice, from your account — Floe's default application fee is **0**, so Floe never touches your client money.
+* **41 webhook events in seven categories** (was 30 in six). The new **billing** category adds `billing.plan.changed`, `billing.payment_failed`, `billing.invoice.paid`, `billing.renewal_upcoming`, `billing.usage_threshold`, `client_invoice.sent` / `.paid` / `.voided` / `.uncollectible`, and `stripe.connected` / `stripe.disconnected`. These are **account-level**: they carry the public `accountId`, and reach `global` webhooks (or a `wallet`/`agent` webhook scoped to the account wallet), not per-agent endpoints.
+* **Self-hosting.** Billing is off unless `STRIPE_SECRET_KEY` is set — every `/v1/developer/billing/*` call answers `503 stripe_not_configured` and plan gates honour admin grants only. `GET /v1/capabilities` reports `stripeBilling` and `stripeConnect`. See [Environment Variables](reference/environment-variables.md#billing-stripe).
+
+→ [Pricing & cost](getting-started/pricing.md#plans) · [Webhooks](developers/webhooks.md#billing-events) · [Error Codes](reference/error-codes.md#plans-and-billing)
+
 ### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
 
 Developer webhooks grew from 8 loan/key events to a **30-event catalog** with an account-wide delivery log, and every surface — API, dashboard, CLI, MCP — now speaks the same contract.

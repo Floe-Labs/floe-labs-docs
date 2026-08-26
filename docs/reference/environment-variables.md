@@ -38,6 +38,16 @@ Every environment variable the Floe Credit API (`apps/api`) reads at startup or 
 | `MONITORING_URL` | — | Server | Monitoring API base URL (default `http://localhost:4000`) |
 | `MONITORING_INTERNAL_KEY` | — | Server | Shared secret for monitoring push |
 | `CONTRACT_ADDRESS` | — | Server | Legacy — prefer `LENDING_INTENT_MATCHER` |
+| `STRIPE_SECRET_KEY` | — | Server | Enables plan billing. Unset = billing off (`503 stripe_not_configured`); set = the price and webhook secrets below become required |
+| `STRIPE_WEBHOOK_SECRET` | **If Stripe** | Server | Signing secret of the `/v1/webhooks/stripe` endpoint |
+| `STRIPE_PRICE_PRO_MONTHLY` / `_PRO_ANNUAL` / `_AGENCY_MONTHLY` / `_AGENCY_ANNUAL` | **If Stripe** | Server | Stripe Price ids Checkout sells |
+| `STRIPE_PORTAL_CONFIGURATION_ID` | — | Server | Customer Portal configuration pinned on portal sessions |
+| `STRIPE_METER_EVENT_NAME` | — | Server | Billing Meter event name for Enterprise metered usage (default `ledgered_spend`) |
+| `STRIPE_CONNECT_CLIENT_ID` | — | Server | Connect app id (`ca_…`) — enables client invoicing through the operator's own Stripe |
+| `STRIPE_CONNECT_WEBHOOK_SECRET` | — | Server | Signing secret of the connected-accounts webhook endpoint |
+| `STRIPE_OAUTH_SECRET_KEY` | — | Server | Optional `sk_` used only for Connect OAuth token/deauthorize |
+| `STRIPE_CONNECT_APPLICATION_FEE_BPS` | — | Server | Fee withheld on connected-account invoices (default `0`) |
+| `DASHBOARD_URL` | — | Server | Dashboard origin for Checkout/portal/Connect returns and `upgradeUrl` |
 | `FLOE_API_KEY` | **Agent** | Agent runtime | The `floe_*` key the agent sends as `Authorization: Bearer` |
 
 ---
@@ -194,6 +204,44 @@ Shared secret sent as a header when pushing monitoring events. If unset, monitor
 
 ### `ENVIO_HTTP_ENDPOINT` / `ENVIO_API_TOKEN` / `ENVIO_ADMIN_SECRET`
 Indexer connection. `ENVIO_HTTP_ENDPOINT` is required for balance reads and loan status. `ENVIO_API_TOKEN` is required when using hosted Envio. `ENVIO_ADMIN_SECRET` enables deep admin queries and is optional.
+
+---
+
+## Billing (Stripe)
+
+Powers the [plans](../getting-started/pricing.md#plans) (Free / Pro / Agency / Enterprise) and, on Agency, client invoicing through the operator's own Stripe account. **Off by default** — with `STRIPE_SECRET_KEY` unset, `/v1/developer/billing/*` answers `503 stripe_not_configured`, the Stripe webhook endpoints 503, and plan gates honour admin grants only. A missing secret is "feature off", never an insecure default.
+
+Once `STRIPE_SECRET_KEY` **is** set, startup fails fast unless `STRIPE_WEBHOOK_SECRET` and all four `STRIPE_PRICE_*` ids are set too. The key's mode prefix (`sk_live_` / `sk_test_`, `rk_live_` / `rk_test_`) decides livemode; events from the other mode are recorded as `ignored`. Prefer a restricted (`rk_`) key.
+
+### `STRIPE_SECRET_KEY`
+Floe's own Stripe secret. Scopes the running API actually needs: Customers, Checkout Sessions, Customer portal, Meter events, Invoices + Invoice items **write**; Subscriptions, Prices, Balance, Events **read**; Connect accounts read plus the connected-accounts access permission.
+
+### `STRIPE_WEBHOOK_SECRET`
+Signing secret of the platform webhook endpoint pointed at `https://<api>/v1/webhooks/stripe`.
+
+### `STRIPE_PRICE_PRO_MONTHLY` / `STRIPE_PRICE_PRO_ANNUAL` / `STRIPE_PRICE_AGENCY_MONTHLY` / `STRIPE_PRICE_AGENCY_ANNUAL`
+Stripe Price ids Checkout sells. All four are required whenever billing is on.
+
+### `STRIPE_PORTAL_CONFIGURATION_ID`
+Customer Portal configuration pinned on every portal session. Optional — unset uses the account's default configuration.
+
+### `STRIPE_METER_EVENT_NAME`
+Billing Meter event name for Enterprise metered usage. **Default:** `ledgered_spend`.
+
+### `STRIPE_CONNECT_CLIENT_ID`
+Connect app client id (`ca_…`) that enables client invoicing. Unset ⇒ `GET /v1/capabilities` reports `stripeConnect: false` and linking 503s `stripe_connect_not_configured`. The OAuth redirect URI is derived from `CREDIT_API_BASE_URL` + `/v1/developer/stripe/connect/callback` and must be registered verbatim in the Connect app.
+
+### `STRIPE_CONNECT_WEBHOOK_SECRET`
+Signing secret of the "Connected accounts" webhook endpoint (`https://<api>/v1/webhooks/stripe/connect`). Unset ⇒ Connect webhooks 503.
+
+### `STRIPE_OAUTH_SECRET_KEY`
+Optional `sk_` used **only** for `/oauth/token` and `/oauth/deauthorize`, for the case where Stripe refuses a restricted key there. Leave unset otherwise.
+
+### `STRIPE_CONNECT_APPLICATION_FEE_BPS`
+Application fee (basis points, `0`–`10000`) withheld on connected-account invoices. **Default:** `0` — Floe never touches the operator's client money; Agency is monetised by the subscription.
+
+### `DASHBOARD_URL`
+Dashboard origin used for Checkout success/cancel URLs, the portal return URL, the Connect return redirect, and the `upgradeUrl` in `403 plan_required` bodies. **Default:** the production dashboard.
 
 ---
 

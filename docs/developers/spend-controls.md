@@ -19,6 +19,8 @@ Programmable budgets for your agent wallets. Cap spending per vendor, per task, 
 
 Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` kind and the `session` window are **team-scoped only** (`/v1/developer/policies`).
 
+> **Plan note.** Per-agent budgets and policies are on every plan, including Free. **Team-scoped (fleet) policies** and the `suspend_agent` hard stop need [**Pro**](../getting-started/pricing.md#plans) — creating or editing one on Free returns `403 plan_required`. Clearing `action` on an existing policy is always allowed, and policies created on a higher plan keep enforcing if you downgrade.
+
 ## Quick Start
 
 ### Set a daily vendor cap
@@ -155,7 +157,7 @@ Spend is calculated from settled + in-flight payments. Refunded/failed calls aut
 
 ## Breach Action: the Policy Kill-Switch
 
-By default a breach only declines the single call (the agent can keep trying). Set `action: "suspend_agent"` on a policy to turn it into a **kill-switch**: the breaching call still gets the 402 above (with `"auto_suspended": true`), and the **whole agent is suspended** — every subsequent call is rejected at authentication with 403 until you resume it.
+By default a breach only declines the single call (the agent can keep trying). Set `action: "suspend_agent"` on a policy to turn it into a **kill-switch** ([Pro](../getting-started/pricing.md#plans) and above): the breaching call still gets the 402 above (with `"auto_suspended": true`), and the **whole agent is suspended** — every subsequent call is rejected at authentication with 403 until you resume it.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
@@ -288,8 +290,8 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/v1/developer/policies` | Session cookie | List team policies |
-| POST | `/v1/developer/policies` | Session cookie | Create team policy |
-| PATCH | `/v1/developer/policies/:id` | Session cookie | Update |
+| POST | `/v1/developer/policies` | Session cookie | Create team policy — **Pro** |
+| PATCH | `/v1/developer/policies/:id` | Session cookie | Update — **Pro** |
 | DELETE | `/v1/developer/policies/:id` | Session cookie | Revoke |
 
 ### Create Policy Body

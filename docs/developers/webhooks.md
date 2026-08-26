@@ -17,7 +17,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **30 events across six categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **41 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -93,6 +93,24 @@ Vendor spend events, routed on the agent's wallet address — except the two `ma
 | `marketplace.vendor.degraded` | A marketplace vendor's health probe flipped to down — platform-wide broadcast |
 | `marketplace.vendor.recovered` | A previously degraded marketplace vendor is healthy again — platform-wide broadcast |
 
+#### Billing events
+
+Account-level events about your Floe [plan](../getting-started/pricing.md#plans) and — on Agency — the invoices you issue to your own clients. These carry no agent attribution: payloads identify the account by its public `accountId` (`acct_…`), never a wallet address.
+
+| Event | Fires when |
+|-------|-----------|
+| `billing.plan.changed` | Your account's effective plan changed — upgrade, downgrade, cancellation, or an admin-assigned plan starting or expiring |
+| `billing.payment_failed` | A payment for your Floe plan failed or needs action — update the payment method; retries continue for a limited time |
+| `billing.invoice.paid` | A Floe plan invoice was paid — carries the amount and the hosted invoice link |
+| `billing.renewal_upcoming` | Your plan renews soon — carries the amount due and the end of the current period |
+| `billing.usage_threshold` | Month-to-date tracked spend crossed 80% or 100% of your plan's cap — informational, nothing is blocked |
+| `client_invoice.sent` | A client invoice for a closed billing period was sent through your connected Stripe account |
+| `client_invoice.paid` | A client paid an invoice issued from your connected Stripe account |
+| `client_invoice.voided` | A client invoice was voided in Stripe and will not be collected |
+| `client_invoice.uncollectible` | A client invoice was marked uncollectible in Stripe |
+| `stripe.connected` | A Stripe account was connected for client invoicing |
+| `stripe.disconnected` | The connected Stripe account was disconnected — from Floe or from the Stripe dashboard; client invoicing pauses until it is reconnected |
+
 Payloads never contain plaintext key material — only a masked `keyPrefix`.
 
 ### Wildcard subscriptions
@@ -119,6 +137,8 @@ Each webhook is scoped to control which events reach it:
 `wallet` and `agent` behave identically — both filter on the event's agent wallet address; `agent` is the value the dashboard's per-agent screen uses. `loan` filters on the event's loan ID. A `global` webhook receives everything it subscribes to.
 
 Two exceptions ignore scope entirely: `marketplace.vendor.degraded` and `marketplace.vendor.recovered` are platform-wide broadcasts sent to every webhook subscribed to them.
+
+Billing events are **account-level** — there is no agent to route on. They reach `global` webhooks, and `wallet`/`agent` webhooks whose `scopeValue` is the **account** wallet. Scope a `wallet` webhook to an agent and it will never see them; use `global` for billing.
 
 > **Scope is immutable.** `scope` and `scopeValue` cannot be changed after creation — to re-scope, delete the webhook and create a new one.
 

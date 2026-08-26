@@ -79,11 +79,11 @@ URL: https://floe-labs.gitbook.io/docs/readme.md
 
 <p align="center"><img src="https://raw.githubusercontent.com/Floe-Labs/.github/main/profile/banner.png" alt="Floe" width="100%" /></p>
 
-# Floe — Spend controls for Voice AI
+# Floe — What every voice call actually costs
 
-**Your voice agent's whole bill — telephony, STT, LLM, TTS, search — on one ledger, enforced before money moves.**
+**Across every carrier, speech, and model vendor — so finance can price contracts on real numbers, protect gross margin, and stop guessing at the gap between what they signed and what they deployed.**
 
-Every voice-agent call spends across 7–20 vendors in real time, and token and TTS usage varies every conversation — so true per-call cost only exists by joining usage data across providers after the call. Floe is that join, plus enforcement: budgets applied **pre-call where Floe is in the path**, and a **circuit breaker everywhere else**. One ledger, tagged by agent, task, and customer.
+Every voice call your agent makes spends money across a dozen vendors — the phone carrier, the speech-to-text, the language model, the voice, the tools. Those bills arrive separately, in different units, on different days, and your finance team spends weeks stitching them together to answer one question: **what did this client, this campaign, this call actually cost us?** Floe costs every call the moment it ends, tags the spend to the client and campaign, and shows you your margin per contract — so you can price the next deal on actuals instead of a blended guess, and walk into your next raise with your unit economics under control. (Floe is the join across every vendor — a token router meters only the LLM slice, ~40% of the bill, and is blind to the other 60%; on BYOK, platform dashboards report $0 — plus enforcement where Floe is in the path. One ledger, tagged by agent, task, and customer.)
 
 [Website](https://floelabs.xyz) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
 
@@ -198,7 +198,7 @@ See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookboo
 
 ## Why this matters
 
-A voice agent's cost is never just tokens. One conversation pays 7–20 vendors in real time, and if they bill separately you can't answer the only question that matters: what did this call cost, and was it worth it? Floe answers it — and enforces the answer. Pre-call where we're in the path. Circuit breaker everywhere else.
+A voice agent's cost is never just tokens. One conversation pays 7–20 vendors in real time, and if they bill separately you can't answer the only question that matters: what did this call cost, and was it worth it? Floe answers it — and enforces the answer. Pre-call where we're in the path. Circuit breaker everywhere else. [See what a call costs](https://dev-dashboard.floelabs.xyz/calculator).
 
 ---
 
@@ -978,6 +978,8 @@ That's it. Your agent's balance updates and it can immediately call paid APIs. E
 
 There's no hard minimum, but card payments have a Coinbase-imposed floor around $5.
 
+Not sure how much to load? [Estimate your monthly spend](https://dev-dashboard.floelabs.xyz/calculator).
+
 ---
 
 ## Low-balance alerts
@@ -1027,7 +1029,26 @@ URL: https://floe-labs.gitbook.io/docs/start-here/pricing.md
 
 # Pricing & cost
 
-You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it. No subscription, no minimums, no seat fees. Every call tells you exactly what it cost, and you can price a call **before** you make it.
+You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it. Every call tells you exactly what it cost, and you can price a call **before** you make it. The **Free** plan covers usage-based spend with no card and no minimums; paid plans add the reporting, fleet controls, and client-invoicing surfaces on top.
+
+> **Estimate first.** Model a voice agent's cost per call or per minute before you build → [Cost calculator](https://dev-dashboard.floelabs.xyz/calculator).
+
+## Plans
+
+| Plan | Price | Tracked spend / month | History | What it adds |
+|---|---|---|---|---|
+| **Free** | $0 | up to $2,000 | 7 days | Everything on the runtime path: Floe Inference, the x402 proxy, per-agent budgets and policies, the ledger, webhooks |
+| **Pro** | $99/mo or $950/yr | up to $10,000 | 12 months | Attribution reports (cost per client / campaign), fleet-wide policies and the `suspend_agent` hard stop, CSV exports, credit-threshold alerts |
+| **Agency** | $499/mo or $4,790/yr | up to $50,000 | unlimited | Rate cards, client invoicing through **your own Stripe account** (Stripe Connect), up to 30 billed clients |
+| **Enterprise** | Custom | uncapped | unlimited | Everything, no caps — sales-led |
+
+Manage the plan from the dashboard's [Plan card](https://dev-dashboard.floelabs.xyz/billing) — upgrade, downgrade, cancel, or update a payment method. Billing actions need a signed-in dashboard session; an API key can read the plan but cannot open Checkout or the billing portal (`403 session_required`).
+
+**Tracked spend** is what flows through Floe in a UTC calendar month — the same number the ledger reports. Its plan cap is **soft**: crossing 80% or 100% raises a banner and fires the `billing.usage_threshold` [webhook](../developers/webhooks.md), and nothing is blocked. Agent calls are never declined because of a plan.
+
+**History** is a read window, not a wall. On Free, analytics, ledger, activity, and usage reads are clamped to the last 7 days — the response carries `historyFloor` and `historyClamped` so you can tell a clamp from an empty result. Older data is not deleted; upgrading brings it back.
+
+Feature-gated endpoints answer `403 plan_required` with the plan you need, the plan you're on, and an `upgradeUrl` — see [Error Codes](../reference/error-codes.md#plans-and-billing). Policies created on a higher plan keep enforcing after a downgrade.
 
 ## Read what a call cost
 
@@ -3247,7 +3268,7 @@ URL: https://floe-labs.gitbook.io/docs/vendor-marketplace/compute/venice.md
 
 # Venice AI — metered model inference
 
-Floe is the spend layer for AI agents: fund with fiat, pay any vendor API with one key, and govern every call with programmable server-side spend controls. Through that one key, run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per use** — tokens, characters, or audio seconds — from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
+Floe meters what every call actually costs across every vendor: fund with fiat, pay any vendor API with one key, and govern every call with programmable server-side spend controls. Through that one key, run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per use** — tokens, characters, or audio seconds — from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
 
 Venice is the first model-inference provider in Floe's [vendor marketplace](../x402-directory/README.md). Access is **OpenAI-compatible**: point any OpenAI SDK at Floe with your Floe agent key — no Venice account, no Venice key, no wallet.
 
@@ -5189,6 +5210,8 @@ Programmable budgets for your agent wallets. Cap spending per vendor, per task, 
 
 Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` kind and the `session` window are **team-scoped only** (`/v1/developer/policies`).
 
+> **Plan note.** Per-agent budgets and policies are on every plan, including Free. **Team-scoped (fleet) policies** and the `suspend_agent` hard stop need [**Pro**](../getting-started/pricing.md#plans) — creating or editing one on Free returns `403 plan_required`. Clearing `action` on an existing policy is always allowed, and policies created on a higher plan keep enforcing if you downgrade.
+
 ## Quick Start
 
 ### Set a daily vendor cap
@@ -5325,7 +5348,7 @@ Spend is calculated from settled + in-flight payments. Refunded/failed calls aut
 
 ## Breach Action: the Policy Kill-Switch
 
-By default a breach only declines the single call (the agent can keep trying). Set `action: "suspend_agent"` on a policy to turn it into a **kill-switch**: the breaching call still gets the 402 above (with `"auto_suspended": true`), and the **whole agent is suspended** — every subsequent call is rejected at authentication with 403 until you resume it.
+By default a breach only declines the single call (the agent can keep trying). Set `action: "suspend_agent"` on a policy to turn it into a **kill-switch** ([Pro](../getting-started/pricing.md#plans) and above): the breaching call still gets the 402 above (with `"auto_suspended": true`), and the **whole agent is suspended** — every subsequent call is rejected at authentication with 403 until you resume it.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
@@ -5458,8 +5481,8 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET | `/v1/developer/policies` | Session cookie | List team policies |
-| POST | `/v1/developer/policies` | Session cookie | Create team policy |
-| PATCH | `/v1/developer/policies/:id` | Session cookie | Update |
+| POST | `/v1/developer/policies` | Session cookie | Create team policy — **Pro** |
+| PATCH | `/v1/developer/policies/:id` | Session cookie | Update — **Pro** |
 | DELETE | `/v1/developer/policies/:id` | Session cookie | Revoke |
 
 ### Create Policy Body
@@ -7253,7 +7276,7 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
 | `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: 30 across six categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
+Events: 41 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), billing (11: `billing.*`, `client_invoice.*`, `stripe.connected` / `stripe.disconnected`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
 floe webhooks create https://api.acme.com/hooks/floe --events 'call.*,marketplace.payment.settled'
@@ -8837,7 +8860,7 @@ Developer key.
 |------|-------------|
 | `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
-| `list_webhook_events` | The live event catalog: 30 events with name, title, description, category, and scope |
+| `list_webhook_events` | The live event catalog: 41 events with name, title, description, category, and scope |
 | `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
 | `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
 | `delete_webhook` | Delete an endpoint permanently |
@@ -9350,7 +9373,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **30 events across six categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **41 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -9426,6 +9449,24 @@ Vendor spend events, routed on the agent's wallet address — except the two `ma
 | `marketplace.vendor.degraded` | A marketplace vendor's health probe flipped to down — platform-wide broadcast |
 | `marketplace.vendor.recovered` | A previously degraded marketplace vendor is healthy again — platform-wide broadcast |
 
+#### Billing events
+
+Account-level events about your Floe [plan](../getting-started/pricing.md#plans) and — on Agency — the invoices you issue to your own clients. These carry no agent attribution: payloads identify the account by its public `accountId` (`acct_…`), never a wallet address.
+
+| Event | Fires when |
+|-------|-----------|
+| `billing.plan.changed` | Your account's effective plan changed — upgrade, downgrade, cancellation, or an admin-assigned plan starting or expiring |
+| `billing.payment_failed` | A payment for your Floe plan failed or needs action — update the payment method; retries continue for a limited time |
+| `billing.invoice.paid` | A Floe plan invoice was paid — carries the amount and the hosted invoice link |
+| `billing.renewal_upcoming` | Your plan renews soon — carries the amount due and the end of the current period |
+| `billing.usage_threshold` | Month-to-date tracked spend crossed 80% or 100% of your plan's cap — informational, nothing is blocked |
+| `client_invoice.sent` | A client invoice for a closed billing period was sent through your connected Stripe account |
+| `client_invoice.paid` | A client paid an invoice issued from your connected Stripe account |
+| `client_invoice.voided` | A client invoice was voided in Stripe and will not be collected |
+| `client_invoice.uncollectible` | A client invoice was marked uncollectible in Stripe |
+| `stripe.connected` | A Stripe account was connected for client invoicing |
+| `stripe.disconnected` | The connected Stripe account was disconnected — from Floe or from the Stripe dashboard; client invoicing pauses until it is reconnected |
+
 Payloads never contain plaintext key material — only a masked `keyPrefix`.
 
 ### Wildcard subscriptions
@@ -9452,6 +9493,8 @@ Each webhook is scoped to control which events reach it:
 `wallet` and `agent` behave identically — both filter on the event's agent wallet address; `agent` is the value the dashboard's per-agent screen uses. `loan` filters on the event's loan ID. A `global` webhook receives everything it subscribes to.
 
 Two exceptions ignore scope entirely: `marketplace.vendor.degraded` and `marketplace.vendor.recovered` are platform-wide broadcasts sent to every webhook subscribed to them.
+
+Billing events are **account-level** — there is no agent to route on. They reach `global` webhooks, and `wallet`/`agent` webhooks whose `scopeValue` is the **account** wallet. Scope a `wallet` webhook to an agent and it will never see them; use `global` for billing.
 
 > **Scope is immutable.** `scope` and `scopeValue` cannot be changed after creation — to re-scope, delete the webhook and create a new one.
 
@@ -10971,6 +11014,51 @@ curl "https://credit-api.floelabs.xyz/v1/developer/profile" \
   -H "X-Timestamp: 1711814400"
 ```
 
+The response's `developer.plan` object carries the account's effective plan — `name`, `limits`, `features`, `subscriptionStatus`, `pastDue`, `currentPeriodEnd`, `cancelAt`, and `upgradeUrl`.
+
+### GET /v1/developer/billing/plan
+
+The account's [plan](../getting-started/pricing.md#plans): what it is, what it unlocks, and month-to-date usage against its caps. Readable with any credential and any team role.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/billing/plan" \
+  -H "Authorization: Bearer floe_live_..."
+```
+
+```json
+{
+  "plan": "pro",
+  "displayName": "Pro",
+  "source": "stripe",
+  "limits": { "trackedSpendCapRaw": "10000000000", "historyDays": 365, "billedClientsMax": 0 },
+  "features": ["attribution_reports", "fleet_policies", "exports", "alerts"],
+  "subscription": {
+    "id": "sub_123",
+    "status": "active",
+    "plan": "pro",
+    "interval": "month",
+    "currentPeriodEnd": "2026-09-26T00:00:00.000Z",
+    "cancelAt": null,
+    "pastDue": false
+  },
+  "usage": { "trackedSpendMtdRaw": "3120450000", "trackedSpendCapRaw": "10000000000", "billedClients": 0, "billedClientsMax": 0, "historyDays": 365 },
+  "stripeConfigured": true,
+  "upgradeUrl": "https://dev-dashboard.floelabs.xyz/billing?upgrade=pro"
+}
+```
+
+All money is raw 6-decimal USDC, as everywhere else in this API. `GET /v1/developer/billing/plan/usage-history` returns the last 12 UTC calendar months of tracked spend against the current plan's cap.
+
+### Changing plans
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/v1/developer/billing/checkout` | Body `{ plan: "pro" \| "agency", interval: "month" \| "year" }` → `{ url, sessionId }`; send the operator to `url` |
+| GET | `/v1/developer/billing/checkout/:sessionId` | Idempotent confirm after Checkout returns — re-syncs the subscription and answers the fresh plan status |
+| POST | `/v1/developer/billing/portal` | Body `{}` or `{ flow: "update_plan" \| "cancel" \| "payment_method" }` → `{ url }` |
+
+Both minting routes require an **admin** role **and a signed-in dashboard session** — a `floe_live_*` key gets `403 session_required`, because a leaked key must not be able to open a billing page. Plan changes also arrive as [`billing.plan.changed`](webhooks.md#billing-events) webhooks. Error bodies: [Plans and billing](../reference/error-codes.md#plans-and-billing).
+
 ---
 
 ## Developer Agents
@@ -11673,6 +11761,7 @@ For the agent-runtime subset (the error matrix that appears on `/v1/proxy/fetch`
 - [Agent registration (`/v1/agents/*`)](#agent-registration)
 - [Floe Phone numbers (`/v1/developer/agents/:agentId/numbers`, `/v1/numbers`)](#floe-phone-numbers)
 - [Webhooks (`/v1/developer/webhooks/*`)](#webhooks)
+- [Plans and billing (`/v1/developer/billing/*`)](#plans-and-billing)
 - [Admin (`/v1/admin/*`)](#admin)
 - [Self-hosting startup errors](#self-hosting-startup-errors)
 
@@ -11839,6 +11928,27 @@ If Floe cannot deliver a webhook, the delivery is retried up to 3 total attempts
 
 ---
 
+## Plans and billing
+
+Endpoints: `GET /v1/developer/billing/plan`, `POST /v1/developer/billing/checkout`, `GET /v1/developer/billing/checkout/:sessionId`, `POST /v1/developer/billing/portal`, plus every plan-gated developer endpoint. See [Pricing & cost → Plans](../getting-started/pricing.md#plans).
+
+| Status | `error` | Cause | Fix |
+|---|---|---|---|
+| 403 | `plan_required` | The endpoint needs a higher plan. Body carries `plan` (required), `current` (yours), `feature`, `upgradeUrl`, and a `next` hint pointing at `POST /v1/developer/billing/checkout` | Upgrade from the dashboard Plan card, or drop the gated parameter (e.g. `groupBy=customer` on the ledger) |
+| 403 | `session_required` | A `floe_live_*` API key tried to open Checkout, the billing portal, or a Stripe Connect link | These mint money-adjacent URLs and need a signed-in dashboard session. Read-only plan status (`GET /billing/plan`) still works with a key |
+| 400 | `invalid_request` | Checkout body is not `{ plan: 'pro' \| 'agency', interval: 'month' \| 'year' }`, portal `flow` is unknown, or the session id is not a `cs_…` value | Fix the payload |
+| 404 | `checkout_session_mismatch` | The Checkout session belongs to another account | Use the `sessionId` returned by your own `POST /billing/checkout` |
+| 409 | `subscription_exists` | The account already has an active subscription | Change or cancel it through the portal (`POST /billing/portal`) instead of a new Checkout |
+| 409 | `no_subscription` | Opening the portal on an account that never subscribed | Start with Checkout |
+| 409 | `stripe_not_connected` | A client-invoicing action ran with no connected Stripe account (Agency) | Connect one via the dashboard, then retry |
+| 502 | `stripe_error` | Stripe rejected or failed the upstream request. Body carries Stripe's `code` | Retry with backoff; nothing was charged unless a webhook says otherwise |
+| 503 | `stripe_not_configured` | The deployment has no Stripe credentials — billing is off, not broken | Hosted API: none, this is not returned. Self-hosters: set `STRIPE_SECRET_KEY` (see [Environment Variables](environment-variables.md#billing-stripe)) |
+| 503 | `stripe_connect_not_configured` | Stripe Connect (client invoicing) is not configured on the deployment | Self-hosters: set `STRIPE_CONNECT_CLIENT_ID` |
+
+> **A plan never blocks an agent.** These errors are confined to the developer surface. `/v1/proxy/fetch`, Floe Inference, and the rest of the runtime path are unaffected by your plan, and tracked-spend caps are soft — they raise a banner and a `billing.usage_threshold` webhook, never a decline.
+
+---
+
 ## Admin
 
 Endpoints: `POST /v1/admin/*` (self-host only)
@@ -11925,6 +12035,16 @@ Every environment variable the Floe Credit API (`apps/api`) reads at startup or 
 | `MONITORING_URL` | — | Server | Monitoring API base URL (default `http://localhost:4000`) |
 | `MONITORING_INTERNAL_KEY` | — | Server | Shared secret for monitoring push |
 | `CONTRACT_ADDRESS` | — | Server | Legacy — prefer `LENDING_INTENT_MATCHER` |
+| `STRIPE_SECRET_KEY` | — | Server | Enables plan billing. Unset = billing off (`503 stripe_not_configured`); set = the price and webhook secrets below become required |
+| `STRIPE_WEBHOOK_SECRET` | **If Stripe** | Server | Signing secret of the `/v1/webhooks/stripe` endpoint |
+| `STRIPE_PRICE_PRO_MONTHLY` / `_PRO_ANNUAL` / `_AGENCY_MONTHLY` / `_AGENCY_ANNUAL` | **If Stripe** | Server | Stripe Price ids Checkout sells |
+| `STRIPE_PORTAL_CONFIGURATION_ID` | — | Server | Customer Portal configuration pinned on portal sessions |
+| `STRIPE_METER_EVENT_NAME` | — | Server | Billing Meter event name for Enterprise metered usage (default `ledgered_spend`) |
+| `STRIPE_CONNECT_CLIENT_ID` | — | Server | Connect app id (`ca_…`) — enables client invoicing through the operator's own Stripe |
+| `STRIPE_CONNECT_WEBHOOK_SECRET` | — | Server | Signing secret of the connected-accounts webhook endpoint |
+| `STRIPE_OAUTH_SECRET_KEY` | — | Server | Optional `sk_` used only for Connect OAuth token/deauthorize |
+| `STRIPE_CONNECT_APPLICATION_FEE_BPS` | — | Server | Fee withheld on connected-account invoices (default `0`) |
+| `DASHBOARD_URL` | — | Server | Dashboard origin for Checkout/portal/Connect returns and `upgradeUrl` |
 | `FLOE_API_KEY` | **Agent** | Agent runtime | The `floe_*` key the agent sends as `Authorization: Bearer` |
 
 ---
@@ -12084,6 +12204,44 @@ Indexer connection. `ENVIO_HTTP_ENDPOINT` is required for balance reads and loan
 
 ---
 
+## Billing (Stripe)
+
+Powers the [plans](../getting-started/pricing.md#plans) (Free / Pro / Agency / Enterprise) and, on Agency, client invoicing through the operator's own Stripe account. **Off by default** — with `STRIPE_SECRET_KEY` unset, `/v1/developer/billing/*` answers `503 stripe_not_configured`, the Stripe webhook endpoints 503, and plan gates honour admin grants only. A missing secret is "feature off", never an insecure default.
+
+Once `STRIPE_SECRET_KEY` **is** set, startup fails fast unless `STRIPE_WEBHOOK_SECRET` and all four `STRIPE_PRICE_*` ids are set too. The key's mode prefix (`sk_live_` / `sk_test_`, `rk_live_` / `rk_test_`) decides livemode; events from the other mode are recorded as `ignored`. Prefer a restricted (`rk_`) key.
+
+### `STRIPE_SECRET_KEY`
+Floe's own Stripe secret. Scopes the running API actually needs: Customers, Checkout Sessions, Customer portal, Meter events, Invoices + Invoice items **write**; Subscriptions, Prices, Balance, Events **read**; Connect accounts read plus the connected-accounts access permission.
+
+### `STRIPE_WEBHOOK_SECRET`
+Signing secret of the platform webhook endpoint pointed at `https://<api>/v1/webhooks/stripe`.
+
+### `STRIPE_PRICE_PRO_MONTHLY` / `STRIPE_PRICE_PRO_ANNUAL` / `STRIPE_PRICE_AGENCY_MONTHLY` / `STRIPE_PRICE_AGENCY_ANNUAL`
+Stripe Price ids Checkout sells. All four are required whenever billing is on.
+
+### `STRIPE_PORTAL_CONFIGURATION_ID`
+Customer Portal configuration pinned on every portal session. Optional — unset uses the account's default configuration.
+
+### `STRIPE_METER_EVENT_NAME`
+Billing Meter event name for Enterprise metered usage. **Default:** `ledgered_spend`.
+
+### `STRIPE_CONNECT_CLIENT_ID`
+Connect app client id (`ca_…`) that enables client invoicing. Unset ⇒ `GET /v1/capabilities` reports `stripeConnect: false` and linking 503s `stripe_connect_not_configured`. The OAuth redirect URI is derived from `CREDIT_API_BASE_URL` + `/v1/developer/stripe/connect/callback` and must be registered verbatim in the Connect app.
+
+### `STRIPE_CONNECT_WEBHOOK_SECRET`
+Signing secret of the "Connected accounts" webhook endpoint (`https://<api>/v1/webhooks/stripe/connect`). Unset ⇒ Connect webhooks 503.
+
+### `STRIPE_OAUTH_SECRET_KEY`
+Optional `sk_` used **only** for `/oauth/token` and `/oauth/deauthorize`, for the case where Stripe refuses a restricted key there. Leave unset otherwise.
+
+### `STRIPE_CONNECT_APPLICATION_FEE_BPS`
+Application fee (basis points, `0`–`10000`) withheld on connected-account invoices. **Default:** `0` — Floe never touches the operator's client money; Agency is monetised by the subscription.
+
+### `DASHBOARD_URL`
+Dashboard origin used for Checkout success/cancel URLs, the portal return URL, the Connect return redirect, and the `upgradeUrl` in `403 plan_required` bodies. **Default:** the production dashboard.
+
+---
+
 ## Agent-side variables
 
 ### `FLOE_API_KEY`
@@ -12173,6 +12331,20 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **73 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.22.0 — Plans: Free / Pro / Agency / Enterprise, and client invoicing through your own Stripe (August 2026)
+
+Floe now has plans. The usage-based model is unchanged — you still pay the vendor's rate plus Floe's fee on the volume that flows through it, and **no plan ever declines an agent call**. What plans gate is the developer surface: reporting depth, fleet-wide controls, and the client-invoicing tooling agencies rebill with.
+
+* **Four plans.** Free $0 (up to $2K/mo tracked spend, 7-day history) · **Pro** $99/mo or $950/yr (up to $10K/mo, attribution reports, fleet-wide policies and the `suspend_agent` hard stop, CSV exports, credit-threshold alerts, 12-month history) · **Agency** $499/mo or $4,790/yr (up to $50K/mo, rate cards, client invoicing, up to 30 billed clients, unlimited history) · **Enterprise** custom, uncapped. Per-agent budgets, policies, the ledger, Floe Inference, and the x402 proxy stay on every plan including Free.
+* **Caps are soft, history is a clamp.** Crossing 80% or 100% of the monthly tracked-spend cap raises a banner and fires the new `billing.usage_threshold` webhook — nothing is blocked. Analytics, ledger, activity, and usage reads are narrowed to the plan's history window and echo `historyFloor` + `historyClamped`, so a clamp is never mistaken for an empty result. Older data isn't deleted; upgrading brings it back.
+* **`GET /v1/developer/billing/plan`** returns the effective plan, its limits and features, and month-to-date usage against the caps (plus 12 months of history at `/billing/plan/usage-history`); `GET /v1/developer/profile` carries the same summary as `developer.plan`. Upgrades run through `POST /billing/checkout`, changes and cancellations through `POST /billing/portal` — both admin-only **and** session-only: a `floe_live_` key gets `403 session_required`, so a leaked key can never open a billing page.
+* **Gated endpoints answer `403 plan_required`** with the plan you need, the plan you're on, the `feature`, an `upgradeUrl`, and a `next` hint. Policies created on a higher plan keep enforcing after a downgrade.
+* **Client invoicing (Agency).** Connect your own Stripe account and send a closed billing period to a client as a real Stripe invoice, from your account — Floe's default application fee is **0**, so Floe never touches your client money.
+* **41 webhook events in seven categories** (was 30 in six). The new **billing** category adds `billing.plan.changed`, `billing.payment_failed`, `billing.invoice.paid`, `billing.renewal_upcoming`, `billing.usage_threshold`, `client_invoice.sent` / `.paid` / `.voided` / `.uncollectible`, and `stripe.connected` / `stripe.disconnected`. These are **account-level**: they carry the public `accountId`, and reach `global` webhooks (or a `wallet`/`agent` webhook scoped to the account wallet), not per-agent endpoints.
+* **Self-hosting.** Billing is off unless `STRIPE_SECRET_KEY` is set — every `/v1/developer/billing/*` call answers `503 stripe_not_configured` and plan gates honour admin grants only. `GET /v1/capabilities` reports `stripeBilling` and `stripeConnect`. See [Environment Variables](reference/environment-variables.md#billing-stripe).
+
+→ [Pricing & cost](getting-started/pricing.md#plans) · [Webhooks](developers/webhooks.md#billing-events) · [Error Codes](reference/error-codes.md#plans-and-billing)
 
 ### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
 

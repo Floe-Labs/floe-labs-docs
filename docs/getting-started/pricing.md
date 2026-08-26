@@ -4,9 +4,26 @@ icon: tag
 
 # Pricing & cost
 
-You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it. No subscription, no minimums, no seat fees. Every call tells you exactly what it cost, and you can price a call **before** you make it.
+You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it. Every call tells you exactly what it cost, and you can price a call **before** you make it. The **Free** plan covers usage-based spend with no card and no minimums; paid plans add the reporting, fleet controls, and client-invoicing surfaces on top.
 
 > **Estimate first.** Model a voice agent's cost per call or per minute before you build → [Cost calculator](https://dev-dashboard.floelabs.xyz/calculator).
+
+## Plans
+
+| Plan | Price | Tracked spend / month | History | What it adds |
+|---|---|---|---|---|
+| **Free** | $0 | up to $2,000 | 7 days | Everything on the runtime path: Floe Inference, the x402 proxy, per-agent budgets and policies, the ledger, webhooks |
+| **Pro** | $99/mo or $950/yr | up to $10,000 | 12 months | Attribution reports (cost per client / campaign), fleet-wide policies and the `suspend_agent` hard stop, CSV exports, credit-threshold alerts |
+| **Agency** | $499/mo or $4,790/yr | up to $50,000 | unlimited | Rate cards, client invoicing through **your own Stripe account** (Stripe Connect), up to 30 billed clients |
+| **Enterprise** | Custom | uncapped | unlimited | Everything, no caps — sales-led |
+
+Manage the plan from the dashboard's [Plan card](https://dev-dashboard.floelabs.xyz/billing) — upgrade, downgrade, cancel, or update a payment method. Billing actions need a signed-in dashboard session; an API key can read the plan but cannot open Checkout or the billing portal (`403 session_required`).
+
+**Tracked spend** is what flows through Floe in a UTC calendar month — the same number the ledger reports. Its plan cap is **soft**: crossing 80% or 100% raises a banner and fires the `billing.usage_threshold` [webhook](../developers/webhooks.md), and nothing is blocked. Agent calls are never declined because of a plan.
+
+**History** is a read window, not a wall. On Free, analytics, ledger, activity, and usage reads are clamped to the last 7 days — the response carries `historyFloor` and `historyClamped` so you can tell a clamp from an empty result. Older data is not deleted; upgrading brings it back.
+
+Feature-gated endpoints answer `403 plan_required` with the plan you need, the plan you're on, and an `upgradeUrl` — see [Error Codes](../reference/error-codes.md#plans-and-billing). Policies created on a higher plan keep enforcing after a downgrade.
 
 ## Read what a call cost
 

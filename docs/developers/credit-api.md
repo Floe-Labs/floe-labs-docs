@@ -975,6 +975,51 @@ curl "https://credit-api.floelabs.xyz/v1/developer/profile" \
   -H "X-Timestamp: 1711814400"
 ```
 
+The response's `developer.plan` object carries the account's effective plan — `name`, `limits`, `features`, `subscriptionStatus`, `pastDue`, `currentPeriodEnd`, `cancelAt`, and `upgradeUrl`.
+
+### GET /v1/developer/billing/plan
+
+The account's [plan](../getting-started/pricing.md#plans): what it is, what it unlocks, and month-to-date usage against its caps. Readable with any credential and any team role.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/billing/plan" \
+  -H "Authorization: Bearer floe_live_..."
+```
+
+```json
+{
+  "plan": "pro",
+  "displayName": "Pro",
+  "source": "stripe",
+  "limits": { "trackedSpendCapRaw": "10000000000", "historyDays": 365, "billedClientsMax": 0 },
+  "features": ["attribution_reports", "fleet_policies", "exports", "alerts"],
+  "subscription": {
+    "id": "sub_123",
+    "status": "active",
+    "plan": "pro",
+    "interval": "month",
+    "currentPeriodEnd": "2026-09-26T00:00:00.000Z",
+    "cancelAt": null,
+    "pastDue": false
+  },
+  "usage": { "trackedSpendMtdRaw": "3120450000", "trackedSpendCapRaw": "10000000000", "billedClients": 0, "billedClientsMax": 0, "historyDays": 365 },
+  "stripeConfigured": true,
+  "upgradeUrl": "https://dev-dashboard.floelabs.xyz/billing?upgrade=pro"
+}
+```
+
+All money is raw 6-decimal USDC, as everywhere else in this API. `GET /v1/developer/billing/plan/usage-history` returns the last 12 UTC calendar months of tracked spend against the current plan's cap.
+
+### Changing plans
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/v1/developer/billing/checkout` | Body `{ plan: "pro" \| "agency", interval: "month" \| "year" }` → `{ url, sessionId }`; send the operator to `url` |
+| GET | `/v1/developer/billing/checkout/:sessionId` | Idempotent confirm after Checkout returns — re-syncs the subscription and answers the fresh plan status |
+| POST | `/v1/developer/billing/portal` | Body `{}` or `{ flow: "update_plan" \| "cancel" \| "payment_method" }` → `{ url }` |
+
+Both minting routes require an **admin** role **and a signed-in dashboard session** — a `floe_live_*` key gets `403 session_required`, because a leaked key must not be able to open a billing page. Plan changes also arrive as [`billing.plan.changed`](webhooks.md#billing-events) webhooks. Error bodies: [Plans and billing](../reference/error-codes.md#plans-and-billing).
+
 ---
 
 ## Developer Agents

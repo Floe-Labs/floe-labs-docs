@@ -16,6 +16,7 @@ For the agent-runtime subset (the error matrix that appears on `/v1/proxy/fetch`
 - [Agent registration (`/v1/agents/*`)](#agent-registration)
 - [Floe Phone numbers (`/v1/developer/agents/:agentId/numbers`, `/v1/numbers`)](#floe-phone-numbers)
 - [Webhooks (`/v1/developer/webhooks/*`)](#webhooks)
+- [Plans and billing (`/v1/developer/billing/*`)](#plans-and-billing)
 - [Admin (`/v1/admin/*`)](#admin)
 - [Self-hosting startup errors](#self-hosting-startup-errors)
 
@@ -179,6 +180,27 @@ If Floe cannot deliver a webhook, the delivery is retried up to 3 total attempts
 - **`HTTP 5xx from target`** — your server returned an error. Fix your handler; Floe will retry.
 - **`Signature verification expected but no secret on webhook`** — webhook record lost its secret. Rotate via `/rotate-secret`.
 - **`Timed out after 10s`** — your handler took too long. Enqueue work and return 200 fast; Floe does not wait for downstream processing.
+
+---
+
+## Plans and billing
+
+Endpoints: `GET /v1/developer/billing/plan`, `POST /v1/developer/billing/checkout`, `GET /v1/developer/billing/checkout/:sessionId`, `POST /v1/developer/billing/portal`, plus every plan-gated developer endpoint. See [Pricing & cost → Plans](../getting-started/pricing.md#plans).
+
+| Status | `error` | Cause | Fix |
+|---|---|---|---|
+| 403 | `plan_required` | The endpoint needs a higher plan. Body carries `plan` (required), `current` (yours), `feature`, `upgradeUrl`, and a `next` hint pointing at `POST /v1/developer/billing/checkout` | Upgrade from the dashboard Plan card, or drop the gated parameter (e.g. `groupBy=customer` on the ledger) |
+| 403 | `session_required` | A `floe_live_*` API key tried to open Checkout, the billing portal, or a Stripe Connect link | These mint money-adjacent URLs and need a signed-in dashboard session. Read-only plan status (`GET /billing/plan`) still works with a key |
+| 400 | `invalid_request` | Checkout body is not `{ plan: 'pro' \| 'agency', interval: 'month' \| 'year' }`, portal `flow` is unknown, or the session id is not a `cs_…` value | Fix the payload |
+| 404 | `checkout_session_mismatch` | The Checkout session belongs to another account | Use the `sessionId` returned by your own `POST /billing/checkout` |
+| 409 | `subscription_exists` | The account already has an active subscription | Change or cancel it through the portal (`POST /billing/portal`) instead of a new Checkout |
+| 409 | `no_subscription` | Opening the portal on an account that never subscribed | Start with Checkout |
+| 409 | `stripe_not_connected` | A client-invoicing action ran with no connected Stripe account (Agency) | Connect one via the dashboard, then retry |
+| 502 | `stripe_error` | Stripe rejected or failed the upstream request. Body carries Stripe's `code` | Retry with backoff; nothing was charged unless a webhook says otherwise |
+| 503 | `stripe_not_configured` | The deployment has no Stripe credentials — billing is off, not broken | Hosted API: none, this is not returned. Self-hosters: set `STRIPE_SECRET_KEY` (see [Environment Variables](environment-variables.md#billing-stripe)) |
+| 503 | `stripe_connect_not_configured` | Stripe Connect (client invoicing) is not configured on the deployment | Self-hosters: set `STRIPE_CONNECT_CLIENT_ID` |
+
+> **A plan never blocks an agent.** These errors are confined to the developer surface. `/v1/proxy/fetch`, Floe Inference, and the rest of the runtime path are unaffected by your plan, and tracked-spend caps are soft — they raise a banner and a `billing.usage_threshold` webhook, never a decline.
 
 ---
 
