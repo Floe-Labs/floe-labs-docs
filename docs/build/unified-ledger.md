@@ -23,6 +23,8 @@ curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
   }'
 ```
 
+> **Streaming works.** Set `stream: true` and Floe passes the SSE response through verbatim — the same chunk format your OpenAI client already reads. Floe adds `stream_options.include_usage` upstream for you, meters the call off the terminal usage chunk as the body drains, and settles it onto the same ledger row a buffered call would produce. Because the cost isn't known when the response starts, a streamed response carries `X-Floe-Cost-USDC: deferred` instead of a number (and no `X-Floe-Payment-Amount`) — read the settled cost from the ledger or the usage chunk. Caps still apply: the balance and budget check runs **before** the stream opens, so an exhausted cap is refused with `402` and no tokens are spent.
+
 > **Don't want to hold a provider key at all?** Use the **keyless** gateway `POST /v1/chat/completions` with a **fully-qualified** `provider/model` id (`openai/gpt-4o`) — Floe fronts the upstream relationship and bills you per call. That's the recommended path for new work; see [Floe Inference (Keyless LLM & Voice)](../developers/keyless-inference.md).
 
 Now LLM tokens, speech, and search all count against the same budgets, appear in the same analytics, and feed the same per-agent cost history — right next to the x402 vendors you already pay through the proxy.

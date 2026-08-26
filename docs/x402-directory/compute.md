@@ -28,7 +28,7 @@ Two headers do the work:
 | `Authorization` | `Bearer floe_<agent key>` | Authenticates the agent and bills its credit line |
 | `X-Floe-Provider-Key` | `<your OpenAI/Anthropic key>` | Pass-through key used to call upstream — never stored |
 
-This BYOK proxy prices from Floe's maintained LiteLLM cost map — there's **no model allowlist**; pass any model your provider serves. (The **keyless** gateway's catalog is separate — see [Keyless Inference](../developers/keyless-inference.md) or `GET /v1/models`.) The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header.
+This BYOK proxy prices from Floe's maintained LiteLLM cost map — there's **no model allowlist**; pass any model your provider serves. (The **keyless** gateway's catalog is separate — see [Keyless Inference](../developers/keyless-inference.md) or `GET /v1/models`.) The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header — except on a streamed call (`stream: true`), where that header reads `deferred` because the cost is only known at the terminal usage chunk; Floe meters the stream as it drains and settles it to the ledger like any other call.
 
 > This `/v1/llm` surface is the **BYOK metered proxy** — you bring a provider key; Floe prices the call from its LiteLLM cost map and accepts the model id **with or without** a `provider/` prefix (`gpt-5.5` or `openai/gpt-5.5` — the prefix is stripped). The keyless gateway at `/v1/chat/completions` is different: no provider key, and it resolves an **exact** catalog id — the fully-qualified `provider/model` (a bare `gpt-5.5` is rejected). See [Keyless Inference](../developers/keyless-inference.md).
 

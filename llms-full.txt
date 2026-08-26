@@ -79,11 +79,11 @@ URL: https://floe-labs.gitbook.io/docs/readme.md
 
 <p align="center"><img src="https://raw.githubusercontent.com/Floe-Labs/.github/main/profile/banner.png" alt="Floe" width="100%" /></p>
 
-# Floe — Spend controls for Voice AI
+# Floe — What every voice call actually costs
 
-**Your voice agent's whole bill — telephony, STT, LLM, TTS, search — on one ledger, enforced before money moves.**
+**Across every carrier, speech, and model vendor — so finance can price contracts on real numbers, protect gross margin, and stop guessing at the gap between what they signed and what they deployed.**
 
-Every voice-agent call spends across 7–20 vendors in real time, and token and TTS usage varies every conversation — so true per-call cost only exists by joining usage data across providers after the call. Floe is that join, plus enforcement: budgets applied **pre-call where Floe is in the path**, and a **circuit breaker everywhere else**. One ledger, tagged by agent, task, and customer.
+Every voice call your agent makes spends money across a dozen vendors — the phone carrier, the speech-to-text, the language model, the voice, the tools. Those bills arrive separately, in different units, on different days, and your finance team spends weeks stitching them together to answer one question: **what did this client, this campaign, this call actually cost us?** Floe costs every call the moment it ends, tags the spend to the client and campaign, and shows you your margin per contract — so you can price the next deal on actuals instead of a blended guess, and walk into your next raise with your unit economics under control. (Floe is the join across every vendor — a token router meters only the LLM slice, ~40% of the bill, and is blind to the other 60%; on BYOK, platform dashboards report $0 — plus enforcement where Floe is in the path. One ledger, tagged by agent, task, and customer.)
 
 [Website](https://floelabs.xyz) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
 
@@ -198,7 +198,7 @@ See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookboo
 
 ## Why this matters
 
-A voice agent's cost is never just tokens. One conversation pays 7–20 vendors in real time, and if they bill separately you can't answer the only question that matters: what did this call cost, and was it worth it? Floe answers it — and enforces the answer. Pre-call where we're in the path. Circuit breaker everywhere else.
+A voice agent's cost is never just tokens. One conversation pays 7–20 vendors in real time, and if they bill separately you can't answer the only question that matters: what did this call cost, and was it worth it? Floe answers it — and enforces the answer. Pre-call where we're in the path. Circuit breaker everywhere else. [See what a call costs](https://dev-dashboard.floelabs.xyz/calculator).
 
 ---
 
@@ -978,6 +978,8 @@ That's it. Your agent's balance updates and it can immediately call paid APIs. E
 
 There's no hard minimum, but card payments have a Coinbase-imposed floor around $5.
 
+Not sure how much to load? [Estimate your monthly spend](https://dev-dashboard.floelabs.xyz/calculator).
+
 ---
 
 ## Low-balance alerts
@@ -1028,6 +1030,8 @@ URL: https://floe-labs.gitbook.io/docs/start-here/pricing.md
 # Pricing & cost
 
 You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it. No subscription, no minimums, no seat fees. Every call tells you exactly what it cost, and you can price a call **before** you make it.
+
+> **Estimate first.** Model a voice agent's cost per call or per minute before you build → [Cost calculator](https://dev-dashboard.floelabs.xyz/calculator).
 
 ## Read what a call cost
 
@@ -2331,6 +2335,8 @@ curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
   }'
 ```
 
+> **Streaming works.** Set `stream: true` and Floe passes the SSE response through verbatim — the same chunk format your OpenAI client already reads. Floe adds `stream_options.include_usage` upstream for you, meters the call off the terminal usage chunk as the body drains, and settles it onto the same ledger row a buffered call would produce. Because the cost isn't known when the response starts, a streamed response carries `X-Floe-Cost-USDC: deferred` instead of a number (and no `X-Floe-Payment-Amount`) — read the settled cost from the ledger or the usage chunk. Caps still apply: the balance and budget check runs **before** the stream opens, so an exhausted cap is refused with `402` and no tokens are spent.
+
 > **Don't want to hold a provider key at all?** Use the **keyless** gateway `POST /v1/chat/completions` with a **fully-qualified** `provider/model` id (`openai/gpt-4o`) — Floe fronts the upstream relationship and bills you per call. That's the recommended path for new work; see [Floe Inference (Keyless LLM & Voice)](../developers/keyless-inference.md).
 
 Now LLM tokens, speech, and search all count against the same budgets, appear in the same analytics, and feed the same per-agent cost history — right next to the x402 vendors you already pay through the proxy.
@@ -3062,7 +3068,7 @@ Two headers do the work:
 | `Authorization` | `Bearer floe_<agent key>` | Authenticates the agent and bills its credit line |
 | `X-Floe-Provider-Key` | `<your OpenAI/Anthropic key>` | Pass-through key used to call upstream — never stored |
 
-This BYOK proxy prices from Floe's maintained LiteLLM cost map — there's **no model allowlist**; pass any model your provider serves. (The **keyless** gateway's catalog is separate — see [Keyless Inference](../developers/keyless-inference.md) or `GET /v1/models`.) The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header.
+This BYOK proxy prices from Floe's maintained LiteLLM cost map — there's **no model allowlist**; pass any model your provider serves. (The **keyless** gateway's catalog is separate — see [Keyless Inference](../developers/keyless-inference.md) or `GET /v1/models`.) The exact USDC charge for each call is returned in the `X-Floe-Cost-USDC` response header — except on a streamed call (`stream: true`), where that header reads `deferred` because the cost is only known at the terminal usage chunk; Floe meters the stream as it drains and settles it to the ledger like any other call.
 
 > This `/v1/llm` surface is the **BYOK metered proxy** — you bring a provider key; Floe prices the call from its LiteLLM cost map and accepts the model id **with or without** a `provider/` prefix (`gpt-5.5` or `openai/gpt-5.5` — the prefix is stripped). The keyless gateway at `/v1/chat/completions` is different: no provider key, and it resolves an **exact** catalog id — the fully-qualified `provider/model` (a bare `gpt-5.5` is rejected). See [Keyless Inference](../developers/keyless-inference.md).
 
@@ -3247,7 +3253,7 @@ URL: https://floe-labs.gitbook.io/docs/vendor-marketplace/compute/venice.md
 
 # Venice AI — metered model inference
 
-Floe is the spend layer for AI agents: fund with fiat, pay any vendor API with one key, and govern every call with programmable server-side spend controls. Through that one key, run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per use** — tokens, characters, or audio seconds — from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
+Floe meters what every call actually costs across every vendor: fund with fiat, pay any vendor API with one key, and govern every call with programmable server-side spend controls. Through that one key, run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per use** — tokens, characters, or audio seconds — from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
 
 Venice is the first model-inference provider in Floe's [vendor marketplace](../x402-directory/README.md). Access is **OpenAI-compatible**: point any OpenAI SDK at Floe with your Floe agent key — no Venice account, no Venice key, no wallet.
 
