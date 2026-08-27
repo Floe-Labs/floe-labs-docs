@@ -27,36 +27,13 @@ Two rules follow, and both are enforced in the API rather than left to a rendere
 
 Those two rules operate on different things, which is worth stating plainly. The **subtotals** are per claim and stay apart: an `exact` figure and a `period-rate` figure are never merged into one number labelled `exact`. The **row total** is a different object — it is the sum of every leg that has a price, and a row shows one **only when every leg in it is `exact`, `period-rate` or `invoiced` and USD-denominated**. So a row mixing `exact` and `period-rate` legs does get a total; what it never gets is a total that hides which claim each dollar came from. Any row with a `pending`, `manual`, or non-USD (`currency_unsupported`) leg returns `"partial — lower bound"` — `totalRaw` is `null`, never `0`, and `totalBlockedBy` names why (e.g. `non_usd` for a non-USD leg, so a client never reads the missing price as zero). There is no code path that renders a misleading single figure.
 
-## When the cost actually arrives
+## When the cost arrives
 
-This is the part worth knowing before you look at a fresh window and conclude something is broken.
+Some vendors publish a leg's cost at call-end; others only on a next-day batch. So a leg from a call you placed a minute ago is *supposed* to be `pending` — that is the system working correctly, not an error or a capture failure.
 
-| Leg | When Floe can cost it |
-|---|---|
-| **ElevenLabs** | The **moment the call ends**. |
-| Telephony (Twilio, Telnyx) and Deepgram | Within **~10 minutes**. |
-| Every LLM leg, and every cloud leg (Bedrock, GCP, Azure) | **Next day** — those vendors publish on a daily batch. |
+## Coverage reads low on voice-heavy accounts
 
-So a call you placed a minute ago is *supposed* to have `pending` legs.
-
-{% hint style="info" %}
-**`pending` is the steady state for a recent Twilio call.** Twilio populates `Call.price` asynchronously after the call completes — it is simply not there at hangup. A `pending` telephony leg on a call from the last few minutes is the system working correctly, not a capture failure. If it is still `pending` well past the vendor's SLA, that opens an `unmatched_leg` [finding](#findings) — which is how you tell the two apart.
-{% endhint %}
-
-## Coverage reads low on voice-heavy accounts at launch
-
-Worth saying plainly rather than letting you discover it from a dashboard.
-
-`period-rate` requires **vendor-reported units** — the vendor has to tell Floe how many units it billed, so the realized rate has something honest to multiply. Several of the biggest line items in a voice bill are **Floe-measured** instead: Floe counts them itself, before or during the call.
-
-- **TTS** — code points counted before the request
-- **Streaming STT** — audio duration measured on the wire
-- **Duration-billed realtime** — wall-clock checkpoints
-- **Telephony transport** — minutes metered by Floe
-
-Floe's measurement is good enough to *bill* and to *enforce budgets against*. It is not the vendor's own statement of units, so pricing it at the vendor's bucket rate would be inventing an allocation. Those legs are therefore **structurally barred from `period-rate`** — no connector, no key, and no amount of waiting changes it — and their dollars are booked to a **named residual** on the vendor's bucket instead of being spread across legs.
-
-The practical consequence: **a voice-heavy account will show a lower share of priced legs than an LLM-heavy one, and that is a property of what the vendors publish, not a gap in your setup.** The fix where one exists is the invoice lane — upload the vendor's invoice and [foot](#invoices-and-footing) it, which moves those dollars to `invoiced`.
+A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.
 
 ## Whose cost it is
 
@@ -68,89 +45,16 @@ A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** CO
 
 A non-USD or credit-denominated vendor record is **structurally unpriceable** here. There is no FX source in Floe, and an invented rate inside an audit ledger is worse than a blank. Those legs render `—` plus the vendor's verbatim cost string in their provenance, and are excluded from every subtotal. They also open a `currency_unsupported` finding so the omission is visible rather than silent.
 
-## Connecting a vendor
+## Where to access it
 
-Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any BYOK key that routes traffic. Floe never writes to your vendor account and never rotates your keys.
+Vendor actuals is an **Agency** capability. Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
 
-Connect one in the dashboard under **Keys → Vendor billing connections**, or from the CLI:
-
-```bash
-# Interactive: prompts per field, secrets hidden. Never pass a credential as an argument.
-floe actuals connect --vendor twilio --name main --kind basic_auth \
-  --billing-tz America/Los_Angeles
-
-# In scripts: pipe a JSON object on stdin.
-printf '%s' "$TWILIO_JSON" | floe actuals connect \
-  --vendor twilio --name main --kind basic_auth --billing-tz America/Los_Angeles
-
-floe actuals verify 4       # prove the credential still reads
-floe actuals connections    # masked list + the connector catalog
-```
-
-Stored credentials are sealed and **never returned by any read** — every read shows a per-kind mask in which identifiers (region, project id, account SID) are verbatim and secrets are elided.
-
-Three things decide what you will actually get, and it is worth checking them before you judge the numbers:
-
-- **`bestStatus` is a ceiling.** It is the best status a leg served by that connection can *ever* reach. A connector whose `bestStatus` is `period-rate` will never produce `exact`, however long you wait.
-- **`--billing-tz` is required where the vendor cuts buckets in local time.** Twilio cuts daily usage records in your account's timezone and exposes it through no API, so Floe has to ask. An unchecked UTC assumption there is a permanent, silent ~4%/day gap.
-- **Some things cannot be backfilled.** Several vendors only expose billing detail from the moment a setting is switched on — connect first, and the history before that stays `manual`.
-
-{% hint style="info" %}
-**Per-vendor setup runbooks** — the exact scopes to grant, the console steps to get there, and the day-one items that cannot be backfilled — are maintained per vendor and linked from each connector in the dashboard's connect flow. Follow the runbook for your vendor rather than guessing at scopes: a credential that verifies can still be missing a scope a nightly pull needs.
-{% endhint %}
-
-## Invoices and footing
-
-Where no API publishes a cost, the invoice is the record. Upload it, review the parsed lines, then **foot** it — which reconciles the invoice total against what the ledger already holds and stamps the touched legs `invoiced`.
-
-```bash
-floe actuals invoices upload --vendor twilio --file ./july.csv
-floe actuals invoices foot 11 --dry-run   # runs the identical computation and rolls it back
-floe actuals invoices foot 11             # irreversible — asks you to confirm
-```
-
-Footing is an **irreversible finance action**: run `--dry-run` first, always. It is deliberately **not exposed over MCP** — an agent should not be able to seal a vendor invoice. Any residue the foot cannot explain above `max(0.5%, $1)` opens an `invoice_foot_variance` finding rather than being quietly absorbed.
-
-A non-USD invoice foots into **units only**, and every leg it touches terminates as `manual`.
-
-## Findings
-
-Findings are the engine's own record of **everything it could not reconcile** — the named reasons a total is a lower bound instead of a total. Read them before you trust a coverage number.
-
-| Finding | What it usually means |
-|---|---|
-| `unmatched_actual` | A vendor record with no matching leg — usually broken tag injection. |
-| `unmatched_leg` | A leg is past its vendor's SLA with no record. This is what separates "normally pending" from "actually missing". |
-| `units_mismatch` | Your leg's units and the vendor's disagree. |
-| `over_coverage` | Legs claim more units than the vendor's bucket holds — blocks the whole key. |
-| `unknown_line_item` | An unmapped line item — blocks `period-rate` for its parent key. |
-| `bucket_reopened` | A closed vendor bucket changed after closure. The stamps it priced are re-derived. |
-| `platform_zero_cost` | An orchestrator reported a call with no cost lines — usually a BYOK leg the platform never paid for. |
-| `connector_stale` | No successful pull inside the connection's freshness SLA. |
-| `invoice_foot_variance` | Unexplained residue on a foot. |
-| `currency_unsupported` | A non-USD record. No FX, ever. |
-
-Resolving a finding is a **human** judgment — the API refuses the machine's own `auto_cleared` verdict precisely so that "acknowledged" and "wont_fix" stay something a person decided.
-
-```bash
-floe actuals findings                                   # open findings, newest first
-floe actuals findings resolve 3 --resolution acknowledged
-```
-
-## Where to see it
-
-| Surface | How |
-|---|---|
-| **Dashboard** | `/actuals` — legs, by-call, and rollups, with a provenance drawer on every row |
-| **CLI** | `floe actuals legs · calls · rollups · findings · connections · invoices` |
-| **MCP** | The `actuals` capability group — six read tools. Upload and foot are not exposed |
-| **API** | [Vendor Actuals API](../developers/vendor-actuals-api.md) |
+Read your reconciled costs — legs, by-call, and rollups, each with a provenance drawer — in the dashboard at `/actuals`, over the `floe actuals` CLI, or through the `actuals` MCP capability group (read tools only; invoice upload and footing stay human-in-the-loop). The engine records everything it couldn't reconcile as a *finding* with a reason — review and resolve them in the dashboard.
 
 `floe actuals` is about **your** vendors' bills. Not to be confused with `floe vendors`, which probes the health of Floe's own marketplace vendors.
 
 ## Related
 
-- [Vendor Actuals API](../developers/vendor-actuals-api.md) — endpoints, filters, and response shapes.
 - [Coverage Score](coverage-score.md) — how much of your spend Floe can enforce, which is a different question from what it cost.
 - [Unified Billing & Ledger](unified-ledger.md) — the settled Floe ledger these vendor costs sit beside.
 - [Ledger sync](ledger-sync.md) — pushing off-path spend into the ledger in the first place.

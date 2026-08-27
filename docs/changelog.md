@@ -22,7 +22,7 @@ BYOK cost stopped being an estimate. Every non-Floe-settled leg now carries the 
 * **CLI 0.3.0 adds `floe actuals`** — `legs`, `calls`, `rollups`, `findings`, `connections`, `connect`, `verify`, `invoices`. Credentials are prompted per field or piped on stdin, never passed as arguments. (`floe vendors` is unchanged: it still probes Floe's own marketplace vendors.)
 * **MCP server 0.4.0 — 80 tools (was 74 — the v1.21.0 entry below says 73, which undercounted `get_coverage_score`),** with a ninth capability group `actuals`: `list_vendor_cost_legs`, `list_vendor_cost_calls`, `get_vendor_cost_rollup`, `list_reconciliation_findings`, `list_vendor_connections`, `verify_vendor_connection`. Invoice upload, footing, finding resolution and connection creation are deliberately **not** exposed — irreversible finance actions and credential writes keep a human in the loop.
 
-→ [Vendor actuals](build/vendor-actuals.md) · [Vendor Actuals API](developers/vendor-actuals-api.md) · [Floe CLI](developers/cli.md) · [MCP Server](developers/mcp-server.md)
+→ [Vendor actuals](build/vendor-actuals.md) · [Floe CLI](developers/cli.md) · [MCP Server](developers/mcp-server.md)
 
 ### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
 

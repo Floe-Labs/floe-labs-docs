@@ -91,7 +91,6 @@
 
 * [REST API](docs/developers/credit-api.md)
 * [Ledger Sync API](docs/developers/ledger-sync-api.md)
-* [Vendor Actuals API](docs/developers/vendor-actuals-api.md)
 * [OpenAPI Specification](https://credit-api.floelabs.xyz/.well-known/openapi.yaml)
 
 ## Reference
