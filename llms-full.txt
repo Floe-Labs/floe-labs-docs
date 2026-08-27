@@ -86,7 +86,7 @@ URL: https://floe-labs.gitbook.io/docs/readme.md
 
 Every voice call your agent makes spends money across a dozen vendors — the phone carrier, the speech-to-text, the language model, the voice, the tools. Those bills arrive separately, in different units, on different days, and your finance team spends weeks stitching them together to answer one question: **what did this client, this campaign, this call actually cost us?** Floe costs every call the moment it ends, tags the spend to the client and campaign, and shows you your margin per contract — so you can price the next deal on actuals instead of a blended guess, and walk into your next raise with your unit economics under control. (Floe is the join across every vendor — a token router meters only the LLM slice, ~40% of the bill, and is blind to the other 60%; on BYOK, platform dashboards report $0 — plus enforcement where Floe is in the path. One ledger, tagged by agent, task, and customer.)
 
-[Website](https://floelabs.xyz) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
+[Website](https://floefinance.com) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen)](https://github.com/Floe-Labs/floe-labs-docs/blob/main/LICENSE)
 
@@ -203,7 +203,7 @@ A voice agent's cost is never just tokens. One conversation pays 7–20 vendors 
 
 ---
 
-**Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) · **X:** [@FloeLabs](https://twitter.com/FloeLabs) · **GitHub:** [Floe-Labs](https://github.com/Floe-Labs) · **Email:** hello@floelabs.xyz
+**Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) · **X:** [@FloeLabs](https://twitter.com/FloeLabs) · **GitHub:** [Floe-Labs](https://github.com/Floe-Labs) · **Email:** hello@floefinance.com
 
 > **For LLMs reading this:** see [`/llms.txt`](llms.txt) for a structured map of these docs, or append `?ask=<question>` to any page URL to query it directly.
 
@@ -996,7 +996,7 @@ Almost all funding failures come from the card processor, not Floe:
 | Symptom | Cause | What to do |
 | --- | --- | --- |
 | Card declined | Issuer flags the transaction | Try a different card. Apple Pay sometimes succeeds where a raw card declines. |
-| "Region not supported" | The card processor doesn't serve your country yet | Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) — we have manual options for several regions. |
+| "Region not supported" | The card processor doesn't serve your country yet | Email [hello@floefinance.com](mailto:hello@floefinance.com) — we have manual options for several regions. |
 | Stuck in "processing" | Compliance review | Wait up to 24 hours. The amount isn't debited until the funding completes. |
 | Funded but balance still $0 | Dashboard view lagged | Refresh after ~60 seconds; if still wrong, contact us with the agent ID. |
 
@@ -2369,7 +2369,7 @@ URL: https://floe-labs.gitbook.io/docs/the-voice-stack/budget-aware-routing.md
 # Budget-Aware Routing
 
 {% hint style="warning" %}
-**Availability.** The **hard stop** at budget is live everywhere today. **Advisory taper** is **enabled on the hosted API** (`credit-api.floelabs.xyz`) — self-hosters opt in by setting `BUDGET_ADVISORY_ENABLED=1` (off by default). **Server-side auto-downgrade** and **finish** are in **early access** — request either at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+**Availability.** The **hard stop** at budget is live everywhere today. **Advisory taper** is **enabled on the hosted API** (`credit-api.floelabs.xyz`) — self-hosters opt in by setting `BUDGET_ADVISORY_ENABLED=1` (off by default). **Server-side auto-downgrade** and **finish** are in **early access** — request either at [hello@floefinance.com](mailto:hello@floefinance.com).
 {% endhint %}
 
 When an agent nears its budget you can do more than fail the call — but what's available depends on the mode:
@@ -2378,8 +2378,8 @@ When an agent nears its budget you can do more than fail the call — but what's
 |------|----------|--------------|
 | **Hard stop** | The breaching call gets a hard `402`. With a `suspend_agent` policy it *also* suspends the agent — and fires an `agent.suspended` webhook if you've registered one; without that action it just declines the single call. | **Live** |
 | **Advisory taper** | `X-Floe-Budget-Advisory` on each response lets your agent pick a cheaper model itself. | **Live — on for the hosted API; opt-in (`BUDGET_ADVISORY_ENABLED`) when self-hosting** |
-| **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
-| **Finish** | Complete the current task, then stop new spend. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
+| **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access → [hello@floefinance.com](mailto:hello@floefinance.com)** |
+| **Finish** | Complete the current task, then stop new spend. | **Early access → [hello@floefinance.com](mailto:hello@floefinance.com)** |
 
 Where a stop *lands* depends on the platform: pre-call where Floe is in the path; at the agent's next Floe-keyed action on reconcile-only platforms like Bland (which has no pre-call hook). See [Coverage Score](coverage-score.md) for the per-platform boundary.
 
@@ -4945,7 +4945,7 @@ Want your x402 API listed in the Floe directory? Two ways:
 
 ## Option 2: Contact Us
 
-Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) with:
+Email [hello@floefinance.com](mailto:hello@floefinance.com) with:
 - API endpoint URL
 - Provider name
 - Pricing (per-call in USDC)
@@ -5027,7 +5027,7 @@ The score tells you which leg to move. In order of typical impact:
 1. **Connect the end-of-call webhook** ([setup](../developers/webhooks.md#connect-your-orchestrator-reconcile-mode)) — moves in-call platform legs from *dark* to *reconciled* in one paste.
 2. **Point the custom-LLM slot at Floe** ([Vapi](../platforms/vapi.md) · [Retell](../platforms/retell.md) · [Bland](../platforms/bland.md)) — moves the model leg (~40% of a cascade bill, ~60%+ realtime) from *reconciled* to *enforceable*.
 3. **Move telephony to [Floe Phone](../developers/floe-phone.md)** — enforceable minutes on the same ledger.
-4. **STT/TTS via Floe** *(early access — request at [hello@floelabs.xyz](mailto:hello@floelabs.xyz))*.
+4. **STT/TTS via Floe** *(early access — request at [hello@floefinance.com](mailto:hello@floefinance.com))*.
 
 For spend Floe never routes at all — **BYOK** LLM calls, self-hosted models, off-path tools — routing isn't an option yet, so it stays *dark*. [Ledger sync](ledger-sync.md) pushes `floe-guard`'s local spend ledger to Reconcile Mode, moving that spend from *dark* to *reconciled* so the score counts it (budget only — it moves no balance).
 
@@ -5069,7 +5069,7 @@ URL: https://floe-labs.gitbook.io/docs/core-concepts/ledger-sync.md
 # Ledger sync — coverage for BYOK & self-hosted spend
 
 {% hint style="info" %}
-**Rolling out.** The client methods and `floe-guard push` CLI ship in the guard library today; the server endpoint (`POST /v1/agents/ledger/sync`) is rolling out. If a sync returns `404`, the endpoint isn't enabled for your account yet — request access at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+**Rolling out.** The client methods and `floe-guard push` CLI ship in the guard library today; the server endpoint (`POST /v1/agents/ledger/sync`) is rolling out. If a sync returns `404`, the endpoint isn't enabled for your account yet — request access at [hello@floefinance.com](mailto:hello@floefinance.com).
 {% endhint %}
 
 Your [Coverage Score](coverage-score.md) can only count spend Floe can see. Floe sees the calls it routes — the gateway, the x402 proxy, Floe Phone. It **cannot** see a call it never touched: an LLM you hit with your own provider key (BYOK), a model you self-host, a tool you pay for off Floe's path. That spend is **dark** — it counts against nothing and appears nowhere.
@@ -5923,7 +5923,7 @@ The native adapter will:
 - Auto-bind the same 54 actions as the AgentKit provider
 - Stream agent-awareness state alongside tool calls
 
-Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) for early access.
+Email [hello@floefinance.com](mailto:hello@floefinance.com) for early access.
 
 ==============================================================================
 # Claude Desktop / Claude Code / Cursor (MCP)
@@ -11702,7 +11702,7 @@ URL: https://floe-labs.gitbook.io/docs/api-reference/ledger-sync-api.md
 For the guide, the privacy model, and the client/CLI examples, see [Ledger sync — coverage for BYOK & self-hosted spend](../build/ledger-sync.md).
 
 {% hint style="info" %}
-**Rolling out.** This endpoint is being enabled per account. A `404` means it isn't live for you yet — request access at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+**Rolling out.** This endpoint is being enabled per account. A `404` means it isn't live for you yet — request access at [hello@floefinance.com](mailto:hello@floefinance.com).
 {% endhint %}
 
 **Base URL:** `https://credit-api.floelabs.xyz`
@@ -12736,7 +12736,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 
 ### Bug Bounty
 
-* Program active at security@floelabs.xyz
+* Program active at hello@floefinance.com
 * Critical: Up to $50,000
 * High: Up to $20,000
 * Medium: Up to $5,000
@@ -12744,7 +12744,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 
 ### Reporting Issues
 
-1. **Security issues**: security@floelabs.xyz (do not disclose publicly)
+1. **Security issues**: hello@floefinance.com (do not disclose publicly)
 2. **General bugs**: GitHub Issues or Discord
 3. **Feature requests**: Discord #suggestions
 

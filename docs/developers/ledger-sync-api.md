@@ -9,7 +9,7 @@ icon: code
 For the guide, the privacy model, and the client/CLI examples, see [Ledger sync — coverage for BYOK & self-hosted spend](../build/ledger-sync.md).
 
 {% hint style="info" %}
-**Rolling out.** This endpoint is being enabled per account. A `404` means it isn't live for you yet — request access at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+**Rolling out.** This endpoint is being enabled per account. A `404` means it isn't live for you yet — request access at [hello@floefinance.com](mailto:hello@floefinance.com).
 {% endhint %}
 
 **Base URL:** `https://credit-api.floelabs.xyz`

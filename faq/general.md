@@ -281,7 +281,7 @@ Yes, if you manually match with a counterparty through the UI. But automated sol
 ### Where can I get support?
 
 * **X/Twitter**: [@FloeLabs](https://twitter.com/FloeLabs)
-* **Email**: hello@floelabs.xyz
+* **Email**: hello@floefinance.com
 
 ### How do I report a bug?
 

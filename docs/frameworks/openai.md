@@ -31,4 +31,4 @@ The native adapter will:
 - Auto-bind the same 54 actions as the AgentKit provider
 - Stream agent-awareness state alongside tool calls
 
-Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) for early access.
+Email [hello@floefinance.com](mailto:hello@floefinance.com) for early access.

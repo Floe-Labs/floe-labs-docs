@@ -34,7 +34,7 @@ Open a GitHub issue for anything incorrect, outdated, unclear, or a broken link.
 
 ## Security issues
 
-See [SECURITY.md](SECURITY.md) — do **not** open a public issue for security vulnerabilities. Report them privately to [security@floelabs.xyz](mailto:security@floelabs.xyz).
+See [SECURITY.md](SECURITY.md) — do **not** open a public issue for security vulnerabilities. Report them privately to [hello@floefinance.com](mailto:hello@floefinance.com).
 
 ## License
 

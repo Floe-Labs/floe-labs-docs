@@ -43,13 +43,13 @@ A read-only API surface that would return your agent's credit profile in a porta
 - Cashflow score
 - Available limit
 
-Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) to join the design-partner conversation.
+Email [hello@floefinance.com](mailto:hello@floefinance.com) to join the design-partner conversation.
 
 ## Roadmap: public reader for third parties
 
 > **Status: roadmap — not generally available.**
 
-Other protocols would be able to underwrite your agent without re-running diligence by reading your ERC-8004 record. Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) to join the design-partner program.
+Other protocols would be able to underwrite your agent without re-running diligence by reading your ERC-8004 record. Email [hello@floefinance.com](mailto:hello@floefinance.com) to join the design-partner program.
 
 ## Related
 

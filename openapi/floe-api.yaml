@@ -14,8 +14,8 @@ info:
   version: 1.1.0
   contact:
     name: Floe Labs
-    url: https://floelabs.xyz
-    email: hello@floelabs.xyz
+    url: https://floefinance.com
+    email: hello@floefinance.com
 
 servers:
   - url: https://credit-api.floelabs.xyz
