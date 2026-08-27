@@ -5201,7 +5201,7 @@ Two rules follow, and both are enforced in the API rather than left to a rendere
 - **A `pending` or `manual` leg has no cost.** The surface shows its units. `costRaw` is `null` — never `0`, because a zero in a column headed "cost" is a claim, and a blank is the truth.
 - **`exact` and `period-rate` are never added together.** They are different claims, so they come back as separate subtotals and get different colours in the dashboard. A `period-rate` figure is a real derivation — the vendor's own bucket cost ÷ the vendor's own bucket units, with both source records and the realized rate stored as provenance — but describing it as "exact" would overstate it.
 
-A row shows a **single total only when every leg in it is `exact`, `period-rate` or `invoiced` and USD-denominated**. Otherwise you get `"partial — lower bound"` and the reasons why. There is no code path that renders a misleading single figure.
+Those two rules operate on different things, which is worth stating plainly. The **subtotals** are per claim and stay apart: an `exact` figure and a `period-rate` figure are never merged into one number labelled `exact`. The **row total** is a different object — it is the sum of every leg that has a price, and a row shows one **only when every leg in it is `exact`, `period-rate` or `invoiced` and USD-denominated**. So a row mixing `exact` and `period-rate` legs does get a total; what it never gets is a total that hides which claim each dollar came from. Any row with a `pending` or `manual` leg returns `"partial — lower bound"` and the reasons why. There is no code path that renders a misleading single figure.
 
 ## When the cost actually arrives
 
@@ -5300,6 +5300,8 @@ Findings are the engine's own record of **everything it could not reconcile** �
 | `units_mismatch` | Your leg's units and the vendor's disagree. |
 | `over_coverage` | Legs claim more units than the vendor's bucket holds — blocks the whole key. |
 | `unknown_line_item` | An unmapped line item — blocks `period-rate` for its parent key. |
+| `bucket_reopened` | A closed vendor bucket changed after closure. The stamps it priced are re-derived. |
+| `platform_zero_cost` | An orchestrator reported a call with no cost lines — usually a BYOK leg the platform never paid for. |
 | `connector_stale` | No successful pull inside the connection's freshness SLA. |
 | `invoice_foot_variance` | Unexplained residue on a foot. |
 | `currency_unsupported` | A non-USD record. No FX, ever. |
@@ -7374,7 +7376,7 @@ A `pending` or `manual` leg shows `—`, never `$0.00`. A row shows one total on
 | Subcommand | Does |
 |---|---|
 | `legs` | Per-leg vendor cost with the vendor's request id, units, status and cost. Keyset-paginated |
-| `calls` | By-call rollup with a composition line (`n exact / n period-rate / n pending`) |
+| `calls` | By-call rollup with a composition line (`n exact / n period-rate / n invoiced / n pending / n manual`) |
 | `rollups --by <customer\|campaign\|agent\|vendor\|time>` | Totals by dimension, exact and period-rate in separate columns |
 | `findings` | Open reconciliation findings — the named reasons a total is a lower bound |
 | `findings resolve <id> --resolution <acknowledged\|wont_fix\|fixed>` | Seal one finding (a human verdict, never the machine's) |
@@ -8737,7 +8739,7 @@ Connect any AI agent to Floe using the [Model Context Protocol](https://modelcon
 >
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [Floe CLI](cli.md) | [Credit REST API](credit-api.md) | [API Keys](api-keys.md)
 
-**npm:** `@floelabs/mcp-server` (v0.3.0)\
+**npm:** `@floelabs/mcp-server` (v0.4.0)\
 **GitHub:** [Floe-Labs/floe-mcp-server](https://github.com/Floe-Labs/floe-mcp-server)\
 **Hosted endpoint:** `https://mcp.floelabs.xyz/mcp`
 
@@ -11901,7 +11903,7 @@ For the concepts — what each status claims, when a cost actually arrives, and 
 
 A **developer** credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set:
 
-```
+```text
 Authorization: Bearer floe_live_YOUR_KEY
 ```
 
@@ -11911,10 +11913,10 @@ An agent key (`floe_…`) is rejected `403 developer_credential_required`. See [
 
 | Endpoints | Requires |
 |---|---|
-| `GET /actuals/legs`, `/actuals/calls`, `/actuals/rollups`, `/actuals/findings` | **Pro** — feature `attribution_reports` |
-| `GET /actuals/legs.csv` | **Pro** — also feature `exports` |
-| Everything under `/vendor-connections`, and every write under `/actuals` | **Agency** — feature `vendor_connections` |
-| `POST`/`PATCH`/`DELETE /vendor-connections*` | Agency **and** an `admin` or `owner` role |
+| `GET /v1/developer/actuals/legs`, `/calls`, `/rollups`, `/findings` | **Pro** — feature `attribution_reports` |
+| `GET /v1/developer/actuals/legs.csv` | **Pro** — also feature `exports` |
+| Everything under `/v1/developer/vendor-connections`, and every write under `/v1/developer/actuals` | **Agency** — feature `vendor_connections` |
+| `POST`/`PATCH`/`DELETE /v1/developer/vendor-connections*` | Agency **and** an `admin` or `owner` role |
 
 A refusal is `403` with `{ "error": "plan_required", "plan": "<min>", "current": "<yours>", "feature": "…", "upgradeUrl": "…" }`.
 
@@ -12056,7 +12058,7 @@ Same filters as `legs` (minus `taskId`, which is the grouping key). Each row:
 
 The same page set, server-rendered. Requires Pro `exports` on top of `attribution_reports`. Columns:
 
-```
+```csv
 occurred_at,vendor,leg_kind,capture_source,vendor_request_id,status,grain,cost_scope,
 group_key,cost_raw,currency,non_usd,vendor_cost_native,vendor_cost_unit,units_provenance,
 units,attribution_state,agent_id,customer_id,task_id,campaign_id,vendor_actual_id,
@@ -12741,7 +12743,7 @@ BYOK cost stopped being an estimate. Every non-Floe-settled leg now carries the 
 * **Voice-heavy accounts read low at launch, by construction.** TTS, streaming STT, duration-billed realtime and telephony transport are Floe-measured rather than vendor-reported, so they are structurally barred from `period-rate`; their dollars are booked to a named residual instead of being spread across legs.
 * **Read-only vendor billing connections.** A sealed, read-only credential per vendor account, never returned by any read (only a per-kind mask). `bestStatus` states the ceiling a leg from that connection can ever reach. Connections, invoice upload and the irreversible **foot** live in the dashboard and the CLI.
 * **CLI 0.3.0 adds `floe actuals`** — `legs`, `calls`, `rollups`, `findings`, `connections`, `connect`, `verify`, `invoices`. Credentials are prompted per field or piped on stdin, never passed as arguments. (`floe vendors` is unchanged: it still probes Floe's own marketplace vendors.)
-* **MCP server 0.4.0 — 80 tools (was 74),** with a ninth capability group `actuals`: `list_vendor_cost_legs`, `list_vendor_cost_calls`, `get_vendor_cost_rollup`, `list_reconciliation_findings`, `list_vendor_connections`, `verify_vendor_connection`. Invoice upload, footing, finding resolution and connection creation are deliberately **not** exposed — irreversible finance actions and credential writes keep a human in the loop.
+* **MCP server 0.4.0 — 80 tools (was 74 — the v1.21.0 entry below says 73, which undercounted `get_coverage_score`),** with a ninth capability group `actuals`: `list_vendor_cost_legs`, `list_vendor_cost_calls`, `get_vendor_cost_rollup`, `list_reconciliation_findings`, `list_vendor_connections`, `verify_vendor_connection`. Invoice upload, footing, finding resolution and connection creation are deliberately **not** exposed — irreversible finance actions and credential writes keep a human in the loop.
 
 → [Vendor actuals](build/vendor-actuals.md) · [Vendor Actuals API](developers/vendor-actuals-api.md) · [Floe CLI](developers/cli.md) · [MCP Server](developers/mcp-server.md)
 

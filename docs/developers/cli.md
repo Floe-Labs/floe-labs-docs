@@ -447,7 +447,7 @@ A `pending` or `manual` leg shows `—`, never `$0.00`. A row shows one total on
 | Subcommand | Does |
 |---|---|
 | `legs` | Per-leg vendor cost with the vendor's request id, units, status and cost. Keyset-paginated |
-| `calls` | By-call rollup with a composition line (`n exact / n period-rate / n pending`) |
+| `calls` | By-call rollup with a composition line (`n exact / n period-rate / n invoiced / n pending / n manual`) |
 | `rollups --by <customer\|campaign\|agent\|vendor\|time>` | Totals by dimension, exact and period-rate in separate columns |
 | `findings` | Open reconciliation findings — the named reasons a total is a lower bound |
 | `findings resolve <id> --resolution <acknowledged\|wont_fix\|fixed>` | Seal one finding (a human verdict, never the machine's) |

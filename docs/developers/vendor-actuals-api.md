@@ -14,7 +14,7 @@ For the concepts — what each status claims, when a cost actually arrives, and 
 
 A **developer** credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set:
 
-```
+```text
 Authorization: Bearer floe_live_YOUR_KEY
 ```
 
@@ -24,10 +24,10 @@ An agent key (`floe_…`) is rejected `403 developer_credential_required`. See [
 
 | Endpoints | Requires |
 |---|---|
-| `GET /actuals/legs`, `/actuals/calls`, `/actuals/rollups`, `/actuals/findings` | **Pro** — feature `attribution_reports` |
-| `GET /actuals/legs.csv` | **Pro** — also feature `exports` |
-| Everything under `/vendor-connections`, and every write under `/actuals` | **Agency** — feature `vendor_connections` |
-| `POST`/`PATCH`/`DELETE /vendor-connections*` | Agency **and** an `admin` or `owner` role |
+| `GET /v1/developer/actuals/legs`, `/calls`, `/rollups`, `/findings` | **Pro** — feature `attribution_reports` |
+| `GET /v1/developer/actuals/legs.csv` | **Pro** — also feature `exports` |
+| Everything under `/v1/developer/vendor-connections`, and every write under `/v1/developer/actuals` | **Agency** — feature `vendor_connections` |
+| `POST`/`PATCH`/`DELETE /v1/developer/vendor-connections*` | Agency **and** an `admin` or `owner` role |
 
 A refusal is `403` with `{ "error": "plan_required", "plan": "<min>", "current": "<yours>", "feature": "…", "upgradeUrl": "…" }`.
 
@@ -169,7 +169,7 @@ Same filters as `legs` (minus `taskId`, which is the grouping key). Each row:
 
 The same page set, server-rendered. Requires Pro `exports` on top of `attribution_reports`. Columns:
 
-```
+```csv
 occurred_at,vendor,leg_kind,capture_source,vendor_request_id,status,grain,cost_scope,
 group_key,cost_raw,currency,non_usd,vendor_cost_native,vendor_cost_unit,units_provenance,
 units,attribution_state,agent_id,customer_id,task_id,campaign_id,vendor_actual_id,

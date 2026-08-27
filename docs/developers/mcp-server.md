@@ -10,7 +10,7 @@ Connect any AI agent to Floe using the [Model Context Protocol](https://modelcon
 >
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [Floe CLI](cli.md) | [Credit REST API](credit-api.md) | [API Keys](api-keys.md)
 
-**npm:** `@floelabs/mcp-server` (v0.3.0)\
+**npm:** `@floelabs/mcp-server` (v0.4.0)\
 **GitHub:** [Floe-Labs/floe-mcp-server](https://github.com/Floe-Labs/floe-mcp-server)\
 **Hosted endpoint:** `https://mcp.floelabs.xyz/mcp`
 

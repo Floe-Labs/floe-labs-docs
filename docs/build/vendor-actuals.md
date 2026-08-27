@@ -25,7 +25,7 @@ Two rules follow, and both are enforced in the API rather than left to a rendere
 - **A `pending` or `manual` leg has no cost.** The surface shows its units. `costRaw` is `null` — never `0`, because a zero in a column headed "cost" is a claim, and a blank is the truth.
 - **`exact` and `period-rate` are never added together.** They are different claims, so they come back as separate subtotals and get different colours in the dashboard. A `period-rate` figure is a real derivation — the vendor's own bucket cost ÷ the vendor's own bucket units, with both source records and the realized rate stored as provenance — but describing it as "exact" would overstate it.
 
-A row shows a **single total only when every leg in it is `exact`, `period-rate` or `invoiced` and USD-denominated**. Otherwise you get `"partial — lower bound"` and the reasons why. There is no code path that renders a misleading single figure.
+Those two rules operate on different things, which is worth stating plainly. The **subtotals** are per claim and stay apart: an `exact` figure and a `period-rate` figure are never merged into one number labelled `exact`. The **row total** is a different object — it is the sum of every leg that has a price, and a row shows one **only when every leg in it is `exact`, `period-rate` or `invoiced` and USD-denominated**. So a row mixing `exact` and `period-rate` legs does get a total; what it never gets is a total that hides which claim each dollar came from. Any row with a `pending` or `manual` leg returns `"partial — lower bound"` and the reasons why. There is no code path that renders a misleading single figure.
 
 ## When the cost actually arrives
 
@@ -124,6 +124,8 @@ Findings are the engine's own record of **everything it could not reconcile** �
 | `units_mismatch` | Your leg's units and the vendor's disagree. |
 | `over_coverage` | Legs claim more units than the vendor's bucket holds — blocks the whole key. |
 | `unknown_line_item` | An unmapped line item — blocks `period-rate` for its parent key. |
+| `bucket_reopened` | A closed vendor bucket changed after closure. The stamps it priced are re-derived. |
+| `platform_zero_cost` | An orchestrator reported a call with no cost lines — usually a BYOK leg the platform never paid for. |
 | `connector_stale` | No successful pull inside the connection's freshness SLA. |
 | `invoice_foot_variance` | Unexplained residue on a foot. |
 | `currency_unsupported` | A non-USD record. No FX, ever. |
