@@ -4,7 +4,7 @@ icon: plug
 
 # MCP Server
 
-Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **73 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
+Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **80 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
 
 > **Payments are in MCP now.** `estimate_x402_cost` (or `x402_forecast` for a whole plan) prices the call; `x402_pay` makes it, settles the vendor from the agent's balance, and returns the vendor's response plus the `X-Floe-*` receipt headers. An agent no longer has to leave MCP to spend.
 >
@@ -59,7 +59,7 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 
 | Key | Format | Unlocks | Get one |
 |---|---|---|---|
-| Developer key | `floe_live_…` | Developer-key surface (27 tools — lifecycle 12, observability 4, webhooks 11): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks + delivery logs | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
+| Developer key | `floe_live_…` | Developer-key surface (34 tools — lifecycle 12, observability 5, webhooks 11, actuals 6): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, coverage, webhooks + delivery logs, vendor actuals | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
 | Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe init`, or the dashboard |
 | Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
 | None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
@@ -87,7 +87,7 @@ https://mcp.floelabs.xyz/mcp?read_only=true          # 36 non-mutating tools
 https://mcp.floelabs.xyz/mcp?features=spend,pricing  # 19 tools — the decision loop only
 ```
 
-Capability groups: `lending`, `spend`, `pricing`, `lifecycle`, `observability`, `payments`, `webhooks`, `docs`. Both params combine, and an unknown feature name simply matches nothing.
+Capability groups: `lending`, `spend`, `pricing`, `lifecycle`, `observability`, `payments`, `webhooks`, `actuals`, `docs`. Both params combine, and an unknown feature name simply matches nothing.
 
 ### Option 1: Remote Endpoint (recommended)
 
@@ -223,18 +223,19 @@ Each session is scoped to one agent — balances, spend limits, and webhook subs
 
 ---
 
-## Tools Reference (73)
+## Tools Reference (80)
 
-Seventy-three tools in eight capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
+Eighty tools in nine capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
 
 | Group | Tools | What it's for |
 |---|---|---|
 | [`lifecycle`](#agent-lifecycle-12) | 12 | Provision agents, mint/rotate/revoke their keys, budget each key, open credit lines |
-| [`observability`](#funding-and-observability-4) | 4 | Funding instructions, balances, activity feed, usage rollups |
+| [`observability`](#funding-and-observability-5) | 5 | Funding instructions, balances, activity feed, usage rollups, Coverage Score |
 | [`payments`](#payment-execution-1) | 1 | `x402_pay` — the tool that actually spends |
 | [`pricing`](#cost-preflight-5) | 5 | Price a call or a whole plan before spending |
 | [`spend`](#spend-governance-and-awareness-14) | 14 | Caps, thresholds, merchant allowlist, reputation |
 | [`webhooks`](#webhooks-11) | 11 | Push notifications for account events + the delivery log |
+| [`actuals`](#vendor-actuals-6) | 6 | What your own vendors charged you, reconciled to their billing records |
 | [`docs`](#docs-1) | 1 | Search these docs from inside MCP |
 | [`lending`](#advanced-lending-protocol-25) | 25 | On-chain protocol layer (advanced / self-custody) |
 
@@ -257,7 +258,7 @@ Developer key (`floe_live_…`). The bootstrap path: an agent with a developer k
 | `open_credit_line` | Upgrade a pay-as-you-go agent to a managed credit line against a deposit already in its wallet |
 | `get_credit_line_bounds` | Valid deposit/LTV ranges and current balances. Call before `open_credit_line` |
 
-### Funding and observability (4)
+### Funding and observability (5)
 
 Developer key.
 
@@ -267,6 +268,7 @@ Developer key.
 | `get_balances` | USDC across the developer wallet, every agent wallet, and API credits |
 | `get_activity` | Unified activity feed — proxy calls, onramps, transfers, loan events — newest first, cursor-paginated |
 | `get_usage_summary` | Spend/usage rollup: KPIs, daily series, top endpoints over a window |
+| `get_coverage_score` | [Coverage Score](../build/coverage-score.md): the share of known spend Floe enforces pre-call vs reconciled vs dark. Pass `agent_id` for one agent, omit for the fleet |
 
 ### Payment execution (1)
 
@@ -330,6 +332,25 @@ Developer key.
 | `retry_webhook_delivery` | Manually redeliver a failed delivery. Receivers should dedupe on `X-Floe-Delivery-Id` |
 
 Event catalog, delivery semantics, and signature verification: [Webhooks](webhooks.md).
+
+### Vendor actuals (6)
+
+Developer key. What **your own** vendors charged you (not what Floe charged you), reconciled against those vendors' billing records. Concepts and the status vocabulary: [Vendor actuals](../build/vendor-actuals.md).
+
+Every cost carries a status, and the status bounds the claim: `exact` = reconciled to the vendor's own per-request billing record · `period-rate` = priced at the vendor's own realized rate for that period, **never** described as exact · `invoiced` = footed to the vendor's invoice · `pending` = the vendor hasn't published this cost yet · `manual` = no vendor API publishes this. **`pending` and `manual` legs have no cost at all** — `costRaw` is `null` and the surface shows units.
+
+| Tool | Description |
+|------|-------------|
+| `list_vendor_cost_legs` | Per-leg vendor cost with the vendor's own request id, typed units, status and provenance. Keyset-paginated; filters by window, vendor, customer, agent, campaign, task, status |
+| `list_vendor_cost_calls` | Server-side by-call rollup: a `composition` count per call plus separate exact and period-rate subtotals. One `totalRaw` only when every leg is priced and USD — otherwise `"partial — lower bound"` |
+| `get_vendor_cost_rollup` | Totals by `customer`, `campaign`, `agent`, `vendor`, or `time` (UTC day) |
+| `list_reconciliation_findings` | Everything the engine could **not** reconcile — the named reasons a total is a lower bound |
+| `list_vendor_connections` | Vendor billing credentials, masked (key material is never returned), plus the connector catalog. `bestStatus` is the ceiling a leg from that connection can ever reach |
+| `verify_vendor_connection` | Re-check one stored credential against the vendor now. Separates "revoked, re-key it" from "the vendor is down". Advisory — not a scope guarantee |
+
+Reads need the **Pro** feature `attribution_reports`; the two connection tools need **Agency** `vendor_connections` (and admin/owner to verify).
+
+**Not exposed over MCP, deliberately.** Invoice **upload** is a binary PUT with nothing for an agent to send; **footing** an invoice is an irreversible finance action that keeps a human in the loop; **resolving a finding** is a human verdict the API withholds from the machine; **creating a connection** writes a sealed credential, and credentials never travel through a tool call. Use the dashboard or [`floe actuals`](cli.md).
 
 ### Docs (1)
 

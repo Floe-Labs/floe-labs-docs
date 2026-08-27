@@ -21,7 +21,7 @@ A native `floe-agent` adapter for the OpenAI Agents SDK is in development. Until
 }
 ```
 
-Your OpenAI agent now sees all 73 server-exposed Floe MCP tools. A `floe_live_…` developer key unlocks the lifecycle, observability, and webhook tools; runtime tools like `x402_pay` and the spend controls need an agent key (`floe_…`).
+Your OpenAI agent now sees all 80 server-exposed Floe MCP tools. A `floe_live_…` developer key unlocks the lifecycle, observability, and webhook tools; runtime tools like `x402_pay` and the spend controls need an agent key (`floe_…`).
 
 ## Roadmap
 

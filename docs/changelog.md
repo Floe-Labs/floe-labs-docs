@@ -6,9 +6,23 @@ icon: swap
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **73 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **80 tools**; `@floelabs/cli` ships **33 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.22.0 — Vendor actuals: what your vendors actually charged you (August 2026)
+
+BYOK cost stopped being an estimate. Every non-Floe-settled leg now carries the vendor's own request id, a connector pulls that vendor's billing record, and a reconcile pass stamps the leg with **exactly** the precision the record supports — or says plainly that no record exists yet.
+
+* **Five statuses, and each one bounds the claim.** `exact` = reconciled to the vendor's own per-request billing record · `period-rate` = priced at the vendor's own realized rate for that period (a real derivation from their cost and usage APIs — **never** described as exact, and never added to the exact figure) · `invoiced` = footed to the vendor's invoice · `pending` = the vendor hasn't published this cost yet · `manual` = no vendor API publishes this. **`pending` and `manual` legs carry no cost at all** — the surface shows units, and `costRaw` is `null` rather than `0`.
+* **A total only when a total is earned.** A row shows a single figure only when every leg in it is `exact`/`period-rate`/`invoiced` and USD-denominated. Otherwise it is labelled `"partial — lower bound"` with the blocking reasons named. Non-USD is never FX-converted — no FX source exists, and an invented rate inside an audit ledger is worse than a blank.
+* **Timing is published, not implied.** A cost lands the moment the call ends for **ElevenLabs only**; within **~10 minutes** for telephony and Deepgram; **next day** for every LLM and cloud leg. `pending` on a recent Twilio call is the **steady state** — `Call.price` is populated asynchronously after the call completes.
+* **Voice-heavy accounts read low at launch, by construction.** TTS, streaming STT, duration-billed realtime and telephony transport are Floe-measured rather than vendor-reported, so they are structurally barred from `period-rate`; their dollars are booked to a named residual instead of being spread across legs.
+* **Read-only vendor billing connections.** A sealed, read-only credential per vendor account, never returned by any read (only a per-kind mask). `bestStatus` states the ceiling a leg from that connection can ever reach. Connections, invoice upload and the irreversible **foot** live in the dashboard and the CLI.
+* **CLI 0.3.0 adds `floe actuals`** — `legs`, `calls`, `rollups`, `findings`, `connections`, `connect`, `verify`, `invoices`. Credentials are prompted per field or piped on stdin, never passed as arguments. (`floe vendors` is unchanged: it still probes Floe's own marketplace vendors.)
+* **MCP server 0.4.0 — 80 tools (was 74),** with a ninth capability group `actuals`: `list_vendor_cost_legs`, `list_vendor_cost_calls`, `get_vendor_cost_rollup`, `list_reconciliation_findings`, `list_vendor_connections`, `verify_vendor_connection`. Invoice upload, footing, finding resolution and connection creation are deliberately **not** exposed — irreversible finance actions and credential writes keep a human in the loop.
+
+→ [Vendor actuals](build/vendor-actuals.md) · [Vendor Actuals API](developers/vendor-actuals-api.md) · [Floe CLI](developers/cli.md) · [MCP Server](developers/mcp-server.md)
 
 ### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
 
