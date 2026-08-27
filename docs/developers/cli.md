@@ -470,7 +470,7 @@ floe actuals invoices upload --vendor twilio --file ./july.csv
 floe actuals invoices foot 11 --dry-run   # rehearse first — footing is irreversible
 ```
 
-**Timing:** a cost lands the moment the call ends for **ElevenLabs only**; within ~10 minutes for telephony and Deepgram; **next day** for every LLM and cloud leg. So `pending` on a call from a minute ago is the steady state, not a defect.
+**Timing:** some legs can be costed the moment a call ends, others only on the vendor's next-day batch — so `pending` on a call from a minute ago is the steady state, not a defect.
 
 **Footing an invoice is irreversible** — `--dry-run` runs the identical computation and rolls it back. Without `--dry-run` the command asks you to type the id back; pass `--yes` in scripts.
 
