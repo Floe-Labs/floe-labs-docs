@@ -5,7 +5,7 @@ icon: arrows-rotate
 # Ledger sync — coverage for BYOK & self-hosted spend
 
 {% hint style="info" %}
-**Rolling out.** The client methods and `floe-guard push` CLI ship in the guard library today; the server endpoint (`POST /v1/agents/ledger/sync`) is rolling out. If a sync returns `404`, the endpoint isn't enabled for your account yet — request access at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+**Rolling out.** The client methods and `floe-guard push` CLI ship in the guard library today; the server endpoint (`POST /v1/agents/ledger/sync`) is rolling out. If a sync returns `404`, the endpoint isn't enabled for your account yet — request access at [hello@floefinance.com](mailto:hello@floefinance.com).
 {% endhint %}
 
 Your [Coverage Score](coverage-score.md) can only count spend Floe can see. Floe sees the calls it routes — the gateway, the x402 proxy, Floe Phone. It **cannot** see a call it never touched: an LLM you hit with your own provider key (BYOK), a model you self-host, a tool you pay for off Floe's path. That spend is **dark** — it counts against nothing and appears nowhere.

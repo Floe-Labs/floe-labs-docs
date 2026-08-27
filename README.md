@@ -6,7 +6,7 @@
 
 Every voice call your agent makes spends money across a dozen vendors — the phone carrier, the speech-to-text, the language model, the voice, the tools. Those bills arrive separately, in different units, on different days, and your finance team spends weeks stitching them together to answer one question: **what did this client, this campaign, this call actually cost us?** Floe costs every call the moment it ends, tags the spend to the client and campaign, and shows you your margin per contract — so you can price the next deal on actuals instead of a blended guess, and walk into your next raise with your unit economics under control. (Floe is the join across every vendor — a token router meters only the LLM slice, ~40% of the bill, and is blind to the other 60%; on BYOK, platform dashboards report $0 — plus enforcement where Floe is in the path. One ledger, tagged by agent, task, and customer.)
 
-[Website](https://floelabs.xyz) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
+[Website](https://floefinance.com) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen)](https://github.com/Floe-Labs/floe-labs-docs/blob/main/LICENSE)
 
@@ -123,6 +123,6 @@ A voice agent's cost is never just tokens. One conversation pays 7–20 vendors 
 
 ---
 
-**Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) · **X:** [@FloeLabs](https://twitter.com/FloeLabs) · **GitHub:** [Floe-Labs](https://github.com/Floe-Labs) · **Email:** hello@floelabs.xyz
+**Dashboard:** [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) · **X:** [@FloeLabs](https://twitter.com/FloeLabs) · **GitHub:** [Floe-Labs](https://github.com/Floe-Labs) · **Email:** hello@floefinance.com
 
 > **For LLMs reading this:** see [`/llms.txt`](llms.txt) for a structured map of these docs, or append `?ask=<question>` to any page URL to query it directly.

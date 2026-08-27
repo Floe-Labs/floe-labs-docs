@@ -49,7 +49,7 @@ Almost all funding failures come from the card processor, not Floe:
 | Symptom | Cause | What to do |
 | --- | --- | --- |
 | Card declined | Issuer flags the transaction | Try a different card. Apple Pay sometimes succeeds where a raw card declines. |
-| "Region not supported" | The card processor doesn't serve your country yet | Email [hello@floelabs.xyz](mailto:hello@floelabs.xyz) — we have manual options for several regions. |
+| "Region not supported" | The card processor doesn't serve your country yet | Email [hello@floefinance.com](mailto:hello@floefinance.com) — we have manual options for several regions. |
 | Stuck in "processing" | Compliance review | Wait up to 24 hours. The amount isn't debited until the funding completes. |
 | Funded but balance still $0 | Dashboard view lagged | Refresh after ~60 seconds; if still wrong, contact us with the agent ID. |
 

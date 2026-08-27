@@ -437,7 +437,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 
 ### Bug Bounty
 
-* Program active at security@floelabs.xyz
+* Program active at hello@floefinance.com
 * Critical: Up to $50,000
 * High: Up to $20,000
 * Medium: Up to $5,000
@@ -445,7 +445,7 @@ Lets agents reason about their own credit before committing capital. Answers the
 
 ### Reporting Issues
 
-1. **Security issues**: security@floelabs.xyz (do not disclose publicly)
+1. **Security issues**: hello@floefinance.com (do not disclose publicly)
 2. **General bugs**: GitHub Issues or Discord
 3. **Feature requests**: Discord #suggestions
 

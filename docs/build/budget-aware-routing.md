@@ -1,7 +1,7 @@
 # Budget-Aware Routing
 
 {% hint style="warning" %}
-**Availability.** The **hard stop** at budget is live everywhere today. **Advisory taper** is **enabled on the hosted API** (`credit-api.floelabs.xyz`) — self-hosters opt in by setting `BUDGET_ADVISORY_ENABLED=1` (off by default). **Server-side auto-downgrade** and **finish** are in **early access** — request either at [hello@floelabs.xyz](mailto:hello@floelabs.xyz).
+**Availability.** The **hard stop** at budget is live everywhere today. **Advisory taper** is **enabled on the hosted API** (`credit-api.floelabs.xyz`) — self-hosters opt in by setting `BUDGET_ADVISORY_ENABLED=1` (off by default). **Server-side auto-downgrade** and **finish** are in **early access** — request either at [hello@floefinance.com](mailto:hello@floefinance.com).
 {% endhint %}
 
 When an agent nears its budget you can do more than fail the call — but what's available depends on the mode:
@@ -10,8 +10,8 @@ When an agent nears its budget you can do more than fail the call — but what's
 |------|----------|--------------|
 | **Hard stop** | The breaching call gets a hard `402`. With a `suspend_agent` policy it *also* suspends the agent — and fires an `agent.suspended` webhook if you've registered one; without that action it just declines the single call. | **Live** |
 | **Advisory taper** | `X-Floe-Budget-Advisory` on each response lets your agent pick a cheaper model itself. | **Live — on for the hosted API; opt-in (`BUDGET_ADVISORY_ENABLED`) when self-hosting** |
-| **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
-| **Finish** | Complete the current task, then stop new spend. | **Early access → [hello@floelabs.xyz](mailto:hello@floelabs.xyz)** |
+| **Downgrade** | Floe swaps to a cheaper model server-side and keeps going. | **Early access → [hello@floefinance.com](mailto:hello@floefinance.com)** |
+| **Finish** | Complete the current task, then stop new spend. | **Early access → [hello@floefinance.com](mailto:hello@floefinance.com)** |
 
 Where a stop *lands* depends on the platform: pre-call where Floe is in the path; at the agent's next Floe-keyed action on reconcile-only platforms like Bland (which has no pre-call hook). See [Coverage Score](coverage-score.md) for the per-platform boundary.
 
