@@ -51,7 +51,7 @@ npm i -g @floelabs/cli    # or keep the `floe` bin around
 | [Get started](#get-started) | `init` · `status` · `use` · `test` |
 | [Metered calls](#metered-calls) | `chat` · `embed` · `speak` · `transcribe` · `pay` |
 | [Agents & limits](#agents-limits) | `agents` · `keys` · `devkeys` · `budget` · `policy` · `allowlist` · `credit` |
-| [Observability & billing](#observability-billing) | `activity` · `usage` · `ledger` · `billing` · `account` · `team` |
+| [Observability & billing](#observability-billing) | `activity` · `usage` · `actuals` · `ledger` · `billing` · `account` · `team` |
 | [Money](#money) | `funds` · `cashout` |
 | [Platform](#platform) | `webhooks` · `models` · `estimate` · `providers` · `phone` · `actions` · `orchestrators` · `vendors` |
 
@@ -427,6 +427,52 @@ Teammates share this account: its agents, keys, and billing. Destructive verbs (
 ```bash
 floe team invite dev@acme.com --role member
 ```
+
+### `floe actuals`
+
+What your **own** vendors charged you, reconciled against their billing records — see [Vendor actuals](../build/vendor-actuals.md). Not to be confused with `floe vendors`, which probes the health of Floe's marketplace vendors.
+
+Every cost carries a status, and the status bounds the claim:
+
+| Status | Means |
+|---|---|
+| `exact` | Reconciled to the vendor's own per-request billing record |
+| `period-rate` | Priced at the vendor's own realized rate for that period. A real derivation — **never** described as exact, and never added to the exact figure |
+| `invoiced` | Footed to the vendor's invoice |
+| `pending` | The vendor hasn't published this cost yet — units, no dollar figure |
+| `manual` | No vendor API publishes this — upload the invoice. Units, no dollar figure |
+
+A `pending` or `manual` leg shows `—`, never `$0.00`. A row shows one total only when every leg in it is `exact`/`period-rate`/`invoiced` and USD; otherwise you get `partial — lower bound` and the reasons.
+
+| Subcommand | Does |
+|---|---|
+| `legs` | Per-leg vendor cost with the vendor's request id, units, status and cost. Keyset-paginated |
+| `calls` | By-call rollup with a composition line (`n exact / n period-rate / n invoiced / n pending / n manual`) |
+| `rollups --by <customer\|campaign\|agent\|vendor\|time>` | Totals by dimension, exact and period-rate in separate columns |
+| `findings` | Open reconciliation findings — the named reasons a total is a lower bound |
+| `findings resolve <id> --resolution <acknowledged\|wont_fix\|fixed>` | Seal one finding (a human verdict, never the machine's) |
+| `connections` | Vendor billing credentials, masked, plus the connector catalog and each vendor's ceiling status |
+| `connect --vendor <v> --name <label> --kind <kind>` | Store a read-only billing credential. Prompts per field with secrets hidden; in scripts pipe a JSON object on stdin — **never** pass a credential as an argument |
+| `verify <id>` | Prove a stored credential still reads (advisory, not a scope check) |
+| `invoices list\|upload\|foot` | Upload, list and foot vendor invoices |
+
+Filters on `legs` / `calls` / `rollups`: `--since` `--until` `--vendor` `--customer` `--agent` `--campaign` `--task` `--status <csv>` `--limit` `--cursor`.
+
+```bash
+floe actuals legs --since 2026-08-01T00:00:00Z --customer acme
+floe actuals rollups --by vendor --json
+
+printf '%s' "$TWILIO_JSON" | floe actuals connect \
+  --vendor twilio --name main --kind basic_auth --billing-tz America/Los_Angeles
+floe actuals verify 4
+
+floe actuals invoices upload --vendor twilio --file ./july.csv
+floe actuals invoices foot 11 --dry-run   # rehearse first — footing is irreversible
+```
+
+**Timing:** some legs can be costed the moment a call ends, others only on the vendor's next-day batch — so `pending` on a call from a minute ago is the steady state, not a defect.
+
+**Footing an invoice is irreversible** — `--dry-run` runs the identical computation and rolls it back. Without `--dry-run` the command asks you to type the id back; pass `--yes` in scripts.
 
 ---
 

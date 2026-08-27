@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 61 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 62 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -45,6 +45,7 @@
 - Agent Balance — https://floe-labs.gitbook.io/docs/core-concepts/wallet.md
 - Coverage Score — https://floe-labs.gitbook.io/docs/core-concepts/coverage-score.md
 - Ledger sync — BYOK & self-hosted coverage — https://floe-labs.gitbook.io/docs/core-concepts/ledger-sync.md
+- Vendor actuals — https://floe-labs.gitbook.io/docs/core-concepts/vendor-actuals.md
 - Spend Controls — https://floe-labs.gitbook.io/docs/core-concepts/spend-controls.md
 - Agent Awareness — https://floe-labs.gitbook.io/docs/core-concepts/agent-awareness.md
 - Plain HTTP / REST — https://floe-labs.gitbook.io/docs/frameworks/http.md
@@ -79,11 +80,11 @@ URL: https://floe-labs.gitbook.io/docs/readme.md
 
 <p align="center"><img src="https://raw.githubusercontent.com/Floe-Labs/.github/main/profile/banner.png" alt="Floe" width="100%" /></p>
 
-# Floe — Spend controls for Voice AI
+# Floe — What every voice call actually costs
 
-**Your voice agent's whole bill — telephony, STT, LLM, TTS, search — on one ledger, enforced before money moves.**
+**Across every carrier, speech, and model vendor — so finance can price contracts on real numbers, protect gross margin, and stop guessing at the gap between what they signed and what they deployed.**
 
-Every voice-agent call spends across 7–20 vendors in real time, and token and TTS usage varies every conversation — so true per-call cost only exists by joining usage data across providers after the call. Floe is that join, plus enforcement: budgets applied **pre-call where Floe is in the path**, and a **circuit breaker everywhere else**. One ledger, tagged by agent, task, and customer.
+Every voice call your agent makes spends money across a dozen vendors — the phone carrier, the speech-to-text, the language model, the voice, the tools. Those bills arrive separately, in different units, on different days, and your finance team spends weeks stitching them together to answer one question: **what did this client, this campaign, this call actually cost us?** Floe costs every call the moment it ends, tags the spend to the client and campaign, and shows you your margin per contract — so you can price the next deal on actuals instead of a blended guess, and walk into your next raise with your unit economics under control. (Floe is the join across every vendor — a token router meters only the LLM slice, ~40% of the bill, and is blind to the other 60%; on BYOK, platform dashboards report $0 — plus enforcement where Floe is in the path. One ledger, tagged by agent, task, and customer.)
 
 [Website](https://floelabs.xyz) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
 
@@ -198,7 +199,7 @@ See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookboo
 
 ## Why this matters
 
-A voice agent's cost is never just tokens. One conversation pays 7–20 vendors in real time, and if they bill separately you can't answer the only question that matters: what did this call cost, and was it worth it? Floe answers it — and enforces the answer. Pre-call where we're in the path. Circuit breaker everywhere else.
+A voice agent's cost is never just tokens. One conversation pays 7–20 vendors in real time, and if they bill separately you can't answer the only question that matters: what did this call cost, and was it worth it? Floe answers it — and enforces the answer. Pre-call where we're in the path. Circuit breaker everywhere else. [See what a call costs](https://dev-dashboard.floelabs.xyz/calculator).
 
 ---
 
@@ -286,7 +287,7 @@ One-click install links — the config carries the endpoint URL only, never a ke
 - Cursor — `cursor://anysphere.cursor-deeplink/mcp/install?name=floe&config=eyJ1cmwiOiJodHRwczovL21jcC5mbG9lbGFicy54eXovbWNwIn0`
 - VS Code — [`https://vscode.dev/redirect/mcp/install?name=floe&config=…`](https://vscode.dev/redirect/mcp/install?name=floe&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.floelabs.xyz%2Fmcp%22%7D)
 
-73 tools, full reference: [MCP Server](../developers/mcp-server.md).
+80 tools, full reference: [MCP Server](../developers/mcp-server.md).
 {% endtab %}
 {% tab title="CLI" %}
 
@@ -301,7 +302,7 @@ floe budget set 5 --per day   # cap this key at $5 per rolling 24 h
 floe test                     # one real metered call — cost printed from X-Floe-Cost-USDC
 ```
 
-`--json` on every command; `--yes` skips confirmations on destructive/money verbs; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. The rest of the platform lives on the same bin — `agents`, `keys`, `policy`, `pay`, `chat`, `funds`, `phone`, and more (32 commands, dashboard parity). Full reference: [Floe CLI](../developers/cli.md).
+`--json` on every command; `--yes` skips confirmations on destructive/money verbs; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. The rest of the platform lives on the same bin — `agents`, `keys`, `policy`, `pay`, `chat`, `funds`, `phone`, `actuals`, and more (33 commands, dashboard parity). Full reference: [Floe CLI](../developers/cli.md).
 {% endtab %}
 {% tab title="SDK" %}
 Both SDKs take the **agent** key (`floe_…`), not the `floe_live_…` developer key: a developer key passes the client's prefix check but the proxy rejects it with `wrong_credential_type`. The agent key comes from `npx @floelabs/cli init` (minted into your OS keychain) or the dashboard — read it from `FLOE_AGENT_KEY`.
@@ -408,7 +409,7 @@ One real metered call against the **$3 welcome credit** your first agent starts 
 ## Next steps
 
 - [Quickstart](quickstart.md) — create an agent, connect your tools, first paid call
-- [MCP Server](../developers/mcp-server.md) — all 73 tools with input schemas
+- [MCP Server](../developers/mcp-server.md) — all 80 tools with input schemas
 - [Floe CLI](../developers/cli.md) — every command, flag, and exit code
 - [Spend Controls](../developers/spend-controls.md) — the guardrails to set before you let it run
 
@@ -978,6 +979,8 @@ That's it. Your agent's balance updates and it can immediately call paid APIs. E
 
 There's no hard minimum, but card payments have a Coinbase-imposed floor around $5.
 
+Not sure how much to load? [Estimate your monthly spend](https://dev-dashboard.floelabs.xyz/calculator).
+
 ---
 
 ## Low-balance alerts
@@ -1028,6 +1031,8 @@ URL: https://floe-labs.gitbook.io/docs/start-here/pricing.md
 # Pricing & cost
 
 You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it. No subscription, no minimums, no seat fees. Every call tells you exactly what it cost, and you can price a call **before** you make it.
+
+> **Estimate first.** Model a voice agent's cost per call or per minute before you build → [Cost calculator](https://dev-dashboard.floelabs.xyz/calculator).
 
 ## Read what a call cost
 
@@ -3247,7 +3252,7 @@ URL: https://floe-labs.gitbook.io/docs/vendor-marketplace/compute/venice.md
 
 # Venice AI — metered model inference
 
-Floe is the spend layer for AI agents: fund with fiat, pay any vendor API with one key, and govern every call with programmable server-side spend controls. Through that one key, run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per use** — tokens, characters, or audio seconds — from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
+Floe meters what every call actually costs across every vendor: fund with fiat, pay any vendor API with one key, and govern every call with programmable server-side spend controls. Through that one key, run inference against **90+ open-source and frontier models** — Claude, GPT, Gemini, Grok, Llama, Qwen, GLM, DeepSeek, Mistral, plus Venice's own private and uncensored models — and pay **per use** — tokens, characters, or audio seconds — from your Floe credit line. Pick a model by **capability and price**; Floe meters every call and bills the exact cost.
 
 Venice is the first model-inference provider in Floe's [vendor marketplace](../x402-directory/README.md). Access is **OpenAI-compatible**: point any OpenAI SDK at Floe with your Floe agent key — no Venice account, no Venice key, no wallet.
 
@@ -5167,6 +5172,69 @@ If a leg *can* run through Floe, routing it there is strictly better — it beco
 - [Budget-Aware Routing](budget-aware-routing.md) — `floe-guard`'s local hard-stop and advisory taper.
 
 ==============================================================================
+# Vendor actuals
+Source: docs/build/vendor-actuals.md
+URL: https://floe-labs.gitbook.io/docs/core-concepts/vendor-actuals.md
+==============================================================================
+
+# Vendor actuals
+
+Your [Coverage Score](coverage-score.md) tells you how much of your spend Floe can *act on*. **Vendor actuals** tells you what that spend actually **cost you at the vendor** — reconciled against the vendor's own billing records, leg by leg.
+
+The distinction matters most on **BYOK**. When a call runs on your own vendor key, Floe settles only its service fee; the vendor bills you directly, so your true cost was never in Floe's settled ledger. Floe used to record a rate-card *estimate* of it. **It no longer does.** Every such leg now carries the vendor's own request id, a connector pulls the vendor's billing record, and a reconcile pass stamps the leg with what that record supports — or with the honest admission that no record exists yet.
+
+## A cost is a claim
+
+Every leg carries a **status**, and the status is the whole point: it says exactly how much precision the number behind it has earned.
+
+| Status | What it means | What it is **not** |
+|---|---|---|
+| `exact` | Reconciled to the vendor's own **per-request** billing record. | — |
+| `period-rate` | Priced at the vendor's own **realized rate for that period**, taken from their cost and usage APIs and applied to the leg's vendor-reported units. | Not `exact`. Not per-request precision. |
+| `invoiced` | **Footed to the vendor's invoice.** The status it held before the foot is retained. | — |
+| `pending` | The vendor **hasn't published this cost yet**. | Not an error. Not a zero. |
+| `manual` | **No vendor API publishes this** — upload the invoice. | Not a zero. |
+
+Two rules follow, and both are enforced in the API rather than left to a renderer:
+
+- **A `pending` or `manual` leg has no cost.** The surface shows its units. `costRaw` is `null` — never `0`, because a zero in a column headed "cost" is a claim, and a blank is the truth.
+- **`exact` and `period-rate` are never added together.** They are different claims, so they come back as separate subtotals and get different colours in the dashboard. A `period-rate` figure is a real derivation — the vendor's own bucket cost ÷ the vendor's own bucket units, with both source records and the realized rate stored as provenance — but describing it as "exact" would overstate it.
+
+Those two rules operate on different things, which is worth stating plainly. The **subtotals** are per claim and stay apart: an `exact` figure and a `period-rate` figure are never merged into one number labelled `exact`. The **row total** is a different object — it is the sum of every leg that has a price, and a row shows one **only when every leg in it is `exact`, `period-rate` or `invoiced` and USD-denominated**. So a row mixing `exact` and `period-rate` legs does get a total; what it never gets is a total that hides which claim each dollar came from. Any row with a `pending`, `manual`, or non-USD (`currency_unsupported`) leg returns `"partial — lower bound"` — `totalRaw` is `null`, never `0`, and `totalBlockedBy` names why (e.g. `non_usd` for a non-USD leg, so a client never reads the missing price as zero). There is no code path that renders a misleading single figure.
+
+## When the cost arrives
+
+Some vendors publish a leg's cost at call-end; others only on a next-day batch. So a leg from a call you placed a minute ago is *supposed* to be `pending` — that is the system working correctly, not an error or a capture failure.
+
+## Coverage reads low on voice-heavy accounts
+
+A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.
+
+## Whose cost it is
+
+Every agency-facing read filters on `cost_owner = 'developer'` — **legs your account pays for**.
+
+A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
+
+## No FX, ever
+
+A non-USD or credit-denominated vendor record is **structurally unpriceable** here. There is no FX source in Floe, and an invented rate inside an audit ledger is worse than a blank. Those legs render `—` plus the vendor's verbatim cost string in their provenance, and are excluded from every subtotal. They also open a `currency_unsupported` finding so the omission is visible rather than silent.
+
+## Where to access it
+
+Vendor actuals is an **Agency** capability. Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
+
+Read your reconciled costs — legs, by-call, and rollups, each with a provenance drawer — in the dashboard at `/actuals`, over the `floe actuals` CLI, or through the `actuals` MCP capability group (read tools only; invoice upload and footing stay human-in-the-loop). The engine records everything it couldn't reconcile as a *finding* with a reason — review and resolve them in the dashboard.
+
+`floe actuals` is about **your** vendors' bills. Not to be confused with `floe vendors`, which probes the health of Floe's own marketplace vendors.
+
+## Related
+
+- [Coverage Score](coverage-score.md) — how much of your spend Floe can enforce, which is a different question from what it cost.
+- [Unified Billing & Ledger](unified-ledger.md) — the settled Floe ledger these vendor costs sit beside.
+- [Ledger sync](ledger-sync.md) — pushing off-path spend into the ledger in the first place.
+
+==============================================================================
 # Spend Controls
 Source: docs/developers/spend-controls.md
 URL: https://floe-labs.gitbook.io/docs/core-concepts/spend-controls.md
@@ -5845,7 +5913,7 @@ A native `floe-agent` adapter for the OpenAI Agents SDK is in development. Until
 }
 ```
 
-Your OpenAI agent now sees all 73 server-exposed Floe MCP tools. A `floe_live_…` developer key unlocks the lifecycle, observability, and webhook tools; runtime tools like `x402_pay` and the spend controls need an agent key (`floe_…`).
+Your OpenAI agent now sees all 80 server-exposed Floe MCP tools. A `floe_live_…` developer key unlocks the lifecycle, observability, and webhook tools; runtime tools like `x402_pay` and the spend controls need an agent key (`floe_…`).
 
 ## Roadmap
 
@@ -5902,7 +5970,7 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
 
 ## What you get
 
-All 73 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, and docs search. See the [MCP Server reference](../developers/mcp-server.md) for the full tool catalog.
+All 80 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, and docs search. See the [MCP Server reference](../developers/mcp-server.md) for the full tool catalog.
 
 Narrow the set with scope params — `?read_only=true` or `?features=spend,pricing,payments` on the endpoint URL.
 
@@ -6088,7 +6156,7 @@ const tools = await getLangChainTools(agentkit);
 
 ### MCP Server (Claude Desktop / Cursor)
 
-Wrap this provider's actions (30 with `floeActionProvider()` alone, 54 with `x402ActionProvider()` too) as MCP tools in Claude Desktop / Cursor. For the hosted server and its 73 tools — including agent lifecycle, key minting, and `x402_pay` — use [MCP Server](mcp-server.md) instead; it needs no wallet provider.
+Wrap this provider's actions (30 with `floeActionProvider()` alone, 54 with `x402ActionProvider()` too) as MCP tools in Claude Desktop / Cursor. For the hosted server and its 80 tools — including agent lifecycle, key minting, and `x402_pay` — use [MCP Server](mcp-server.md) instead; it needs no wallet provider.
 
 ```bash
 npm install @coinbase/agentkit-model-context-protocol @modelcontextprotocol/sdk
@@ -6147,7 +6215,7 @@ Then register `floeActionProvider()` alongside the built-in action providers.
 
 The package's CLI is the **`floe-agent`** bin: the SDK's command tree — agent lifecycle, keys, policies, limits, payments, observability — plus the interactive REPL whose `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM.
 
-> The `floe` bin name belongs to the standalone platform CLI, [`@floelabs/cli`](https://github.com/Floe-Labs/floe-cli) (`npx @floelabs/cli init`) — the full platform surface (setup, agents, keys, budgets, policies, billing, funds, phone, metered calls; 32 commands), documented at [Floe CLI](cli.md). This package's CLI is invoked as `floe-agent` — the AgentKit-companion CLI for the agent-runtime SDK; since v0.6.1 it ships **only** that bin, and the commands below are otherwise unchanged. The interactive lending REPL (`floe-agent run`, the historical default) is lazy-loaded — management commands never pay its startup cost under `npx`.
+> The `floe` bin name belongs to the standalone platform CLI, [`@floelabs/cli`](https://github.com/Floe-Labs/floe-cli) (`npx @floelabs/cli init`) — the full platform surface (setup, agents, keys, budgets, policies, billing, funds, phone, vendor actuals, metered calls; 33 commands), documented at [Floe CLI](cli.md). This package's CLI is invoked as `floe-agent` — the AgentKit-companion CLI for the agent-runtime SDK; since v0.6.1 it ships **only** that bin, and the commands below are otherwise unchanged. The interactive lending REPL (`floe-agent run`, the historical default) is lazy-loaded — management commands never pay its startup cost under `npx`.
 
 ### Install
 
@@ -6815,7 +6883,7 @@ npm i -g @floelabs/cli    # or keep the `floe` bin around
 | [Get started](#get-started) | `init` · `status` · `use` · `test` |
 | [Metered calls](#metered-calls) | `chat` · `embed` · `speak` · `transcribe` · `pay` |
 | [Agents & limits](#agents-limits) | `agents` · `keys` · `devkeys` · `budget` · `policy` · `allowlist` · `credit` |
-| [Observability & billing](#observability-billing) | `activity` · `usage` · `ledger` · `billing` · `account` · `team` |
+| [Observability & billing](#observability-billing) | `activity` · `usage` · `actuals` · `ledger` · `billing` · `account` · `team` |
 | [Money](#money) | `funds` · `cashout` |
 | [Platform](#platform) | `webhooks` · `models` · `estimate` · `providers` · `phone` · `actions` · `orchestrators` · `vendors` |
 
@@ -7191,6 +7259,52 @@ Teammates share this account: its agents, keys, and billing. Destructive verbs (
 ```bash
 floe team invite dev@acme.com --role member
 ```
+
+### `floe actuals`
+
+What your **own** vendors charged you, reconciled against their billing records — see [Vendor actuals](../build/vendor-actuals.md). Not to be confused with `floe vendors`, which probes the health of Floe's marketplace vendors.
+
+Every cost carries a status, and the status bounds the claim:
+
+| Status | Means |
+|---|---|
+| `exact` | Reconciled to the vendor's own per-request billing record |
+| `period-rate` | Priced at the vendor's own realized rate for that period. A real derivation — **never** described as exact, and never added to the exact figure |
+| `invoiced` | Footed to the vendor's invoice |
+| `pending` | The vendor hasn't published this cost yet — units, no dollar figure |
+| `manual` | No vendor API publishes this — upload the invoice. Units, no dollar figure |
+
+A `pending` or `manual` leg shows `—`, never `$0.00`. A row shows one total only when every leg in it is `exact`/`period-rate`/`invoiced` and USD; otherwise you get `partial — lower bound` and the reasons.
+
+| Subcommand | Does |
+|---|---|
+| `legs` | Per-leg vendor cost with the vendor's request id, units, status and cost. Keyset-paginated |
+| `calls` | By-call rollup with a composition line (`n exact / n period-rate / n invoiced / n pending / n manual`) |
+| `rollups --by <customer\|campaign\|agent\|vendor\|time>` | Totals by dimension, exact and period-rate in separate columns |
+| `findings` | Open reconciliation findings — the named reasons a total is a lower bound |
+| `findings resolve <id> --resolution <acknowledged\|wont_fix\|fixed>` | Seal one finding (a human verdict, never the machine's) |
+| `connections` | Vendor billing credentials, masked, plus the connector catalog and each vendor's ceiling status |
+| `connect --vendor <v> --name <label> --kind <kind>` | Store a read-only billing credential. Prompts per field with secrets hidden; in scripts pipe a JSON object on stdin — **never** pass a credential as an argument |
+| `verify <id>` | Prove a stored credential still reads (advisory, not a scope check) |
+| `invoices list\|upload\|foot` | Upload, list and foot vendor invoices |
+
+Filters on `legs` / `calls` / `rollups`: `--since` `--until` `--vendor` `--customer` `--agent` `--campaign` `--task` `--status <csv>` `--limit` `--cursor`.
+
+```bash
+floe actuals legs --since 2026-08-01T00:00:00Z --customer acme
+floe actuals rollups --by vendor --json
+
+printf '%s' "$TWILIO_JSON" | floe actuals connect \
+  --vendor twilio --name main --kind basic_auth --billing-tz America/Los_Angeles
+floe actuals verify 4
+
+floe actuals invoices upload --vendor twilio --file ./july.csv
+floe actuals invoices foot 11 --dry-run   # rehearse first — footing is irreversible
+```
+
+**Timing:** some legs can be costed the moment a call ends, others only on the vendor's next-day batch — so `pending` on a call from a minute ago is the steady state, not a defect.
+
+**Footing an invoice is irreversible** — `--dry-run` runs the identical computation and rolls it back. Without `--dry-run` the command asks you to type the id back; pass `--yes` in scripts.
 
 ---
 
@@ -8522,13 +8636,13 @@ URL: https://floe-labs.gitbook.io/docs/developers/mcp-server.md
 
 # MCP Server
 
-Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **73 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
+Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **80 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
 
 > **Payments are in MCP now.** `estimate_x402_cost` (or `x402_forecast` for a whole plan) prices the call; `x402_pay` makes it, settles the vendor from the agent's balance, and returns the vendor's response plus the `X-Floe-*` receipt headers. An agent no longer has to leave MCP to spend.
 >
 > **See also:** [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) | [Floe CLI](cli.md) | [Credit REST API](credit-api.md) | [API Keys](api-keys.md)
 
-**npm:** `@floelabs/mcp-server` (v0.3.0)\
+**npm:** `@floelabs/mcp-server` (v0.4.0)\
 **GitHub:** [Floe-Labs/floe-mcp-server](https://github.com/Floe-Labs/floe-mcp-server)\
 **Hosted endpoint:** `https://mcp.floelabs.xyz/mcp`
 
@@ -8577,7 +8691,7 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 
 | Key | Format | Unlocks | Get one |
 |---|---|---|---|
-| Developer key | `floe_live_…` | Developer-key surface (27 tools — lifecycle 12, observability 4, webhooks 11): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, webhooks + delivery logs | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
+| Developer key | `floe_live_…` | Developer-key surface (34 tools — lifecycle 12, observability 5, webhooks 11, actuals 6): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, coverage, webhooks + delivery logs, vendor actuals | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
 | Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe init`, or the dashboard |
 | Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
 | None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
@@ -8605,7 +8719,7 @@ https://mcp.floelabs.xyz/mcp?read_only=true          # 36 non-mutating tools
 https://mcp.floelabs.xyz/mcp?features=spend,pricing  # 19 tools — the decision loop only
 ```
 
-Capability groups: `lending`, `spend`, `pricing`, `lifecycle`, `observability`, `payments`, `webhooks`, `docs`. Both params combine, and an unknown feature name simply matches nothing.
+Capability groups: `lending`, `spend`, `pricing`, `lifecycle`, `observability`, `payments`, `webhooks`, `actuals`, `docs`. Both params combine, and an unknown feature name simply matches nothing.
 
 ### Option 1: Remote Endpoint (recommended)
 
@@ -8741,18 +8855,19 @@ Each session is scoped to one agent — balances, spend limits, and webhook subs
 
 ---
 
-## Tools Reference (73)
+## Tools Reference (80)
 
-Seventy-three tools in eight capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
+Eighty tools in nine capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
 
 | Group | Tools | What it's for |
 |---|---|---|
 | [`lifecycle`](#agent-lifecycle-12) | 12 | Provision agents, mint/rotate/revoke their keys, budget each key, open credit lines |
-| [`observability`](#funding-and-observability-4) | 4 | Funding instructions, balances, activity feed, usage rollups |
+| [`observability`](#funding-and-observability-5) | 5 | Funding instructions, balances, activity feed, usage rollups, Coverage Score |
 | [`payments`](#payment-execution-1) | 1 | `x402_pay` — the tool that actually spends |
 | [`pricing`](#cost-preflight-5) | 5 | Price a call or a whole plan before spending |
 | [`spend`](#spend-governance-and-awareness-14) | 14 | Caps, thresholds, merchant allowlist, reputation |
 | [`webhooks`](#webhooks-11) | 11 | Push notifications for account events + the delivery log |
+| [`actuals`](#vendor-actuals-6) | 6 | What your own vendors charged you, reconciled to their billing records |
 | [`docs`](#docs-1) | 1 | Search these docs from inside MCP |
 | [`lending`](#advanced-lending-protocol-25) | 25 | On-chain protocol layer (advanced / self-custody) |
 
@@ -8775,7 +8890,7 @@ Developer key (`floe_live_…`). The bootstrap path: an agent with a developer k
 | `open_credit_line` | Upgrade a pay-as-you-go agent to a managed credit line against a deposit already in its wallet |
 | `get_credit_line_bounds` | Valid deposit/LTV ranges and current balances. Call before `open_credit_line` |
 
-### Funding and observability (4)
+### Funding and observability (5)
 
 Developer key.
 
@@ -8785,6 +8900,7 @@ Developer key.
 | `get_balances` | USDC across the developer wallet, every agent wallet, and API credits |
 | `get_activity` | Unified activity feed — proxy calls, onramps, transfers, loan events — newest first, cursor-paginated |
 | `get_usage_summary` | Spend/usage rollup: KPIs, daily series, top endpoints over a window |
+| `get_coverage_score` | [Coverage Score](../build/coverage-score.md): the share of known spend Floe enforces pre-call vs reconciled vs dark. Pass `agent_id` for one agent, omit for the fleet |
 
 ### Payment execution (1)
 
@@ -8848,6 +8964,25 @@ Developer key.
 | `retry_webhook_delivery` | Manually redeliver a failed delivery. Receivers should dedupe on `X-Floe-Delivery-Id` |
 
 Event catalog, delivery semantics, and signature verification: [Webhooks](webhooks.md).
+
+### Vendor actuals (6)
+
+Developer key. What **your own** vendors charged you (not what Floe charged you), reconciled against those vendors' billing records. Concepts and the status vocabulary: [Vendor actuals](../build/vendor-actuals.md).
+
+Every cost carries a status, and the status bounds the claim: `exact` = reconciled to the vendor's own per-request billing record · `period-rate` = priced at the vendor's own realized rate for that period, **never** described as exact · `invoiced` = footed to the vendor's invoice · `pending` = the vendor hasn't published this cost yet · `manual` = no vendor API publishes this. **`pending` and `manual` legs have no cost at all** — `costRaw` is `null` and the surface shows units.
+
+| Tool | Description |
+|------|-------------|
+| `list_vendor_cost_legs` | Per-leg vendor cost with the vendor's own request id, typed units, status and provenance. Keyset-paginated; filters by window, vendor, customer, agent, campaign, task, status |
+| `list_vendor_cost_calls` | Server-side by-call rollup: a `composition` count per call plus separate exact and period-rate subtotals. One `totalRaw` only when every leg is priced and USD — otherwise `"partial — lower bound"` |
+| `get_vendor_cost_rollup` | Totals by `customer`, `campaign`, `agent`, `vendor`, or `time` (UTC day) |
+| `list_reconciliation_findings` | Everything the engine could **not** reconcile — the named reasons a total is a lower bound |
+| `list_vendor_connections` | Vendor billing credentials, masked (key material is never returned), plus the connector catalog. `bestStatus` is the ceiling a leg from that connection can ever reach |
+| `verify_vendor_connection` | Re-check one stored credential against the vendor now. Separates "revoked, re-key it" from "the vendor is down". Advisory — not a scope guarantee |
+
+Reads need the **Pro** feature `attribution_reports`; the two connection tools need **Agency** `vendor_connections` (and admin/owner to verify).
+
+**Not exposed over MCP, deliberately.** Invoice **upload** is a binary PUT with nothing for an agent to send; **footing** an invoice is an irreversible finance action that keeps a human in the loop; **resolving a finding** is a human verdict the API withholds from the machine; **creating a connection** writes a sealed credential, and credentials never travel through a tool call. Use the dashboard or [`floe actuals`](cli.md).
 
 ### Docs (1)
 
@@ -12170,9 +12305,22 @@ URL: https://floe-labs.gitbook.io/docs/reference/changelog.md
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **73 tools**. Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **80 tools**; `@floelabs/cli` ships **33 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.22.0 — Vendor actuals: what your vendors actually charged you (August 2026)
+
+BYOK cost stopped being an estimate. Every non-Floe-settled leg now carries the vendor's own request id, a connector pulls that vendor's billing record, and a reconcile pass stamps the leg with **exactly** the precision the record supports — or says plainly that no record exists yet.
+
+* **Five statuses, and each one bounds the claim.** `exact` = reconciled to the vendor's own per-request billing record · `period-rate` = priced at the vendor's own realized rate for that period (a real derivation from their cost and usage APIs — **never** described as exact, and never added to the exact figure) · `invoiced` = footed to the vendor's invoice · `pending` = the vendor hasn't published this cost yet · `manual` = no vendor API publishes this. **`pending` and `manual` legs carry no cost at all** — the surface shows units, and `costRaw` is `null` rather than `0`.
+* **A total only when a total is earned.** A row shows a single figure only when every leg in it is `exact`/`period-rate`/`invoiced` and USD-denominated. Otherwise it is labelled `"partial — lower bound"` with the blocking reasons named. Non-USD is never FX-converted — no FX source exists, and an invented rate inside an audit ledger is worse than a blank.
+* **Costs arrive on the vendor's schedule.** Some legs can be costed the moment a call ends, others only on the vendor's next-day batch — so a recent leg reads `pending`, which is expected, not an error. Voice-heavy accounts show a lower share of priced legs at launch (a property of what vendors publish, not your setup); the invoice lane closes the gap.
+* **Read-only vendor billing connections.** A sealed, read-only credential per vendor account, never returned by any read (only a per-kind mask). `bestStatus` states the ceiling a leg from that connection can ever reach. Connections, invoice upload and the irreversible **foot** live in the dashboard and the CLI.
+* **CLI 0.3.0 adds `floe actuals`** — `legs`, `calls`, `rollups`, `findings`, `connections`, `connect`, `verify`, `invoices`. Credentials are prompted per field or piped on stdin, never passed as arguments. (`floe vendors` is unchanged: it still probes Floe's own marketplace vendors.)
+* **MCP server 0.4.0 — 80 tools (was 74 — the v1.21.0 entry below says 73, which undercounted `get_coverage_score`),** with a ninth capability group `actuals`: `list_vendor_cost_legs`, `list_vendor_cost_calls`, `get_vendor_cost_rollup`, `list_reconciliation_findings`, `list_vendor_connections`, `verify_vendor_connection`. Invoice upload, footing, finding resolution and connection creation are deliberately **not** exposed — irreversible finance actions and credential writes keep a human in the loop.
+
+→ [Vendor actuals](build/vendor-actuals.md) · [Floe CLI](developers/cli.md) · [MCP Server](developers/mcp-server.md)
 
 ### v1.21.0 — Webhooks v2: 30-event catalog, delivery logs, MCP server 0.4.0 (August 2026)
 

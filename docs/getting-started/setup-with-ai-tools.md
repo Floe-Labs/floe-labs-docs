@@ -76,7 +76,7 @@ One-click install links — the config carries the endpoint URL only, never a ke
 - Cursor — `cursor://anysphere.cursor-deeplink/mcp/install?name=floe&config=eyJ1cmwiOiJodHRwczovL21jcC5mbG9lbGFicy54eXovbWNwIn0`
 - VS Code — [`https://vscode.dev/redirect/mcp/install?name=floe&config=…`](https://vscode.dev/redirect/mcp/install?name=floe&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.floelabs.xyz%2Fmcp%22%7D)
 
-73 tools, full reference: [MCP Server](../developers/mcp-server.md).
+80 tools, full reference: [MCP Server](../developers/mcp-server.md).
 {% endtab %}
 {% tab title="CLI" %}
 
@@ -91,7 +91,7 @@ floe budget set 5 --per day   # cap this key at $5 per rolling 24 h
 floe test                     # one real metered call — cost printed from X-Floe-Cost-USDC
 ```
 
-`--json` on every command; `--yes` skips confirmations on destructive/money verbs; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. The rest of the platform lives on the same bin — `agents`, `keys`, `policy`, `pay`, `chat`, `funds`, `phone`, and more (32 commands, dashboard parity). Full reference: [Floe CLI](../developers/cli.md).
+`--json` on every command; `--yes` skips confirmations on destructive/money verbs; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. The rest of the platform lives on the same bin — `agents`, `keys`, `policy`, `pay`, `chat`, `funds`, `phone`, `actuals`, and more (33 commands, dashboard parity). Full reference: [Floe CLI](../developers/cli.md).
 {% endtab %}
 {% tab title="SDK" %}
 Both SDKs take the **agent** key (`floe_…`), not the `floe_live_…` developer key: a developer key passes the client's prefix check but the proxy rejects it with `wrong_credential_type`. The agent key comes from `npx @floelabs/cli init` (minted into your OS keychain) or the dashboard — read it from `FLOE_AGENT_KEY`.
@@ -198,6 +198,6 @@ One real metered call against the **$3 welcome credit** your first agent starts 
 ## Next steps
 
 - [Quickstart](quickstart.md) — create an agent, connect your tools, first paid call
-- [MCP Server](../developers/mcp-server.md) — all 73 tools with input schemas
+- [MCP Server](../developers/mcp-server.md) — all 80 tools with input schemas
 - [Floe CLI](../developers/cli.md) — every command, flag, and exit code
 - [Spend Controls](../developers/spend-controls.md) — the guardrails to set before you let it run
