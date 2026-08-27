@@ -5201,7 +5201,7 @@ Two rules follow, and both are enforced in the API rather than left to a rendere
 - **A `pending` or `manual` leg has no cost.** The surface shows its units. `costRaw` is `null` — never `0`, because a zero in a column headed "cost" is a claim, and a blank is the truth.
 - **`exact` and `period-rate` are never added together.** They are different claims, so they come back as separate subtotals and get different colours in the dashboard. A `period-rate` figure is a real derivation — the vendor's own bucket cost ÷ the vendor's own bucket units, with both source records and the realized rate stored as provenance — but describing it as "exact" would overstate it.
 
-Those two rules operate on different things, which is worth stating plainly. The **subtotals** are per claim and stay apart: an `exact` figure and a `period-rate` figure are never merged into one number labelled `exact`. The **row total** is a different object — it is the sum of every leg that has a price, and a row shows one **only when every leg in it is `exact`, `period-rate` or `invoiced` and USD-denominated**. So a row mixing `exact` and `period-rate` legs does get a total; what it never gets is a total that hides which claim each dollar came from. Any row with a `pending` or `manual` leg returns `"partial — lower bound"` and the reasons why. There is no code path that renders a misleading single figure.
+Those two rules operate on different things, which is worth stating plainly. The **subtotals** are per claim and stay apart: an `exact` figure and a `period-rate` figure are never merged into one number labelled `exact`. The **row total** is a different object — it is the sum of every leg that has a price, and a row shows one **only when every leg in it is `exact`, `period-rate` or `invoiced` and USD-denominated**. So a row mixing `exact` and `period-rate` legs does get a total; what it never gets is a total that hides which claim each dollar came from. Any row with a `pending`, `manual`, or non-USD (`currency_unsupported`) leg returns `"partial — lower bound"` — `totalRaw` is `null`, never `0`, and `totalBlockedBy` names why (e.g. `non_usd` for a non-USD leg, so a client never reads the missing price as zero). There is no code path that renders a misleading single figure.
 
 ## When the cost actually arrives
 
@@ -12059,10 +12059,7 @@ Same filters as `legs` (minus `taskId`, which is the grouping key). Each row:
 The same page set, server-rendered. Requires Pro `exports` on top of `attribution_reports`. Columns:
 
 ```csv
-occurred_at,vendor,leg_kind,capture_source,vendor_request_id,status,grain,cost_scope,
-group_key,cost_raw,currency,non_usd,vendor_cost_native,vendor_cost_unit,units_provenance,
-units,attribution_state,agent_id,customer_id,task_id,campaign_id,vendor_actual_id,
-revision,status_reason
+occurred_at,vendor,leg_kind,capture_source,vendor_request_id,status,grain,cost_scope,group_key,cost_raw,currency,non_usd,vendor_cost_native,vendor_cost_unit,units_provenance,units,attribution_state,agent_id,customer_id,task_id,campaign_id,vendor_actual_id,revision,status_reason
 ```
 
 `cost_raw` is **blank**, not `0`, wherever there is no resolution. Over 100,000 rows the endpoint refuses with `413` rather than writing a short file — a truncated CSV opened in a spreadsheet is indistinguishable from a complete one.

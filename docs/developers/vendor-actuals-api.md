@@ -170,10 +170,7 @@ Same filters as `legs` (minus `taskId`, which is the grouping key). Each row:
 The same page set, server-rendered. Requires Pro `exports` on top of `attribution_reports`. Columns:
 
 ```csv
-occurred_at,vendor,leg_kind,capture_source,vendor_request_id,status,grain,cost_scope,
-group_key,cost_raw,currency,non_usd,vendor_cost_native,vendor_cost_unit,units_provenance,
-units,attribution_state,agent_id,customer_id,task_id,campaign_id,vendor_actual_id,
-revision,status_reason
+occurred_at,vendor,leg_kind,capture_source,vendor_request_id,status,grain,cost_scope,group_key,cost_raw,currency,non_usd,vendor_cost_native,vendor_cost_unit,units_provenance,units,attribution_state,agent_id,customer_id,task_id,campaign_id,vendor_actual_id,revision,status_reason
 ```
 
 `cost_raw` is **blank**, not `0`, wherever there is no resolution. Over 100,000 rows the endpoint refuses with `413` rather than writing a short file — a truncated CSV opened in a spreadsheet is indistinguishable from a complete one.
