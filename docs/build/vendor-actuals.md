@@ -53,6 +53,8 @@ Read your reconciled costs — legs, by-call, and rollups, each with a provenanc
 
 `floe actuals` is about **your** vendors' bills. Not to be confused with `floe vendors`, which probes the health of Floe's own marketplace vendors.
 
+The acts that assert money — a billing credential stored or withdrawn, an invoice footed, a period closed over unconfirmed vendor costs — also fire [webhooks](../developers/webhooks.md#vendor-actuals-events). Reconciliation itself does not: one run can restate tens of thousands of legs, so the legs and findings surfaces carry the current state instead.
+
 ## Related
 
 - [Coverage Score](coverage-score.md) — how much of your spend Floe can enforce, which is a different question from what it cost.

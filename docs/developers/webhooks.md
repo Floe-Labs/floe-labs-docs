@@ -17,7 +17,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **30 events across six categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+The tables below are a snapshot of the event catalog — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -94,6 +94,22 @@ Vendor spend events, routed on the agent's wallet address — except the two `ma
 | `marketplace.vendor.recovered` | A previously degraded marketplace vendor is healthy again — platform-wide broadcast |
 
 Payloads never contain plaintext key material — only a masked `keyPrefix`.
+
+#### Vendor actuals events
+
+Money-asserting acts on your [vendor-cost ledger](../build/vendor-actuals.md) — a billing credential stored or withdrawn, an invoice footed, a close gate overridden. **Agency plan.**
+
+| Event | Fires when |
+|-------|-----------|
+| `vendor_actuals.connection.created` | A read-only vendor billing credential was stored or re-keyed — the payload carries the vendor, the connection name, and the non-secret mask, never credential material |
+| `vendor_actuals.connection.updated` | A vendor billing connection was enabled, disabled, re-verified, or had its billing timezone or SLA windows changed |
+| `vendor_actuals.connection.deleted` | A vendor billing connection was removed from the sweep — legs it served fall back to `pending`, and the costs it already recorded are never retracted |
+| `vendor_actuals.invoice.footed` | A vendor invoice was footed against the vendor-cost ledger — `footStatus` is `footed` when it reconciled, or `disputed` when the unexplained variance exceeded max(0.5%, $1) — a disputed foot writes nothing to the ledger |
+| `vendor_actuals.close_gate_overridden` | A billing period was closed while some vendor costs were still unconfirmed — the payload carries the reason the account owner recorded, and how many legs were `manual` or past their vendor's SLA |
+
+These are **account-scoped**: they carry no agent attribution, so they reach `global` webhooks and any `wallet` / `agent` webhook whose `scopeValue` is your **account** wallet.
+
+There is deliberately **no per-leg restatement event**. One reconcile run can restate tens of thousands of legs when a vendor republishes a day; read the current state from the legs and findings surfaces instead (dashboard `/actuals`, `floe actuals`, or the `actuals` MCP tools).
 
 ### Wildcard subscriptions
 

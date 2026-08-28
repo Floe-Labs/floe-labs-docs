@@ -5228,6 +5228,8 @@ Read your reconciled costs — legs, by-call, and rollups, each with a provenanc
 
 `floe actuals` is about **your** vendors' bills. Not to be confused with `floe vendors`, which probes the health of Floe's own marketplace vendors.
 
+The acts that assert money — a billing credential stored or withdrawn, an invoice footed, a period closed over unconfirmed vendor costs — also fire [webhooks](../developers/webhooks.md#vendor-actuals-events). Reconciliation itself does not: one run can restate tens of thousands of legs, so the legs and findings surfaces carry the current state instead.
+
 ## Related
 
 - [Coverage Score](coverage-score.md) — how much of your spend Floe can enforce, which is a different question from what it cost.
@@ -8953,7 +8955,7 @@ Developer key.
 |------|-------------|
 | `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
-| `list_webhook_events` | The live event catalog: 30 events with name, title, description, category, and scope |
+| `list_webhook_events` | The live event catalog — every event's name, title, description, category, and scope |
 | `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
 | `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
 | `delete_webhook` | Delete an endpoint permanently |
@@ -9485,7 +9487,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **30 events across six categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+The tables below are a snapshot of the event catalog — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -9562,6 +9564,22 @@ Vendor spend events, routed on the agent's wallet address — except the two `ma
 | `marketplace.vendor.recovered` | A previously degraded marketplace vendor is healthy again — platform-wide broadcast |
 
 Payloads never contain plaintext key material — only a masked `keyPrefix`.
+
+#### Vendor actuals events
+
+Money-asserting acts on your [vendor-cost ledger](../build/vendor-actuals.md) — a billing credential stored or withdrawn, an invoice footed, a close gate overridden. **Agency plan.**
+
+| Event | Fires when |
+|-------|-----------|
+| `vendor_actuals.connection.created` | A read-only vendor billing credential was stored or re-keyed — the payload carries the vendor, the connection name, and the non-secret mask, never credential material |
+| `vendor_actuals.connection.updated` | A vendor billing connection was enabled, disabled, re-verified, or had its billing timezone or SLA windows changed |
+| `vendor_actuals.connection.deleted` | A vendor billing connection was removed from the sweep — legs it served fall back to `pending`, and the costs it already recorded are never retracted |
+| `vendor_actuals.invoice.footed` | A vendor invoice was footed against the vendor-cost ledger — `footStatus` is `footed` when it reconciled, or `disputed` when the unexplained variance exceeded max(0.5%, $1) — a disputed foot writes nothing to the ledger |
+| `vendor_actuals.close_gate_overridden` | A billing period was closed while some vendor costs were still unconfirmed — the payload carries the reason the account owner recorded, and how many legs were `manual` or past their vendor's SLA |
+
+These are **account-scoped**: they carry no agent attribution, so they reach `global` webhooks and any `wallet` / `agent` webhook whose `scopeValue` is your **account** wallet.
+
+There is deliberately **no per-leg restatement event**. One reconcile run can restate tens of thousands of legs when a vendor republishes a day; read the current state from the legs and findings surfaces instead (dashboard `/actuals`, `floe actuals`, or the `actuals` MCP tools).
 
 ### Wildcard subscriptions
 
