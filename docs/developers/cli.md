@@ -336,14 +336,14 @@ floe credit open --deposit 50 --max-rate 1200 --yes
 
 ### `floe activity`
 
-The unified account activity feed, newest first: x402 calls, onramp purchases/sweeps, wallet transfers, and credit-facility loan events.
+The unified account activity feed, newest first: x402 calls, gateway calls (BYOK and keyless rails), ledger syncs pushed in from `floe-guard` or an orchestrator, onramp purchases/sweeps, wallet transfers, and credit-facility loan events.
 
 | Flag | Does |
 |---|---|
 | `--agent <ref>` | Narrow to one agent by name or id (default: all agents) |
-| `--type <csv>` | Narrow to event types, comma-separated: `x402_call`, `onramp_purchase`, `onramp_sweep`, `transfer_deposit`, `transfer_withdrawal`, `transfer_external`, `facility_loan_match`, `facility_loan_repay`, `facility_loan_rollover`, `facility_loan_failed` |
+| `--type <csv>` | Narrow to event types, comma-separated: `x402_call`, `gateway_call`, `ledger_sync`, `onramp_purchase`, `onramp_sweep`, `transfer_deposit`, `transfer_withdrawal`, `transfer_external`, `facility_loan_match`, `facility_loan_repay`, `facility_loan_rollover`, `facility_loan_failed` |
 | `--since <iso>` / `--until <iso>` | ISO 8601 time bounds |
-| `--key <keyId>` | Narrow to x402 calls made with one agent API key (numeric id — see `floe keys --json`); implies `x402_call` only |
+| `--key <keyId>` | Narrow to proxy calls made with one agent API key (numeric id — see `floe keys --json`); implies `x402_call` + `gateway_call` only — the two sources that carry a key id |
 | `--limit <n>` | Events per page, 1–100 (default 50) |
 | `--cursor <cursor>` | Resume from a previous page's `nextCursor` |
 | `--expand` | Per-event detail payloads (kv blocks; full JSON with `--json`) |

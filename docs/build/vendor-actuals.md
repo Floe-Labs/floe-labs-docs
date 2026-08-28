@@ -47,7 +47,9 @@ A non-USD or credit-denominated vendor record is **structurally unpriceable** he
 
 ## Where to access it
 
-Vendor actuals is an **Agency** capability. Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
+**Reading your ledger is free.** The per-leg view, the by-call view, and the reconciliation findings are on **every plan** — the same live per-leg cost ledger [`floe-guard`](ledger-sync.md) computes locally, hosted for you. What sits above them is paid: cost per **client / campaign / task** (the rollups, and the legs CSV export) is a **Pro** capability, and connecting a vendor's billing account — plus invoice upload, footing, and resolving a finding — is an **Agency** capability.
+
+Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
 
 Read your reconciled costs — legs, by-call, and rollups, each with a provenance drawer — in the dashboard at `/actuals`, over the `floe actuals` CLI, or through the `actuals` MCP capability group (read tools only; invoice upload and footing stay human-in-the-loop). The engine records everything it couldn't reconcile as a *finding* with a reason — review and resolve them in the dashboard.
 

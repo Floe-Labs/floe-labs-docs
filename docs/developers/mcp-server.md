@@ -348,7 +348,7 @@ Every cost carries a status, and the status bounds the claim: `exact` = reconcil
 | `list_vendor_connections` | Vendor billing credentials, masked (key material is never returned), plus the connector catalog. `bestStatus` is the ceiling a leg from that connection can ever reach |
 | `verify_vendor_connection` | Re-check one stored credential against the vendor now. Separates "revoked, re-key it" from "the vendor is down". Advisory — not a scope guarantee |
 
-Reads need the **Pro** feature `attribution_reports`; the two connection tools need **Agency** `vendor_connections` (and admin/owner to verify).
+`list_vendor_cost_legs`, `list_vendor_cost_calls` and `list_reconciliation_findings` are **free** — the live ledger reads (`ledger_read`) work on every plan. `get_vendor_cost_rollup` needs the **Pro** feature `attribution_reports`; the two connection tools need **Agency** `vendor_connections` (and admin/owner to verify).
 
 **Not exposed over MCP, deliberately.** Invoice **upload** is a binary PUT with nothing for an agent to send; **footing** an invoice is an irreversible finance action that keeps a human in the loop; **resolving a finding** is a human verdict the API withholds from the machine; **creating a connection** writes a sealed credential, and credentials never travel through a tool call. Use the dashboard or [`floe actuals`](cli.md).
 
@@ -458,7 +458,8 @@ get_funding_instructions  agent_id  string  required
 get_balances              — no arguments —
 
 get_activity              agent_id  string    optional  scope to one agent
-                          type      string[]  optional  one or more of: x402_call, onramp_purchase,
+                          type      string[]  optional  one or more of: x402_call, gateway_call,
+                                                        ledger_sync, onramp_purchase,
                                                         onramp_sweep, transfer_deposit,
                                                         transfer_withdrawal, transfer_external,
                                                         facility_loan_match, facility_loan_repay,
