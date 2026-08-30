@@ -1148,7 +1148,7 @@ A non-USD or credit-denominated vendor record is **structurally unpriceable** he
 
 ## Where to access it
 
-Vendor actuals is an **Agency** capability. Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
+Reconciling to a vendor's **own** records is an **Agency** capability — it's the [vendor connection](vendor-connections.md) that does it. (Reading the ledger those costs land on — per-leg and by-call — is free; the per-client rollups are Pro. See [Plans & entitlements](../reference/plans.md).) Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
 
 Read your reconciled costs — legs, by-call, and rollups, each with a provenance drawer — in the dashboard at `/actuals`, over the `floe actuals` CLI, or through the `actuals` MCP capability group (read tools only; invoice upload and footing stay human-in-the-loop). The engine records everything it couldn't reconcile as a *finding* with a reason — review and resolve them in the dashboard.
 
@@ -1184,11 +1184,12 @@ supports.
 ## Plan gate
 
 Vendor connections are an **Agency** capability (`vendor_connections`), and
-installing one requires an **admin** role. That's stricter than the
-[Vendor actuals](vendor-actuals.md) *reads*, which ride Pro's cost-attribution
-entitlement — a Pro agency already pays for its cost column and shouldn't find it
-paywalled. What Agency buys is the credential-holding, money-asserting half. See
-[Plans & entitlements](../reference/plans.md).
+installing one requires an **admin** role. Reconciling your legs against a
+vendor's own records is the Agency half — because it's the credential that makes
+[Vendor actuals](vendor-actuals.md) real. Reading the resulting ledger is not
+gated the same way: per-leg and by-call cost, plus findings, are **free**
+(`ledger_read`); the per-client / per-campaign **rollups** are **Pro**
+(`attribution_reports`). See [Plans & entitlements](../reference/plans.md).
 
 ## Setting one up
 
@@ -1315,7 +1316,7 @@ token, audio-second, and character on **every** call — the calculator plans, t
 ## `POST /v1/estimate`
 
 Prices a usage vector exactly, **without making the call or touching your
-balance** — use it to gate expensive work at request time. Send it any Floe key.
+balance** — use it to gate expensive work at request time. Send it with any Floe key.
 
 Provide only the units the model bills:
 
@@ -1474,7 +1475,7 @@ Each row carries `{ key, tagged, calls, costRaw, reconciledRaw }`. `reconciledRa
 }
 ```
 
-That last row is the work list: 44 reconciled calls reached your ledger with no client attached. Fix the assistant metadata (or turn on strict mode) and it goes to zero.
+That last row is the work list: 44 reconciled calls reached your ledger with no client attached. Fix the assistant metadata so **new** calls carry a client, and the row stops growing. Turning on strict mode (below) stops new untagged spend at the door — but neither rewrites the rows already on your ledger: untagged history is never dropped, it stays as the honest record of what ran unattributed.
 
 ### Per client, at the vendor's real cost
 
@@ -1726,7 +1727,7 @@ Only a `closed` period can be issued. From here you have three ways to actually 
 
 ## Carry a credit forward
 
-Stripe refuses a zero, negative, or sub-$0.50 invoice — it would finalize it, auto-mark it paid, and push the remainder into the client's credit balance *outside* Floe's ledger. When a statement comes out that way (a month that's all credits, or a true-up that flips it negative), carry it instead:
+Stripe won't cleanly bill a zero, negative, or sub-$0.50 invoice — instead of refusing it, it finalizes it, auto-marks it paid, and pushes the remainder into the client's Stripe credit balance *outside* Floe's ledger. So Floe carries it instead. When a statement comes out that way (a month that's all credits, or a true-up that flips it negative), carry it forward:
 
 ```http
 POST /v1/developer/billing-periods/:id/carry-credit
@@ -1789,7 +1790,7 @@ Send the user to `url`. They approve on Stripe's consent page, and Stripe return
 GET /v1/developer/stripe/connect/callback   # Stripe's OAuth return — handled for you
 ```
 
-The callback is the one route on this surface with no API-key auth: Stripe sends a top-level browser GET, so it reads and validates your dashboard session cookie itself, then redirects back to `…/customers?stripe=connected` (or `?stripe=error&reason=…`). The single-use authorization `code` never lands in a URL you see, a log line, or a JSON body.
+The callback is the one route on this surface with no API-key auth: Stripe sends a top-level browser GET, so it reads and validates your dashboard session cookie itself, then redirects back to `…/customers?stripe=connected` (or `?stripe=error&reason=…`). Floe exchanges the single-use authorization `code` for the account link **server-side** and never surfaces it in the URL it redirects you to, or in any API response body.
 
 A few invariants worth knowing:
 
@@ -1851,7 +1852,7 @@ Stripe does not refuse a $0, negative, or sub-$0.50 invoice — it finalizes it,
 
 ## Collection status keeps itself current
 
-Floe subscribes to your connected account's invoice events. When a client pays, or the invoice is voided or marked uncollectible, the matching billing period's status follows — `issued → paid`, `→ void`, `→ uncollectible` — and Floe emits a developer webhook (`client_invoice.paid`, `.voided`, `.uncollectible`). `paid` records when it was collected. The transitions are rank-guarded, so an out-of-order webhook delivery can never regress a period out of a terminal state, and a Stripe "paid" with a zero amount is flagged as an anomaly rather than trusted blindly.
+Floe subscribes to your connected account's invoice events. When a client pays, or the invoice is voided or marked uncollectible, the matching billing period's status follows — `issued → paid`, `→ void`, `→ uncollectible` — and Floe emits a developer webhook for the transition (`client_invoice.paid`, `.voided`, `.uncollectible` — see the [webhooks catalog](../developers/webhooks.md) for the full set and their scopes). `paid` records when it was collected. The transitions are rank-guarded, so an out-of-order webhook delivery can never regress a period out of a terminal state, and a Stripe "paid" with a zero amount is flagged as an anomaly rather than trusted blindly.
 
 If you delete a draft invoice from your own Stripe Dashboard, Floe notices and makes the period pushable again.
 
@@ -10074,7 +10075,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **30 events across six categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **46 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -10151,6 +10152,29 @@ Vendor spend events, routed on the agent's wallet address — except the two `ma
 | `marketplace.vendor.recovered` | A previously degraded marketplace vendor is healthy again — platform-wide broadcast |
 
 Payloads never contain plaintext key material — only a masked `keyPrefix`.
+
+#### Billing & invoicing events
+
+Account-level events — no agent attribution. Delivered to `global` webhooks, and to `wallet`/`agent` webhooks whose `scopeValue` is your account wallet. Payloads carry the public `acct_…` account ID, never a wallet address.
+
+| Event | Fires when |
+|-------|-----------|
+| `billing.plan.changed` | Your account's effective plan changed — an upgrade, downgrade, cancellation, or an admin-assigned plan starting or expiring |
+| `billing.payment_failed` | A payment for your Floe plan failed or needs action — update your payment method to keep the plan |
+| `billing.invoice.paid` | A Floe plan invoice was paid — carries the amount and the hosted invoice link |
+| `billing.renewal_upcoming` | Your plan renews soon — carries the amount due and the end of the current period |
+| `billing.usage_threshold` | Month-to-date tracked spend crossed 80% or 100% of your plan's cap — informational, nothing is blocked |
+| `client_invoice.sent` | A client invoice was sent through your connected Stripe account |
+| `client_invoice.paid` | A client paid an invoice issued from your connected Stripe account |
+| `client_invoice.voided` | A client invoice was voided in Stripe and will not be collected |
+| `client_invoice.uncollectible` | A client invoice was marked uncollectible in Stripe |
+| `vendor_actuals.connection.created` | A vendor billing connection was added |
+| `vendor_actuals.connection.updated` | A vendor billing connection was enabled, disabled, or reconfigured |
+| `vendor_actuals.connection.deleted` | A vendor billing connection was removed |
+| `vendor_actuals.invoice.footed` | A vendor invoice was footed against your account |
+| `vendor_actuals.close_gate_overridden` | An account owner closed a billing period while some vendor costs were still unconfirmed |
+| `stripe.connected` | A Stripe account was connected for client invoicing |
+| `stripe.disconnected` | The connected Stripe account was disconnected — client invoicing pauses until it is reconnected |
 
 ### Wildcard subscriptions
 
@@ -12526,15 +12550,17 @@ Every gate below is enforced server-side. Tracked-spend caps are **soft** (a ban
 ## What each plan unlocks
 
 ### Free — know what every call costs
+
 The live cost ledger and the honest number behind every leg, with no account friction:
 
-- **Live cost ledger** — per-leg and by-call cost, reconciled to the vendor's own records (`ledger_read`). See [The live cost ledger](../build/unified-ledger.md) and [Vendor actuals](../build/vendor-actuals.md).
+- **Live cost ledger** — per-leg and by-call cost (`ledger_read`). See [The live cost ledger](../build/unified-ledger.md). *(Reconciling those legs to a vendor's own billing records needs an Agency vendor connection — see below.)*
 - **Reconciliation findings** (read) — where a number is still an estimate, and why.
 - **Coverage Score** — how much of your spend Floe can act on. See [Coverage Score](../build/coverage-score.md).
 - **The cost calculator** — price a call before you make it. See [The cost calculator](../build/cost-calculator.md).
 - **Metering on every rail** — keyless and BYOK gateway calls land on the ledger.
 
 ### Pro — attribute it and watch it
+
 Everything in Free, plus the tools to turn cost into a per-client, per-campaign picture:
 
 - **Attribution reports** (`attribution_reports`) — cost rolled up per **client, campaign, and task**. See [Cost per client, campaign & task](../build/attribution.md).
@@ -12543,14 +12569,16 @@ Everything in Free, plus the tools to turn cost into a per-client, per-campaign 
 - **Fleet policies** (`fleet_policies`) — developer-scope budgets and suspend-agent hard stops.
 
 ### Agency — bill your own clients from the actuals
+
 Everything in Pro, plus the margin engine and invoicing:
 
 - **Rate cards & margin engine** (`rate_cards`) — set what you bill each client, preview margin, and see signed-vs-deployed per contract. See [Rate cards & the margin engine](../build/rate-cards.md).
 - **Client invoicing** (`client_invoicing`) — billing periods and statements. See [Client invoicing](../build/invoicing.md).
 - **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 30 billed clients. See [Stripe Connect](../build/stripe-connect.md).
-- **Vendor connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles to the vendor's own records. See [Vendor connections](../build/vendor-connections.md).
+- **Vendor actuals & connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles your legs to the vendor's **own** records. See [Vendor connections](../build/vendor-connections.md) and [Vendor actuals](../build/vendor-actuals.md).
 
 ### Enterprise — no caps, sales-led
+
 Everything in Agency with no tracked-spend, history, or client caps, priced at **0.75% of ledgered spend** via a metered plan. [Talk to us](https://floelabs.xyz).
 
 ## The entitlements, in one place

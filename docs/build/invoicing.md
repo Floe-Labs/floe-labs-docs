@@ -113,7 +113,7 @@ Only a `closed` period can be issued. From here you have three ways to actually 
 
 ## Carry a credit forward
 
-Stripe refuses a zero, negative, or sub-$0.50 invoice — it would finalize it, auto-mark it paid, and push the remainder into the client's credit balance *outside* Floe's ledger. When a statement comes out that way (a month that's all credits, or a true-up that flips it negative), carry it instead:
+Stripe won't cleanly bill a zero, negative, or sub-$0.50 invoice — instead of refusing it, it finalizes it, auto-marks it paid, and pushes the remainder into the client's Stripe credit balance *outside* Floe's ledger. So Floe carries it instead. When a statement comes out that way (a month that's all credits, or a true-up that flips it negative), carry it forward:
 
 ```http
 POST /v1/developer/billing-periods/:id/carry-credit

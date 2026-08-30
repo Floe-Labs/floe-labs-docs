@@ -40,7 +40,7 @@ token, audio-second, and character on **every** call — the calculator plans, t
 ## `POST /v1/estimate`
 
 Prices a usage vector exactly, **without making the call or touching your
-balance** — use it to gate expensive work at request time. Send it any Floe key.
+balance** — use it to gate expensive work at request time. Send it with any Floe key.
 
 Provide only the units the model bills:
 

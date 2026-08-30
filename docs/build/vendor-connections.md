@@ -20,11 +20,12 @@ supports.
 ## Plan gate
 
 Vendor connections are an **Agency** capability (`vendor_connections`), and
-installing one requires an **admin** role. That's stricter than the
-[Vendor actuals](vendor-actuals.md) *reads*, which ride Pro's cost-attribution
-entitlement — a Pro agency already pays for its cost column and shouldn't find it
-paywalled. What Agency buys is the credential-holding, money-asserting half. See
-[Plans & entitlements](../reference/plans.md).
+installing one requires an **admin** role. Reconciling your legs against a
+vendor's own records is the Agency half — because it's the credential that makes
+[Vendor actuals](vendor-actuals.md) real. Reading the resulting ledger is not
+gated the same way: per-leg and by-call cost, plus findings, are **free**
+(`ledger_read`); the per-client / per-campaign **rollups** are **Pro**
+(`attribution_reports`). See [Plans & entitlements](../reference/plans.md).
 
 ## Setting one up
 

@@ -24,7 +24,7 @@ Send the user to `url`. They approve on Stripe's consent page, and Stripe return
 GET /v1/developer/stripe/connect/callback   # Stripe's OAuth return — handled for you
 ```
 
-The callback is the one route on this surface with no API-key auth: Stripe sends a top-level browser GET, so it reads and validates your dashboard session cookie itself, then redirects back to `…/customers?stripe=connected` (or `?stripe=error&reason=…`). The single-use authorization `code` never lands in a URL you see, a log line, or a JSON body.
+The callback is the one route on this surface with no API-key auth: Stripe sends a top-level browser GET, so it reads and validates your dashboard session cookie itself, then redirects back to `…/customers?stripe=connected` (or `?stripe=error&reason=…`). Floe exchanges the single-use authorization `code` for the account link **server-side** and never surfaces it in the URL it redirects you to, or in any API response body.
 
 A few invariants worth knowing:
 
@@ -86,7 +86,7 @@ Stripe does not refuse a $0, negative, or sub-$0.50 invoice — it finalizes it,
 
 ## Collection status keeps itself current
 
-Floe subscribes to your connected account's invoice events. When a client pays, or the invoice is voided or marked uncollectible, the matching billing period's status follows — `issued → paid`, `→ void`, `→ uncollectible` — and Floe emits a developer webhook (`client_invoice.paid`, `.voided`, `.uncollectible`). `paid` records when it was collected. The transitions are rank-guarded, so an out-of-order webhook delivery can never regress a period out of a terminal state, and a Stripe "paid" with a zero amount is flagged as an anomaly rather than trusted blindly.
+Floe subscribes to your connected account's invoice events. When a client pays, or the invoice is voided or marked uncollectible, the matching billing period's status follows — `issued → paid`, `→ void`, `→ uncollectible` — and Floe emits a developer webhook for the transition (`client_invoice.paid`, `.voided`, `.uncollectible` — see the [webhooks catalog](../developers/webhooks.md) for the full set and their scopes). `paid` records when it was collected. The transitions are rank-guarded, so an out-of-order webhook delivery can never regress a period out of a terminal state, and a Stripe "paid" with a zero amount is flagged as an anomaly rather than trusted blindly.
 
 If you delete a draft invoice from your own Stripe Dashboard, Floe notices and makes the period pushable again.
 

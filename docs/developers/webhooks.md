@@ -17,7 +17,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **30 events across six categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **46 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -94,6 +94,29 @@ Vendor spend events, routed on the agent's wallet address — except the two `ma
 | `marketplace.vendor.recovered` | A previously degraded marketplace vendor is healthy again — platform-wide broadcast |
 
 Payloads never contain plaintext key material — only a masked `keyPrefix`.
+
+#### Billing & invoicing events
+
+Account-level events — no agent attribution. Delivered to `global` webhooks, and to `wallet`/`agent` webhooks whose `scopeValue` is your account wallet. Payloads carry the public `acct_…` account ID, never a wallet address.
+
+| Event | Fires when |
+|-------|-----------|
+| `billing.plan.changed` | Your account's effective plan changed — an upgrade, downgrade, cancellation, or an admin-assigned plan starting or expiring |
+| `billing.payment_failed` | A payment for your Floe plan failed or needs action — update your payment method to keep the plan |
+| `billing.invoice.paid` | A Floe plan invoice was paid — carries the amount and the hosted invoice link |
+| `billing.renewal_upcoming` | Your plan renews soon — carries the amount due and the end of the current period |
+| `billing.usage_threshold` | Month-to-date tracked spend crossed 80% or 100% of your plan's cap — informational, nothing is blocked |
+| `client_invoice.sent` | A client invoice was sent through your connected Stripe account |
+| `client_invoice.paid` | A client paid an invoice issued from your connected Stripe account |
+| `client_invoice.voided` | A client invoice was voided in Stripe and will not be collected |
+| `client_invoice.uncollectible` | A client invoice was marked uncollectible in Stripe |
+| `vendor_actuals.connection.created` | A vendor billing connection was added |
+| `vendor_actuals.connection.updated` | A vendor billing connection was enabled, disabled, or reconfigured |
+| `vendor_actuals.connection.deleted` | A vendor billing connection was removed |
+| `vendor_actuals.invoice.footed` | A vendor invoice was footed against your account |
+| `vendor_actuals.close_gate_overridden` | An account owner closed a billing period while some vendor costs were still unconfirmed |
+| `stripe.connected` | A Stripe account was connected for client invoicing |
+| `stripe.disconnected` | The connected Stripe account was disconnected — client invoicing pauses until it is reconnected |
 
 ### Wildcard subscriptions
 

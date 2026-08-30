@@ -18,15 +18,17 @@ Every gate below is enforced server-side. Tracked-spend caps are **soft** (a ban
 ## What each plan unlocks
 
 ### Free — know what every call costs
+
 The live cost ledger and the honest number behind every leg, with no account friction:
 
-- **Live cost ledger** — per-leg and by-call cost, reconciled to the vendor's own records (`ledger_read`). See [The live cost ledger](../build/unified-ledger.md) and [Vendor actuals](../build/vendor-actuals.md).
+- **Live cost ledger** — per-leg and by-call cost (`ledger_read`). See [The live cost ledger](../build/unified-ledger.md). *(Reconciling those legs to a vendor's own billing records needs an Agency vendor connection — see below.)*
 - **Reconciliation findings** (read) — where a number is still an estimate, and why.
 - **Coverage Score** — how much of your spend Floe can act on. See [Coverage Score](../build/coverage-score.md).
 - **The cost calculator** — price a call before you make it. See [The cost calculator](../build/cost-calculator.md).
 - **Metering on every rail** — keyless and BYOK gateway calls land on the ledger.
 
 ### Pro — attribute it and watch it
+
 Everything in Free, plus the tools to turn cost into a per-client, per-campaign picture:
 
 - **Attribution reports** (`attribution_reports`) — cost rolled up per **client, campaign, and task**. See [Cost per client, campaign & task](../build/attribution.md).
@@ -35,14 +37,16 @@ Everything in Free, plus the tools to turn cost into a per-client, per-campaign 
 - **Fleet policies** (`fleet_policies`) — developer-scope budgets and suspend-agent hard stops.
 
 ### Agency — bill your own clients from the actuals
+
 Everything in Pro, plus the margin engine and invoicing:
 
 - **Rate cards & margin engine** (`rate_cards`) — set what you bill each client, preview margin, and see signed-vs-deployed per contract. See [Rate cards & the margin engine](../build/rate-cards.md).
 - **Client invoicing** (`client_invoicing`) — billing periods and statements. See [Client invoicing](../build/invoicing.md).
 - **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 30 billed clients. See [Stripe Connect](../build/stripe-connect.md).
-- **Vendor connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles to the vendor's own records. See [Vendor connections](../build/vendor-connections.md).
+- **Vendor actuals & connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles your legs to the vendor's **own** records. See [Vendor connections](../build/vendor-connections.md) and [Vendor actuals](../build/vendor-actuals.md).
 
 ### Enterprise — no caps, sales-led
+
 Everything in Agency with no tracked-spend, history, or client caps, priced at **0.75% of ledgered spend** via a metered plan. [Talk to us](https://floelabs.xyz).
 
 ## The entitlements, in one place

@@ -87,7 +87,7 @@ Each row carries `{ key, tagged, calls, costRaw, reconciledRaw }`. `reconciledRa
 }
 ```
 
-That last row is the work list: 44 reconciled calls reached your ledger with no client attached. Fix the assistant metadata (or turn on strict mode) and it goes to zero.
+That last row is the work list: 44 reconciled calls reached your ledger with no client attached. Fix the assistant metadata so **new** calls carry a client, and the row stops growing. Turning on strict mode (below) stops new untagged spend at the door — but neither rewrites the rows already on your ledger: untagged history is never dropped, it stays as the honest record of what ran unattributed.
 
 ### Per client, at the vendor's real cost
 
