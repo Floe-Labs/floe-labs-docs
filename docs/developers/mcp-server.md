@@ -321,7 +321,7 @@ Developer key.
 |------|-------------|
 | `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
-| `list_webhook_events` | The live event catalog: 30 events with name, title, description, category, and scope |
+| `list_webhook_events` | The live event catalog: 46 events with name, title, description, category, and scope |
 | `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
 | `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
 | `delete_webhook` | Delete an endpoint permanently |
@@ -348,7 +348,7 @@ Every cost carries a status, and the status bounds the claim: `exact` = reconcil
 | `list_vendor_connections` | Vendor billing credentials, masked (key material is never returned), plus the connector catalog. `bestStatus` is the ceiling a leg from that connection can ever reach |
 | `verify_vendor_connection` | Re-check one stored credential against the vendor now. Separates "revoked, re-key it" from "the vendor is down". Advisory — not a scope guarantee |
 
-Reads need the **Pro** feature `attribution_reports`; the two connection tools need **Agency** `vendor_connections` (and admin/owner to verify).
+Reads need the **Pro** feature `attribution_reports`; the two [vendor connection](../build/vendor-connections.md) tools need **Agency** `vendor_connections` (and admin/owner to verify).
 
 **Not exposed over MCP, deliberately.** Invoice **upload** is a binary PUT with nothing for an agent to send; **footing** an invoice is an irreversible finance action that keeps a human in the loop; **resolving a finding** is a human verdict the API withholds from the machine; **creating a connection** writes a sealed credential, and credentials never travel through a tool call. Use the dashboard or [`floe actuals`](cli.md).
 

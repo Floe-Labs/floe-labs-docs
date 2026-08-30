@@ -1,0 +1,27 @@
+root: ./
+
+structure:
+  readme: README.md
+  summary: SUMMARY.md
+
+# Redirects for pages whose published URL changed in the value-first IA reorg
+# (GitBook derives a page's URL from its SUMMARY.md section: kebab(section)/filename).
+# Keys are the OLD site-relative path, values the NEW one. Keep in sync with SUMMARY.md.
+redirects:
+  # "Pricing & cost" moved from Start here -> Reference
+  start-here/pricing: reference/pricing
+  # "The voice stack" split into "Connect your stack" / "Know your costs"
+  the-voice-stack/voice-stack: connect-your-stack/voice-stack
+  the-voice-stack/voice-orchestrators: connect-your-stack/voice-orchestrators
+  the-voice-stack/migrate-to-full-coverage: connect-your-stack/migrate-to-full-coverage
+  the-voice-stack/floe-phone: connect-your-stack/floe-phone
+  the-voice-stack/keyless-inference: connect-your-stack/keyless-inference
+  the-voice-stack/budget-aware-routing: connect-your-stack/budget-aware-routing
+  the-voice-stack/latency-overhead: connect-your-stack/latency-overhead
+  the-voice-stack/unified-ledger: know-your-costs/unified-ledger
+  # "Core concepts" dissolved into Know your costs / Connect your stack / Developers
+  core-concepts/coverage-score: know-your-costs/coverage-score
+  core-concepts/ledger-sync: connect-your-stack/ledger-sync
+  core-concepts/wallet: developers/wallet
+  core-concepts/spend-controls: developers/spend-controls
+  core-concepts/agent-awareness: developers/agent-awareness

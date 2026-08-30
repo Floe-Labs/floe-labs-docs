@@ -10,6 +10,21 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.23.0 — Client billing & margin: rate cards, invoicing, per-rail pricing (August 2026)
+
+On top of the [vendor-cost ledger](build/vendor-actuals.md) (v1.22.0), Floe now closes the loop from *what a call cost* to *what you bill your client for it* — versioned per-client rate cards, margin per contract, and a Stripe-pushed invoice.
+
+* **Rate cards & the margin engine.** Versioned, **append-only** per-customer pricing (`GET/POST /v1/developer/rate-cards`, `?customerId=`) — "editing" a card is POST-ing the next version with a new `effective_from`, never a mutation, so historical statements stay byte-reproducible. `POST /v1/developer/rate-cards/preview` rates real usage under a candidate card (scenario analysis) before you activate it. `GET /v1/developer/customers` and `/customers/:id/transactions` report margin per client and per transaction (Floe-settled cost from the authoritative `proxy_requests` ledger). Rating arithmetic is one shared pure function (`rateUsage` in `@floe/shared`), so a preview can never disagree with the invoice it previews.
+* **Client invoicing + Stripe Connect.** Connect your **own** Stripe account (`POST /v1/developer/stripe/connect/start`) and push a billing period's invoice to your client from Floe (`POST /v1/developer/billing-periods/:id/invoice`).
+* **Vendor actuals underpin the margin numbers.** The v1.22.0 vendor-cost ledger — every non-Floe-settled leg stamped with the vendor's own precision (`exact` / `period-rate` / `invoiced` / `pending` / `manual`), read-only vendor billing connections, invoice upload, and the irreversible **foot** — is the by-call / per-leg cost basis the rate cards mark up.
+* **Model pricing on the catalog — `GET /v1/models?include=pricing`.** Opt-in per-rail price for every gateway model, straight from the API with no rate card to keep in sync; without the flag the response is the byte-for-byte OpenAI-lean model list.
+* **The cost calculator.** Price a full voice stack (STT · LLM · TTS · telephony) *before* the call, against the same rate cards the gateway meters against — a public, keyless [dashboard calculator](https://dev-dashboard.floelabs.xyz/calculator) and the `POST /v1/estimate` API behind the same math.
+* **BYOK streaming metering.** The BYOK metered proxy (`POST /v1/llm/chat/completions`) now meters `stream:true` chat completions too, priced off the terminal `usage` chunk and settled as the SSE body drains — so a streamed call with your own provider key lands on the ledger just like a buffered one (previously only non-streaming was metered).
+* **floe-guard ledger-sync ingest — `POST /v1/agents/ledger/sync`.** floe-guard (JS + Python) pushes off-path / BYOK / self-hosted spend to Floe as NDJSON; each priced event becomes a **reconciled** ledger row (idempotent, per-agent rate-limited, no policy eval, moves no balance) so Coverage counts spend Floe never routed.
+* **MCP actuals tool group.** The `actuals` capability group shipped in MCP server 0.4.0 (v1.22.0) — `list_vendor_cost_legs`, `list_vendor_cost_calls`, `get_vendor_cost_rollup`, `list_reconciliation_findings`, `list_vendor_connections`, `verify_vendor_connection` — surfaces the same vendor-cost ledger to agents (read-only; invoice upload, footing, and credential writes stay human-in-the-loop).
+
+→ [Rate cards](developers/rate-cards.md) · [Client invoicing](developers/invoicing.md) · [Stripe Connect](developers/stripe-connect.md) · [Model pricing](developers/models-pricing.md) · [The cost calculator](build/cost-calculator.md) · [Ledger sync](build/ledger-sync.md)
+
 ### v1.22.0 — Vendor actuals: what your vendors actually charged you (August 2026)
 
 BYOK cost stopped being an estimate. Every non-Floe-settled leg now carries the vendor's own request id, a connector pulls that vendor's billing record, and a reconcile pass stamps the leg with **exactly** the precision the record supports — or says plainly that no record exists yet.

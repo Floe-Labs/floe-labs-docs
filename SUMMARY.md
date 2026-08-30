@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Floe — Spend controls for Voice AI](README.md)
+* [Floe — what every call actually costs](README.md)
 
 ## Start here
 
@@ -11,17 +11,34 @@
 * [Authentication](docs/getting-started/authentication.md)
 * [Add Floe to your existing pipeline](docs/getting-started/integrate-existing-pipeline.md)
 * [Funding your agent](docs/getting-started/funding.md)
-* [Pricing & cost](docs/getting-started/pricing.md)
 * [Agent Quickstart](docs/agents/quickstart-agents.md)
 
-## The voice stack
+## Know your costs
+
+* [The live cost ledger](docs/build/unified-ledger.md)
+* [Vendor actuals — reconcile to the vendor's records](docs/build/vendor-actuals.md)
+* [Vendor connections](docs/build/vendor-connections.md)
+* [Coverage Score](docs/build/coverage-score.md)
+* [The cost calculator](docs/build/cost-calculator.md)
+
+## Attribution & margin
+
+* [Cost per client, campaign & task](docs/build/attribution.md)
+* [Rate cards & the margin engine](docs/build/rate-cards.md)
+
+## Invoicing
+
+* [Client invoicing — billing periods & statements](docs/build/invoicing.md)
+* [Stripe Connect — bill through your own Stripe](docs/build/stripe-connect.md)
+
+## Connect your stack
 
 * [The Voice Stack — overview](docs/build/voice-stack.md)
 * [Govern Vapi / Retell / Bland / Pipecat / LiveKit](docs/build/voice-orchestrators.md)
+* [Ledger sync — BYOK & self-hosted coverage](docs/build/ledger-sync.md)
 * [Graduate to 100% coverage](docs/build/migrate-to-full-coverage.md)
 * [Floe Phone — numbers & telephony](docs/developers/floe-phone.md)
 * [Floe Inference — keyless LLM & voice](docs/developers/keyless-inference.md)
-* [Unified Billing & Ledger](docs/build/unified-ledger.md)
 * [Budget-Aware Routing](docs/build/budget-aware-routing.md)
 * [Latency & overhead](docs/build/latency-overhead.md)
 
@@ -49,15 +66,6 @@
 * [Agent Tools](docs/x402-directory/agent-tools-verified.md)
 * [Submit an API](docs/x402-directory/submit.md)
 
-## Core concepts
-
-* [Agent Balance](docs/components/wallet.md)
-* [Coverage Score](docs/build/coverage-score.md)
-* [Ledger sync — BYOK & self-hosted coverage](docs/build/ledger-sync.md)
-* [Vendor actuals](docs/build/vendor-actuals.md)
-* [Spend Controls](docs/developers/spend-controls.md)
-* [Agent Awareness](docs/developers/agent-awareness.md)
-
 ## Cookbook
 
 * [Floe Cookbook — example agents](https://github.com/Floe-Labs/floe-cookbook)
@@ -78,6 +86,9 @@
 ## Developers
 
 * [Developer Dashboard](docs/developers/developer-dashboard.md)
+* [Agent Balance](docs/components/wallet.md)
+* [Spend Controls](docs/developers/spend-controls.md)
+* [Agent Awareness](docs/developers/agent-awareness.md)
 * [Floe CLI](docs/developers/cli.md)
 * [API Keys](docs/developers/api-keys.md)
 * [From Bank Account to First API Call](docs/agents/fiat-to-x402.md)
@@ -90,11 +101,14 @@
 ## API Reference
 
 * [REST API](docs/developers/credit-api.md)
+* [Model pricing — GET /v1/models?include=pricing](docs/developers/models-pricing.md)
 * [Ledger Sync API](docs/developers/ledger-sync-api.md)
 * [OpenAPI Specification](https://credit-api.floelabs.xyz/.well-known/openapi.yaml)
 
 ## Reference
 
+* [Plans & entitlements](docs/reference/plans.md)
+* [Pricing & cost](docs/getting-started/pricing.md)
 * [Error Codes](docs/reference/error-codes.md)
 * [Environment Variables](docs/reference/environment-variables.md)
 * [Changelog](docs/changelog.md)

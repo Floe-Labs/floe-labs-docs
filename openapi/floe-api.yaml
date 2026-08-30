@@ -445,6 +445,111 @@ paths:
         "429":
           description: Rate limit exceeded
 
+  /v1/estimate:
+    post:
+      tags: [Inference]
+      summary: Price a usage vector before you make the call
+      description: >-
+        Prices a model usage vector against the keyless rails (cheapest source's
+        upstream cost + margin) without making the call or touching your balance.
+        Does not estimate the BYOK rail. Send any Floe key.
+      operationId: estimateInferenceCost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [model]
+              properties:
+                model:
+                  type: string
+                  description: Model id, e.g. "openai/gpt-4o".
+                input_tokens:
+                  type: integer
+                  description: Text input tokens (LLMs).
+                output_tokens:
+                  type: integer
+                  description: Text output tokens (LLMs).
+                cached_input_tokens:
+                  type: integer
+                  description: Cached prompt tokens (LLMs with prompt caching).
+                characters:
+                  type: integer
+                  description: Characters of input (TTS).
+                audio_seconds:
+                  type: number
+                  description: Audio-seconds (STT).
+                audio_input_tokens:
+                  type: integer
+                  description: Realtime audio input tokens.
+                audio_output_tokens:
+                  type: integer
+                  description: Realtime audio output tokens.
+      responses:
+        "200":
+          description: Cost estimate for the usage vector
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  model:
+                    type: string
+                  rail:
+                    type: string
+                    description: Which source a real call would route to.
+                  provider:
+                    type: string
+                  margin_bps:
+                    type: integer
+                  usage:
+                    type: object
+                    additionalProperties: true
+                    description: The normalized usage the estimate priced.
+                  upstream_cost_usdc:
+                    type: string
+                    description: Raw upstream cost before Floe's margin, as a decimal USDC string.
+                  cost_usdc:
+                    type: string
+                    description: What you'd be debited (upstream + margin), as a decimal USDC string.
+                  cost_raw:
+                    type: string
+                    description: The same figure in atomic USDC (6 decimals), for integer-exact math.
+        "400":
+          description: Missing/non-string `model`, or an unparseable body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InferenceEstimateError"
+              example:
+                error:
+                  message: 'Missing "model".'
+                  type: invalid_request_error
+                  code: invalid_request_error
+        "404":
+          description: The model doesn't exist or is disabled.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InferenceEstimateError"
+              example:
+                error:
+                  message: The model "openai/gpt-4o" does not exist or is disabled.
+                  type: invalid_request_error
+                  code: unknown_model
+        "422":
+          description: No source can price the given usage vector for that model.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InferenceEstimateError"
+              example:
+                error:
+                  message: No source can price the given usage for "openai/gpt-4o".
+                  type: invalid_request_error
+                  code: no_priceable_source
+
   /v1/agents/balance:
     get:
       tags: [Agent]
@@ -1644,6 +1749,27 @@ components:
         details:
           type: array
           items: {}
+
+    InferenceEstimateError:
+      type: object
+      description: >-
+        OpenAI-style error envelope returned by POST /v1/estimate. The nested
+        `code` is the machine-readable reason (`invalid_request_error`,
+        `unknown_model`, or `no_priceable_source`).
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [message, type, code]
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              example: invalid_request_error
+            code:
+              type: string
+              enum: [invalid_request_error, unknown_model, no_priceable_source]
 
   responses:
     BadRequest:

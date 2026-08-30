@@ -30,7 +30,7 @@ This is the agent's `floe_…` key (mint via `POST /v1/developer/agents/:id/keys
 Content-Type: application/x-ndjson
 ```
 
-The body is newline-delimited JSON: **one `export_log()` event per line**. This is exactly what the `floe-guard` client sends — priced spend events only.
+The body is newline-delimited JSON: **one `export_log()` event per line**. This is exactly what the `floe-guard` client (JavaScript and Python) sends — priced spend events only.
 
 ```bash
 curl -X POST "https://credit-api.floelabs.xyz/v1/agents/ledger/sync" \
@@ -74,7 +74,7 @@ Any line whose shape falls outside this schema is counted in `rejected` (see bel
 
 **Idempotent.** Re-syncing the same events is safe — repeats land in `duplicates`, never double-counted. Call `sync()` on a timer or at shutdown without bookkeeping.
 
-**Writes a reconciled row. Moves no balance.** Ingest counts against coverage and attribution; it debits nothing and never suspends the agent.
+**Writes a reconciled row. Moves no balance.** Ingest counts against coverage and attribution; it debits nothing, **runs no spend-policy evaluation**, and never suspends the agent or fires a credit warning — enforcement stays on the gateway and reconcile paths.
 
 ## Limits & errors
 
@@ -84,7 +84,7 @@ Any line whose shape falls outside this schema is counted in `rejected` (see bel
 | `401` | Missing / invalid key, developer key, or read-only agent key | Needs a `read_write` agent key. |
 | `404` | Endpoint not enabled for this account | Rolling out — see the availability note above. |
 | `413` | Body > **1 MiB**, or > **5000 events** in one request | Split the ledger into smaller batches. |
-| `429` | Per-agent rate limit exceeded | Back off and retry; `sync()` less frequently. |
+| `429` | Per-agent rate limit exceeded | Defaults to **30 requests/min** per agent (sliding 60s window); the response carries a `Retry-After` header. Back off and retry; `sync()` less frequently. |
 
 Malformed **lines** inside an otherwise-valid body are not an error — they're tallied in the `200` response's `rejected` count. A `400` is reserved for a body that yields **no** usable lines at all.
 
