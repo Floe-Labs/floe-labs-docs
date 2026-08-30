@@ -81,7 +81,7 @@ Floe answers:
 
 Add a spend policy with the **kill-switch** action so a breach doesn't just decline one call — it suspends the agent.
 
-- **Dashboard** → *Spend Controls* → add a policy (session or window cap) with action **Suspend agent**.
+- **Dashboard** → *Budgets & alerts* → **Budgets** tab → add a policy (session or window cap) with action **Suspend agent**.
 - **API** → set a policy with `"action": "suspend_agent"`. See [Spend Controls](../developers/spend-controls.md) for the policy shape and windows.
 
 When the cap is crossed by a reconciled call, **the whole agent is suspended — every subsequent Floe-keyed action is rejected at authentication with `403`** until you resume it.

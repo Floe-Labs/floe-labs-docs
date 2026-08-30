@@ -58,13 +58,13 @@ CLI equivalents: `floe funds topup [--amount <usd>] [--open]` prints the same Co
 
 Create and manage developer API keys (`floe_live_*`) for authenticating with the [Credit API](credit-api.md) developer endpoints and webhook management. Label keys by environment and revoke compromised keys instantly.
 
-Go to **Keys** in the sidebar, or see [API Keys](api-keys.md). CLI equivalent: `floe devkeys list|create|revoke|rotate` (agent runtime keys: `floe keys …`).
+Go to **Gateway & keys** (under *Build* in the sidebar), or see [API Keys](api-keys.md). CLI equivalent: `floe devkeys list|create|revoke|rotate` (agent runtime keys: `floe keys …`).
 
 ### Webhooks
 
 Register webhook endpoints to receive push notifications for loan events — health warnings, expiry alerts, liquidations, repayments, **credit utilization warnings**, and **delegation expiry alerts**.
 
-Go to **Webhooks** in the sidebar, or see [Webhooks](webhooks.md). CLI equivalent: `floe webhooks list|create|get|pause|enable|delete|test|rotate-secret|deliveries`.
+Go to **Budgets & alerts** (under *Attribution* in the sidebar) → **Alerts** tab, or see [Webhooks](webhooks.md). The old `/webhooks` link redirects there and keeps your `?tab=logs` / `?endpoint=<id>` deep links. CLI equivalent: `floe webhooks list|create|get|pause|enable|delete|test|rotate-secret|deliveries`.
 
 ### Alerts
 
@@ -81,11 +81,13 @@ Alerts are delivered via webhooks and shown in the dashboard.
 
 | Section | Path | What It Does | CLI equivalent |
 |---------|------|--------------|----------------|
-| Overview | `/` | Dashboard home with usage summary | `floe usage summary` · `floe billing mtd` |
+| Home | `/` | Dashboard home with usage summary | `floe usage summary` · `floe billing mtd` |
+| Calls | `/usage` | Spend series and per-vendor rollup | `floe usage` |
+| Coverage | `/coverage` | Fleet-wide coverage split — enforced pre-call vs reconciled after the fact | `floe usage coverage --agent <ref>` |
 | Agents | `/agents` | Create, fund, and manage agents (up to 5) | `floe agents` · `floe funds` |
 | Agent Detail | `/agents/:id` | Status, balance, delegation, keys | `floe agents get <agent> [--usage]` · `floe keys list --agent <agent>` |
-| API Keys | `/keys` | Create, list, and revoke developer keys | `floe devkeys` |
-| Webhooks | `/webhooks` | Register endpoints, test deliveries, view logs | `floe webhooks` |
+| Gateway & keys | `/keys` | Create, list, and revoke developer keys | `floe devkeys` |
+| Budgets & alerts | `/controls` | Spend policies (**Budgets** tab) and webhook endpoints + delivery logs (**Alerts** tab) | `floe budget` · `floe webhooks` |
 | Docs | `/docs` | Interactive API reference | `floe help <command>` |
 
 ## Next Steps

@@ -1218,7 +1218,7 @@ URL: https://floe-labs.gitbook.io/docs/know-your-costs/coverage-score.md
 
 # Coverage Score
 
-Every agent in your [dashboard](https://dev-dashboard.floelabs.xyz) carries a **Coverage Score**: the percentage of that agent's known spend Floe can act on, split three ways.
+Every agent in your [dashboard](https://dev-dashboard.floelabs.xyz) carries a **Coverage Score**: the percentage of that agent's known spend Floe can act on, split three ways. The fleet-wide roll-up across every agent you own has its own screen — **Coverage** in the sidebar, at [dev-dashboard.floelabs.xyz/coverage](https://dev-dashboard.floelabs.xyz/coverage).
 
 | Bucket | Meaning | Example |
 |---|---|---|
@@ -3402,7 +3402,7 @@ In **Vapi**: set the assistant's (or org's) **Server URL** to the `webhookUrl`, 
 
 Add a spend policy with the **kill-switch** action so a breach doesn't just decline one call — it suspends the agent.
 
-- **Dashboard** → *Spend Controls* → add a policy (session or window cap) with action **Suspend agent**.
+- **Dashboard** → *Budgets & alerts* → **Budgets** tab → add a policy (session or window cap) with action **Suspend agent**.
 - **API** → set a policy with `"action": "suspend_agent"`. See [Spend Controls](../developers/spend-controls.md) for the policy shape and windows.
 
 When the cap is crossed, the breaching call gets a `402` (carrying `"auto_suspended": true`) and **the whole agent is suspended — every subsequent call is rejected at authentication with `403`** until you resume it. A runaway campaign dies after call *N*, not call 10,000.
@@ -3657,7 +3657,7 @@ Retell signs each delivery with the header **`x-retell-signature`**, in the form
 
 Add a spend policy with the **kill-switch** action so a breach doesn't just decline one call — it suspends the agent.
 
-- **Dashboard** → *Spend Controls* → add a policy (session or window cap) with action **Suspend agent**.
+- **Dashboard** → *Budgets & alerts* → **Budgets** tab → add a policy (session or window cap) with action **Suspend agent**.
 - **API** → set a policy with `"action": "suspend_agent"`. See [Spend Controls](../developers/spend-controls.md) for the policy shape and windows.
 
 When the cap is crossed, the breaching call gets a `402` (carrying `"auto_suspended": true`) and **the whole agent is suspended — every subsequent call is rejected at authentication with `403`** until you resume it. A runaway campaign dies after call *N*, not call 10,000.
@@ -3777,7 +3777,7 @@ Floe answers:
 
 Add a spend policy with the **kill-switch** action so a breach doesn't just decline one call — it suspends the agent.
 
-- **Dashboard** → *Spend Controls* → add a policy (session or window cap) with action **Suspend agent**.
+- **Dashboard** → *Budgets & alerts* → **Budgets** tab → add a policy (session or window cap) with action **Suspend agent**.
 - **API** → set a policy with `"action": "suspend_agent"`. See [Spend Controls](../developers/spend-controls.md) for the policy shape and windows.
 
 When the cap is crossed by a reconciled call, **the whole agent is suspended — every subsequent Floe-keyed action is rejected at authentication with `403`** until you resume it.
@@ -6922,13 +6922,13 @@ CLI equivalents: `floe funds topup [--amount <usd>] [--open]` prints the same Co
 
 Create and manage developer API keys (`floe_live_*`) for authenticating with the [Credit API](credit-api.md) developer endpoints and webhook management. Label keys by environment and revoke compromised keys instantly.
 
-Go to **Keys** in the sidebar, or see [API Keys](api-keys.md). CLI equivalent: `floe devkeys list|create|revoke|rotate` (agent runtime keys: `floe keys …`).
+Go to **Gateway & keys** (under *Build* in the sidebar), or see [API Keys](api-keys.md). CLI equivalent: `floe devkeys list|create|revoke|rotate` (agent runtime keys: `floe keys …`).
 
 ### Webhooks
 
 Register webhook endpoints to receive push notifications for loan events — health warnings, expiry alerts, liquidations, repayments, **credit utilization warnings**, and **delegation expiry alerts**.
 
-Go to **Webhooks** in the sidebar, or see [Webhooks](webhooks.md). CLI equivalent: `floe webhooks list|create|get|pause|enable|delete|test|rotate-secret|deliveries`.
+Go to **Budgets & alerts** (under *Attribution* in the sidebar) → **Alerts** tab, or see [Webhooks](webhooks.md). The old `/webhooks` link redirects there and keeps your `?tab=logs` / `?endpoint=<id>` deep links. CLI equivalent: `floe webhooks list|create|get|pause|enable|delete|test|rotate-secret|deliveries`.
 
 ### Alerts
 
@@ -6945,11 +6945,13 @@ Alerts are delivered via webhooks and shown in the dashboard.
 
 | Section | Path | What It Does | CLI equivalent |
 |---------|------|--------------|----------------|
-| Overview | `/` | Dashboard home with usage summary | `floe usage summary` · `floe billing mtd` |
+| Home | `/` | Dashboard home with usage summary | `floe usage summary` · `floe billing mtd` |
+| Calls | `/usage` | Spend series and per-vendor rollup | `floe usage` |
+| Coverage | `/coverage` | Fleet-wide coverage split — enforced pre-call vs reconciled after the fact | `floe usage coverage --agent <ref>` |
 | Agents | `/agents` | Create, fund, and manage agents (up to 5) | `floe agents` · `floe funds` |
 | Agent Detail | `/agents/:id` | Status, balance, delegation, keys | `floe agents get <agent> [--usage]` · `floe keys list --agent <agent>` |
-| API Keys | `/keys` | Create, list, and revoke developer keys | `floe devkeys` |
-| Webhooks | `/webhooks` | Register endpoints, test deliveries, view logs | `floe webhooks` |
+| Gateway & keys | `/keys` | Create, list, and revoke developer keys | `floe devkeys` |
+| Budgets & alerts | `/controls` | Spend policies (**Budgets** tab) and webhook endpoints + delivery logs (**Alerts** tab) | `floe budget` · `floe webhooks` |
 | Docs | `/docs` | Interactive API reference | `floe help <command>` |
 
 ## Next Steps
@@ -10209,7 +10211,7 @@ Two exceptions ignore scope entirely: `marketplace.vendor.degraded` and `marketp
 
 ### Via the dashboard
 
-1. Go to [dev-dashboard.floelabs.xyz/webhooks](https://dev-dashboard.floelabs.xyz/webhooks)
+1. Go to [dev-dashboard.floelabs.xyz/controls?view=alerts](https://dev-dashboard.floelabs.xyz/controls?view=alerts) — **Budgets & alerts** → **Alerts** tab (the old `/webhooks` URL redirects here)
 2. Click **Create Webhook**
 3. Enter your endpoint URL (must be HTTPS)
 4. Select the events you want to receive — per-category select-all covers a whole group
@@ -10708,7 +10710,7 @@ The pre-call endpoint decides admission from server-side state (agent status + b
 
 ### Dashboard
 
-Click **Send Test Event** on any webhook in the [dashboard](https://dev-dashboard.floelabs.xyz/webhooks). The test payload looks like a real event but does not correspond to an actual one.
+Click **Send Test Event** on any webhook in the [dashboard](https://dev-dashboard.floelabs.xyz/controls?view=alerts) (**Budgets & alerts** → **Alerts**). The test payload looks like a real event but does not correspond to an actual one.
 
 ### webhook.site
 

@@ -4,7 +4,7 @@ icon: gauge
 
 # Coverage Score
 
-Every agent in your [dashboard](https://dev-dashboard.floelabs.xyz) carries a **Coverage Score**: the percentage of that agent's known spend Floe can act on, split three ways.
+Every agent in your [dashboard](https://dev-dashboard.floelabs.xyz) carries a **Coverage Score**: the percentage of that agent's known spend Floe can act on, split three ways. The fleet-wide roll-up across every agent you own has its own screen — **Coverage** in the sidebar, at [dev-dashboard.floelabs.xyz/coverage](https://dev-dashboard.floelabs.xyz/coverage).
 
 | Bucket | Meaning | Example |
 |---|---|---|

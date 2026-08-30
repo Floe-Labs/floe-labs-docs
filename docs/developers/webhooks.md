@@ -151,7 +151,7 @@ Two exceptions ignore scope entirely: `marketplace.vendor.degraded` and `marketp
 
 ### Via the dashboard
 
-1. Go to [dev-dashboard.floelabs.xyz/webhooks](https://dev-dashboard.floelabs.xyz/webhooks)
+1. Go to [dev-dashboard.floelabs.xyz/controls?view=alerts](https://dev-dashboard.floelabs.xyz/controls?view=alerts) — **Budgets & alerts** → **Alerts** tab (the old `/webhooks` URL redirects here)
 2. Click **Create Webhook**
 3. Enter your endpoint URL (must be HTTPS)
 4. Select the events you want to receive — per-category select-all covers a whole group
@@ -650,7 +650,7 @@ The pre-call endpoint decides admission from server-side state (agent status + b
 
 ### Dashboard
 
-Click **Send Test Event** on any webhook in the [dashboard](https://dev-dashboard.floelabs.xyz/webhooks). The test payload looks like a real event but does not correspond to an actual one.
+Click **Send Test Event** on any webhook in the [dashboard](https://dev-dashboard.floelabs.xyz/controls?view=alerts) (**Budgets & alerts** → **Alerts**). The test payload looks like a real event but does not correspond to an actual one.
 
 ### webhook.site
 
