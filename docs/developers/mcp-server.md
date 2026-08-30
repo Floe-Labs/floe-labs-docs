@@ -348,7 +348,7 @@ Every cost carries a status, and the status bounds the claim: `exact` = reconcil
 | `list_vendor_connections` | Vendor billing credentials, masked (key material is never returned), plus the connector catalog. `bestStatus` is the ceiling a leg from that connection can ever reach |
 | `verify_vendor_connection` | Re-check one stored credential against the vendor now. Separates "revoked, re-key it" from "the vendor is down". Advisory — not a scope guarantee |
 
-Reads need the **Pro** feature `attribution_reports`; the two connection tools need **Agency** `vendor_connections` (and admin/owner to verify).
+Reads need the **Pro** feature `attribution_reports`; the two [vendor connection](../build/vendor-connections.md) tools need **Agency** `vendor_connections` (and admin/owner to verify).
 
 **Not exposed over MCP, deliberately.** Invoice **upload** is a binary PUT with nothing for an agent to send; **footing** an invoice is an irreversible finance action that keeps a human in the loop; **resolving a finding** is a human verdict the API withholds from the machine; **creating a connection** writes a sealed credential, and credentials never travel through a tool call. Use the dashboard or [`floe actuals`](cli.md).
 

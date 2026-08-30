@@ -3068,7 +3068,7 @@ All are drop-in OpenAI-compatible:
 
 Every id on this keyless gateway is fully qualified as `provider/model` — copy them exactly as written; on `POST /v1/chat/completions` (and the other `/v1/*` gateway surfaces) a bare name (e.g. `gpt-4o` without the `openai/` prefix) is **rejected**. **The live catalog is `GET /v1/models`** (no provider key needed — call it with your Floe agent key) — always resolve ids there at runtime; **for the full, current set see `GET /v1/models` for the live list** rather than a hard-coded count. The tables below enumerate what's live today.
 
-> **Two endpoints, two id rules — don't confuse them.** The keyless gateway (`POST /v1/chat/completions`, `/v1/embeddings`, `/v1/audio/*`) resolves an **exact catalog id** — the **fully-qualified** `provider/model` used throughout this page (a bare `gpt-4o` is rejected). The legacy, flag-gated **BYOK metered proxy** `POST /v1/llm/chat/completions` is a *different* endpoint: it takes **your own** `X-Floe-Provider-Key`, prices the call from Floe's maintained LiteLLM cost map (no catalog allowlist), and accepts the model id **with or without** a `provider/` prefix — `gpt-4o` or `openai/gpt-4o` both work, since Floe strips the prefix before pricing. Prefer the keyless gateway for new work; the BYOK proxy is documented in [Unified Ledger](../build/unified-ledger.md).
+> **Two endpoints, two id rules — don't confuse them.** The keyless gateway (`POST /v1/chat/completions`, `/v1/embeddings`, `/v1/audio/*`) resolves an **exact catalog id** — the **fully-qualified** `provider/model` used throughout this page (a bare `gpt-4o` is rejected). The legacy, flag-gated **BYOK metered proxy** `POST /v1/llm/chat/completions` is a *different* endpoint: it takes **your own** `X-Floe-Provider-Key`, prices the call from Floe's maintained LiteLLM cost map (no catalog allowlist), and accepts the model id **with or without** a `provider/` prefix — `gpt-4o` or `openai/gpt-4o` both work, since Floe strips the prefix before pricing. It meters **both** `stream:false` and `stream:true` chat completions — a streamed response is priced off the terminal `usage` chunk (Floe injects `stream_options.include_usage`) and settled as the SSE body drains, so every call lands on your ledger even though you paid the vendor directly with your own key. Prefer the keyless gateway for new work; the BYOK proxy is documented in [Unified Ledger](../build/unified-ledger.md).
 
 ### Text / reasoning
 
@@ -9670,7 +9670,7 @@ Every cost carries a status, and the status bounds the claim: `exact` = reconcil
 | `list_vendor_connections` | Vendor billing credentials, masked (key material is never returned), plus the connector catalog. `bestStatus` is the ceiling a leg from that connection can ever reach |
 | `verify_vendor_connection` | Re-check one stored credential against the vendor now. Separates "revoked, re-key it" from "the vendor is down". Advisory — not a scope guarantee |
 
-Reads need the **Pro** feature `attribution_reports`; the two connection tools need **Agency** `vendor_connections` (and admin/owner to verify).
+Reads need the **Pro** feature `attribution_reports`; the two [vendor connection](../build/vendor-connections.md) tools need **Agency** `vendor_connections` (and admin/owner to verify).
 
 **Not exposed over MCP, deliberately.** Invoice **upload** is a binary PUT with nothing for an agent to send; **footing** an invoice is an irreversible finance action that keeps a human in the loop; **resolving a finding** is a human verdict the API withholds from the machine; **creating a connection** writes a sealed credential, and credentials never travel through a tool call. Use the dashboard or [`floe actuals`](cli.md).
 
@@ -12540,7 +12540,7 @@ This is the agent's `floe_…` key (mint via `POST /v1/developer/agents/:id/keys
 Content-Type: application/x-ndjson
 ```
 
-The body is newline-delimited JSON: **one `export_log()` event per line**. This is exactly what the `floe-guard` client sends — priced spend events only.
+The body is newline-delimited JSON: **one `export_log()` event per line**. This is exactly what the `floe-guard` client (JavaScript and Python) sends — priced spend events only.
 
 ```bash
 curl -X POST "https://credit-api.floelabs.xyz/v1/agents/ledger/sync" \
@@ -12584,7 +12584,7 @@ Any line whose shape falls outside this schema is counted in `rejected` (see bel
 
 **Idempotent.** Re-syncing the same events is safe — repeats land in `duplicates`, never double-counted. Call `sync()` on a timer or at shutdown without bookkeeping.
 
-**Writes a reconciled row. Moves no balance.** Ingest counts against coverage and attribution; it debits nothing and never suspends the agent.
+**Writes a reconciled row. Moves no balance.** Ingest counts against coverage and attribution; it debits nothing, **runs no spend-policy evaluation**, and never suspends the agent or fires a credit warning — enforcement stays on the gateway and reconcile paths.
 
 ## Limits & errors
 
@@ -12594,7 +12594,7 @@ Any line whose shape falls outside this schema is counted in `rejected` (see bel
 | `401` | Missing / invalid key, developer key, or read-only agent key | Needs a `read_write` agent key. |
 | `404` | Endpoint not enabled for this account | Rolling out — see the availability note above. |
 | `413` | Body > **1 MiB**, or > **5000 events** in one request | Split the ledger into smaller batches. |
-| `429` | Per-agent rate limit exceeded | Back off and retry; `sync()` less frequently. |
+| `429` | Per-agent rate limit exceeded | Defaults to **30 requests/min** per agent (sliding 60s window); the response carries a `Retry-After` header. Back off and retry; `sync()` less frequently. |
 
 Malformed **lines** inside an otherwise-valid body are not an error — they're tallied in the `200` response's `rejected` count. A `400` is reserved for a body that yields **no** usable lines at all.
 
@@ -13255,6 +13255,21 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **80 tools**; `@floelabs/cli` ships **33 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.23.0 — Client billing & margin: rate cards, invoicing, per-rail pricing (August 2026)
+
+On top of the [vendor-cost ledger](build/vendor-actuals.md) (v1.22.0), Floe now closes the loop from *what a call cost* to *what you bill your client for it* — versioned per-client rate cards, margin per contract, and a Stripe-pushed invoice.
+
+* **Rate cards & the margin engine.** Versioned, **append-only** per-customer pricing (`GET/POST /v1/developer/rate-cards`, `?customerId=`) — "editing" a card is POST-ing the next version with a new `effective_from`, never a mutation, so historical statements stay byte-reproducible. `POST /v1/developer/rate-cards/preview` rates real usage under a candidate card (scenario analysis) before you activate it. `GET /v1/developer/customers` and `/customers/:id/transactions` report margin per client and per transaction (Floe-settled cost from the authoritative `proxy_requests` ledger). Rating arithmetic is one shared pure function (`rateUsage` in `@floe/shared`), so a preview can never disagree with the invoice it previews.
+* **Client invoicing + Stripe Connect.** Connect your **own** Stripe account (`POST /v1/developer/stripe/connect/start`) and push a billing period's invoice to your client from Floe (`POST /v1/developer/billing-periods/:id/invoice`).
+* **Vendor actuals underpin the margin numbers.** The v1.22.0 vendor-cost ledger — every non-Floe-settled leg stamped with the vendor's own precision (`exact` / `period-rate` / `invoiced` / `pending` / `manual`), read-only vendor billing connections, invoice upload, and the irreversible **foot** — is the by-call / per-leg cost basis the rate cards mark up.
+* **Model pricing on the catalog — `GET /v1/models?include=pricing`.** Opt-in per-rail price for every gateway model, straight from the API with no rate card to keep in sync; without the flag the response is the byte-for-byte OpenAI-lean model list.
+* **The cost calculator.** Price a full voice stack (STT · LLM · TTS · telephony) *before* the call, against the same rate cards the gateway meters against — a public, keyless [dashboard calculator](https://dev-dashboard.floelabs.xyz/calculator) and the `POST /v1/estimate` API behind the same math.
+* **BYOK streaming metering.** The BYOK metered proxy (`POST /v1/llm/chat/completions`) now meters `stream:true` chat completions too, priced off the terminal `usage` chunk and settled as the SSE body drains — so a streamed call with your own provider key lands on the ledger just like a buffered one (previously only non-streaming was metered).
+* **floe-guard ledger-sync ingest — `POST /v1/agents/ledger/sync`.** floe-guard (JS + Python) pushes off-path / BYOK / self-hosted spend to Floe as NDJSON; each priced event becomes a **reconciled** ledger row (idempotent, per-agent rate-limited, no policy eval, moves no balance) so Coverage counts spend Floe never routed.
+* **MCP actuals tool group.** The `actuals` capability group shipped in MCP server 0.4.0 (v1.22.0) — `list_vendor_cost_legs`, `list_vendor_cost_calls`, `get_vendor_cost_rollup`, `list_reconciliation_findings`, `list_vendor_connections`, `verify_vendor_connection` — surfaces the same vendor-cost ledger to agents (read-only; invoice upload, footing, and credential writes stay human-in-the-loop).
+
+→ [Rate cards](developers/rate-cards.md) · [Client invoicing](developers/invoicing.md) · [Stripe Connect](developers/stripe-connect.md) · [Model pricing](developers/models-pricing.md) · [The cost calculator](build/cost-calculator.md) · [Ledger sync](build/ledger-sync.md)
 
 ### v1.22.0 — Vendor actuals: what your vendors actually charged you (August 2026)
 
