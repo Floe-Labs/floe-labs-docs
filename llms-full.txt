@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 62 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 70 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -9,7 +9,7 @@
 
 ## Contents
 
-- Floe — Spend controls for Voice AI — https://floe-labs.gitbook.io/docs/readme.md
+- Floe — what every call actually costs — https://floe-labs.gitbook.io/docs/readme.md
 - Set up with your AI tools — https://floe-labs.gitbook.io/docs/start-here/setup-with-ai-tools.md
 - Claude Code / Agent Skills — https://floe-labs.gitbook.io/docs/start-here/claude-code-skill.md
 - Quickstart (5 minutes) — https://floe-labs.gitbook.io/docs/start-here/quickstart.md
@@ -17,16 +17,24 @@
 - Authentication — https://floe-labs.gitbook.io/docs/start-here/authentication.md
 - Add Floe to your existing pipeline — https://floe-labs.gitbook.io/docs/start-here/integrate-existing-pipeline.md
 - Funding your agent — https://floe-labs.gitbook.io/docs/start-here/funding.md
-- Pricing & cost — https://floe-labs.gitbook.io/docs/start-here/pricing.md
 - Agent Quickstart — https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
-- The Voice Stack — overview — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-stack.md
-- Govern Vapi / Retell / Bland / Pipecat / LiveKit — https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators.md
-- Graduate to 100% coverage — https://floe-labs.gitbook.io/docs/the-voice-stack/migrate-to-full-coverage.md
-- Floe Phone — numbers & telephony — https://floe-labs.gitbook.io/docs/the-voice-stack/floe-phone.md
-- Floe Inference — keyless LLM & voice — https://floe-labs.gitbook.io/docs/the-voice-stack/keyless-inference.md
-- Unified Billing & Ledger — https://floe-labs.gitbook.io/docs/the-voice-stack/unified-ledger.md
-- Budget-Aware Routing — https://floe-labs.gitbook.io/docs/the-voice-stack/budget-aware-routing.md
-- Latency & overhead — https://floe-labs.gitbook.io/docs/the-voice-stack/latency-overhead.md
+- The live cost ledger — https://floe-labs.gitbook.io/docs/know-your-costs/unified-ledger.md
+- Vendor actuals — reconcile to the vendor's records — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-actuals.md
+- Vendor connections — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-connections.md
+- Coverage Score — https://floe-labs.gitbook.io/docs/know-your-costs/coverage-score.md
+- The cost calculator — https://floe-labs.gitbook.io/docs/know-your-costs/cost-calculator.md
+- Cost per client, campaign & task — https://floe-labs.gitbook.io/docs/attribution-margin/attribution.md
+- Rate cards & the margin engine — https://floe-labs.gitbook.io/docs/attribution-margin/rate-cards.md
+- Client invoicing — billing periods & statements — https://floe-labs.gitbook.io/docs/invoicing/invoicing.md
+- Stripe Connect — bill through your own Stripe — https://floe-labs.gitbook.io/docs/invoicing/stripe-connect.md
+- The Voice Stack — overview — https://floe-labs.gitbook.io/docs/connect-your-stack/voice-stack.md
+- Govern Vapi / Retell / Bland / Pipecat / LiveKit — https://floe-labs.gitbook.io/docs/connect-your-stack/voice-orchestrators.md
+- Ledger sync — BYOK & self-hosted coverage — https://floe-labs.gitbook.io/docs/connect-your-stack/ledger-sync.md
+- Graduate to 100% coverage — https://floe-labs.gitbook.io/docs/connect-your-stack/migrate-to-full-coverage.md
+- Floe Phone — numbers & telephony — https://floe-labs.gitbook.io/docs/connect-your-stack/floe-phone.md
+- Floe Inference — keyless LLM & voice — https://floe-labs.gitbook.io/docs/connect-your-stack/keyless-inference.md
+- Budget-Aware Routing — https://floe-labs.gitbook.io/docs/connect-your-stack/budget-aware-routing.md
+- Latency & overhead — https://floe-labs.gitbook.io/docs/connect-your-stack/latency-overhead.md
 - Vapi — 10-minute setup — https://floe-labs.gitbook.io/docs/platforms/vapi.md
 - Vapi — custom voice & transcriber (experimental) — https://floe-labs.gitbook.io/docs/platforms/vapi-voice.md
 - Retell — https://floe-labs.gitbook.io/docs/platforms/retell.md
@@ -42,12 +50,6 @@
 - Memory — https://floe-labs.gitbook.io/docs/vendor-marketplace/database.md
 - Agent Tools — https://floe-labs.gitbook.io/docs/vendor-marketplace/agent-tools-verified.md
 - Submit an API — https://floe-labs.gitbook.io/docs/vendor-marketplace/submit.md
-- Agent Balance — https://floe-labs.gitbook.io/docs/core-concepts/wallet.md
-- Coverage Score — https://floe-labs.gitbook.io/docs/core-concepts/coverage-score.md
-- Ledger sync — BYOK & self-hosted coverage — https://floe-labs.gitbook.io/docs/core-concepts/ledger-sync.md
-- Vendor actuals — https://floe-labs.gitbook.io/docs/core-concepts/vendor-actuals.md
-- Spend Controls — https://floe-labs.gitbook.io/docs/core-concepts/spend-controls.md
-- Agent Awareness — https://floe-labs.gitbook.io/docs/core-concepts/agent-awareness.md
 - Plain HTTP / REST — https://floe-labs.gitbook.io/docs/frameworks/http.md
 - LangChain — https://floe-labs.gitbook.io/docs/frameworks/langchain.md
 - CrewAI — https://floe-labs.gitbook.io/docs/frameworks/crewai.md
@@ -57,23 +59,29 @@
 - Coinbase AgentKit — https://floe-labs.gitbook.io/docs/frameworks/agentkit.md
 - TypeScript SDK — https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-typescript.md
 - Python SDK — https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-python.md
-- Developer Dashboard — https://floe-labs.gitbook.io/docs/developers/developer-dashboard.md
-- Floe CLI — https://floe-labs.gitbook.io/docs/developers/cli.md
-- API Keys — https://floe-labs.gitbook.io/docs/developers/api-keys.md
-- From Bank Account to First API Call — https://floe-labs.gitbook.io/docs/developers/fiat-to-x402.md
-- Agent Runtime Contract — https://floe-labs.gitbook.io/docs/developers/agent-runtime-contract.md
-- Pay any vendor API — https://floe-labs.gitbook.io/docs/developers/x402-facilitator.md
-- Marketplace Shim — https://floe-labs.gitbook.io/docs/developers/marketplace-shim.md
-- MCP Server — https://floe-labs.gitbook.io/docs/developers/mcp-server.md
-- Webhooks — https://floe-labs.gitbook.io/docs/developers/webhooks.md
+- Developer Dashboard — https://floe-labs.gitbook.io/docs/build-developers/developer-dashboard.md
+- Agent Balance — https://floe-labs.gitbook.io/docs/build-developers/wallet.md
+- Spend Controls — https://floe-labs.gitbook.io/docs/build-developers/spend-controls.md
+- Agent Awareness — https://floe-labs.gitbook.io/docs/build-developers/agent-awareness.md
+- Floe CLI — https://floe-labs.gitbook.io/docs/build-developers/cli.md
+- API Keys — https://floe-labs.gitbook.io/docs/build-developers/api-keys.md
+- From Bank Account to First API Call — https://floe-labs.gitbook.io/docs/build-developers/fiat-to-x402.md
+- Agent Runtime Contract — https://floe-labs.gitbook.io/docs/build-developers/agent-runtime-contract.md
+- Pay any vendor API — https://floe-labs.gitbook.io/docs/build-developers/x402-facilitator.md
+- Marketplace Shim — https://floe-labs.gitbook.io/docs/build-developers/marketplace-shim.md
+- MCP Server — https://floe-labs.gitbook.io/docs/build-developers/mcp-server.md
+- Webhooks — https://floe-labs.gitbook.io/docs/build-developers/webhooks.md
 - REST API — https://floe-labs.gitbook.io/docs/api-reference/credit-api.md
+- Model pricing — GET /v1/models?include=pricing — https://floe-labs.gitbook.io/docs/api-reference/models-pricing.md
 - Ledger Sync API — https://floe-labs.gitbook.io/docs/api-reference/ledger-sync-api.md
+- Plans & entitlements — https://floe-labs.gitbook.io/docs/reference/plans.md
+- Pricing & cost — https://floe-labs.gitbook.io/docs/reference/pricing.md
 - Error Codes — https://floe-labs.gitbook.io/docs/reference/error-codes.md
 - Environment Variables — https://floe-labs.gitbook.io/docs/reference/environment-variables.md
 - Changelog — https://floe-labs.gitbook.io/docs/reference/changelog.md
 
 ==============================================================================
-# Floe — Spend controls for Voice AI
+# Floe — what every call actually costs
 Source: README.md
 URL: https://floe-labs.gitbook.io/docs/readme.md
 ==============================================================================
@@ -1023,71 +1031,6 @@ The dashboard and SDK always show you dollars.
 - [The Voice Stack](../build/voice-stack.md) — pay every leg of a voice call on one key
 
 ==============================================================================
-# Pricing & cost
-Source: docs/getting-started/pricing.md
-URL: https://floe-labs.gitbook.io/docs/start-here/pricing.md
-==============================================================================
-
-# Pricing & cost
-
-You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it. No subscription, no minimums, no seat fees. Every call tells you exactly what it cost, and you can price a call **before** you make it.
-
-> **Estimate first.** Model a voice agent's cost per call or per minute before you build → [Cost calculator](https://dev-dashboard.floelabs.xyz/calculator).
-
-## Read what a call cost
-
-Every paid response carries two headers:
-
-| Header | What it is |
-|---|---|
-| `X-Floe-Payment-Amount` | The call's cost as a decimal USDC string (e.g. `0.0125`) — the human-readable number. |
-| `X-Floe-Cost-USDC` | The same cost in raw USDC (6-decimal integer string) — use this for exact math. |
-
-{% tabs %}
-{% tab title="TypeScript" %}
-```typescript
-const res = await fetch("https://credit-api.floelabs.xyz/v1/chat/completions", {
-  method: "POST",
-  headers: { Authorization: `Bearer ${FLOE_API_KEY}`, "Content-Type": "application/json" },
-  body: JSON.stringify({ model: "openai/gpt-4o", messages }),
-});
-const cost = res.headers.get("X-Floe-Payment-Amount"); // "0.0125"
-```
-{% endtab %}
-{% tab title="Python" %}
-```python
-import httpx
-
-res = httpx.post(
-    "https://credit-api.floelabs.xyz/v1/chat/completions",
-    headers={"Authorization": f"Bearer {FLOE_API_KEY}"},
-    json={"model": "openai/gpt-4o", "messages": messages},
-)
-cost = res.headers["X-Floe-Payment-Amount"]  # "0.0125"
-```
-{% endtab %}
-{% endtabs %}
-
-Tag calls with `X-Floe-Task-Id` and every leg of one conversation rolls into a single per-call cost — the basis for cost per call, per agent, per vendor.
-
-## Price a call *before* you make it
-
-Gate expensive work without spending:
-
-- **LLM / voice models** — `POST /v1/estimate` prices a usage vector (tokens, TTS characters, STT audio-seconds) without touching your balance. See [Floe Inference](../developers/keyless-inference.md#estimate-before-you-spend).
-- **x402 vendor calls** — `POST /v1/x402/estimate` preflights a URL and returns its USDC cost against your remaining budget in one round-trip.
-- **A batch** — `POST /v1/x402/forecast` projects the cost of many planned calls at once, with a per-policy breach check. See [Budget-Aware Routing](../build/budget-aware-routing.md).
-
-## What each vendor costs
-
-Per-model and per-vendor rates live on the vendor pages in the [Vendor Marketplace](../x402-directory/README.md) (Compute, Voice, Image, Search, …). Floe meters at the vendor's rate; the marketplace lists them.
-
-## Next
-
-- [Spend Controls](../developers/spend-controls.md) — cap spend per call / agent / task / vendor
-- [Add Floe to your existing pipeline](integrate-existing-pipeline.md)
-
-==============================================================================
 # Agent Quickstart
 Source: docs/agents/quickstart-agents.md
 URL: https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
@@ -1100,9 +1043,936 @@ This page has moved. The agent setup and first paid call — human does two thin
 See also [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) to connect Claude Code, Cursor, or Codex.
 
 ==============================================================================
+# The live cost ledger
+Source: docs/build/unified-ledger.md
+URL: https://floe-labs.gitbook.io/docs/know-your-costs/unified-ledger.md
+==============================================================================
+
+# Unified Billing & Ledger
+
+A token router shows you your LLM spend. Floe shows you the whole bill — telephony, speech, search, compute, and LLM — in one ledger, priced per call, capped by one policy set.
+
+## Why this exists
+
+A voice agent's cost is never just tokens. One conversation pays for telephony to place the call, speech-to-text to hear the caller, an LLM to decide what to say, and text-to-speech to say it back. If four vendors bill four different ways, you can't answer the only question that matters: what did this call cost, and was it worth it?
+
+Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from the same balance and lands in the same ledger, tagged by agent, task, and vendor. x402 vendors go through `POST /v1/proxy/fetch`; LLM calls go through Floe's OpenAI-compatible gateway — **keyless** `POST /v1/chat/completions` (recommended; fully-qualified `provider/model` ids) or the **BYOK metered proxy** `POST /v1/llm/chat/completions` (your own provider key; model id with or without a `provider/` prefix). One balance, one ledger, one policy set.
+
+## Route your LLM through Floe (BYOK metered proxy)
+
+`POST /v1/llm/chat/completions` is Floe's **BYOK metered proxy**: you bring your own upstream provider key and Floe charges only a small routing fee on top of provider cost. It is OpenAI-compatible — same request shape as OpenAI Chat Completions — but distinct from the keyless gateway in two ways: it prices from Floe's maintained LiteLLM cost map and accepts the model id **with or without** a `provider/` prefix (`gpt-4o` or `openai/gpt-4o` — Floe strips it), and it needs your provider key. Point it at Floe's host, authenticate with your Floe agent key, and send your upstream provider key in the `X-Floe-Provider-Key` header — **required on this endpoint** (used only to call upstream, then discarded, never persisted). To skip the header, store the key once (encrypted, per provider) and use the **keyless `/v1` gateway** instead — stored-key auto-routing works there, not on `/v1/llm`. See [per-request vs stored keys](../developers/keyless-inference.md) for the storage flow and the fixed BYOK service fee.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "X-Floe-Provider-Key: $OPENAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4o",
+    "messages": [{ "role": "user", "content": "Hello from Floe" }]
+  }'
+```
+
+> **Don't want to hold a provider key at all?** Use the **keyless** gateway `POST /v1/chat/completions` with a **fully-qualified** `provider/model` id (`openai/gpt-4o`) — Floe fronts the upstream relationship and bills you per call. That's the recommended path for new work; see [Floe Inference (Keyless LLM & Voice)](../developers/keyless-inference.md).
+
+Now LLM tokens, speech, and search all count against the same budgets, appear in the same analytics, and feed the same per-agent cost history — right next to the x402 vendors you already pay through the proxy.
+
+## One task, one budget, every vendor
+
+Tag every leg of a job with the `X-Floe-Task-Id` header — on the proxy call and on the LLM call. The task budget then caps the **sum** across all vendors — telephony + STT + LLM + TTS — not each vendor in isolation.
+
+```bash
+-H "X-Floe-Task-Id: call-8842"
+```
+
+A $0.50 cap on `call-8842` is a ceiling for the whole conversation, no matter how the cost splits across the four vendors that served it. See [Spend Controls](../developers/spend-controls.md) for policy types and windows.
+
+## Keyless inference
+
+You can go one step further and drop the vendor accounts entirely. With keyless inference, you call LLM and voice models with no vendor account at all — Floe holds the upstream relationship and bills you per call from the same balance. Same ledger, same tags, one fewer key to manage.
+
+See [Floe Inference (Keyless LLM & Voice)](../developers/keyless-inference.md).
+
+## Next
+
+Put the ledger to work behind a real voice agent — telephony, STT, LLM, and TTS on one bill: [The Voice Stack](voice-stack.md).
+
+==============================================================================
+# Vendor actuals — reconcile to the vendor's records
+Source: docs/build/vendor-actuals.md
+URL: https://floe-labs.gitbook.io/docs/know-your-costs/vendor-actuals.md
+==============================================================================
+
+# Vendor actuals
+
+Your [Coverage Score](coverage-score.md) tells you how much of your spend Floe can *act on*. **Vendor actuals** tells you what that spend actually **cost you at the vendor** — reconciled against the vendor's own billing records, leg by leg.
+
+The distinction matters most on **BYOK**. When a call runs on your own vendor key, Floe settles only its service fee; the vendor bills you directly, so your true cost was never in Floe's settled ledger. Floe used to record a rate-card *estimate* of it. **It no longer does.** Every such leg now carries the vendor's own request id, a connector pulls the vendor's billing record, and a reconcile pass stamps the leg with what that record supports — or with the honest admission that no record exists yet.
+
+## A cost is a claim
+
+Every leg carries a **status**, and the status is the whole point: it says exactly how much precision the number behind it has earned.
+
+| Status | What it means | What it is **not** |
+|---|---|---|
+| `exact` | Reconciled to the vendor's own **per-request** billing record. | — |
+| `period-rate` | Priced at the vendor's own **realized rate for that period**, taken from their cost and usage APIs and applied to the leg's vendor-reported units. | Not `exact`. Not per-request precision. |
+| `invoiced` | **Footed to the vendor's invoice.** The status it held before the foot is retained. | — |
+| `pending` | The vendor **hasn't published this cost yet**. | Not an error. Not a zero. |
+| `manual` | **No vendor API publishes this** — upload the invoice. | Not a zero. |
+
+Two rules follow, and both are enforced in the API rather than left to a renderer:
+
+- **A `pending` or `manual` leg has no cost.** The surface shows its units. `costRaw` is `null` — never `0`, because a zero in a column headed "cost" is a claim, and a blank is the truth.
+- **`exact` and `period-rate` are never added together.** They are different claims, so they come back as separate subtotals and get different colours in the dashboard. A `period-rate` figure is a real derivation — the vendor's own bucket cost ÷ the vendor's own bucket units, with both source records and the realized rate stored as provenance — but describing it as "exact" would overstate it.
+
+Those two rules operate on different things, which is worth stating plainly. The **subtotals** are per claim and stay apart: an `exact` figure and a `period-rate` figure are never merged into one number labelled `exact`. The **row total** is a different object — it is the sum of every leg that has a price, and a row shows one **only when every leg in it is `exact`, `period-rate` or `invoiced` and USD-denominated**. So a row mixing `exact` and `period-rate` legs does get a total; what it never gets is a total that hides which claim each dollar came from. Any row with a `pending`, `manual`, or non-USD (`currency_unsupported`) leg returns `"partial — lower bound"` — `totalRaw` is `null`, never `0`, and `totalBlockedBy` names why (e.g. `non_usd` for a non-USD leg, so a client never reads the missing price as zero). There is no code path that renders a misleading single figure.
+
+## When the cost arrives
+
+Some vendors publish a leg's cost at call-end; others only on a next-day batch. So a leg from a call you placed a minute ago is *supposed* to be `pending` — that is the system working correctly, not an error or a capture failure.
+
+## Coverage reads low on voice-heavy accounts
+
+A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.
+
+## Whose cost it is
+
+Every agency-facing read filters on `cost_owner = 'developer'` — **legs your account pays for**.
+
+A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
+
+## No FX, ever
+
+A non-USD or credit-denominated vendor record is **structurally unpriceable** here. There is no FX source in Floe, and an invented rate inside an audit ledger is worse than a blank. Those legs render `—` plus the vendor's verbatim cost string in their provenance, and are excluded from every subtotal. They also open a `currency_unsupported` finding so the omission is visible rather than silent.
+
+## Where to access it
+
+Vendor actuals is an **Agency** capability. Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
+
+Read your reconciled costs — legs, by-call, and rollups, each with a provenance drawer — in the dashboard at `/actuals`, over the `floe actuals` CLI, or through the `actuals` MCP capability group (read tools only; invoice upload and footing stay human-in-the-loop). The engine records everything it couldn't reconcile as a *finding* with a reason — review and resolve them in the dashboard.
+
+`floe actuals` is about **your** vendors' bills. Not to be confused with `floe vendors`, which probes the health of Floe's own marketplace vendors.
+
+## Related
+
+- [Coverage Score](coverage-score.md) — how much of your spend Floe can enforce, which is a different question from what it cost.
+- [Unified Billing & Ledger](unified-ledger.md) — the settled Floe ledger these vendor costs sit beside.
+- [Ledger sync](ledger-sync.md) — pushing off-path spend into the ledger in the first place.
+
+==============================================================================
+# Vendor connections
+Source: docs/build/vendor-connections.md
+URL: https://floe-labs.gitbook.io/docs/know-your-costs/vendor-connections.md
+==============================================================================
+
+# Vendor connections
+
+Hand Floe **read-only** billing access to a vendor, and it reconciles your legs
+against that vendor's **own** cost records. A vendor connection is the credential
+that makes [Vendor actuals](vendor-actuals.md) real: without one, a BYOK leg
+carries only Floe's service fee and the vendor bills you off-ledger; with one, a
+connector pulls the vendor's billing record and a reconcile pass stamps each leg
+with the precision that record supports.
+
+> **Read-only, and separate from the keys that route traffic.** A billing
+> credential reads your whole vendor invoice — it never writes to your vendor
+> account, never rotates your keys, and is not the key that serves your calls.
+> Floe seals it at rest; no read path ever returns the secret, only a mask.
+
+## Plan gate
+
+Vendor connections are an **Agency** capability — the whole group, reads
+included, is gated on the `vendor_connections` entitlement. That is deliberately
+stricter than the [Vendor actuals](vendor-actuals.md) *reads*, which ride Pro's
+cost-attribution entitlement: a Pro agency already pays for attribution and
+shouldn't find its cost column paywalled. What Agency buys is the
+credential-holding, money-asserting half. See [Plans & entitlements](../reference/plans.md).
+
+Within an Agency account, **writes require the `admin` role** — creating,
+re-keying, patching, deleting, or verifying a connection. A member can read the
+masked list but cannot install a credential.
+
+## Which vendors have connectors
+
+You can only create a connection for a vendor Floe has a billing connector for.
+Each connector declares the **best status** a leg it serves can ever reach —
+the ceiling in the [Vendor actuals status table](vendor-actuals.md#a-cost-is-a-claim):
+
+| Vendor | Best status | How the cost is sourced |
+|---|---|---|
+| Twilio | `exact` | Per-call price on the CallSid the ledger holds |
+| Telnyx | `exact` | Per-CDR cost on the call leg id |
+| Deepgram | `exact` | Per-request USD on `details.usd` |
+| OpenAI | `period-rate` | Daily cost by line item ÷ daily usage by model |
+| Anthropic | `period-rate` | Daily cost report ÷ daily usage report |
+| AWS Bedrock | `period-rate` | Hourly Cost and Usage Report row (cost + units) |
+| Google Cloud (Vertex) | `period-rate` | Hourly BigQuery billing-export row (cost + units) |
+| Azure | `period-rate` | Daily Cost Management row (cost + units) |
+| ElevenLabs | `manual` | Credits, no cost API — invoice lane only |
+| Cartesia | `manual` | Credits, no cost API — invoice lane only |
+| AssemblyAI · Rime · Sarvam | `manual` | No billing API — invoice lane only |
+
+A `manual`-ceiling vendor is still worth connecting for identity and settings,
+but its costs come through the **invoice lane** (upload the vendor's invoice and
+foot it), not an API pull. Creating a connection for a vendor with **no**
+connector is refused at write time — a credential that can never pull anything is
+not an honest thing to store.
+
+## Add a connection
+
+`POST /v1/developer/vendor-connections` (admin). Supply the vendor, an operator
+label (`name`, unique within your account per vendor — two Twilio subaccounts are
+two rows), the credential `kind`, and the credential fields that kind declares.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/vendor-connections \
+  -H "Authorization: Bearer $FLOE_DEV_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "vendor": "twilio",
+    "name": "prod-subaccount",
+    "kind": "twilio_api_key",
+    "credential": { "...": "..." },
+    "billingTimeZone": "America/New_York"
+  }'
+```
+
+The response is the **masked** connection — identifiers (region, project id,
+account SID) are shown verbatim so you can tell which of two subaccounts a row is;
+secrets are elided, key material shows only a length. The sealed credential never
+leaves the server.
+
+Don't hardcode the form. The list endpoint returns `credentialFields` (which
+fields each `kind` needs) and `connectors` (which vendors are connectable, their
+best status, and whether they need a billing timezone) — render the form from
+those so a billing credential never gets pasted into the wrong shape.
+
+**Timezone.** Some vendors (e.g. Twilio) cut their daily billing buckets in a
+local zone that no API exposes, so you must supply `billingTimeZone` as an IANA
+zone — the zone the **vendor** bills in, not yours. A bad zone is a permanent
+silent coverage gap, so it's rejected at write time rather than degraded to UTC.
+
+Optional tuning: `freshnessSlaMinutes`, `actualsSlaHours`, and `captureSince`
+(the point in time to start pulling costs from).
+
+### Re-keying
+
+Rotating a credential goes back through `POST` with the same `(vendor, name)`.
+The upsert re-seals the new secret, re-derives the mask, clears any
+"unreadable" flag and the failure counter, re-arms a disabled row, and resets
+status to **unverified** — the old scope check said nothing about the new key, so
+the connection must be verified again before anything trusts it.
+
+## Verify a connection
+
+`POST /v1/developer/vendor-connections/:id/verify` (admin) calls the vendor with
+the stored credential and records what happened. This is the only route that opens
+the sealed box. Outcomes:
+
+- **`ok`** → status `active`; the response carries any facts the connector
+  discovered (project ids, subaccounts, workspaces) — never credential material.
+- **`verification_failed`** (409) → the vendor refused the credential. If the
+  reason is `unauthorized` / `forbidden_scope`, re-key with a credential that has
+  billing read scope; anything else is recorded as `degraded` for ops to look at.
+- **`verification_unavailable`** (502) → couldn't reach the vendor. The credential
+  is unchanged; retry when the vendor is reachable.
+- **`sealed_key_unavailable`** / **`sealed_credential_integrity`** (409) → the
+  stored credential can't be decrypted. These are kept distinct on purpose: the
+  first means the encryption secret was rotated without resealing (recoverable),
+  the second means the stored row was modified (investigate — do not reseal).
+
+A hung billing API can't hold the request open — verify aborts after 15 seconds
+and records a degraded pass.
+
+## Manage & remove
+
+- `GET /v1/developer/vendor-connections` — list, each row masked, plus the form catalog.
+- `GET /v1/developer/vendor-connections/:id` — one connection, masked.
+- `PATCH /v1/developer/vendor-connections/:id` (admin) — enable/disable and the
+  non-secret settings (timezone, SLAs, `captureSince`). Credential material is
+  **not** accepted here — re-keying is `POST`, so the mask, seal, and verification
+  reset always move together. Changing the timezone resets verification.
+- `DELETE /v1/developer/vendor-connections/:id` (admin) — a **soft** delete
+  (disable + drop the sync lease). There is no hard delete: the actuals and stamps
+  the connection already produced stay exactly as written — they're append-only
+  and the dollars were real. What stops is the pull; legs it would have resolved
+  now stay `pending`.
+
+## Related
+
+- [Vendor actuals — reconcile to the vendor's records](vendor-actuals.md) — what these connections feed, leg by leg, with a status per claim.
+- [Coverage Score](coverage-score.md) — how much of your spend Floe can act on, a different question from what it cost.
+- [Plans & entitlements](../reference/plans.md) — where `vendor_connections` sits.
+
+==============================================================================
+# Coverage Score
+Source: docs/build/coverage-score.md
+URL: https://floe-labs.gitbook.io/docs/know-your-costs/coverage-score.md
+==============================================================================
+
+# Coverage Score
+
+Every agent in your [dashboard](https://dev-dashboard.floelabs.xyz) carries a **Coverage Score**: the percentage of that agent's known spend Floe can act on, split three ways.
+
+| Bucket | Meaning | Example |
+|---|---|---|
+| **Enforceable** | The leg runs through Floe's path. Request legs (LLM turns, one-shot TTS) are gated **pre-call**; Floe-native **duration-billed** legs (streaming STT, Floe Phone minutes) are metered **live** and cut off at the cap. | Model calls via the custom-LLM slot; STT/TTS on Floe keys; Floe Phone minutes. |
+| **Reconciled** | The cost reaches the ledger at call-end via Reconcile Mode; the circuit breaker acts on the *next* admission. | A Vapi call's cost ingested from the end-of-call webhook. |
+| **Dark** | Spend Floe never sees. It counts against nothing and appears nowhere. | A vendor billed on its own account, with no webhook and no Floe key. |
+
+**Coverage = (enforceable + reconciled) ÷ total known spend.** Dark spend is the known-unknown: legs you've told Floe exist but that never report. Spend on vendors Floe has never heard of can't be counted at all — the score is honest about what it can't see.
+
+## Why no platform can compute this
+
+Vapi sees Vapi spend. Retell sees Retell's. On BYOK, platforms report provider costs as $0 because that spend sits on your own vendor bills. The Coverage Score spans **every** execution path an agent uses — which is only computable from a neutral ledger outside all of them.
+
+## How to raise it
+
+The score tells you which leg to move. In order of typical impact:
+
+1. **Connect the end-of-call webhook** ([setup](../developers/webhooks.md#connect-your-orchestrator-reconcile-mode)) — moves in-call platform legs from *dark* to *reconciled* in one paste.
+2. **Point the custom-LLM slot at Floe** ([Vapi](../platforms/vapi.md) · [Retell](../platforms/retell.md) · [Bland](../platforms/bland.md)) — moves the model leg (~40% of a cascade bill, ~60%+ realtime) from *reconciled* to *enforceable*.
+3. **Move telephony to [Floe Phone](../developers/floe-phone.md)** — enforceable minutes on the same ledger.
+4. **STT/TTS via Floe** *(early access — request at [hello@floefinance.com](mailto:hello@floefinance.com))*.
+
+For spend Floe never routes at all — **BYOK** LLM calls, self-hosted models, off-path tools — routing isn't an option yet, so it stays *dark*. [Ledger sync](ledger-sync.md) pushes `floe-guard`'s local spend ledger to Reconcile Mode, moving that spend from *dark* to *reconciled* so the score counts it (budget only — it moves no balance).
+
+## Reading the tile
+
+The dashboard shows the score on the agent overview and, rolled up across every agent, on the account home. When the window is empty the tile tells you *why*. The rules are checked in this order — first match wins:
+
+1. **A score** — any spend in the window. On a keyless agent that is **"Coverage: 100%"**: every dollar is gateway-routed and enforceable (pre-call on request legs, live on Floe-native duration-billed legs). This is the ceiling, not an error.
+2. **"Coverage: 100%" by call count** — no spend yet, but Floe-routed calls landed at $0 (free-tier models, or BYOK on a $0 service fee). Every call went through Floe's gate; the money score renders with the first metered call.
+3. **"Computing"** — nothing metered yet, but the account routes on its own vendor keys (BYOK), or an end-of-call webhook is connected and the first call-end hasn't landed.
+4. **"No coverage score yet"** — no spend, no routed calls, no BYOK, no webhook. Floe only sees spend you route through it. **Connect webhook (2 min) →** opens the agent's Voice orchestrators card; the score computes from the next call.
+
+So a keyless agent with routed calls never sees "No coverage score yet" — rules 1–2 win. The account tile uses the same rules across the whole fleet; its **Connect webhook** button takes you to the first agent that has no webhook yet.
+
+## API
+
+```http
+GET /v1/developer/agents/:agentId/coverage?days=30
+```
+
+Returns `totals` — `knownRaw`, `enforceableRaw`, `reconciledRaw` (raw USDC) plus `coverageBps` (the enforceable-plus-reconciled share in basis points; `null` when there's no spend in the window) — a `bySource` breakdown (`class`, `calls`, `costRaw`), a daily `series`, `calls`, and `dark: "unknown"` (spend on platforms never wired to Floe can't be counted).
+
+`calls` counts the same rows `totals` sums: `total`, `enforceable`, `reconciled`, `byok`. `enforceable` and `reconciled` are mutually exclusive and sum to `total`; `byok` is a **subset of `enforceable`** (gateway calls served on your own vendor key — rail `byok`) and never overlaps `reconciled` (spend pushed by [ledger sync](ledger-sync.md) lands as reconciled rows, not `byok`). Don't add `byok` to the other two.
+
+**Zero-spend windows:** `coverageBps` is `null` whenever `knownRaw` is `0`, even if calls landed at $0. Clients should read `calls.*` in that case — `calls.enforceable > 0 && calls.reconciled == 0` is what the dashboard renders as "Coverage: 100%" by call count; `calls.total == 0` is genuinely no activity. `null` never means "0% covered". Accepts any developer credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set.
+
+## The honest boundary
+
+On calls Floe doesn't run — the orchestrator owns the media path — enforcement is **admission control, never mid-call**: an over-budget request is refused *before* it starts, and a reconciled breach denies the **next** admission (the next inbound call on Vapi/Retell **when a pre-call URL is configured**; otherwise the agent's next Floe-keyed action — always the case on Bland, which has no pre-call hook; a cooperative pre-call check on self-hosted stacks). The one exception is **Floe-native duration-billed legs** — streaming STT and Floe Phone run through Floe's own path and are metered live, cut off mid-stream at the cap. The score exists so that boundary is **visible instead of implied**.
+
+> Pre-call where we're in the path. Circuit breaker everywhere else.
+
+==============================================================================
+# The cost calculator
+Source: docs/build/cost-calculator.md
+URL: https://floe-labs.gitbook.io/docs/know-your-costs/cost-calculator.md
+==============================================================================
+
+# The cost calculator
+
+Know what a call will cost **before** you make it. The calculator prices a voice
+stack — speech-to-text, LLM, text-to-speech, and telephony — against the same
+rate cards the Floe gateway meters real calls against, so the number you see is
+the number you'd pay.
+
+Two surfaces share those rate cards:
+
+- **The dashboard calculator** at [dev-dashboard.floelabs.xyz/calculator](https://dev-dashboard.floelabs.xyz/calculator) — public, no login, no key. Model a stack visually.
+- **`POST /v1/estimate`** — the API behind the same math. Price an exact usage vector from code, with no balance touched.
+
+## The dashboard calculator
+
+Public and keyless — send anyone the link. Pick one model per leg and the
+calculator returns the cost **per minute**, **per call**, and **per month**, with
+a breakdown across the four legs of a cascaded pipeline:
+
+| Leg | Metered on |
+|---|---|
+| **Speech-to-text (STT)** | audio-seconds transcribed |
+| **LLM** | input + output tokens |
+| **Text-to-speech (TTS)** | characters synthesized |
+| **Telephony (Floe Phone)** | inbound / outbound US call minutes + number rental |
+
+Defaults assume a cascaded STT → LLM → TTS pipeline at ~150 spoken words/min with
+a ~50% agent talk share. Open **Edit usage assumptions** to tune the token and
+character rates per minute, the average call length, and calls per month to match
+your own agent. Every price shown already includes Floe's routing margin (5%
+default) — there is no other fee.
+
+The estimate is a model of steady-state usage. Actual bills are still metered per
+token, audio-second, and character on **every** call — the calculator plans, the
+[live cost ledger](unified-ledger.md) records.
+
+## `POST /v1/estimate`
+
+Prices a usage vector exactly, **without making the call or touching your
+balance** — use it to gate expensive work at request time. Send it any Floe key.
+
+Provide only the units the model bills:
+
+| Field | Unit | Applies to |
+|---|---|---|
+| `input_tokens` / `output_tokens` | text tokens | LLMs |
+| `cached_input_tokens` | cached prompt tokens | LLMs with prompt caching |
+| `characters` | characters of input | TTS |
+| `audio_seconds` | audio-seconds | STT |
+| `audio_input_tokens` / `audio_output_tokens` | realtime audio tokens | realtime voice |
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/estimate \
+  -H "Authorization: Bearer $FLOE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "model": "openai/gpt-4o", "input_tokens": 1200, "output_tokens": 400 }'
+```
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "rail": "direct-account",
+  "provider": "openai",
+  "margin_bps": 500,
+  "usage": { "text_input_token": 1200, "text_output_token": 400 },
+  "upstream_cost_usdc": "0.007000",
+  "cost_usdc": "0.007350",
+  "cost_raw": "7350"
+}
+```
+
+- `upstream_cost_usdc` — the raw upstream cost before Floe's margin.
+- `cost_usdc` — what you'd actually be debited (upstream + margin), as a decimal USDC string.
+- `cost_raw` — the same figure in atomic USDC (6 decimals), for integer-exact math.
+- `rail` / `provider` — which source a real call would route to.
+
+### Keyless-rail pricing only
+
+`/v1/estimate` prices the **keyless rails** — the cheapest source Floe can serve
+the model from, at upstream cost plus margin. It mirrors cost-aware routing: it
+resolves the model, prices your usage against every source that can serve it, and
+returns the **cheapest**.
+
+It does **not** estimate the BYOK rail. Whether a call lands on `byok` depends on
+the caller's stored or per-request provider key at request time, and BYOK settles
+at a flat per-call service fee instead of a margin over upstream — so it isn't
+knowable ahead of the call. See [Model pricing](../developers/models-pricing.md)
+for the per-rail pricing fields, and [Floe Inference](../developers/keyless-inference.md#estimate-before-you-spend)
+for the rails themselves.
+
+### Errors
+
+| Status | Body `code` | Meaning |
+|---|---|---|
+| `400` | `invalid_request_error` | Missing or non-string `model`, or an unparseable body. |
+| `404` | `unknown_model` | The model doesn't exist or is disabled. |
+| `422` | `no_priceable_source` | No source can price the usage vector you gave for that model (e.g. token units against a voice-only model). |
+
+Agents can call the same estimate through the [MCP tool](../developers/mcp-server.md)
+`estimate_inference_cost` or the AgentKit action `estimate_inference_cost`.
+
+## Related
+
+- [The live cost ledger](unified-ledger.md) — what your calls actually cost, after the fact.
+- [Model pricing — `GET /v1/models?include=pricing`](../developers/models-pricing.md) — per-model, per-rail rates read straight from the API.
+- [Pricing & cost](../getting-started/pricing.md) — how Floe prices inference and vendor calls.
+
+==============================================================================
+# Cost per client, campaign & task
+Source: docs/build/attribution.md
+URL: https://floe-labs.gitbook.io/docs/attribution-margin/attribution.md
+==============================================================================
+
+# Cost per client, campaign & task
+
+Your [ledger](unified-ledger.md) is only as useful as it is tagged. An untagged call is a real dollar you paid that answers no business question: you know it happened, but not *for whom*. Tag every metered call with the client it serves — and, where you run campaigns, the campaign and the individual task — and the same spend that was one flat number becomes **cost per client** and **cost per campaign**. That is the number finance prices contracts against.
+
+Floe never guesses. A missing tag stays missing (it buckets under `untagged`), because a guessed attribution is a silent accounting error and a blank is the truth. So the quality of your per-client cost is exactly the quality of your tagging — this page is how you get it right.
+
+## The three tags
+
+Every metered call can carry three independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
+
+| Tag | What it answers | On Floe-carried calls | On reconciled orchestrator calls |
+|---|---|---|---|
+| **Customer** | Which end-client is this spend for? | `X-Floe-Customer-Id` header | `floe_customer_id` call metadata |
+| **Campaign** | Which campaign / engagement? | `X-Floe-Task-Id` header (see note) | `floe_campaign_id` call metadata |
+| **Task** | Which call / job? (groups its legs) | `X-Floe-Task-Id` header | `floe_task_id` call metadata |
+
+All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
+
+> **Note on campaign vs task.** On Floe-carried calls the [cost ledger](#roll-it-up) rolls up the **task id** as the "campaign" dimension — one id per call groups that call's legs, and grouping those ids is your campaign view. Reconciled orchestrator ingests carry a *separate* `floe_campaign_id` alongside the task id, because a Vapi/Retell/Bland assistant often maps one campaign to many calls. If you run campaigns on an orchestrator, set both.
+
+### Two ways a call gets tagged
+
+**1. Floe-carried calls** — anything through the gateway (`/v1/chat/completions`, `/v1/audio/*`), the x402 proxy (`/v1/proxy/fetch`), or Floe Phone. Set the tag as a request header:
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "X-Floe-Customer-Id: acme-corp" \
+  -H "X-Floe-Task-Id: call-8f21a" \
+  -H "Content-Type: application/json" \
+  -d '{ "model": "openai/gpt-4o-mini", "messages": [{ "role": "user", "content": "hi" }] }'
+```
+
+Every leg of that call — LLM turn, STT, TTS, tool call — carries `customer_id = acme-corp` and `task_id = call-8f21a` on the money ledger.
+
+**2. Reconciled orchestrator calls** — calls whose media path Vapi / Retell / Bland runs, ingested at call-end through the [end-of-call webhook](../developers/webhooks.md). You can't set a Floe header on a call Floe didn't place, so you stamp the tags as **call metadata** on the assistant instead. Floe reads `floe_customer_id`, `floe_campaign_id`, `floe_task_id`, and `floe_agent_id` from the metadata bag the orchestrator sends. An unparseable or absent tag produces `attribution_state = 'unattributed'` — an actionable finding, not a fallback.
+
+## Resolution order & per-agent defaults
+
+Most agencies bind one end-client to one agent and never touch a header. Floe resolves the effective customer id for every metered call in this order — first hit wins:
+
+1. **`X-Floe-Customer-Id` header** — a multi-tenant agent overrides per call.
+2. **The agent's default customer id** — `PATCH /v1/developer/agents/:agentId` with `{ "defaultCustomerId": "acme-corp" }`. One end-client per agent, zero per-call work.
+3. **The agent's project default** — set on the project (`PATCH /v1/developer/projects/:id`); a project typically maps to one client engagement.
+4. **None** → `untagged` (or a refusal under strict mode, below).
+
+Every source runs through the same normalization, so a stored mixed-case default can never fork one client into two ledger keys.
+
+## Strict mode: refuse unattributed spend
+
+By default attribution is optional — untagged calls still run and simply bucket under `untagged`. Flip your account's customer-attribution mode to **required** and Floe refuses any metered call it can't attribute, **before any upstream spend**:
+
+- HTTP surfaces return `400` with `code: "customer_id_required"` and a `next` block naming the two fixes (send the header, or set a default on the agent).
+- WebSocket surfaces (streaming STT, realtime, telephony) refuse at the handshake with the same error.
+
+Strict mode is the guarantee that no dollar reaches your ledger without a client attached to it — turn it on once your defaults and headers are wired, so a mis-configured agent fails loud instead of leaking untagged spend.
+
+## Roll it up
+
+Two read surfaces turn tagged legs into per-client and per-campaign cost. Both are **Pro** (see the plan gate below).
+
+### The cost ledger — one neutral money view
+
+```http
+GET /v1/developer/ledger?days=30&groupBy=customer
+GET /v1/developer/ledger?days=30&groupBy=campaign
+```
+
+Rolls up **all** spend — Floe-carried (gateway, x402 proxy, Floe Phone) *and* orchestrator-reconciled (Vapi/Retell/Bland end-of-call ingests) — by the dimension you ask for. `groupBy=source` and `groupBy=agent` answer "what did I spend"; `groupBy=customer` and `groupBy=campaign` are the attribution view. `days` is 1–90 (default 30).
+
+Each row carries `{ key, tagged, calls, costRaw, reconciledRaw }`. `reconciledRaw` is the portion of that bucket that came from orchestrator reconciliation rather than a Floe-carried leg. **Filter on the `tagged` flag, never on the label** — a real client literally named "untagged" stays a distinct bucket from missing-tag spend. Untagged rows are never dropped: they bucket under `untagged` so the total always reconciles with the underlying rows.
+
+```json
+{
+  "days": 30,
+  "groupBy": "customer",
+  "totalRaw": "184230000",
+  "rows": [
+    { "key": "acme-corp", "tagged": true, "calls": 1204, "costRaw": "96120000", "reconciledRaw": "41000000" },
+    { "key": "globex",    "tagged": true, "calls": 803,  "costRaw": "61300000", "reconciledRaw": "0" },
+    { "key": "untagged",  "tagged": false, "calls": 44,  "costRaw": "26810000", "reconciledRaw": "26810000" }
+  ]
+}
+```
+
+That last row is the work list: 44 reconciled calls reached your ledger with no client attached. Fix the assistant metadata (or turn on strict mode) and it goes to zero.
+
+### Vendor-actuals rollups — per client, at the vendor's real cost
+
+```http
+GET /v1/developer/actuals/rollups?by=customer
+GET /v1/developer/actuals/rollups?by=campaign
+```
+
+The same client/campaign grouping, but over **[vendor actuals](vendor-actuals.md)** — what each leg actually cost you at the vendor, reconciled leg by leg (`by=vendor`, `by=agent`, and `by=time` are also available). Use the cost ledger for Floe-settled spend; use actuals rollups when you need the vendor's own billing number behind each client.
+
+## Plan gate
+
+> **Capture is free. Rollups are Pro.**
+>
+> **Tagging every call — the headers, the metadata, the per-agent defaults, and strict mode — is free on every plan and is never throttled.** Attribution must never be the reason a call is refused for a billing reason, so tag liberally from day one.
+>
+> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. The `source` and `agent` views stay open on every plan.
+
+## Related
+
+- [The live cost ledger](unified-ledger.md) — the neutral money view these tags roll up.
+- [Vendor actuals](vendor-actuals.md) — what each tagged leg actually cost at the vendor.
+- [Rate cards & the margin engine](rate-cards.md) — put a price on each tagged client and read your margin.
+
+==============================================================================
+# Rate cards & the margin engine
+Source: docs/build/rate-cards.md
+URL: https://floe-labs.gitbook.io/docs/attribution-margin/rate-cards.md
+==============================================================================
+
+# Rate cards & the margin engine
+
+You know what every client's calls **cost** — that's the [ledger](unified-ledger.md) and [vendor actuals](vendor-actuals.md). A rate card is the other half: what you **bill** that client. Put the two together and Floe shows your **margin per contract** — real revenue minus real cost, per client, per call. That is how you price the next deal on actuals instead of a blended guess that quietly eats a point of gross margin every time a client's mix shifts toward the expensive vendors.
+
+The same arithmetic runs everywhere — the margin you preview before signing, the margin on the transactions report, and the margin on the eventual invoice all come from **one shared rating function**. A preview can never disagree with the statement it previews.
+
+## What a rate card is
+
+A rate card is a **per-client price**, expressed as one or more rules. Floe supports four pricing models, and you can combine them (a retainer plus overage, say):
+
+| Model | Rule | Bills the client |
+|---|---|---|
+| **Cost-plus** | `cost_plus`, `marginBps` | The call's cost basis × (1 + margin). `2000` bps = cost + 20%. |
+| **Per request** | `per_unit`, `unit: request`, `ratePerUnitRaw`, `includedUnits?` | A flat rate per metered request, after any included allotment. |
+| **Per minute** | `per_unit`, `unit: audio_minute`, `ratePerUnitRaw`, `includedUnits?` | A rate per audio minute — `ceil(total audio seconds / 60)`, the voice-agency staple. |
+| **Retainer** | `fixed`, `amountRaw` | A flat amount for the period, independent of usage. |
+
+All money values are **raw 6-decimal USDC integers** (`1000000` = $1.00), the same unit the ledger uses.
+
+Cost-plus over vendor actuals is the sharpest margin tool: a `cost_plus` rule can name a `vendorCostBasis` so the cost it marks up is the vendor's **reconciled** bill, not a call-time estimate — "rebill Deepgram + 15%" prices off what Deepgram actually charged.
+
+## Price the next deal — preview before you sign
+
+This is the flow the whole feature exists for. Before you commit a price, rate a client's **real recent usage** under one or more candidate cards and read the margin each would have produced:
+
+```http
+POST /v1/developer/rate-cards/preview
+```
+
+```json
+{
+  "customerId": "acme-corp",
+  "days": 30,
+  "candidates": [
+    { "label": "cost + 20%", "rules": [{ "kind": "cost_plus", "marginBps": 2000 }] },
+    { "label": "$0.12 / min", "rules": [{ "kind": "per_unit", "unit": "audio_minute", "label": "voice", "ratePerUnitRaw": "120000" }] }
+  ]
+}
+```
+
+Floe rates the client's last 30 days of actual usage under **each** candidate and returns, per option, `revenueRaw`, `costRaw`, and `marginRaw` (`revenueRaw − costRaw` — negative means you'd lose money):
+
+```json
+{
+  "customerId": "acme-corp",
+  "windowDays": 30,
+  "usageSource": "ledger",
+  "options": [
+    { "label": "cost + 20%", "revenueRaw": "115344000", "costRaw": "96120000", "marginRaw": "19224000" },
+    { "label": "$0.12 / min", "revenueRaw": "104400000", "costRaw": "96120000", "marginRaw": "8280000" }
+  ]
+}
+```
+
+Now the deal is priced on this client's real vendor mix. Cost-plus holds your margin as the mix shifts; the flat per-minute rate is simpler to sell but you carry the mix risk — the preview makes that tradeoff a number instead of a hunch.
+
+**No history yet** (a brand-new client)? Pass `assumedUsage` — modeled requests, audio seconds, cost, and optionally reconciled vendor cost — and Floe rates that instead, so "what if I switch this client to cost-plus over actuals?" is answerable before a single call runs. The response marks `usageSource: "assumed"`.
+
+Preview requires the **Agency** feature `rate_cards`.
+
+## Set and activate a card
+
+Once you've priced it, write the card. Rate cards are **append-only and versioned per client** — there is no edit or delete. "Changing" a price is appending the next version:
+
+```http
+POST /v1/developer/rate-cards
+```
+
+```json
+{
+  "customerId": "acme-corp",
+  "rules": [{ "kind": "cost_plus", "marginBps": 2000 }],
+  "status": "active",
+  "note": "signed 2026-08"
+}
+```
+
+- `status: "active"` (the default) prices this client from now on. `status: "draft"` parks the version so you can preview it, then flip it live:
+
+  ```http
+  POST /v1/developer/rate-cards/:id/activate
+  ```
+
+- **Active versions are immutable, and their start dates only move forward.** Floe refuses a back-dated active version (`effective_from_regression`), because re-rating history under a new price is exactly what append-only exists to prevent — an invoice you already issued must stay reproducible byte-for-byte.
+- **"Current" is the version whose start date is effective now** — not the highest version number. A version dated to activate next Monday displays exactly as it will rate.
+
+Read a client's full version history any time with `GET /v1/developer/rate-cards?customerId=acme-corp`. Reads stay open even without the Agency feature, so a downgraded account keeps seeing what it already priced (grandfathered read-only); only the pricing **writes** need `rate_cards`.
+
+## Signed vs deployed — margin per contract
+
+The reason to price on actuals is that **what you signed and what you deployed drift apart.** You quote a client a per-minute rate against an assumed vendor mix; three weeks in, the agent is routing more calls to a pricier LLM and your gross margin has quietly compressed. Floe surfaces the gap two ways:
+
+- **The clients list** — `GET /v1/developer/customers?days=30` — every end-client seen in the ledger with its current card status (current version, any open draft) and window spend. One screen for "who's priced, who's still on a blended guess."
+- **The per-transaction margin report** — `GET /v1/developer/customers/:customerId/transactions?from=…&to=…` — every metered leg for one client with its cost, its revenue under the card version effective *at that leg's timestamp*, and its per-row margin. A `summary` block rates the whole range under all rules — the number that matches the eventual invoice. Rows a per-row figure can't honestly express (a fixed retainer, a per-minute component, an unresolved vendor leg) are flagged `perRowComplete: false` rather than shown understated.
+
+Both are **Pro** reads (`attribution_reports`). Read them side by side with the card you signed and the drift is a dollar figure, not a surprise at invoice time.
+
+## Plan gate
+
+> **Rate cards and the margin engine are an Agency capability.**
+>
+> Every pricing **write** — creating or activating a card, running a preview, managing projects — requires the **Agency** feature `rate_cards`. The per-client cost and margin **reads** (`/customers`, `/customers/:id/transactions`) require the Pro feature `attribution_reports`. Reading existing cards stays open on every plan, so a downgrade never breaks pricing that is already running; there is also a per-plan cap on the number of *billed* clients, enforced only when you price a client that has never been priced or invoiced before (`plan_limit_exceeded`).
+
+## Related
+
+- [Cost per client, campaign & task](attribution.md) — tag the spend these cards price.
+- [The live cost ledger](unified-ledger.md) · [Vendor actuals](vendor-actuals.md) — the cost side of every margin figure.
+- [Client invoicing — billing periods & statements](invoicing.md) — turn a priced period into a statement you can send.
+
+==============================================================================
+# Client invoicing — billing periods & statements
+Source: docs/build/invoicing.md
+URL: https://floe-labs.gitbook.io/docs/invoicing/invoicing.md
+==============================================================================
+
+# Client invoicing — billing periods & statements
+
+You already know [what every call cost](unified-ledger.md), [reconciled to the vendor's own records](vendor-actuals.md), and [tagged by client and campaign](attribution.md). Invoicing is the last leg: it turns that ledger into a **bill you can send**. Open a billing period per client, let the [rate card](rate-cards.md) rate the usage in it, freeze it into an immutable statement, and hand the client a number they can pay — priced from what their calls actually cost, not from a guess.
+
+The statement is the artifact. Everything on this page produces one, keeps it reproducible, and never lets a dollar of usage slip out of a bill or get billed twice.
+
+> **Plan gate.** Every write here needs the **Agency** plan (`client_invoicing`). The reads stay open, so an account that downgrades can still see and export the statements it already issued. The `statement.csv` / `margin.csv` exports ride the **Pro** `exports` capability. To collect on a statement, see [Stripe Connect](stripe-connect.md).
+
+## The shape of a bill
+
+A **billing period** is a window `[periodStart, periodEnd)` for one client. It moves through a small set of states, and each transition is one-way:
+
+| Status | Meaning | How it got here |
+|---|---|---|
+| `open` | Accepting usage and manual adjustments. Nothing is rated yet. | Created by you. |
+| `closed` | Rated, snapshotted, **frozen**. The statement exists and never changes. | `close` after the window has ended. |
+| `issued` | The statement was handed to the client — as a CSV, a carried credit, or a Stripe invoice. | `issue`, `carry-credit`, or an [invoice push](stripe-connect.md). |
+| `paid` / `void` / `uncollectible` | Collection outcome. | Written only by the Stripe webhook sync. |
+
+The rule underneath all of it: **a closed statement is immutable**. There is no path that edits, re-rates, or deletes a closed period's rows. A late-arriving cost carries a later timestamp and therefore lands in the *next* period by construction — never a retroactive rewrite of one a client has already seen.
+
+## Open a period
+
+```http
+POST /v1/developer/billing-periods
+```
+
+```json
+{
+  "customerId": "acme-co",
+  "periodStart": "2026-08-01T00:00:00Z",
+  "periodEnd": "2026-09-01T00:00:00Z",
+  "timezone": "America/New_York"
+}
+```
+
+- `periodStart` / `periodEnd` are ISO-8601 with an offset; `periodStart` must be before `periodEnd`, and the window is at most **92 days**.
+- `timezone` defaults to `UTC` and is what statement dates render in.
+- One period per `(client, periodStart)` — a second create with the same start returns `409 period_exists`.
+- A client that is new to billing counts against your plan's **billed-clients cap** (Agency: **30**). The cap is shared with [rate cards](rate-cards.md) and enforced atomically, so a concurrent create can't slip past the last slot.
+
+List a client's periods (newest first) with `GET /v1/developer/billing-periods?customerId=acme-co`, and read one — period plus its line items — with `GET /v1/developer/billing-periods/:id`.
+
+### Give the client a contact
+
+Stripe delivers invoices by email, so a client needs a name and address before you can invoice it:
+
+```http
+PATCH /v1/developer/customers/acme-co
+{ "name": "Acme Co", "email": "ap@acme.co" }
+```
+
+The customer entity is created lazily the first time anyone names it, so this is safe to call before the client's first period.
+
+## Add a manual line item
+
+While a period is **open**, add adjustments — a one-off setup fee, a goodwill credit, a discount:
+
+```http
+POST /v1/developer/billing-periods/:id/line-items
+{ "label": "Onboarding credit", "amountRaw": "-25000000", "note": "First-month goodwill" }
+```
+
+- `amountRaw` is a **raw 6-decimal USDC integer** — `25000000` is $25.00, and a **credit is negative** (`-25000000`). This is the same unit the whole ledger uses; no floats.
+- Manual items can only be added while the period is open. Once it closes, the statement is frozen — an adjustment to a closed period becomes a new line in the *next* open one, never an edit.
+- You can add a manual line but not a `true_up`: late vendor actuals are written only by the reconcile job, and disagreement with one is expressed as an *offsetting credit*, not an edit. That is what keeps a re-close byte-identical.
+
+## Close the period
+
+Closing is where usage becomes money. It runs **after the window has ended** — closing early would freeze a partial statement, and because closed statements are immutable, the rest of the window's usage could never be billed.
+
+```http
+POST /v1/developer/billing-periods/:id/close
+```
+
+The close does five things in one transaction:
+
+1. **Segments** the window at every [rate-card](rate-cards.md) version change inside it, so a mid-period price change rates each slice under exactly one version.
+2. **Rates** each segment's usage — fixed retainers prorated by the segment's share of the window, so a retainer is charged once, never twice.
+3. **Refuses** (`409 unrated_usage`) any segment that has usage but no effective rate-card version. Unrated spend must never silently invoice at $0.
+4. **Snapshots** every rated line with its card version and segment bounds, plus the sub-cent remainder, so `Σ line cents + Σ remainders` reconstructs the revenue exactly.
+5. **Freezes** the period with a compare-and-set on `status='open'` — a concurrent close loses the race and rolls back. Re-closing a closed period returns the same statement unchanged (idempotent).
+
+### Close-time gates
+
+If your rate card **rebills vendor cost** (a `cost_plus` rule), the close also checks that the vendor actuals behind those legs are real before it invoices them:
+
+| `409` | Why | Way forward |
+|---|---|---|
+| `unrated_usage` | Usage in a segment with no effective card version. | Set pricing (or a back-stop version) for that window, then close. |
+| `legacy_estimate_basis` | The card still carries a retired estimate flag that would rate vendor cost as $0. | Append a card version naming an explicit basis. **Not** overridable. |
+| `vendor_actuals_pending` | A vendor leg has no confirmed figure yet (a `manual` leg, or a `pending` one past its SLA). | Resolve the leg — see [vendor actuals](vendor-actuals.md) — or close with an **owner override** naming a reason. |
+
+The override on `vendor_actuals_pending` is owner-only, reasoned, and loud: it invoices a client for a vendor cost nobody has confirmed, so it fires an ops alert and a `vendor_actuals.close_gate_overridden` webhook. Pass it in the close body:
+
+```json
+{ "actualsGateOverrideReason": "Client month-end is hard; Twilio batch is 6h late and within tolerance." }
+```
+
+## Issue the statement
+
+A closed statement is ready to hand over. `issue` marks it delivered:
+
+```http
+POST /v1/developer/billing-periods/:id/issue
+```
+
+Only a `closed` period can be issued. From here you have three ways to actually get the number in front of the client: download the CSV below, [push it as a Stripe invoice](stripe-connect.md), or carry it forward.
+
+## Carry a credit forward
+
+Stripe refuses a zero, negative, or sub-$0.50 invoice — it would finalize it, auto-mark it paid, and push the remainder into the client's credit balance *outside* Floe's ledger. When a statement comes out that way (a month that's all credits, or a true-up that flips it negative), carry it instead:
+
+```http
+POST /v1/developer/billing-periods/:id/carry-credit
+```
+
+The balance moves into the **next open period** for that client as a `Carried balance` line, and this period issues with a `carried` collection method. Nothing is mutated retroactively — the closed statement keeps its own numbers, and the carry is a new line in a different, still-open period. There must already be an open successor period; if there isn't, create the next month first (`409 no_open_successor`). A statement Stripe *would* take (≥ $0.50) returns `409 carry_not_required` — invoice it normally.
+
+## Two CSVs — and which one you send
+
+Both exports ride the **Pro** `exports` capability and are readable by any role (a downgraded account keeps the history it earned).
+
+```http
+GET /v1/developer/billing-periods/:id/statement.csv   # floe-statement-<client>-<date>.csv
+GET /v1/developer/billing-periods/:id/margin.csv      # floe-margin-<client>-<date>.csv
+```
+
+| File | Columns | Who it's for |
+|---|---|---|
+| `statement.csv` | label, kind, quantity, unit, **amount** | **The client.** Byte-frozen. It carries revenue only. |
+| `margin.csv` | everything above **plus `cost_usd`, `cost_vendor_usd`, `margin_usd`** | **You.** Your cost basis and markup. |
+
+These are deliberately two different files with two different name prefixes, generated by two different code paths that never touch. The failure mode is one mis-click forwarding the wrong file to a client, and a distinct filename (`floe-margin-…` vs `floe-statement-…`) is the control that survives a human in a hurry. The margin file's first line says so out loud: *NOT FOR YOUR CLIENT*. Your cost basis never appears on anything a client can see — not the statement CSV, and never on any Stripe object.
+
+## What's a claim, and what's exact
+
+A statement inherits the honesty of the ledger under it. A retainer line has no cost basis, so its `cost`/`margin` cells are **blank, never zero** — a zero in a cost column is a claim, and a blank is the truth. A `cost_plus` line's margin is real only to the precision its vendor actuals earned; a leg the vendor hasn't priced yet blocks the close rather than inventing a number. The statement never renders a figure it can't stand behind.
+
+## Related
+
+- [Rate cards & the margin engine](rate-cards.md) — how usage becomes the revenue on each line, including `cost_plus` rebilling.
+- [Cost per client, campaign & task](attribution.md) — the attribution the statement bills from.
+- [Vendor actuals](vendor-actuals.md) — the reconciled vendor cost behind the margin figures and the close gate.
+- [Stripe Connect](stripe-connect.md) — collect on a statement through your own Stripe account.
+
+==============================================================================
+# Stripe Connect — bill through your own Stripe
+Source: docs/build/stripe-connect.md
+URL: https://floe-labs.gitbook.io/docs/invoicing/stripe-connect.md
+==============================================================================
+
+# Stripe Connect — bill through your own Stripe
+
+[Client invoicing](invoicing.md) turns a reconciled billing period into a statement. **Stripe Connect** is how you collect on it. You link your **own** Stripe account once, push a closed statement as a Stripe invoice, and Stripe emails your client with your branding, your terms, and your reminder settings. The money is a **direct charge on your account** — payouts land in your Stripe balance, not Floe's. Floe never holds your clients' funds; it hands Stripe a bill and tracks whether it got paid.
+
+> **Plan gate.** Connect and invoicing are **Agency** capabilities (`stripe_connect` and `client_invoicing`), for up to **30 billed clients**. Linking and disconnecting also require an admin (link) or owner (disconnect) acting in a **human dashboard session** — a leaked API key must not be able to re-point where your invoices get paid.
+
+## Link your Stripe account
+
+Connecting is a standard Stripe OAuth round-trip. Start it from an admin dashboard session:
+
+```http
+POST /v1/developer/stripe/connect/start
+{ "businessName": "Acme Agency" }   // optional; defaults to your account's display name
+→ { "url": "https://connect.stripe.com/oauth/authorize?...", "expiresInSeconds": 900 }
+```
+
+Send the user to `url`. They approve on Stripe's consent page, and Stripe returns their browser to Floe's callback:
+
+```http
+GET /v1/developer/stripe/connect/callback   # Stripe's OAuth return — handled for you
+```
+
+The callback is the one route on this surface with no API-key auth: Stripe sends a top-level browser GET, so it reads and validates your dashboard session cookie itself, then redirects back to `…/customers?stripe=connected` (or `?stripe=error&reason=…`). The single-use authorization `code` never lands in a URL you see, a log line, or a JSON body.
+
+A few invariants worth knowing:
+
+- **One Stripe account ↔ one Floe account at a time.** Starting a second link while one is active returns `409 already_connected` — disconnect first. A code that resolves to a Stripe account already linked elsewhere is refused and the grant is undone at Stripe.
+- **The `state` is single-use and short-lived** (~15 min). A replayed or expired callback is rejected before it ever reaches Stripe.
+- Floe stores only your Stripe **account id** (`acct_…`, not a secret). The deprecated OAuth access/refresh tokens are never kept.
+
+## Check status and set terms
+
+```http
+GET /v1/developer/stripe/connect        # any role
+```
+
+Returns a `ConnectStatus`: whether you're `connected`, the `stripeAccountId`, `livemode`, and the capability flags Stripe reports — `chargesEnabled`, `payoutsEnabled`, `detailsSubmitted`. **`chargesEnabled` is the one that matters**: until Stripe has finished vetting your account it's `false`, and a push will be refused. It also returns the `redirectUri` you must register in your Stripe Connect OAuth settings.
+
+Set your invoice terms — how long clients have to pay, and a footer for the PDF:
+
+```http
+PATCH /v1/developer/stripe/connect
+{ "daysUntilDue": 14, "invoiceFooter": "Thanks for your business — Acme Agency" }
+```
+
+`daysUntilDue` is 1–90 (default 30); `invoiceFooter` is up to 500 characters, or `null` to clear it.
+
+## Push a statement as an invoice
+
+With a closed (or already-issued) statement and a client that has an email:
+
+```http
+POST /v1/developer/billing-periods/:id/invoice
+→ { period, invoice: { id, status, hostedUrl, pdfUrl, number, totalCents }, alreadyPushed, warnings }
+```
+
+The push is a resumable pipeline — every step is persisted before the next, so a crash resumes instead of double-billing:
+
+1. Ensure a Stripe **Customer** on your connected account.
+2. Create a **draft invoice** (`send_invoice`, your `daysUntilDue`, your footer).
+3. Add **one invoice item per statement line**.
+4. **Verify** Stripe's computed total equals the statement's `totalCents` — if it disagrees, the draft is deleted and the push `409`s rather than send a wrong number.
+5. **Finalize** — your own Stripe reminder/dunning settings take over.
+6. **Send** — Stripe emails the client with your branding.
+
+Only the statement's revenue crosses to Stripe. **No cost or margin ever appears on a Stripe object** — your markup stays on the [margin CSV](invoicing.md#two-csvs-and-which-one-you-send) and nowhere Stripe can render it.
+
+The push is idempotent: once an invoice is finalized, calling it again returns `alreadyPushed: true` with the same invoice. It's rate-limited to **5 pushes per minute per account**. If your account has phone numbers, `warnings` may include `phone_minutes_estimated` — per-minute telephony legs can be under-counted at push time.
+
+### Why some pushes are refused
+
+Stripe does not refuse a $0, negative, or sub-$0.50 invoice — it finalizes it, auto-marks it paid, and pushes the remainder into the client's Stripe credit balance, outside Floe's ledger. So Floe refuses them first, in this order:
+
+| `409` | Meaning |
+|---|---|
+| `stripe_not_connected` | No active Stripe link — connect first. |
+| `connected_account_restricted` | Your Stripe account can't accept charges yet (`chargesEnabled: false`) — finish its setup in Stripe. |
+| `period_not_pushable` | The period isn't `closed`/`issued`, or a draft exists on a previously connected account. |
+| `customer_email_required` | The client has no email — `PATCH /customers/:id` first. |
+| `empty_statement` | No line items. |
+| `nonpositive_total` / `total_below_minimum` | Zero, a credit, or under $0.50 — [carry the credit forward](invoicing.md#carry-a-credit-forward) instead. |
+
+## Collection status keeps itself current
+
+Floe subscribes to your connected account's invoice events. When a client pays, or the invoice is voided or marked uncollectible, the matching billing period's status follows — `issued → paid`, `→ void`, `→ uncollectible` — and Floe emits a developer webhook (`client_invoice.paid`, `.voided`, `.uncollectible`). `paid` records when it was collected. The transitions are rank-guarded, so an out-of-order webhook delivery can never regress a period out of a terminal state, and a Stripe "paid" with a zero amount is flagged as an anomaly rather than trusted blindly.
+
+If you delete a draft invoice from your own Stripe Dashboard, Floe notices and makes the period pushable again.
+
+## Disconnect
+
+```http
+DELETE /v1/developer/stripe/connect   # owner + human session
+```
+
+Unlinking deauthorizes Floe at Stripe (best-effort) and stops every future invoice for the whole account. Revoking Floe from **your** Stripe Dashboard instead has the same effect — the `account.application.deauthorized` webhook marks the link disconnected on Floe's side too. Already-sent invoices are unaffected; they keep collecting in Stripe.
+
+## Related
+
+- [Client invoicing — billing periods & statements](invoicing.md) — build the statement this pushes.
+- [Rate cards & the margin engine](rate-cards.md) — how the statement's revenue is priced.
+
+==============================================================================
 # The Voice Stack — overview
 Source: docs/build/voice-stack.md
-URL: https://floe-labs.gitbook.io/docs/the-voice-stack/voice-stack.md
+URL: https://floe-labs.gitbook.io/docs/connect-your-stack/voice-stack.md
 ==============================================================================
 
 # The Voice Stack
@@ -1184,7 +2054,7 @@ Because the LLM leg routes through Floe's OpenAI-compatible endpoint, reasoning 
 ==============================================================================
 # Govern Vapi / Retell / Bland / Pipecat / LiveKit
 Source: docs/build/voice-orchestrators.md
-URL: https://floe-labs.gitbook.io/docs/the-voice-stack/voice-orchestrators.md
+URL: https://floe-labs.gitbook.io/docs/connect-your-stack/voice-orchestrators.md
 ==============================================================================
 
 # Govern voice-orchestrator spend with Floe
@@ -1537,9 +2407,120 @@ telephony via [Floe Phone](../developers/floe-phone.md), or the full path via
 [Pipecat / LiveKit on Floe](voice-stack.md#live-voice-with-your-own-stack-livekit-pipecat).
 
 ==============================================================================
+# Ledger sync — BYOK & self-hosted coverage
+Source: docs/build/ledger-sync.md
+URL: https://floe-labs.gitbook.io/docs/connect-your-stack/ledger-sync.md
+==============================================================================
+
+# Ledger sync — coverage for BYOK & self-hosted spend
+
+{% hint style="info" %}
+**Rolling out.** The client methods and `floe-guard push` CLI ship in the guard library today; the server endpoint (`POST /v1/agents/ledger/sync`) is rolling out. If a sync returns `404`, the endpoint isn't enabled for your account yet — request access at [hello@floefinance.com](mailto:hello@floefinance.com).
+{% endhint %}
+
+Your [Coverage Score](coverage-score.md) can only count spend Floe can see. Floe sees the calls it routes — the gateway, the x402 proxy, Floe Phone. It **cannot** see a call it never touched: an LLM you hit with your own provider key (BYOK), a model you self-host, a tool you pay for off Floe's path. That spend is **dark** — it counts against nothing and appears nowhere.
+
+Ledger sync closes that gap. The open-source [`floe-guard`](https://github.com/Floe-Labs/floe-guard) library already keeps a local, priced ledger of every call your agent makes. This feature lets it **push that ledger to Floe's [Reconcile Mode](../developers/webhooks.md#connect-your-orchestrator-reconcile-mode)**, so dark spend becomes **reconciled** — visible on the score, attributable in your billing, and on the path to full coverage.
+
+## Trust & privacy first
+
+This is opt-in, explicit, and quiet by default. Nothing about it phones home.
+
+- **Off by default. Zero telemetry.** The guard sends nothing anywhere until you both (a) opt in with an API key and (b) explicitly call `sync()`. No background flush, no ambient reporting.
+- **The request body is exactly your `export_log()` output** — priced spend events only: `timestamp`, `kind`, `model_or_tool`, token counts, `cost_usd`. That's it.
+- **No prompts. No content. No identifiers.** The only free-form field that ever leaves the process is an optional `label` **you** set. There is no user id, no request payload, no transcript, no IP.
+- **The client validates before it sends.** Anything outside the documented event schema is rejected locally — a malformed or over-broad row never leaves your process.
+- **Revocable.** `disable_sync()` turns it back off and clears the stored key. No key on disk means no possible send.
+
+If you can't send content you don't have, you can't leak it. The guard never captures prompts in the first place — it prices calls, it doesn't record them.
+
+## Turn it on
+
+You need a **`read_write`** agent key (`floe_…`) — mint one from the [Developer Dashboard](../developers/developer-dashboard.md) or `POST /v1/developer/agents/:id/keys` with `"permissions": "read_write"`. A read-only key is rejected.
+
+### Programmatic
+
+{% tabs %}
+{% tab title="Python" %}
+```python
+from floe_guard import BudgetGuard
+
+guard = BudgetGuard(limit_usd=25.0)
+
+# ... your agent runs, guard prices each call into its local ledger ...
+
+guard.enable_sync(api_key="floe_…")   # opt in once (stores the key)
+result = guard.sync()                  # explicit send of the current ledger
+print(result)  # {'synced': 128, 'duplicates': 0, 'rejected': 0}
+
+guard.disable_sync()                   # revoke — clears the key, stops all sends
+```
+{% endtab %}
+
+{% tab title="TypeScript" %}
+```typescript
+import { BudgetGuard } from "floe-guard";
+
+const guard = new BudgetGuard({ limitUsd: 25.0 });
+
+// ... your agent runs, guard prices each call into its local ledger ...
+
+guard.enableSync({ apiKey: "floe_…" });   // opt in once (stores the key)
+const result = await guard.sync();         // explicit send of the current ledger
+console.log(result); // { synced: 128, duplicates: 0, rejected: 0 }
+
+guard.disableSync();                        // revoke — clears the key, stops all sends
+```
+{% endtab %}
+{% endtabs %}
+
+`sync()` is safe to call repeatedly: re-sending events Floe has already seen dedupes server-side (they land in `duplicates`, not double-counted). Call it on a timer, at task boundaries, or once at shutdown — whatever fits your run.
+
+### CLI
+
+If your ledger already lives on disk as newline-delimited JSON (one `export_log()` event per line), push it directly:
+
+```bash
+floe-guard push ledger.jsonl --key floe_…
+```
+
+Or pipe `export_log()` output straight in:
+
+```bash
+your-agent --dump-ledger | floe-guard push - --key floe_…
+```
+
+Both print the same `{ synced, duplicates, rejected }` summary the programmatic call returns.
+
+## What it does to your Coverage Score
+
+Synced spend lands in the **reconciled** bucket (see the [three-way split](coverage-score.md)). Two things follow from that, and both are deliberate:
+
+- **It *lowers* your enforceable percentage.** This spend is real, but Floe didn't gate it — so it's honest to count it as reconciled, not enforceable. A score that quietly ignored your BYOK bill would be lying. Reconciling it is the first step; the second is moving those legs onto Floe rails so they become enforceable pre-call. That's the ["graduate to 100% coverage"](migrate-to-full-coverage.md) path — you can't graduate a leg the score can't see.
+- **It's budget, not balance.** A synced row reports spend that already happened, for coverage and attribution. It **moves no money**, debits no balance, and **never suspends the agent**. Ledger sync reconciles history; it does not enforce.
+
+Watch the effect on the **Coverage Score card** in your [dashboard](https://dev-dashboard.floelabs.xyz) — dark spend drops, reconciled rises, and the score names which legs to move next.
+
+## When to reach for this
+
+- You call an LLM or tool with **your own provider key** and want its cost on the same score as your Floe-routed spend.
+- You **self-host** a model (vLLM, Ollama, a private endpoint) that Floe never sees.
+- You have **off-path** paid calls — a vendor billed on its own account — that you're not ready to move onto the [proxy](../developers/x402-facilitator.md) yet, but want counted.
+
+If a leg *can* run through Floe, routing it there is strictly better — it becomes enforceable pre-call, not just reconciled after. Ledger sync is for the spend that can't (yet).
+
+## Related
+
+- [Coverage Score](coverage-score.md) — the enforceable / reconciled / dark split this feeds.
+- [`POST /v1/agents/ledger/sync`](../developers/ledger-sync-api.md) — the endpoint reference.
+- [Reconcile Mode](../developers/webhooks.md#connect-your-orchestrator-reconcile-mode) — the other way cost reaches the ledger (hosted orchestrators).
+- [Graduate to 100% coverage](migrate-to-full-coverage.md) — moving reconciled legs onto Floe rails.
+- [Budget-Aware Routing](budget-aware-routing.md) — `floe-guard`'s local hard-stop and advisory taper.
+
+==============================================================================
 # Graduate to 100% coverage
 Source: docs/build/migrate-to-full-coverage.md
-URL: https://floe-labs.gitbook.io/docs/the-voice-stack/migrate-to-full-coverage.md
+URL: https://floe-labs.gitbook.io/docs/connect-your-stack/migrate-to-full-coverage.md
 ==============================================================================
 
 # Graduate to 100% coverage — orchestrator → Pipecat/LiveKit on Floe
@@ -1620,7 +2601,7 @@ over this table.
 ==============================================================================
 # Floe Phone — numbers & telephony
 Source: docs/developers/floe-phone.md
-URL: https://floe-labs.gitbook.io/docs/the-voice-stack/floe-phone.md
+URL: https://floe-labs.gitbook.io/docs/connect-your-stack/floe-phone.md
 ==============================================================================
 
 # Floe Phone — Numbers & Voice for Agents
@@ -1967,7 +2948,7 @@ Everything above is also in the [developer dashboard](developer-dashboard.md): o
 ==============================================================================
 # Floe Inference — keyless LLM & voice
 Source: docs/developers/keyless-inference.md
-URL: https://floe-labs.gitbook.io/docs/the-voice-stack/keyless-inference.md
+URL: https://floe-labs.gitbook.io/docs/connect-your-stack/keyless-inference.md
 ==============================================================================
 
 # Floe Inference — keyless pay-as-you-go LLM & voice
@@ -2306,64 +3287,9 @@ Successful calls return the provider's response verbatim. Upstream errors pass t
 See the full [Error Codes](../reference/error-codes.md) reference for the rest of the Floe API.
 
 ==============================================================================
-# Unified Billing & Ledger
-Source: docs/build/unified-ledger.md
-URL: https://floe-labs.gitbook.io/docs/the-voice-stack/unified-ledger.md
-==============================================================================
-
-# Unified Billing & Ledger
-
-A token router shows you your LLM spend. Floe shows you the whole bill — telephony, speech, search, compute, and LLM — in one ledger, priced per call, capped by one policy set.
-
-## Why this exists
-
-A voice agent's cost is never just tokens. One conversation pays for telephony to place the call, speech-to-text to hear the caller, an LLM to decide what to say, and text-to-speech to say it back. If four vendors bill four different ways, you can't answer the only question that matters: what did this call cost, and was it worth it?
-
-Floe answers it. Every paid leg — x402 vendors and LLM alike — settles from the same balance and lands in the same ledger, tagged by agent, task, and vendor. x402 vendors go through `POST /v1/proxy/fetch`; LLM calls go through Floe's OpenAI-compatible gateway — **keyless** `POST /v1/chat/completions` (recommended; fully-qualified `provider/model` ids) or the **BYOK metered proxy** `POST /v1/llm/chat/completions` (your own provider key; model id with or without a `provider/` prefix). One balance, one ledger, one policy set.
-
-## Route your LLM through Floe (BYOK metered proxy)
-
-`POST /v1/llm/chat/completions` is Floe's **BYOK metered proxy**: you bring your own upstream provider key and Floe charges only a small routing fee on top of provider cost. It is OpenAI-compatible — same request shape as OpenAI Chat Completions — but distinct from the keyless gateway in two ways: it prices from Floe's maintained LiteLLM cost map and accepts the model id **with or without** a `provider/` prefix (`gpt-4o` or `openai/gpt-4o` — Floe strips it), and it needs your provider key. Point it at Floe's host, authenticate with your Floe agent key, and send your upstream provider key in the `X-Floe-Provider-Key` header — **required on this endpoint** (used only to call upstream, then discarded, never persisted). To skip the header, store the key once (encrypted, per provider) and use the **keyless `/v1` gateway** instead — stored-key auto-routing works there, not on `/v1/llm`. See [per-request vs stored keys](../developers/keyless-inference.md) for the storage flow and the fixed BYOK service fee.
-
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/llm/chat/completions \
-  -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "X-Floe-Provider-Key: $OPENAI_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "gpt-4o",
-    "messages": [{ "role": "user", "content": "Hello from Floe" }]
-  }'
-```
-
-> **Don't want to hold a provider key at all?** Use the **keyless** gateway `POST /v1/chat/completions` with a **fully-qualified** `provider/model` id (`openai/gpt-4o`) — Floe fronts the upstream relationship and bills you per call. That's the recommended path for new work; see [Floe Inference (Keyless LLM & Voice)](../developers/keyless-inference.md).
-
-Now LLM tokens, speech, and search all count against the same budgets, appear in the same analytics, and feed the same per-agent cost history — right next to the x402 vendors you already pay through the proxy.
-
-## One task, one budget, every vendor
-
-Tag every leg of a job with the `X-Floe-Task-Id` header — on the proxy call and on the LLM call. The task budget then caps the **sum** across all vendors — telephony + STT + LLM + TTS — not each vendor in isolation.
-
-```bash
--H "X-Floe-Task-Id: call-8842"
-```
-
-A $0.50 cap on `call-8842` is a ceiling for the whole conversation, no matter how the cost splits across the four vendors that served it. See [Spend Controls](../developers/spend-controls.md) for policy types and windows.
-
-## Keyless inference
-
-You can go one step further and drop the vendor accounts entirely. With keyless inference, you call LLM and voice models with no vendor account at all — Floe holds the upstream relationship and bills you per call from the same balance. Same ledger, same tags, one fewer key to manage.
-
-See [Floe Inference (Keyless LLM & Voice)](../developers/keyless-inference.md).
-
-## Next
-
-Put the ledger to work behind a real voice agent — telephony, STT, LLM, and TTS on one bill: [The Voice Stack](voice-stack.md).
-
-==============================================================================
 # Budget-Aware Routing
 Source: docs/build/budget-aware-routing.md
-URL: https://floe-labs.gitbook.io/docs/the-voice-stack/budget-aware-routing.md
+URL: https://floe-labs.gitbook.io/docs/connect-your-stack/budget-aware-routing.md
 ==============================================================================
 
 # Budget-Aware Routing
@@ -2425,7 +3351,7 @@ Once routing decisions are made, every call — downgraded, finished, or stopped
 ==============================================================================
 # Latency & overhead
 Source: docs/build/latency-overhead.md
-URL: https://floe-labs.gitbook.io/docs/the-voice-stack/latency-overhead.md
+URL: https://floe-labs.gitbook.io/docs/connect-your-stack/latency-overhead.md
 ==============================================================================
 
 # Latency
@@ -4958,701 +5884,6 @@ Email [hello@floefinance.com](mailto:hello@floefinance.com) with:
 - Must be reachable and functional at the time of submission
 
 ==============================================================================
-# Agent Balance
-Source: docs/components/wallet.md
-URL: https://floe-labs.gitbook.io/docs/core-concepts/wallet.md
-==============================================================================
-
-# 01 · Agent Balance `GA`
-
-Every agent gets a funded dollar balance you top up. You set the spend controls; the agent pays vendors per call, up to the limits you set.
-
-That's the whole model: **funded balance → spend controls → pay-per-call.**
-
----
-
-## What you get
-
-- **A funded balance.** Top it up with a card, Apple Pay, Google Pay, or bank transfer. The agent spends from that balance.
-- **Spend limits.** Set a per-session ceiling with `set_spend_limit`; clear it with `clear_spend_limit`. A call that would exceed the cap is refused, not charged.
-- **Allowed destinations.** Restrict the wallet to a specific list of vendor endpoints.
-
-## Read state
-
-```typescript
-await agentkit.run("get_wallet_balance", {});
-await agentkit.run("get_spend_limit", {});
-```
-
-Maps to MCP tools: `get_wallet_balance`, `get_spend_limit`.
-
-## Manage spend caps
-
-```typescript
-await agentkit.run("set_spend_limit", { limitRaw: "100000000" }); // $100 session cap
-await agentkit.run("clear_spend_limit", {});
-```
-
-## Related
-
-- [Quickstart](../getting-started/quickstart.md)
-- [Agent Awareness](../developers/agent-awareness.md)
-
-==============================================================================
-# Coverage Score
-Source: docs/build/coverage-score.md
-URL: https://floe-labs.gitbook.io/docs/core-concepts/coverage-score.md
-==============================================================================
-
-# Coverage Score
-
-Every agent in your [dashboard](https://dev-dashboard.floelabs.xyz) carries a **Coverage Score**: the percentage of that agent's known spend Floe can act on, split three ways.
-
-| Bucket | Meaning | Example |
-|---|---|---|
-| **Enforceable** | The leg runs through Floe's path. Request legs (LLM turns, one-shot TTS) are gated **pre-call**; Floe-native **duration-billed** legs (streaming STT, Floe Phone minutes) are metered **live** and cut off at the cap. | Model calls via the custom-LLM slot; STT/TTS on Floe keys; Floe Phone minutes. |
-| **Reconciled** | The cost reaches the ledger at call-end via Reconcile Mode; the circuit breaker acts on the *next* admission. | A Vapi call's cost ingested from the end-of-call webhook. |
-| **Dark** | Spend Floe never sees. It counts against nothing and appears nowhere. | A vendor billed on its own account, with no webhook and no Floe key. |
-
-**Coverage = (enforceable + reconciled) ÷ total known spend.** Dark spend is the known-unknown: legs you've told Floe exist but that never report. Spend on vendors Floe has never heard of can't be counted at all — the score is honest about what it can't see.
-
-## Why no platform can compute this
-
-Vapi sees Vapi spend. Retell sees Retell's. On BYOK, platforms report provider costs as $0 because that spend sits on your own vendor bills. The Coverage Score spans **every** execution path an agent uses — which is only computable from a neutral ledger outside all of them.
-
-## How to raise it
-
-The score tells you which leg to move. In order of typical impact:
-
-1. **Connect the end-of-call webhook** ([setup](../developers/webhooks.md#connect-your-orchestrator-reconcile-mode)) — moves in-call platform legs from *dark* to *reconciled* in one paste.
-2. **Point the custom-LLM slot at Floe** ([Vapi](../platforms/vapi.md) · [Retell](../platforms/retell.md) · [Bland](../platforms/bland.md)) — moves the model leg (~40% of a cascade bill, ~60%+ realtime) from *reconciled* to *enforceable*.
-3. **Move telephony to [Floe Phone](../developers/floe-phone.md)** — enforceable minutes on the same ledger.
-4. **STT/TTS via Floe** *(early access — request at [hello@floefinance.com](mailto:hello@floefinance.com))*.
-
-For spend Floe never routes at all — **BYOK** LLM calls, self-hosted models, off-path tools — routing isn't an option yet, so it stays *dark*. [Ledger sync](ledger-sync.md) pushes `floe-guard`'s local spend ledger to Reconcile Mode, moving that spend from *dark* to *reconciled* so the score counts it (budget only — it moves no balance).
-
-## Reading the tile
-
-The dashboard shows the score on the agent overview and, rolled up across every agent, on the account home. When the window is empty the tile tells you *why*. The rules are checked in this order — first match wins:
-
-1. **A score** — any spend in the window. On a keyless agent that is **"Coverage: 100%"**: every dollar is gateway-routed and enforceable (pre-call on request legs, live on Floe-native duration-billed legs). This is the ceiling, not an error.
-2. **"Coverage: 100%" by call count** — no spend yet, but Floe-routed calls landed at $0 (free-tier models, or BYOK on a $0 service fee). Every call went through Floe's gate; the money score renders with the first metered call.
-3. **"Computing"** — nothing metered yet, but the account routes on its own vendor keys (BYOK), or an end-of-call webhook is connected and the first call-end hasn't landed.
-4. **"No coverage score yet"** — no spend, no routed calls, no BYOK, no webhook. Floe only sees spend you route through it. **Connect webhook (2 min) →** opens the agent's Voice orchestrators card; the score computes from the next call.
-
-So a keyless agent with routed calls never sees "No coverage score yet" — rules 1–2 win. The account tile uses the same rules across the whole fleet; its **Connect webhook** button takes you to the first agent that has no webhook yet.
-
-## API
-
-```http
-GET /v1/developer/agents/:agentId/coverage?days=30
-```
-
-Returns `totals` — `knownRaw`, `enforceableRaw`, `reconciledRaw` (raw USDC) plus `coverageBps` (the enforceable-plus-reconciled share in basis points; `null` when there's no spend in the window) — a `bySource` breakdown (`class`, `calls`, `costRaw`), a daily `series`, `calls`, and `dark: "unknown"` (spend on platforms never wired to Floe can't be counted).
-
-`calls` counts the same rows `totals` sums: `total`, `enforceable`, `reconciled`, `byok`. `enforceable` and `reconciled` are mutually exclusive and sum to `total`; `byok` is a **subset of `enforceable`** (gateway calls served on your own vendor key — rail `byok`) and never overlaps `reconciled` (spend pushed by [ledger sync](ledger-sync.md) lands as reconciled rows, not `byok`). Don't add `byok` to the other two.
-
-**Zero-spend windows:** `coverageBps` is `null` whenever `knownRaw` is `0`, even if calls landed at $0. Clients should read `calls.*` in that case — `calls.enforceable > 0 && calls.reconciled == 0` is what the dashboard renders as "Coverage: 100%" by call count; `calls.total == 0` is genuinely no activity. `null` never means "0% covered". Accepts any developer credential — a `floe_live_…` key, a dashboard session, or a wallet-signature header set.
-
-## The honest boundary
-
-On calls Floe doesn't run — the orchestrator owns the media path — enforcement is **admission control, never mid-call**: an over-budget request is refused *before* it starts, and a reconciled breach denies the **next** admission (the next inbound call on Vapi/Retell **when a pre-call URL is configured**; otherwise the agent's next Floe-keyed action — always the case on Bland, which has no pre-call hook; a cooperative pre-call check on self-hosted stacks). The one exception is **Floe-native duration-billed legs** — streaming STT and Floe Phone run through Floe's own path and are metered live, cut off mid-stream at the cap. The score exists so that boundary is **visible instead of implied**.
-
-> Pre-call where we're in the path. Circuit breaker everywhere else.
-
-==============================================================================
-# Ledger sync — BYOK & self-hosted coverage
-Source: docs/build/ledger-sync.md
-URL: https://floe-labs.gitbook.io/docs/core-concepts/ledger-sync.md
-==============================================================================
-
-# Ledger sync — coverage for BYOK & self-hosted spend
-
-{% hint style="info" %}
-**Rolling out.** The client methods and `floe-guard push` CLI ship in the guard library today; the server endpoint (`POST /v1/agents/ledger/sync`) is rolling out. If a sync returns `404`, the endpoint isn't enabled for your account yet — request access at [hello@floefinance.com](mailto:hello@floefinance.com).
-{% endhint %}
-
-Your [Coverage Score](coverage-score.md) can only count spend Floe can see. Floe sees the calls it routes — the gateway, the x402 proxy, Floe Phone. It **cannot** see a call it never touched: an LLM you hit with your own provider key (BYOK), a model you self-host, a tool you pay for off Floe's path. That spend is **dark** — it counts against nothing and appears nowhere.
-
-Ledger sync closes that gap. The open-source [`floe-guard`](https://github.com/Floe-Labs/floe-guard) library already keeps a local, priced ledger of every call your agent makes. This feature lets it **push that ledger to Floe's [Reconcile Mode](../developers/webhooks.md#connect-your-orchestrator-reconcile-mode)**, so dark spend becomes **reconciled** — visible on the score, attributable in your billing, and on the path to full coverage.
-
-## Trust & privacy first
-
-This is opt-in, explicit, and quiet by default. Nothing about it phones home.
-
-- **Off by default. Zero telemetry.** The guard sends nothing anywhere until you both (a) opt in with an API key and (b) explicitly call `sync()`. No background flush, no ambient reporting.
-- **The request body is exactly your `export_log()` output** — priced spend events only: `timestamp`, `kind`, `model_or_tool`, token counts, `cost_usd`. That's it.
-- **No prompts. No content. No identifiers.** The only free-form field that ever leaves the process is an optional `label` **you** set. There is no user id, no request payload, no transcript, no IP.
-- **The client validates before it sends.** Anything outside the documented event schema is rejected locally — a malformed or over-broad row never leaves your process.
-- **Revocable.** `disable_sync()` turns it back off and clears the stored key. No key on disk means no possible send.
-
-If you can't send content you don't have, you can't leak it. The guard never captures prompts in the first place — it prices calls, it doesn't record them.
-
-## Turn it on
-
-You need a **`read_write`** agent key (`floe_…`) — mint one from the [Developer Dashboard](../developers/developer-dashboard.md) or `POST /v1/developer/agents/:id/keys` with `"permissions": "read_write"`. A read-only key is rejected.
-
-### Programmatic
-
-{% tabs %}
-{% tab title="Python" %}
-```python
-from floe_guard import BudgetGuard
-
-guard = BudgetGuard(limit_usd=25.0)
-
-# ... your agent runs, guard prices each call into its local ledger ...
-
-guard.enable_sync(api_key="floe_…")   # opt in once (stores the key)
-result = guard.sync()                  # explicit send of the current ledger
-print(result)  # {'synced': 128, 'duplicates': 0, 'rejected': 0}
-
-guard.disable_sync()                   # revoke — clears the key, stops all sends
-```
-{% endtab %}
-
-{% tab title="TypeScript" %}
-```typescript
-import { BudgetGuard } from "floe-guard";
-
-const guard = new BudgetGuard({ limitUsd: 25.0 });
-
-// ... your agent runs, guard prices each call into its local ledger ...
-
-guard.enableSync({ apiKey: "floe_…" });   // opt in once (stores the key)
-const result = await guard.sync();         // explicit send of the current ledger
-console.log(result); // { synced: 128, duplicates: 0, rejected: 0 }
-
-guard.disableSync();                        // revoke — clears the key, stops all sends
-```
-{% endtab %}
-{% endtabs %}
-
-`sync()` is safe to call repeatedly: re-sending events Floe has already seen dedupes server-side (they land in `duplicates`, not double-counted). Call it on a timer, at task boundaries, or once at shutdown — whatever fits your run.
-
-### CLI
-
-If your ledger already lives on disk as newline-delimited JSON (one `export_log()` event per line), push it directly:
-
-```bash
-floe-guard push ledger.jsonl --key floe_…
-```
-
-Or pipe `export_log()` output straight in:
-
-```bash
-your-agent --dump-ledger | floe-guard push - --key floe_…
-```
-
-Both print the same `{ synced, duplicates, rejected }` summary the programmatic call returns.
-
-## What it does to your Coverage Score
-
-Synced spend lands in the **reconciled** bucket (see the [three-way split](coverage-score.md)). Two things follow from that, and both are deliberate:
-
-- **It *lowers* your enforceable percentage.** This spend is real, but Floe didn't gate it — so it's honest to count it as reconciled, not enforceable. A score that quietly ignored your BYOK bill would be lying. Reconciling it is the first step; the second is moving those legs onto Floe rails so they become enforceable pre-call. That's the ["graduate to 100% coverage"](migrate-to-full-coverage.md) path — you can't graduate a leg the score can't see.
-- **It's budget, not balance.** A synced row reports spend that already happened, for coverage and attribution. It **moves no money**, debits no balance, and **never suspends the agent**. Ledger sync reconciles history; it does not enforce.
-
-Watch the effect on the **Coverage Score card** in your [dashboard](https://dev-dashboard.floelabs.xyz) — dark spend drops, reconciled rises, and the score names which legs to move next.
-
-## When to reach for this
-
-- You call an LLM or tool with **your own provider key** and want its cost on the same score as your Floe-routed spend.
-- You **self-host** a model (vLLM, Ollama, a private endpoint) that Floe never sees.
-- You have **off-path** paid calls — a vendor billed on its own account — that you're not ready to move onto the [proxy](../developers/x402-facilitator.md) yet, but want counted.
-
-If a leg *can* run through Floe, routing it there is strictly better — it becomes enforceable pre-call, not just reconciled after. Ledger sync is for the spend that can't (yet).
-
-## Related
-
-- [Coverage Score](coverage-score.md) — the enforceable / reconciled / dark split this feeds.
-- [`POST /v1/agents/ledger/sync`](../developers/ledger-sync-api.md) — the endpoint reference.
-- [Reconcile Mode](../developers/webhooks.md#connect-your-orchestrator-reconcile-mode) — the other way cost reaches the ledger (hosted orchestrators).
-- [Graduate to 100% coverage](migrate-to-full-coverage.md) — moving reconciled legs onto Floe rails.
-- [Budget-Aware Routing](budget-aware-routing.md) — `floe-guard`'s local hard-stop and advisory taper.
-
-==============================================================================
-# Vendor actuals
-Source: docs/build/vendor-actuals.md
-URL: https://floe-labs.gitbook.io/docs/core-concepts/vendor-actuals.md
-==============================================================================
-
-# Vendor actuals
-
-Your [Coverage Score](coverage-score.md) tells you how much of your spend Floe can *act on*. **Vendor actuals** tells you what that spend actually **cost you at the vendor** — reconciled against the vendor's own billing records, leg by leg.
-
-The distinction matters most on **BYOK**. When a call runs on your own vendor key, Floe settles only its service fee; the vendor bills you directly, so your true cost was never in Floe's settled ledger. Floe used to record a rate-card *estimate* of it. **It no longer does.** Every such leg now carries the vendor's own request id, a connector pulls the vendor's billing record, and a reconcile pass stamps the leg with what that record supports — or with the honest admission that no record exists yet.
-
-## A cost is a claim
-
-Every leg carries a **status**, and the status is the whole point: it says exactly how much precision the number behind it has earned.
-
-| Status | What it means | What it is **not** |
-|---|---|---|
-| `exact` | Reconciled to the vendor's own **per-request** billing record. | — |
-| `period-rate` | Priced at the vendor's own **realized rate for that period**, taken from their cost and usage APIs and applied to the leg's vendor-reported units. | Not `exact`. Not per-request precision. |
-| `invoiced` | **Footed to the vendor's invoice.** The status it held before the foot is retained. | — |
-| `pending` | The vendor **hasn't published this cost yet**. | Not an error. Not a zero. |
-| `manual` | **No vendor API publishes this** — upload the invoice. | Not a zero. |
-
-Two rules follow, and both are enforced in the API rather than left to a renderer:
-
-- **A `pending` or `manual` leg has no cost.** The surface shows its units. `costRaw` is `null` — never `0`, because a zero in a column headed "cost" is a claim, and a blank is the truth.
-- **`exact` and `period-rate` are never added together.** They are different claims, so they come back as separate subtotals and get different colours in the dashboard. A `period-rate` figure is a real derivation — the vendor's own bucket cost ÷ the vendor's own bucket units, with both source records and the realized rate stored as provenance — but describing it as "exact" would overstate it.
-
-Those two rules operate on different things, which is worth stating plainly. The **subtotals** are per claim and stay apart: an `exact` figure and a `period-rate` figure are never merged into one number labelled `exact`. The **row total** is a different object — it is the sum of every leg that has a price, and a row shows one **only when every leg in it is `exact`, `period-rate` or `invoiced` and USD-denominated**. So a row mixing `exact` and `period-rate` legs does get a total; what it never gets is a total that hides which claim each dollar came from. Any row with a `pending`, `manual`, or non-USD (`currency_unsupported`) leg returns `"partial — lower bound"` — `totalRaw` is `null`, never `0`, and `totalBlockedBy` names why (e.g. `non_usd` for a non-USD leg, so a client never reads the missing price as zero). There is no code path that renders a misleading single figure.
-
-## When the cost arrives
-
-Some vendors publish a leg's cost at call-end; others only on a next-day batch. So a leg from a call you placed a minute ago is *supposed* to be `pending` — that is the system working correctly, not an error or a capture failure.
-
-## Coverage reads low on voice-heavy accounts
-
-A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.
-
-## Whose cost it is
-
-Every agency-facing read filters on `cost_owner = 'developer'` — **legs your account pays for**.
-
-A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
-
-## No FX, ever
-
-A non-USD or credit-denominated vendor record is **structurally unpriceable** here. There is no FX source in Floe, and an invented rate inside an audit ledger is worse than a blank. Those legs render `—` plus the vendor's verbatim cost string in their provenance, and are excluded from every subtotal. They also open a `currency_unsupported` finding so the omission is visible rather than silent.
-
-## Where to access it
-
-Vendor actuals is an **Agency** capability. Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
-
-Read your reconciled costs — legs, by-call, and rollups, each with a provenance drawer — in the dashboard at `/actuals`, over the `floe actuals` CLI, or through the `actuals` MCP capability group (read tools only; invoice upload and footing stay human-in-the-loop). The engine records everything it couldn't reconcile as a *finding* with a reason — review and resolve them in the dashboard.
-
-`floe actuals` is about **your** vendors' bills. Not to be confused with `floe vendors`, which probes the health of Floe's own marketplace vendors.
-
-## Related
-
-- [Coverage Score](coverage-score.md) — how much of your spend Floe can enforce, which is a different question from what it cost.
-- [Unified Billing & Ledger](unified-ledger.md) — the settled Floe ledger these vendor costs sit beside.
-- [Ledger sync](ledger-sync.md) — pushing off-path spend into the ledger in the first place.
-
-==============================================================================
-# Spend Controls
-Source: docs/developers/spend-controls.md
-URL: https://floe-labs.gitbook.io/docs/core-concepts/spend-controls.md
-==============================================================================
-
-# Spend Controls
-
-Programmable budgets for your agent wallets. Cap spending per vendor, per task, per API, or across your whole team — with optional time windows.
-
-> **Scope: one ledger, one policy set.** Spend controls cap **every paid call Floe settles** — x402 vendors through the proxy (`POST /v1/proxy/fetch`) **and** LLM/voice tokens through the keyless gateway (`POST /v1/chat/completions`, host `credit-api.floelabs.xyz`); the legacy BYOK metered proxy `/v1/llm/chat/completions` is capped the same way. Route both through Floe and a single task or session budget bounds the entire conversation cost across every vendor. The one thing a policy can't see is a call you send straight to a provider with your own key, bypassing Floe — so route it through Floe.
-
-## Policy Types
-
-| Type | What it caps | Match on | Example |
-|------|-------------|----------|---------|
-| **Session** | Total agent spend | Everything | "$100/day soft cap" |
-| **Vendor** | Spend to a specific payee wallet | Payment recipient address | "$20/day to Venice AI" |
-| **API** | Spend to a hostname or domain | Target URL hostname | "$100/week to *.venice.ai" |
-| **Task** | Spend on a specific task ID | `X-Floe-Task-Id` header | "$5 budget for task-research-123" |
-
-Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` kind and the `session` window are **team-scoped only** (`/v1/developer/policies`).
-
-## Quick Start
-
-### Set a daily vendor cap
-
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
-  -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "kind": "vendor",
-    "matchKey": "0xB77561F454F10Ce87C93EfFC4682102017f4CE86",
-    "limitRaw": "50000000",
-    "windowKind": "rolling",
-    "windowSeconds": 86400
-  }'
-```
-
-This creates a $50/day rolling cap for a specific vendor wallet. Any x402 call where the payment recipient matches this address counts against the limit.
-
-### Set a per-API hostname cap
-
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
-  -H "Authorization: Bearer $FLOE_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "kind": "api",
-    "matchKey": ".venice.ai",
-    "matchKind": "host_suffix",
-    "limitRaw": "100000000",
-    "windowKind": "rolling",
-    "windowSeconds": 604800
-  }'
-```
-
-This caps all calls to `*.venice.ai` at $100/week.
-
-### Set a team-wide budget
-
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/policies \
-  -H "Cookie: floe_session=..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "kind": "session",
-    "limitRaw": "500000000",
-    "windowKind": "rolling",
-    "windowSeconds": 2592000
-  }'
-```
-
-This caps total spend across ALL your agent wallets at $500/month.
-
-## Time Windows
-
-Policies can be scheduled with calendar bounds:
-
-```json
-{
-  "kind": "vendor",
-  "matchKey": "0x...",
-  "limitRaw": "10000000",
-  "windowKind": "rolling",
-  "windowSeconds": 86400,
-  "effectiveFrom": 1748908800,
-  "effectiveUntil": 1749513600
-}
-```
-
-- **effectiveFrom** — Policy is inactive before this timestamp (UNIX seconds)
-- **effectiveUntil** — Policy auto-expires after this timestamp
-
-Useful for campaign budgets, time-boxed experiments, or scheduled spending windows.
-
-## Window Kinds
-
-| Kind | Behavior | Use case |
-|------|----------|----------|
-| `rolling` | Resets every `windowSeconds` | Daily/weekly/monthly budgets |
-| `session` | Resets when you call PUT /spend-limit | Manual session caps (team policies only) |
-| `once` | Single-shot cap, expires at `expiresAt` | Pre-borrow task holds |
-
-## Matching Rules
-
-### Vendor policies
-Match against the **payment recipient address** (the wallet that receives USDC). Lowercased, exact match.
-
-### API policies
-Match against the **target URL hostname**:
-- `host_suffix` (default): `.venice.ai` matches `api.venice.ai`, `x402.venice.ai`, `venice.ai`
-- `host_exact`: `api.venice.ai` matches only `api.venice.ai`
-
-### Task policies
-Match against the **`X-Floe-Task-Id` header** sent with each proxy call. Case-insensitive.
-
-## Enforcement
-
-Policies are checked on every `POST /v1/proxy/fetch` call, inside the same transaction as the balance reservation. If any policy would be exceeded, the call is rejected with **402**:
-
-```json
-{
-  "error": "policy_exceeded",
-  "kind": "vendor",
-  "matchKey": "0xb775…ce86",
-  "policyId": 42,
-  "label": "Venice daily cap",
-  "reason": null,
-  "required": "5000000",
-  "spent": "48500000",
-  "limit": "50000000"
-}
-```
-
-When the breached policy is a kill-switch (`action: "suspend_agent"`, see below), the same body additionally carries `"auto_suspended": true`. The field is present **only** in that case — a plain breach omits it:
-
-```json
-{
-  "error": "policy_exceeded",
-  "kind": "task",
-  "matchKey": "batch-run-7",
-  "policyId": 57,
-  "label": null,
-  "reason": null,
-  "required": "5000000",
-  "spent": "9500000",
-  "limit": "10000000",
-  "auto_suspended": true
-}
-```
-
-`suspendedReason` is **not** part of the 402 body — it lives on the agent record (`GET /v1/developer/agents/:agentId`) as the audit trail for why the agent is suspended.
-
-Spend is calculated from settled + in-flight payments. Refunded/failed calls automatically drop out of the spend sum.
-
-## Breach Action: the Policy Kill-Switch
-
-By default a breach only declines the single call (the agent can keep trying). Set `action: "suspend_agent"` on a policy to turn it into a **kill-switch**: the breaching call still gets the 402 above (with `"auto_suspended": true`), and the **whole agent is suspended** — every subsequent call is rejected at authentication with 403 until you resume it.
-
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
-  -H "Cookie: floe_session=..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "kind": "task",
-    "matchKey": "batch-run-7",
-    "limitRaw": "10000000",
-    "windowKind": "rolling",
-    "windowSeconds": 86400,
-    "action": "suspend_agent"
-  }'
-```
-
-A runaway agent that blows through this $10/day task budget is stopped cold instead of burning retries against a 402 wall.
-
-Notes:
-
-- Omitted or `"block"` preserves the default decline-one-call behavior.
-- Only a genuine over-limit breach trips the switch. Fail-closed denials (e.g. an `api` policy that can't resolve the target hostname) decline the call but never suspend.
-- **Team-scoped policies:** `action` is accepted on team policies too. A breach suspends **the single agent whose call crossed the cap** — never the whole team. The team cap keeps counting every agent's spend, so once it's saturated, each additional agent trips itself on its next paid call.
-- The suspension is auditable: the agent record's `suspendedReason` (`GET /v1/developer/agents/:agentId`) reads `policy:<id>`, and the dashboard's agent page shows which policy tripped it.
-- Resume via the pause/resume endpoint below or the dashboard — the policy stays active, so an unresolved budget breach will trip it again.
-
-## Value-Aware Caps (`X-Floe-Task-Value`)
-
-A static cap treats a $0.10 spam-filter run and a $500-revenue lead-enrichment run the same. Value-aware caps let one policy definition flex with the business value of the task — **inside operator-set bounds**.
-
-Enable it by giving a policy scaling bounds:
-
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
-  -H "Cookie: floe_session=..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "kind": "task",
-    "matchKey": "lead-enrichment",
-    "limitRaw": "1000000",
-    "limitFloorRaw": "500000",
-    "limitCeilingRaw": "3000000",
-    "windowKind": "rolling",
-    "windowSeconds": 86400
-  }'
-```
-
-The caller then sends `X-Floe-Task-Value` (basis points; `10000` = 1×) on its paid calls:
-
-```
-X-Floe-Task-Value: 30000    → effective cap = clamp($1 × 3, $0.50, $3) = $3
-X-Floe-Task-Value: 2500     → effective cap = clamp($1 × 0.25, $0.50, $3) = $0.50
-(no header)                 → effective cap = $1 (the base limitRaw)
-```
-
-Security model — the header is **caller-supplied and untrusted by construction**:
-
-- A policy **without** bounds ignores the header completely. Nothing changes for existing policies.
-- With bounds, the header can only move the cap **between** `limitFloorRaw` and `limitCeilingRaw` — both operator-set (`floor ≤ limitRaw ≤ ceiling`, enforced at the API and by DB constraints). A caller can never grant itself more than the operator provisioned.
-- An unset side clamps at `limitRaw`: a bare ceiling enables upscaling only, a bare floor downscaling only.
-- Enforcement, `/forecast` preflight, and the `X-Floe-Budget-Advisory` header all report the same **effective** cap (one shared computation — they cannot drift).
-
-Accepted range for the header: integer `1..100000` (0.0001×–10×); anything else is ignored (1×).
-
-## Outcome-Quality Throttle (throttle on value, not just cost)
-
-Cost caps stop an agent from spending too much; the quality throttle stops it from spending too much **on work that isn't working**. It consumes the caller-reported outcome signal from [Outcome-Linked Spend Attribution](agent-runtime-contract.md#outcome-linked-spend-attribution) — Floe never judges quality; your agent's own reports drive it.
-
-```bash
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
-  -H "Cookie: floe_session=..." \
-  -H "Content-Type: application/json" \
-  -d '{
-    "kind": "task",
-    "matchKey": "lead-enrichment",
-    "limitRaw": "1000000",
-    "qualityThrottleFloorBps": 5000,
-    "qualityWindowSeconds": 3600,
-    "windowKind": "rolling",
-    "windowSeconds": 86400
-  }'
-```
-
-How it behaves:
-
-- Floe averages the agent's reported outcomes in the window (`scoreBps` when reported; otherwise `success`→100%, `partial`→50%, `failure`/`unknown`→0%) into a quality reading.
-- The effective cap is multiplied by `max(quality, qualityThrottleFloorBps)` — successive low-quality actions tighten spend toward the floor **even under budget**; recovering quality relaxes it back to 1×.
-- **No reported outcomes in the window → factor 1.0 — behavior unchanged.** No signal, no change: the throttle is deliberately fail-open (unlike the fail-closed host/recipient guards) because quality is an optional caller-supplied signal, not a resolvable request fact.
-- With value scaling on the same policy, quality applies after it; an operator `limitFloorRaw` still bounds the result from below.
-- The reading is cached for ~30s, which also damps a flapping signal.
-
-Trust boundary, stated plainly: quality is self-reported. An agent that lies about its own quality can avoid being throttled — the throttle protects you from *honest* runaway waste (retry loops, degraded upstream output), not from an adversarial agent. Hard caps remain the backstop.
-
-## Pause / Resume an Agent (self-serve kill-switch)
-
-Pause one agent without touching the rest of your fleet — no key rotation, no close:
-
-```bash
-curl -X PATCH https://credit-api.floelabs.xyz/v1/developer/agents/1/status \
-  -H "Cookie: floe_session=..." \
-  -H "Content-Type: application/json" \
-  -d '{ "status": "suspended" }'   # or "active" to resume
-```
-
-- Takes effect on the agent's next call (403 at authentication).
-- Only `active ↔ suspended` transitions are allowed. Closed or credit-frozen agents can't be resurrected through this endpoint (409) — those states belong to their own lifecycle flows.
-- Resuming clears `suspendedReason`; pausing sets it to `developer_manual`.
-
-## API Reference
-
-### Per-Agent Policies
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/v1/agents/policies` | Agent key | List active policies |
-| POST | `/v1/agents/policies` | Agent key | Create policy |
-| PATCH | `/v1/agents/policies/:id` | Agent key | Update limit/bounds |
-| DELETE | `/v1/agents/policies/:id` | Agent key | Revoke policy |
-| POST | `/v1/agents/policies/:id/reset` | Agent key | Reset rolling window |
-
-Same routes available at `/v1/developer/agents/:agentId/policies` with session cookie auth.
-
-### Agent Status (kill-switch)
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| PATCH | `/v1/developer/agents/:agentId/status` | Session cookie | Pause (`suspended`) or resume (`active`) one agent |
-
-### Team Policies
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| GET | `/v1/developer/policies` | Session cookie | List team policies |
-| POST | `/v1/developer/policies` | Session cookie | Create team policy |
-| PATCH | `/v1/developer/policies/:id` | Session cookie | Update |
-| DELETE | `/v1/developer/policies/:id` | Session cookie | Revoke |
-
-### Create Policy Body
-
-```typescript
-{
-  kind: 'vendor' | 'api' | 'task',   // per-agent; the 'session' kind is team-only (/v1/developer/policies)
-  matchKey: string,              // Required (except for the team-only 'session' kind)
-  matchKind?: 'host_exact' | 'host_suffix' | 'recipient',
-  limitRaw: string,              // Raw USDC, 6 decimals (e.g. "5000000" = $5)
-  windowKind?: 'rolling' | 'once',   // 'session' window is team-only
-  windowSeconds?: number,        // Required for rolling (minimum 60)
-  effectiveFrom?: number,        // UNIX seconds
-  effectiveUntil?: number,       // UNIX seconds
-  label?: string,                // Free-form label
-  action?: 'block' | 'suspend_agent',  // Breach behavior; omitted = 'block'
-  limitFloorRaw?: string,        // Value-scaling lower bound (≤ limitRaw)
-  limitCeilingRaw?: string,      // Value-scaling upper bound (≥ limitRaw); enables X-Floe-Task-Value
-  qualityThrottleFloorBps?: number,  // 0..10000 — enables the outcome-quality throttle
-  qualityWindowSeconds?: number,     // Quality lookback (min 60; default 86400)
-}
-```
-
-## Dashboard
-
-Policies can also be managed from the [Developer Dashboard](https://dev-dashboard.floelabs.xyz):
-- **Per-agent:** Agent detail page → Policies section
-- **Team-wide:** Settings → Team Policies
-
-==============================================================================
-# Agent Awareness
-Source: docs/developers/agent-awareness.md
-URL: https://floe-labs.gitbook.io/docs/core-concepts/agent-awareness.md
-==============================================================================
-
-# Agent Awareness
-
-Floe is the spend layer: one key pays every vendor per call, governed by server-side spend controls. A rational agent answers two questions before every paid action:
-
-1. **Do I have enough balance to make this call?**
-2. **Is this call worth its cost, and will it fit under my spend limit?**
-
-Without first-class primitives for these, agents either over-spend (no gating) or under-act (refuse to spend out of caution). Floe ships primitives that answer both in one round-trip — surfaced as actions in the SDKs and MCP tools.
-
-> **Scope.** `estimate_x402_cost` and these checks govern x402 payments made through the Floe proxy. They do **not** account for raw LLM token bills you pay with your own provider key — only x402 payments (and LLM tokens routed through Floe's LLM proxy) flow through this accounting.
-
-## The primitives
-
-| API | Question it answers |
-|---|---|
-| `GET /v1/agents/balance` | What is my spendable balance? |
-| `GET / PUT / DELETE /v1/agents/spend-limit` | Operator-defined session ceiling |
-| `POST /v1/x402/estimate` | What does this call cost? Will it fit my budget? |
-
-## Decision-loop pattern
-
-The canonical workflow before every paid call:
-
-```text
-┌──────────────────────────────────────────────────────────────┐
-│  1. estimate_x402_cost(url)                                  │
-│     → { priceRaw, reflection: { willExceedAvailable, ... } } │
-│                                                              │
-│  2. if reflection.willExceedAvailable                        │
-│        || reflection.willExceedSpendLimit:                   │
-│       → SKIP (or queue for later, or alert operator)         │
-│                                                              │
-│  3. else: proxy/fetch(url)                                   │
-└──────────────────────────────────────────────────────────────┘
-```
-
-The `estimate_x402_cost` response includes a **reflection** block that tells you, without making any side-effecting call, whether the payment would exceed:
-
-- Your `available` balance
-- Your `sessionSpendRemaining` (your operator-set cap)
-
-That collapses the checks into one round-trip — the unique value vs the agent doing its own preflight.
-
-## Bounding spend with `set_spend_limit`
-
-For per-session ceilings (e.g., "this agent gets $10/day"), use `set_spend_limit`. The cap is enforced inside the proxy paid-request flow: a request that would exceed it returns HTTP 402 with `error: spend_limit_exceeded` instead of being charged.
-
-```typescript
-// TS AgentKit
-await provider.setSpendLimit(walletProvider, { limitRaw: "10000000" }); // $10
-```
-
-```python
-# Python AgentKit
-provider.set_spend_limit(wallet_provider, {"limit_raw": "10000000"})
-```
-
-```bash
-# REST
-curl -X PUT https://credit-api.floelabs.xyz/v1/agents/spend-limit \
-  -H "Authorization: Bearer floe_..." \
-  -H "Content-Type: application/json" \
-  -d '{"limitRaw": "10000000"}'
-```
-
-`PUT` resets the session window — anything spent before this call no longer counts. `GET` returns `{active, limitRaw, sessionSpentRaw, sessionRemainingRaw}`. `DELETE` removes the cap.
-
-## Reading balance from serverless agents
-
-Lambdas, Cloud Run jobs, and other ephemeral runners can poll the balance and compare locally before spending:
-
-```typescript
-const view = await provider.getWalletBalance(walletProvider, {});
-// parse out available / sessionSpendRemaining, decide
-```
-
-`get_wallet_balance` is cheap and idempotent. Don't poll faster than once per second.
-
-## Where the primitives live
-
-- **REST API**: `GET /v1/agents/balance` for balance, `/v1/agents/spend-limit` for the session cap
-- **MCP server**: [mcp-server.md → Spend governance and awareness](mcp-server.md#spend-governance-and-awareness-14) — `get_credit_remaining`, `get_spend_limit` (snake_case)
-- **TypeScript SDK**: `floe-agent` v0.3.0+, on `X402ActionProvider`
-- **Python SDK**: `floe-agentkit-actions` v0.3.0+, on `X402ActionProvider`
-
-Each surface exposes the same balance and spend-limit semantics, but the names differ per surface — the AgentKit x402 balance action is `x402_get_balance`, the MCP tool is `get_wallet_balance`, and the REST route is `GET /v1/agents/balance`. Pick the wrapper that matches your runtime.
-
-> **Caveat.** A local balance read (`get_wallet_balance`) is an advisory snapshot and can race with in-flight settlements. The authoritative preflight is `estimate_x402_cost` plus the proxy's server-side spend checks, which decide at pay time.
-
-==============================================================================
 # Plain HTTP / REST
 Source: docs/frameworks/http.md
 URL: https://floe-labs.gitbook.io/docs/frameworks/http.md
@@ -6732,7 +6963,7 @@ GitHub: [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-ac
 ==============================================================================
 # Developer Dashboard
 Source: docs/developers/developer-dashboard.md
-URL: https://floe-labs.gitbook.io/docs/developers/developer-dashboard.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/developer-dashboard.md
 ==============================================================================
 
 # Developer Dashboard
@@ -6829,9 +7060,468 @@ Alerts are delivered via webhooks and shown in the dashboard.
 - **[x402 Credit Facilitator](x402-facilitator.md)** — Delegate collateral and let your agent pay for APIs automatically.
 
 ==============================================================================
+# Agent Balance
+Source: docs/components/wallet.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/wallet.md
+==============================================================================
+
+# 01 · Agent Balance `GA`
+
+Every agent gets a funded dollar balance you top up. You set the spend controls; the agent pays vendors per call, up to the limits you set.
+
+That's the whole model: **funded balance → spend controls → pay-per-call.**
+
+---
+
+## What you get
+
+- **A funded balance.** Top it up with a card, Apple Pay, Google Pay, or bank transfer. The agent spends from that balance.
+- **Spend limits.** Set a per-session ceiling with `set_spend_limit`; clear it with `clear_spend_limit`. A call that would exceed the cap is refused, not charged.
+- **Allowed destinations.** Restrict the wallet to a specific list of vendor endpoints.
+
+## Read state
+
+```typescript
+await agentkit.run("get_wallet_balance", {});
+await agentkit.run("get_spend_limit", {});
+```
+
+Maps to MCP tools: `get_wallet_balance`, `get_spend_limit`.
+
+## Manage spend caps
+
+```typescript
+await agentkit.run("set_spend_limit", { limitRaw: "100000000" }); // $100 session cap
+await agentkit.run("clear_spend_limit", {});
+```
+
+## Related
+
+- [Quickstart](../getting-started/quickstart.md)
+- [Agent Awareness](../developers/agent-awareness.md)
+
+==============================================================================
+# Spend Controls
+Source: docs/developers/spend-controls.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/spend-controls.md
+==============================================================================
+
+# Spend Controls
+
+Programmable budgets for your agent wallets. Cap spending per vendor, per task, per API, or across your whole team — with optional time windows.
+
+> **Scope: one ledger, one policy set.** Spend controls cap **every paid call Floe settles** — x402 vendors through the proxy (`POST /v1/proxy/fetch`) **and** LLM/voice tokens through the keyless gateway (`POST /v1/chat/completions`, host `credit-api.floelabs.xyz`); the legacy BYOK metered proxy `/v1/llm/chat/completions` is capped the same way. Route both through Floe and a single task or session budget bounds the entire conversation cost across every vendor. The one thing a policy can't see is a call you send straight to a provider with your own key, bypassing Floe — so route it through Floe.
+
+## Policy Types
+
+| Type | What it caps | Match on | Example |
+|------|-------------|----------|---------|
+| **Session** | Total agent spend | Everything | "$100/day soft cap" |
+| **Vendor** | Spend to a specific payee wallet | Payment recipient address | "$20/day to Venice AI" |
+| **API** | Spend to a hostname or domain | Target URL hostname | "$100/week to *.venice.ai" |
+| **Task** | Spend on a specific task ID | `X-Floe-Task-Id` header | "$5 budget for task-research-123" |
+
+Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` kind and the `session` window are **team-scoped only** (`/v1/developer/policies`).
+
+## Quick Start
+
+### Set a daily vendor cap
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "vendor",
+    "matchKey": "0xB77561F454F10Ce87C93EfFC4682102017f4CE86",
+    "limitRaw": "50000000",
+    "windowKind": "rolling",
+    "windowSeconds": 86400
+  }'
+```
+
+This creates a $50/day rolling cap for a specific vendor wallet. Any x402 call where the payment recipient matches this address counts against the limit.
+
+### Set a per-API hostname cap
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "api",
+    "matchKey": ".venice.ai",
+    "matchKind": "host_suffix",
+    "limitRaw": "100000000",
+    "windowKind": "rolling",
+    "windowSeconds": 604800
+  }'
+```
+
+This caps all calls to `*.venice.ai` at $100/week.
+
+### Set a team-wide budget
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/policies \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "session",
+    "limitRaw": "500000000",
+    "windowKind": "rolling",
+    "windowSeconds": 2592000
+  }'
+```
+
+This caps total spend across ALL your agent wallets at $500/month.
+
+## Time Windows
+
+Policies can be scheduled with calendar bounds:
+
+```json
+{
+  "kind": "vendor",
+  "matchKey": "0x...",
+  "limitRaw": "10000000",
+  "windowKind": "rolling",
+  "windowSeconds": 86400,
+  "effectiveFrom": 1748908800,
+  "effectiveUntil": 1749513600
+}
+```
+
+- **effectiveFrom** — Policy is inactive before this timestamp (UNIX seconds)
+- **effectiveUntil** — Policy auto-expires after this timestamp
+
+Useful for campaign budgets, time-boxed experiments, or scheduled spending windows.
+
+## Window Kinds
+
+| Kind | Behavior | Use case |
+|------|----------|----------|
+| `rolling` | Resets every `windowSeconds` | Daily/weekly/monthly budgets |
+| `session` | Resets when you call PUT /spend-limit | Manual session caps (team policies only) |
+| `once` | Single-shot cap, expires at `expiresAt` | Pre-borrow task holds |
+
+## Matching Rules
+
+### Vendor policies
+Match against the **payment recipient address** (the wallet that receives USDC). Lowercased, exact match.
+
+### API policies
+Match against the **target URL hostname**:
+- `host_suffix` (default): `.venice.ai` matches `api.venice.ai`, `x402.venice.ai`, `venice.ai`
+- `host_exact`: `api.venice.ai` matches only `api.venice.ai`
+
+### Task policies
+Match against the **`X-Floe-Task-Id` header** sent with each proxy call. Case-insensitive.
+
+## Enforcement
+
+Policies are checked on every `POST /v1/proxy/fetch` call, inside the same transaction as the balance reservation. If any policy would be exceeded, the call is rejected with **402**:
+
+```json
+{
+  "error": "policy_exceeded",
+  "kind": "vendor",
+  "matchKey": "0xb775…ce86",
+  "policyId": 42,
+  "label": "Venice daily cap",
+  "reason": null,
+  "required": "5000000",
+  "spent": "48500000",
+  "limit": "50000000"
+}
+```
+
+When the breached policy is a kill-switch (`action: "suspend_agent"`, see below), the same body additionally carries `"auto_suspended": true`. The field is present **only** in that case — a plain breach omits it:
+
+```json
+{
+  "error": "policy_exceeded",
+  "kind": "task",
+  "matchKey": "batch-run-7",
+  "policyId": 57,
+  "label": null,
+  "reason": null,
+  "required": "5000000",
+  "spent": "9500000",
+  "limit": "10000000",
+  "auto_suspended": true
+}
+```
+
+`suspendedReason` is **not** part of the 402 body — it lives on the agent record (`GET /v1/developer/agents/:agentId`) as the audit trail for why the agent is suspended.
+
+Spend is calculated from settled + in-flight payments. Refunded/failed calls automatically drop out of the spend sum.
+
+## Breach Action: the Policy Kill-Switch
+
+By default a breach only declines the single call (the agent can keep trying). Set `action: "suspend_agent"` on a policy to turn it into a **kill-switch**: the breaching call still gets the 402 above (with `"auto_suspended": true`), and the **whole agent is suspended** — every subsequent call is rejected at authentication with 403 until you resume it.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "task",
+    "matchKey": "batch-run-7",
+    "limitRaw": "10000000",
+    "windowKind": "rolling",
+    "windowSeconds": 86400,
+    "action": "suspend_agent"
+  }'
+```
+
+A runaway agent that blows through this $10/day task budget is stopped cold instead of burning retries against a 402 wall.
+
+Notes:
+
+- Omitted or `"block"` preserves the default decline-one-call behavior.
+- Only a genuine over-limit breach trips the switch. Fail-closed denials (e.g. an `api` policy that can't resolve the target hostname) decline the call but never suspend.
+- **Team-scoped policies:** `action` is accepted on team policies too. A breach suspends **the single agent whose call crossed the cap** — never the whole team. The team cap keeps counting every agent's spend, so once it's saturated, each additional agent trips itself on its next paid call.
+- The suspension is auditable: the agent record's `suspendedReason` (`GET /v1/developer/agents/:agentId`) reads `policy:<id>`, and the dashboard's agent page shows which policy tripped it.
+- Resume via the pause/resume endpoint below or the dashboard — the policy stays active, so an unresolved budget breach will trip it again.
+
+## Value-Aware Caps (`X-Floe-Task-Value`)
+
+A static cap treats a $0.10 spam-filter run and a $500-revenue lead-enrichment run the same. Value-aware caps let one policy definition flex with the business value of the task — **inside operator-set bounds**.
+
+Enable it by giving a policy scaling bounds:
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "task",
+    "matchKey": "lead-enrichment",
+    "limitRaw": "1000000",
+    "limitFloorRaw": "500000",
+    "limitCeilingRaw": "3000000",
+    "windowKind": "rolling",
+    "windowSeconds": 86400
+  }'
+```
+
+The caller then sends `X-Floe-Task-Value` (basis points; `10000` = 1×) on its paid calls:
+
+```
+X-Floe-Task-Value: 30000    → effective cap = clamp($1 × 3, $0.50, $3) = $3
+X-Floe-Task-Value: 2500     → effective cap = clamp($1 × 0.25, $0.50, $3) = $0.50
+(no header)                 → effective cap = $1 (the base limitRaw)
+```
+
+Security model — the header is **caller-supplied and untrusted by construction**:
+
+- A policy **without** bounds ignores the header completely. Nothing changes for existing policies.
+- With bounds, the header can only move the cap **between** `limitFloorRaw` and `limitCeilingRaw` — both operator-set (`floor ≤ limitRaw ≤ ceiling`, enforced at the API and by DB constraints). A caller can never grant itself more than the operator provisioned.
+- An unset side clamps at `limitRaw`: a bare ceiling enables upscaling only, a bare floor downscaling only.
+- Enforcement, `/forecast` preflight, and the `X-Floe-Budget-Advisory` header all report the same **effective** cap (one shared computation — they cannot drift).
+
+Accepted range for the header: integer `1..100000` (0.0001×–10×); anything else is ignored (1×).
+
+## Outcome-Quality Throttle (throttle on value, not just cost)
+
+Cost caps stop an agent from spending too much; the quality throttle stops it from spending too much **on work that isn't working**. It consumes the caller-reported outcome signal from [Outcome-Linked Spend Attribution](agent-runtime-contract.md#outcome-linked-spend-attribution) — Floe never judges quality; your agent's own reports drive it.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/agents/1/policies \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "task",
+    "matchKey": "lead-enrichment",
+    "limitRaw": "1000000",
+    "qualityThrottleFloorBps": 5000,
+    "qualityWindowSeconds": 3600,
+    "windowKind": "rolling",
+    "windowSeconds": 86400
+  }'
+```
+
+How it behaves:
+
+- Floe averages the agent's reported outcomes in the window (`scoreBps` when reported; otherwise `success`→100%, `partial`→50%, `failure`/`unknown`→0%) into a quality reading.
+- The effective cap is multiplied by `max(quality, qualityThrottleFloorBps)` — successive low-quality actions tighten spend toward the floor **even under budget**; recovering quality relaxes it back to 1×.
+- **No reported outcomes in the window → factor 1.0 — behavior unchanged.** No signal, no change: the throttle is deliberately fail-open (unlike the fail-closed host/recipient guards) because quality is an optional caller-supplied signal, not a resolvable request fact.
+- With value scaling on the same policy, quality applies after it; an operator `limitFloorRaw` still bounds the result from below.
+- The reading is cached for ~30s, which also damps a flapping signal.
+
+Trust boundary, stated plainly: quality is self-reported. An agent that lies about its own quality can avoid being throttled — the throttle protects you from *honest* runaway waste (retry loops, degraded upstream output), not from an adversarial agent. Hard caps remain the backstop.
+
+## Pause / Resume an Agent (self-serve kill-switch)
+
+Pause one agent without touching the rest of your fleet — no key rotation, no close:
+
+```bash
+curl -X PATCH https://credit-api.floelabs.xyz/v1/developer/agents/1/status \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{ "status": "suspended" }'   # or "active" to resume
+```
+
+- Takes effect on the agent's next call (403 at authentication).
+- Only `active ↔ suspended` transitions are allowed. Closed or credit-frozen agents can't be resurrected through this endpoint (409) — those states belong to their own lifecycle flows.
+- Resuming clears `suspendedReason`; pausing sets it to `developer_manual`.
+
+## API Reference
+
+### Per-Agent Policies
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/v1/agents/policies` | Agent key | List active policies |
+| POST | `/v1/agents/policies` | Agent key | Create policy |
+| PATCH | `/v1/agents/policies/:id` | Agent key | Update limit/bounds |
+| DELETE | `/v1/agents/policies/:id` | Agent key | Revoke policy |
+| POST | `/v1/agents/policies/:id/reset` | Agent key | Reset rolling window |
+
+Same routes available at `/v1/developer/agents/:agentId/policies` with session cookie auth.
+
+### Agent Status (kill-switch)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| PATCH | `/v1/developer/agents/:agentId/status` | Session cookie | Pause (`suspended`) or resume (`active`) one agent |
+
+### Team Policies
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/v1/developer/policies` | Session cookie | List team policies |
+| POST | `/v1/developer/policies` | Session cookie | Create team policy |
+| PATCH | `/v1/developer/policies/:id` | Session cookie | Update |
+| DELETE | `/v1/developer/policies/:id` | Session cookie | Revoke |
+
+### Create Policy Body
+
+```typescript
+{
+  kind: 'vendor' | 'api' | 'task',   // per-agent; the 'session' kind is team-only (/v1/developer/policies)
+  matchKey: string,              // Required (except for the team-only 'session' kind)
+  matchKind?: 'host_exact' | 'host_suffix' | 'recipient',
+  limitRaw: string,              // Raw USDC, 6 decimals (e.g. "5000000" = $5)
+  windowKind?: 'rolling' | 'once',   // 'session' window is team-only
+  windowSeconds?: number,        // Required for rolling (minimum 60)
+  effectiveFrom?: number,        // UNIX seconds
+  effectiveUntil?: number,       // UNIX seconds
+  label?: string,                // Free-form label
+  action?: 'block' | 'suspend_agent',  // Breach behavior; omitted = 'block'
+  limitFloorRaw?: string,        // Value-scaling lower bound (≤ limitRaw)
+  limitCeilingRaw?: string,      // Value-scaling upper bound (≥ limitRaw); enables X-Floe-Task-Value
+  qualityThrottleFloorBps?: number,  // 0..10000 — enables the outcome-quality throttle
+  qualityWindowSeconds?: number,     // Quality lookback (min 60; default 86400)
+}
+```
+
+## Dashboard
+
+Policies can also be managed from the [Developer Dashboard](https://dev-dashboard.floelabs.xyz):
+- **Per-agent:** Agent detail page → Policies section
+- **Team-wide:** Settings → Team Policies
+
+==============================================================================
+# Agent Awareness
+Source: docs/developers/agent-awareness.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/agent-awareness.md
+==============================================================================
+
+# Agent Awareness
+
+Floe is the spend layer: one key pays every vendor per call, governed by server-side spend controls. A rational agent answers two questions before every paid action:
+
+1. **Do I have enough balance to make this call?**
+2. **Is this call worth its cost, and will it fit under my spend limit?**
+
+Without first-class primitives for these, agents either over-spend (no gating) or under-act (refuse to spend out of caution). Floe ships primitives that answer both in one round-trip — surfaced as actions in the SDKs and MCP tools.
+
+> **Scope.** `estimate_x402_cost` and these checks govern x402 payments made through the Floe proxy. They do **not** account for raw LLM token bills you pay with your own provider key — only x402 payments (and LLM tokens routed through Floe's LLM proxy) flow through this accounting.
+
+## The primitives
+
+| API | Question it answers |
+|---|---|
+| `GET /v1/agents/balance` | What is my spendable balance? |
+| `GET / PUT / DELETE /v1/agents/spend-limit` | Operator-defined session ceiling |
+| `POST /v1/x402/estimate` | What does this call cost? Will it fit my budget? |
+
+## Decision-loop pattern
+
+The canonical workflow before every paid call:
+
+```text
+┌──────────────────────────────────────────────────────────────┐
+│  1. estimate_x402_cost(url)                                  │
+│     → { priceRaw, reflection: { willExceedAvailable, ... } } │
+│                                                              │
+│  2. if reflection.willExceedAvailable                        │
+│        || reflection.willExceedSpendLimit:                   │
+│       → SKIP (or queue for later, or alert operator)         │
+│                                                              │
+│  3. else: proxy/fetch(url)                                   │
+└──────────────────────────────────────────────────────────────┘
+```
+
+The `estimate_x402_cost` response includes a **reflection** block that tells you, without making any side-effecting call, whether the payment would exceed:
+
+- Your `available` balance
+- Your `sessionSpendRemaining` (your operator-set cap)
+
+That collapses the checks into one round-trip — the unique value vs the agent doing its own preflight.
+
+## Bounding spend with `set_spend_limit`
+
+For per-session ceilings (e.g., "this agent gets $10/day"), use `set_spend_limit`. The cap is enforced inside the proxy paid-request flow: a request that would exceed it returns HTTP 402 with `error: spend_limit_exceeded` instead of being charged.
+
+```typescript
+// TS AgentKit
+await provider.setSpendLimit(walletProvider, { limitRaw: "10000000" }); // $10
+```
+
+```python
+# Python AgentKit
+provider.set_spend_limit(wallet_provider, {"limit_raw": "10000000"})
+```
+
+```bash
+# REST
+curl -X PUT https://credit-api.floelabs.xyz/v1/agents/spend-limit \
+  -H "Authorization: Bearer floe_..." \
+  -H "Content-Type: application/json" \
+  -d '{"limitRaw": "10000000"}'
+```
+
+`PUT` resets the session window — anything spent before this call no longer counts. `GET` returns `{active, limitRaw, sessionSpentRaw, sessionRemainingRaw}`. `DELETE` removes the cap.
+
+## Reading balance from serverless agents
+
+Lambdas, Cloud Run jobs, and other ephemeral runners can poll the balance and compare locally before spending:
+
+```typescript
+const view = await provider.getWalletBalance(walletProvider, {});
+// parse out available / sessionSpendRemaining, decide
+```
+
+`get_wallet_balance` is cheap and idempotent. Don't poll faster than once per second.
+
+## Where the primitives live
+
+- **REST API**: `GET /v1/agents/balance` for balance, `/v1/agents/spend-limit` for the session cap
+- **MCP server**: [mcp-server.md → Spend governance and awareness](mcp-server.md#spend-governance-and-awareness-14) — `get_credit_remaining`, `get_spend_limit` (snake_case)
+- **TypeScript SDK**: `floe-agent` v0.3.0+, on `X402ActionProvider`
+- **Python SDK**: `floe-agentkit-actions` v0.3.0+, on `X402ActionProvider`
+
+Each surface exposes the same balance and spend-limit semantics, but the names differ per surface — the AgentKit x402 balance action is `x402_get_balance`, the MCP tool is `get_wallet_balance`, and the REST route is `GET /v1/agents/balance`. Pick the wrapper that matches your runtime.
+
+> **Caveat.** A local balance read (`get_wallet_balance`) is an advisory snapshot and can race with in-flight settlements. The authoritative preflight is `estimate_x402_cost` plus the proxy's server-side spend checks, which decide at pay time.
+
+==============================================================================
 # Floe CLI
 Source: docs/developers/cli.md
-URL: https://floe-labs.gitbook.io/docs/developers/cli.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/cli.md
 ==============================================================================
 
 # Floe CLI
@@ -7516,7 +8206,7 @@ Headless / CI: set the env vars — they always win over the keychain.
 ==============================================================================
 # API Keys
 Source: docs/developers/api-keys.md
-URL: https://floe-labs.gitbook.io/docs/developers/api-keys.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/api-keys.md
 ==============================================================================
 
 # API Keys
@@ -7747,7 +8437,7 @@ If you exceed the limit, you receive a `429 Too Many Requests` response. Wait un
 ==============================================================================
 # From Bank Account to First API Call
 Source: docs/agents/fiat-to-x402.md
-URL: https://floe-labs.gitbook.io/docs/developers/fiat-to-x402.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/fiat-to-x402.md
 ==============================================================================
 
 # From Bank Account to First API Call
@@ -7843,7 +8533,7 @@ Yes — the balance is your agent's. Manage or withdraw it from the dashboard.
 ==============================================================================
 # Agent Runtime Contract
 Source: docs/developers/agent-runtime-contract.md
-URL: https://floe-labs.gitbook.io/docs/developers/agent-runtime-contract.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/agent-runtime-contract.md
 ==============================================================================
 
 # Agent Runtime Contract
@@ -8042,7 +8732,7 @@ When you see `401`, `403`, or any `credit_frozen` / `account_closed` response:
 ==============================================================================
 # Pay any vendor API
 Source: docs/developers/x402-facilitator.md
-URL: https://floe-labs.gitbook.io/docs/developers/x402-facilitator.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/x402-facilitator.md
 ==============================================================================
 
 # Pay any vendor API
@@ -8549,7 +9239,7 @@ To retire an agent, use `POST /v1/developer/agents/:agentId/close` — the serve
 ==============================================================================
 # Marketplace Shim
 Source: docs/developers/marketplace-shim.md
-URL: https://floe-labs.gitbook.io/docs/developers/marketplace-shim.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/marketplace-shim.md
 ==============================================================================
 
 # Marketplace Shim
@@ -8631,7 +9321,7 @@ All routes are `POST`, called through `/v1/proxy/fetch` as above. Prices are the
 ==============================================================================
 # MCP Server
 Source: docs/developers/mcp-server.md
-URL: https://floe-labs.gitbook.io/docs/developers/mcp-server.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/mcp-server.md
 ==============================================================================
 
 # MCP Server
@@ -9467,7 +10157,7 @@ The MCP server is a thin HTTP client. All protocol logic, indexer queries, and R
 ==============================================================================
 # Webhooks
 Source: docs/developers/webhooks.md
-URL: https://floe-labs.gitbook.io/docs/developers/webhooks.md
+URL: https://floe-labs.gitbook.io/docs/build-developers/webhooks.md
 ==============================================================================
 
 # Webhooks
@@ -11690,6 +12380,133 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/proxy/fetch" \
 | 502 | Target URL unreachable |
 
 ==============================================================================
+# Model pricing — GET /v1/models?include=pricing
+Source: docs/developers/models-pricing.md
+URL: https://floe-labs.gitbook.io/docs/api-reference/models-pricing.md
+==============================================================================
+
+# Model pricing — `GET /v1/models?include=pricing`
+
+Discover every model on the Floe gateway and, **opt-in**, its price on each rail —
+straight from the API, no rate card to keep in sync. Same catalog the
+[cost calculator](../build/cost-calculator.md) and `POST /v1/estimate` price
+against.
+
+Send any Floe key (agent or developer).
+
+## `GET /v1/models` — discovery
+
+Without `?include=pricing`, the response is the byte-for-byte **OpenAI-lean**
+model list. Many callers hit this only to enumerate ids, and it stays a drop-in
+for the OpenAI `models.list` shape:
+
+```bash
+curl https://credit-api.floelabs.xyz/v1/models \
+  -H "Authorization: Bearer $FLOE_KEY"
+```
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "openai/gpt-4o-mini",
+      "object": "model",
+      "created": 1719792000,
+      "owned_by": "floe",
+      "modality": "text",
+      "context_window": 128000
+    }
+  ]
+}
+```
+
+Model ids are `provider/model` (e.g. `openai/gpt-4o-mini`, `deepgram/nova-3`).
+`modality` and `context_window` are Floe additions on top of the required OpenAI
+fields; adding `?include=pricing` never changes these base fields — it only
+**adds** a `pricing` block.
+
+## `?include=pricing` — per-rail rates
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/models?include=pricing" \
+  -H "Authorization: Bearer $FLOE_KEY"
+```
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "openai/gpt-4o-mini",
+      "object": "model",
+      "created": 1719792000,
+      "owned_by": "floe",
+      "modality": "text",
+      "context_window": 128000,
+      "pricing": {
+        "unit": "per_1m_tokens",
+        "currency": "usdc",
+        "funded": {
+          "input": "0.157500",
+          "output": "0.630000",
+          "cached_input": "0.078750"
+        },
+        "byok": {
+          "service_fee_usdc": "0.000200",
+          "upstream": "at_vendor_rate"
+        }
+      }
+    }
+  ]
+}
+```
+
+Pricing is **asymmetric by rail**, on purpose:
+
+### Funded (keyless) rail
+
+Floe holds the upstream provider key, so the price is **per model** — the model's
+catalog rate card (upstream + Floe margin), computed the exact same way
+`POST /v1/estimate` prices a call: the cost-aware cheapest source, with that
+source's margin.
+
+| Field | Meaning |
+|---|---|
+| `unit` | Always `per_1m_tokens` — rates are per 1,000,000 tokens. |
+| `currency` | Always `usdc`. |
+| `funded.input` | USDC per 1M input tokens. |
+| `funded.output` | USDC per 1M output tokens. |
+| `funded.cached_input` | USDC per 1M cached-prompt tokens, or `null` if the chosen source seeds no explicit cached rate. |
+
+Non-token models — voice (TTS/STT), embeddings, telephony — return `null` for
+every `funded` field rather than a fabricated per-token price. Estimate those by
+their real unit (characters, audio-seconds) via
+[`POST /v1/estimate`](../build/cost-calculator.md#post-v1estimate).
+
+### BYOK rail
+
+On the `byok` rail the caller brings their own vendor key, so Floe charges a
+**flat, model-agnostic per-call service fee** (`service_fee_usdc`) and you pay your
+vendor at cost — Floe never sees that upstream rate, so it can't and doesn't price
+it (`upstream: "at_vendor_rate"`). The `byok` block is therefore **identical
+across every model**.
+
+## Notes
+
+- **The default response is unchanged.** `?include=pricing` is purely additive —
+  omit it and you get the same OpenAI-lean list you always did.
+- All money is a decimal USDC string at 6 decimals (e.g. `"0.157500"`), so
+  sub-cent per-token rates stay exact — no floats.
+- Prices reflect the live catalog; Floe's default margin is 5%. The values above
+  are illustrative — read the live endpoint for current rates.
+
+## Related
+
+- [The cost calculator](../build/cost-calculator.md) — price a whole call or a usage vector before you run it.
+- [Floe Inference — keyless LLM & voice](keyless-inference.md) — the rails these prices belong to, and how routing picks one.
+
+==============================================================================
 # Ledger Sync API
 Source: docs/developers/ledger-sync-api.md
 URL: https://floe-labs.gitbook.io/docs/api-reference/ledger-sync-api.md
@@ -11787,6 +12604,136 @@ Malformed **lines** inside an otherwise-valid body are not an error — they're 
 - [Coverage Score](../build/coverage-score.md) — where synced spend shows up (reconciled bucket).
 - [Reconcile Mode](webhooks.md#connect-your-orchestrator-reconcile-mode) — the hosted-orchestrator path to the same ledger.
 - [Credit REST API](credit-api.md) — the rest of the agent & developer surface.
+
+==============================================================================
+# Plans & entitlements
+Source: docs/reference/plans.md
+URL: https://floe-labs.gitbook.io/docs/reference/plans.md
+==============================================================================
+
+# Plans & entitlements
+
+Floe's free tier answers the first question every voice-AI team has — **what did this call actually cost?** — with no card and no commitment. The paid tiers are about what you do with that answer: attribute it, protect margin on it, and bill your own clients from it.
+
+Every gate below is enforced server-side. Tracked-spend caps are **soft** (a banner + alert, never a hard stop on the agent path); history is a **read clamp**, not a lock-out. Everything else is a hard entitlement.
+
+| | **Free** | **Pro** | **Agency** | **Enterprise** |
+|---|---|---|---|---|
+| Price | $0 | $99/mo · $950/yr | $499/mo · $4,790/yr | custom |
+| Tracked spend / mo (soft) | up to $2,000 | up to $10,000 | up to $50,000 | no cap |
+| Ledger history | 7 days | 365 days | unlimited | unlimited |
+| Billed end-clients | — | — | up to 30 | unlimited |
+
+## What each plan unlocks
+
+### Free — know what every call costs
+The live cost ledger and the honest number behind every leg, with no account friction:
+
+- **Live cost ledger** — per-leg and by-call cost, reconciled to the vendor's own records (`ledger_read`). See [The live cost ledger](../build/unified-ledger.md) and [Vendor actuals](../build/vendor-actuals.md).
+- **Reconciliation findings** (read) — where a number is still an estimate, and why.
+- **Coverage Score** — how much of your spend Floe can act on. See [Coverage Score](../build/coverage-score.md).
+- **The cost calculator** — price a call before you make it. See [The cost calculator](../build/cost-calculator.md).
+- **Metering on every rail** — keyless and BYOK gateway calls land on the ledger.
+
+### Pro — attribute it and watch it
+Everything in Free, plus the tools to turn cost into a per-client, per-campaign picture:
+
+- **Attribution reports** (`attribution_reports`) — cost rolled up per **client, campaign, and task**. See [Cost per client, campaign & task](../build/attribution.md).
+- **CSV exports** (`exports`) — the usage bill, statements, and margin as CSV.
+- **Alerts** (`alerts`) — credit-threshold notifications.
+- **Fleet policies** (`fleet_policies`) — developer-scope budgets and suspend-agent hard stops.
+
+### Agency — bill your own clients from the actuals
+Everything in Pro, plus the margin engine and invoicing:
+
+- **Rate cards & margin engine** (`rate_cards`) — set what you bill each client, preview margin, and see signed-vs-deployed per contract. See [Rate cards & the margin engine](../build/rate-cards.md).
+- **Client invoicing** (`client_invoicing`) — billing periods and statements. See [Client invoicing](../build/invoicing.md).
+- **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 30 billed clients. See [Stripe Connect](../build/stripe-connect.md).
+- **Vendor connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles to the vendor's own records. See [Vendor connections](../build/vendor-connections.md).
+
+### Enterprise — no caps, sales-led
+Everything in Agency with no tracked-spend, history, or client caps, priced at **0.75% of ledgered spend** via a metered plan. [Talk to us](https://floelabs.xyz).
+
+## The entitlements, in one place
+
+| Entitlement | Plan | Unlocks |
+|---|---|---|
+| `ledger_read` | Free | Per-leg + by-call ledger, findings, coverage score |
+| `attribution_reports` | Pro | Cost per client / campaign / task |
+| `exports` | Pro | CSV exports (bill, statement, margin) |
+| `alerts` | Pro | Credit-threshold alerts |
+| `fleet_policies` | Pro | Developer-scope budgets + suspend-agent |
+| `rate_cards` | Agency | Rate cards, margin, signed-vs-deployed |
+| `client_invoicing` | Agency | Billing periods + statements |
+| `stripe_connect` | Agency | Invoice via your own Stripe |
+| `vendor_connections` | Agency | Vendor billing reconciliation |
+
+For the per-call cost model (what a call itself costs to run on Floe), see [Pricing & cost](../getting-started/pricing.md).
+
+==============================================================================
+# Pricing & cost
+Source: docs/getting-started/pricing.md
+URL: https://floe-labs.gitbook.io/docs/reference/pricing.md
+==============================================================================
+
+# Pricing & cost
+
+You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it. No subscription, no minimums, no seat fees. Every call tells you exactly what it cost, and you can price a call **before** you make it.
+
+> **Estimate first.** Model a voice agent's cost per call or per minute before you build → [Cost calculator](https://dev-dashboard.floelabs.xyz/calculator).
+
+## Read what a call cost
+
+Every paid response carries two headers:
+
+| Header | What it is |
+|---|---|
+| `X-Floe-Payment-Amount` | The call's cost as a decimal USDC string (e.g. `0.0125`) — the human-readable number. |
+| `X-Floe-Cost-USDC` | The same cost in raw USDC (6-decimal integer string) — use this for exact math. |
+
+{% tabs %}
+{% tab title="TypeScript" %}
+```typescript
+const res = await fetch("https://credit-api.floelabs.xyz/v1/chat/completions", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${FLOE_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ model: "openai/gpt-4o", messages }),
+});
+const cost = res.headers.get("X-Floe-Payment-Amount"); // "0.0125"
+```
+{% endtab %}
+{% tab title="Python" %}
+```python
+import httpx
+
+res = httpx.post(
+    "https://credit-api.floelabs.xyz/v1/chat/completions",
+    headers={"Authorization": f"Bearer {FLOE_API_KEY}"},
+    json={"model": "openai/gpt-4o", "messages": messages},
+)
+cost = res.headers["X-Floe-Payment-Amount"]  # "0.0125"
+```
+{% endtab %}
+{% endtabs %}
+
+Tag calls with `X-Floe-Task-Id` and every leg of one conversation rolls into a single per-call cost — the basis for cost per call, per agent, per vendor.
+
+## Price a call *before* you make it
+
+Gate expensive work without spending:
+
+- **LLM / voice models** — `POST /v1/estimate` prices a usage vector (tokens, TTS characters, STT audio-seconds) without touching your balance. See [Floe Inference](../developers/keyless-inference.md#estimate-before-you-spend).
+- **x402 vendor calls** — `POST /v1/x402/estimate` preflights a URL and returns its USDC cost against your remaining budget in one round-trip.
+- **A batch** — `POST /v1/x402/forecast` projects the cost of many planned calls at once, with a per-policy breach check. See [Budget-Aware Routing](../build/budget-aware-routing.md).
+
+## What each vendor costs
+
+Per-model and per-vendor rates live on the vendor pages in the [Vendor Marketplace](../x402-directory/README.md) (Compute, Voice, Image, Search, …). Floe meters at the vendor's rate; the marketplace lists them.
+
+## Next
+
+- [Spend Controls](../developers/spend-controls.md) — cap spend per call / agent / task / vendor
+- [Add Floe to your existing pipeline](integrate-existing-pipeline.md)
 
 ==============================================================================
 # Error Codes
