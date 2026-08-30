@@ -89,14 +89,9 @@ Each row carries `{ key, tagged, calls, costRaw, reconciledRaw }`. `reconciledRa
 
 That last row is the work list: 44 reconciled calls reached your ledger with no client attached. Fix the assistant metadata (or turn on strict mode) and it goes to zero.
 
-### Vendor-actuals rollups — per client, at the vendor's real cost
+### Per client, at the vendor's real cost
 
-```http
-GET /v1/developer/actuals/rollups?by=customer
-GET /v1/developer/actuals/rollups?by=campaign
-```
-
-The same client/campaign grouping, but over **[vendor actuals](vendor-actuals.md)** — what each leg actually cost you at the vendor, reconciled leg by leg (`by=vendor`, `by=agent`, and `by=time` are also available). Use the cost ledger for Floe-settled spend; use actuals rollups when you need the vendor's own billing number behind each client.
+The same client and campaign grouping is available over **[vendor actuals](vendor-actuals.md)** — the vendor's own billing number behind each client, reconciled leg by leg — when you need margin against true cost rather than Floe-settled spend.
 
 ## Plan gate
 
