@@ -517,11 +517,38 @@ paths:
                     type: string
                     description: The same figure in atomic USDC (6 decimals), for integer-exact math.
         "400":
-          description: "Missing/non-string `model`, or an unparseable body (`code: invalid_request_error`)."
+          description: Missing/non-string `model`, or an unparseable body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InferenceEstimateError"
+              example:
+                error:
+                  message: 'Missing "model".'
+                  type: invalid_request_error
+                  code: invalid_request_error
         "404":
-          description: "The model doesn't exist or is disabled (`code: unknown_model`)."
+          description: The model doesn't exist or is disabled.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InferenceEstimateError"
+              example:
+                error:
+                  message: The model "openai/gpt-4o" does not exist or is disabled.
+                  type: invalid_request_error
+                  code: unknown_model
         "422":
-          description: "No source can price the given usage vector for that model (`code: no_priceable_source`)."
+          description: No source can price the given usage vector for that model.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InferenceEstimateError"
+              example:
+                error:
+                  message: No source can price the given usage for "openai/gpt-4o".
+                  type: invalid_request_error
+                  code: no_priceable_source
 
   /v1/agents/balance:
     get:
@@ -1722,6 +1749,27 @@ components:
         details:
           type: array
           items: {}
+
+    InferenceEstimateError:
+      type: object
+      description: >-
+        OpenAI-style error envelope returned by POST /v1/estimate. The nested
+        `code` is the machine-readable reason (`invalid_request_error`,
+        `unknown_model`, or `no_priceable_source`).
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [message, type, code]
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+              example: invalid_request_error
+            code:
+              type: string
+              enum: [invalid_request_error, unknown_model, no_priceable_source]
 
   responses:
     BadRequest:

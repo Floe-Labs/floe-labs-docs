@@ -83,7 +83,7 @@
   * [TypeScript SDK](docs/developers/agentkit-typescript.md)
   * [Python SDK](docs/developers/agentkit-python.md)
 
-## Build (developers)
+## Developers
 
 * [Developer Dashboard](docs/developers/developer-dashboard.md)
 * [Agent Balance](docs/components/wallet.md)

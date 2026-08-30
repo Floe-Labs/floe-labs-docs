@@ -97,7 +97,7 @@ Payloads never contain plaintext key material — only a masked `keyPrefix`.
 
 #### Billing & invoicing events
 
-Account-level events — no agent attribution. Delivered to `global` webhooks, and to `wallet`/`agent` webhooks whose `scopeValue` is your account wallet. Payloads carry the public `acct_…` account ID, never a wallet address.
+Account-level events — no agent attribution. They reach a `global` webhook, or a `wallet`/`agent` webhook whose `scopeValue` is set to your **account's own wallet address** (the `0x...` value the [Scopes](#scopes) table describes — for these events, your account wallet rather than an agent's). Payloads carry the public `acct_…` account ID, never a wallet address.
 
 | Event | Fires when |
 |-------|-----------|
@@ -139,7 +139,7 @@ Each webhook is scoped to control which events reach it:
 | `agent` | Only events for one agent (synonym of `wallet`) | The agent's **wallet address** (`0x...`) — never the numeric agent ID |
 | `loan` | Only events for one loan | The numeric loan ID |
 
-`wallet` and `agent` behave identically — both filter on the event's agent wallet address; `agent` is the value the dashboard's per-agent screen uses. `loan` filters on the event's loan ID. A `global` webhook receives everything it subscribes to.
+`wallet` and `agent` behave identically — both filter on a `0x...` wallet address; `agent` is the value the dashboard's per-agent screen uses. For an agent-scoped event that address is the event's agent wallet. For an **account-scoped event** (the billing & invoicing category) it is your **account's own wallet** — the single wallet those events resolve to — so to receive billing events on a `wallet`/`agent` webhook, set its `scopeValue` to your account wallet. `loan` filters on the event's loan ID. A `global` webhook receives everything it subscribes to, account-scoped events included.
 
 Two exceptions ignore scope entirely: `marketplace.vendor.degraded` and `marketplace.vendor.recovered` are platform-wide broadcasts sent to every webhook subscribed to them.
 

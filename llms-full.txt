@@ -59,18 +59,18 @@
 - Coinbase AgentKit — https://floe-labs.gitbook.io/docs/frameworks/agentkit.md
 - TypeScript SDK — https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-typescript.md
 - Python SDK — https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-python.md
-- Developer Dashboard — https://floe-labs.gitbook.io/docs/build-developers/developer-dashboard.md
-- Agent Balance — https://floe-labs.gitbook.io/docs/build-developers/wallet.md
-- Spend Controls — https://floe-labs.gitbook.io/docs/build-developers/spend-controls.md
-- Agent Awareness — https://floe-labs.gitbook.io/docs/build-developers/agent-awareness.md
-- Floe CLI — https://floe-labs.gitbook.io/docs/build-developers/cli.md
-- API Keys — https://floe-labs.gitbook.io/docs/build-developers/api-keys.md
-- From Bank Account to First API Call — https://floe-labs.gitbook.io/docs/build-developers/fiat-to-x402.md
-- Agent Runtime Contract — https://floe-labs.gitbook.io/docs/build-developers/agent-runtime-contract.md
-- Pay any vendor API — https://floe-labs.gitbook.io/docs/build-developers/x402-facilitator.md
-- Marketplace Shim — https://floe-labs.gitbook.io/docs/build-developers/marketplace-shim.md
-- MCP Server — https://floe-labs.gitbook.io/docs/build-developers/mcp-server.md
-- Webhooks — https://floe-labs.gitbook.io/docs/build-developers/webhooks.md
+- Developer Dashboard — https://floe-labs.gitbook.io/docs/developers/developer-dashboard.md
+- Agent Balance — https://floe-labs.gitbook.io/docs/developers/wallet.md
+- Spend Controls — https://floe-labs.gitbook.io/docs/developers/spend-controls.md
+- Agent Awareness — https://floe-labs.gitbook.io/docs/developers/agent-awareness.md
+- Floe CLI — https://floe-labs.gitbook.io/docs/developers/cli.md
+- API Keys — https://floe-labs.gitbook.io/docs/developers/api-keys.md
+- From Bank Account to First API Call — https://floe-labs.gitbook.io/docs/developers/fiat-to-x402.md
+- Agent Runtime Contract — https://floe-labs.gitbook.io/docs/developers/agent-runtime-contract.md
+- Pay any vendor API — https://floe-labs.gitbook.io/docs/developers/x402-facilitator.md
+- Marketplace Shim — https://floe-labs.gitbook.io/docs/developers/marketplace-shim.md
+- MCP Server — https://floe-labs.gitbook.io/docs/developers/mcp-server.md
+- Webhooks — https://floe-labs.gitbook.io/docs/developers/webhooks.md
 - REST API — https://floe-labs.gitbook.io/docs/api-reference/credit-api.md
 - Model pricing — GET /v1/models?include=pricing — https://floe-labs.gitbook.io/docs/api-reference/models-pricing.md
 - Ledger Sync API — https://floe-labs.gitbook.io/docs/api-reference/ledger-sync-api.md
@@ -6863,7 +6863,7 @@ GitHub: [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-ac
 ==============================================================================
 # Developer Dashboard
 Source: docs/developers/developer-dashboard.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/developer-dashboard.md
+URL: https://floe-labs.gitbook.io/docs/developers/developer-dashboard.md
 ==============================================================================
 
 # Developer Dashboard
@@ -6962,7 +6962,7 @@ Alerts are delivered via webhooks and shown in the dashboard.
 ==============================================================================
 # Agent Balance
 Source: docs/components/wallet.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/wallet.md
+URL: https://floe-labs.gitbook.io/docs/developers/wallet.md
 ==============================================================================
 
 # 01 · Agent Balance `GA`
@@ -7003,7 +7003,7 @@ await agentkit.run("clear_spend_limit", {});
 ==============================================================================
 # Spend Controls
 Source: docs/developers/spend-controls.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/spend-controls.md
+URL: https://floe-labs.gitbook.io/docs/developers/spend-controls.md
 ==============================================================================
 
 # Spend Controls
@@ -7326,7 +7326,7 @@ Policies can also be managed from the [Developer Dashboard](https://dev-dashboar
 ==============================================================================
 # Agent Awareness
 Source: docs/developers/agent-awareness.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/agent-awareness.md
+URL: https://floe-labs.gitbook.io/docs/developers/agent-awareness.md
 ==============================================================================
 
 # Agent Awareness
@@ -7421,7 +7421,7 @@ Each surface exposes the same balance and spend-limit semantics, but the names d
 ==============================================================================
 # Floe CLI
 Source: docs/developers/cli.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/cli.md
+URL: https://floe-labs.gitbook.io/docs/developers/cli.md
 ==============================================================================
 
 # Floe CLI
@@ -7957,7 +7957,7 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
 | `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: 30 across six categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
+Events: 46 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (16: `billing.*`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
 floe webhooks create https://api.acme.com/hooks/floe --events 'call.*,marketplace.payment.settled'
@@ -8106,7 +8106,7 @@ Headless / CI: set the env vars — they always win over the keychain.
 ==============================================================================
 # API Keys
 Source: docs/developers/api-keys.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/api-keys.md
+URL: https://floe-labs.gitbook.io/docs/developers/api-keys.md
 ==============================================================================
 
 # API Keys
@@ -8337,7 +8337,7 @@ If you exceed the limit, you receive a `429 Too Many Requests` response. Wait un
 ==============================================================================
 # From Bank Account to First API Call
 Source: docs/agents/fiat-to-x402.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/fiat-to-x402.md
+URL: https://floe-labs.gitbook.io/docs/developers/fiat-to-x402.md
 ==============================================================================
 
 # From Bank Account to First API Call
@@ -8433,7 +8433,7 @@ Yes — the balance is your agent's. Manage or withdraw it from the dashboard.
 ==============================================================================
 # Agent Runtime Contract
 Source: docs/developers/agent-runtime-contract.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/agent-runtime-contract.md
+URL: https://floe-labs.gitbook.io/docs/developers/agent-runtime-contract.md
 ==============================================================================
 
 # Agent Runtime Contract
@@ -8632,7 +8632,7 @@ When you see `401`, `403`, or any `credit_frozen` / `account_closed` response:
 ==============================================================================
 # Pay any vendor API
 Source: docs/developers/x402-facilitator.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/x402-facilitator.md
+URL: https://floe-labs.gitbook.io/docs/developers/x402-facilitator.md
 ==============================================================================
 
 # Pay any vendor API
@@ -9139,7 +9139,7 @@ To retire an agent, use `POST /v1/developer/agents/:agentId/close` — the serve
 ==============================================================================
 # Marketplace Shim
 Source: docs/developers/marketplace-shim.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/marketplace-shim.md
+URL: https://floe-labs.gitbook.io/docs/developers/marketplace-shim.md
 ==============================================================================
 
 # Marketplace Shim
@@ -9221,7 +9221,7 @@ All routes are `POST`, called through `/v1/proxy/fetch` as above. Prices are the
 ==============================================================================
 # MCP Server
 Source: docs/developers/mcp-server.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/mcp-server.md
+URL: https://floe-labs.gitbook.io/docs/developers/mcp-server.md
 ==============================================================================
 
 # MCP Server
@@ -9543,7 +9543,7 @@ Developer key.
 |------|-------------|
 | `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
-| `list_webhook_events` | The live event catalog: 30 events with name, title, description, category, and scope |
+| `list_webhook_events` | The live event catalog: 46 events with name, title, description, category, and scope |
 | `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
 | `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
 | `delete_webhook` | Delete an endpoint permanently |
@@ -10057,7 +10057,7 @@ The MCP server is a thin HTTP client. All protocol logic, indexer queries, and R
 ==============================================================================
 # Webhooks
 Source: docs/developers/webhooks.md
-URL: https://floe-labs.gitbook.io/docs/build-developers/webhooks.md
+URL: https://floe-labs.gitbook.io/docs/developers/webhooks.md
 ==============================================================================
 
 # Webhooks
@@ -10155,7 +10155,7 @@ Payloads never contain plaintext key material — only a masked `keyPrefix`.
 
 #### Billing & invoicing events
 
-Account-level events — no agent attribution. Delivered to `global` webhooks, and to `wallet`/`agent` webhooks whose `scopeValue` is your account wallet. Payloads carry the public `acct_…` account ID, never a wallet address.
+Account-level events — no agent attribution. They reach a `global` webhook, or a `wallet`/`agent` webhook whose `scopeValue` is set to your **account's own wallet address** (the `0x...` value the [Scopes](#scopes) table describes — for these events, your account wallet rather than an agent's). Payloads carry the public `acct_…` account ID, never a wallet address.
 
 | Event | Fires when |
 |-------|-----------|
@@ -10197,7 +10197,7 @@ Each webhook is scoped to control which events reach it:
 | `agent` | Only events for one agent (synonym of `wallet`) | The agent's **wallet address** (`0x...`) — never the numeric agent ID |
 | `loan` | Only events for one loan | The numeric loan ID |
 
-`wallet` and `agent` behave identically — both filter on the event's agent wallet address; `agent` is the value the dashboard's per-agent screen uses. `loan` filters on the event's loan ID. A `global` webhook receives everything it subscribes to.
+`wallet` and `agent` behave identically — both filter on a `0x...` wallet address; `agent` is the value the dashboard's per-agent screen uses. For an agent-scoped event that address is the event's agent wallet. For an **account-scoped event** (the billing & invoicing category) it is your **account's own wallet** — the single wallet those events resolve to — so to receive billing events on a `wallet`/`agent` webhook, set its `scopeValue` to your account wallet. `loan` filters on the event's loan ID. A `global` webhook receives everything it subscribes to, account-scoped events included.
 
 Two exceptions ignore scope entirely: `marketplace.vendor.degraded` and `marketplace.vendor.recovered` are platform-wide broadcasts sent to every webhook subscribed to them.
 
