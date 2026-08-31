@@ -40,6 +40,13 @@ Connections are managed — enable/disable, re-key, remove — from the same pla
 Removal is non-destructive: the costs already reconciled onto your ledger stay
 (they were real); only future pulls stop.
 
+> **USD only — you're told at connect time, not at close.** Floe prices and
+> reconciles in USD and [never converts currencies](vendor-actuals.md#no-fx-ever).
+> If you tell Floe the connection bills in a non-USD currency, the connect flow
+> warns you then and there — so a non-USD vendor is a documented limit you accept
+> up front, not a surprise `currency_unsupported` finding weeks later. The records
+> still capture (with their ISO code); they just land unpriced.
+
 ## Related
 
 - [Vendor actuals — reconcile to the vendor's records](vendor-actuals.md) — what these connections feed, leg by leg, with a status per claim.

@@ -6,6 +6,8 @@ icon: table-list
 
 Floe's free tier answers the first question every voice-AI team has — **what did this call actually cost?** — with no card and no commitment. The paid tiers are about what you do with that answer: attribute it, protect margin on it, and bill your own clients from it.
 
+These plans price the **finance layer** only. Metering and paying for calls through Floe's rails stays **pay-as-you-go on every tier**, Free included — the monthly price buys the attribution, margin, and invoicing features, not the ability to move money. See [Pricing & cost](../getting-started/pricing.md) for the per-call model.
+
 Every gate below is enforced server-side. Tracked-spend caps are **soft** (a banner + alert, never a hard stop on the agent path); history is a **read clamp**, not a lock-out. Everything else is a hard entitlement.
 
 | | **Free** | **Pro** | **Agency** | **Enterprise** |
@@ -43,7 +45,7 @@ Everything in Pro, plus the margin engine and invoicing:
 - **Rate cards & margin engine** (`rate_cards`) — set what you bill each client, preview margin, and see signed-vs-deployed per contract. See [Rate cards & the margin engine](../build/rate-cards.md).
 - **Client invoicing** (`client_invoicing`) — billing periods and statements. See [Client invoicing](../build/invoicing.md).
 - **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 30 billed clients. See [Stripe Connect](../build/stripe-connect.md).
-- **Vendor actuals & connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles your legs to the vendor's **own** records. See [Vendor connections](../build/vendor-connections.md) and [Vendor actuals](../build/vendor-actuals.md).
+- **Vendor actuals & connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles your legs to the vendor's **own** records. **USD only** — Floe prices and reconciles in USD and never converts currencies; a vendor whose billing is non-USD keeps its ISO code and lands unpriced (a `currency_unsupported` finding), by design, not FX support pending. See [Vendor connections](../build/vendor-connections.md) and [Vendor actuals — no FX, ever](../build/vendor-actuals.md#no-fx-ever).
 
 ### Enterprise — no caps, sales-led
 
