@@ -1313,8 +1313,8 @@ a breakdown across the four legs of a cascaded pipeline:
 Defaults assume a cascaded STT → LLM → TTS pipeline at ~150 spoken words/min with
 a ~50% agent talk share. Open **Edit usage assumptions** to tune the token and
 character rates per minute, the average call length, and calls per month to match
-your own agent. Every price shown already includes Floe's routing margin (5%
-default) — there is no other fee.
+your own agent. Every price shown is the vendor's own rate — Floe's routing
+margin is currently 0%, so there is no markup on top and no other fee.
 
 The estimate is a model of steady-state usage. Actual bills are still metered per
 token, audio-second, and character on **every** call — the calculator plans, the
