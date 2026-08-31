@@ -4,7 +4,9 @@ icon: tag
 
 # Pricing & cost
 
-You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it. No subscription, no minimums, no seat fees. Every call tells you exactly what it cost, and you can price a call **before** you make it.
+You pay the vendor's own rate for each call, plus Floe's small fee on the volume that flows through it — **pay-as-you-go: no subscription, minimum, or seat fee to meter and pay for calls**. Every call tells you exactly what it cost, and you can price a call **before** you make it.
+
+That pay-as-you-go usage is one thing; the **finance features** built on top of it — cost attribution, the margin engine, and client invoicing — are another, and they sit on optional monthly plans. Using the payment rails stays free of subscription on every tier, including Free. See [Plans & entitlements](../reference/plans.md) for what each plan adds.
 
 > **Estimate first.** Model a voice agent's cost per call or per minute before you build → [Cost calculator](https://dev-dashboard.floelabs.xyz/calculator).
 
