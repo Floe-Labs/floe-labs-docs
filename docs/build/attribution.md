@@ -22,6 +22,8 @@ All tag values are **opaque strings** — Floe never interprets them. They are t
 
 > **Note on campaign vs task.** On Floe-carried calls the [cost ledger](#roll-it-up) rolls up the **task id** as the "campaign" dimension — one id per call groups that call's legs, and grouping those ids is your campaign view. Reconciled orchestrator ingests carry a *separate* `floe_campaign_id` alongside the task id, because a Vapi/Retell/Bland assistant often maps one campaign to many calls. If you run campaigns on an orchestrator, set both.
 
+> **You no longer need a task id to get a call.** Grouping legs into calls is now done by the [Calls](interactions.md) surface, which binds legs from identifiers already in the vendor data — CallSids, vendor request ids, orchestrator call ids. Tag the task id when you want *your own* key on a call; the by-call view exists either way.
+
 ### Two ways a call gets tagged
 
 **1. Floe-carried calls** — anything through the gateway (`/v1/chat/completions`, `/v1/audio/*`), the x402 proxy (`/v1/proxy/fetch`), or Floe Phone. Set the tag as a request header:
@@ -93,16 +95,45 @@ That last row is the work list: 44 reconciled calls reached your ledger with no 
 
 The same client and campaign grouping is available over **[vendor actuals](vendor-actuals.md)** — the vendor's own billing number behind each client, reconciled leg by leg — when you need margin against true cost rather than Floe-settled spend.
 
+### Per client, per minute
+
+`GET /v1/developer/interactions/rollups?by=customer|campaign|agent|channel` rolls the same attribution up at the **call** grain, so each row carries the calls, the duration behind them, and a cost-per-minute — see [Calls](interactions.md#cost-per-minute-per-client). Same Pro gate as the other rollups.
+
+## Fix what capture missed
+
+Some legs arrive with no client on them — a vendor pull with nothing to tag from, an assistant that shipped without metadata. List exactly those:
+
+```http
+GET /v1/developer/actuals/legs?attributionState=unattributed
+```
+
+Then assign the client. This is a **write that moves reconciled dollars between clients' invoices**, so it needs the `admin` role and the Pro `attribution_reports` entitlement:
+
+```http
+POST /v1/developer/actuals/legs/:id/attribution
+{ "customerId": "acme-corp" }
+```
+
+The correction goes all the way through, not just to the legs page. The original leg is superseded by a corrected copy (capture is append-only — nothing is edited in place), its cost stamp is sealed so those dollars can never be counted under the old client again, and the corrected leg is re-stamped with the same figure under the new client. A [close](invoicing.md) reads stamps, so the dollars reach the next statement. The response echoes `correctedLegId`, `supersededLegId` and `restamped`.
+
+| Refusal | Why | Way forward |
+|---|---|---|
+| `unknown_customer` | No client with that id exists on the account. | Create the client first — a typo would move real dollars to a client no billing period will ever bill. |
+| `period_closed` | The leg's instant falls inside a **closed** statement of the old or the new client. | Re-send with `"acknowledgeReprice": true`. The correction still works; the carry lane trues both clients up on their next statements, which ripples through invoices you've already issued. |
+
+Corrections need no help from the [Calls](interactions.md) surface: the corrected leg re-binds to the same call on the next pass and the call's client is re-derived.
+
 ## Plan gate
 
 > **Capture is free. Rollups are Pro.**
 >
 > **Tagging every call — the headers, the metadata, the per-agent defaults, and strict mode — is free on every plan and is never throttled.** Attribution must never be the reason a call is refused for a billing reason, so tag liberally from day one.
 >
-> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. The `source` and `agent` views stay open on every plan.
+> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals and interaction rollups, the attribution correction write, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. The `source` and `agent` views stay open on every plan.
 
 ## Related
 
+- [Calls](interactions.md) — the by-call grain these tags roll up at, assembled without a task id.
 - [The live cost ledger](unified-ledger.md) — the neutral money view these tags roll up.
 - [Vendor actuals](vendor-actuals.md) — what each tagged leg actually cost at the vendor.
 - [Rate cards & the margin engine](rate-cards.md) — put a price on each tagged client and read your margin.

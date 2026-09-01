@@ -16,6 +16,8 @@
 ## Know your costs
 
 * [The live cost ledger](docs/build/unified-ledger.md)
+* [Calls — every leg of one call](docs/build/interactions.md)
+* [Cost audit — invoices in, margin out](docs/build/cost-audit.md)
 * [Vendor actuals — reconcile to the vendor's records](docs/build/vendor-actuals.md)
 * [Vendor connections](docs/build/vendor-connections.md)
 * [Coverage Score](docs/build/coverage-score.md)

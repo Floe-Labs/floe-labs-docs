@@ -69,6 +69,26 @@ POST /v1/developer/billing-periods/:id/line-items
 - Manual items can only be added while the period is open. Once it closes, the statement is frozen — an adjustment to a closed period becomes a new line in the *next* open one, never an edit.
 - You can add a manual line but not a `true_up`: late vendor actuals are written only by the reconcile job, and disagreement with one is expressed as an *offsetting credit*, not an edit. That is what keeps a re-close byte-identical.
 
+## Preview before you close
+
+A close is one-way, so look at it first:
+
+```http
+GET /v1/developer/billing-periods/:id/preview
+```
+
+Preview runs **exactly** the computation `close` runs — the same segmentation, the same rating, the same allocation — and writes nothing. It returns the lines the statement would carry (`rated`, `allocated`, and the `carried` ones already on the period), the totals they'd produce, and a `gates` block:
+
+| Gate field | What it tells you |
+|---|---|
+| `periodEnded` | Whether the window is over — a close before that is refused. |
+| `refusal` | The `409` the close *would* return (`unrated_usage`, `legacy_estimate_basis`), stated as a field. Preview reports; close refuses. |
+| `vendorActuals` / `vendorActualsWouldBlock` | The unresolved-leg gate below, and whether it would need an override. |
+| `allocationConflict` | Two active allocation rules claiming the same adjustment kind. |
+| `unattributed` | Legs in this window that still belong to nobody, and their cost so far — the checklist. Assign them with [`POST /actuals/legs/:id/attribution`](attribution.md#fix-what-capture-missed) before you lock. |
+
+Preview is for **open** periods only; a closed statement is immutable, and the equivalent view for one is `variance` below.
+
 ## Close the period
 
 Closing is where usage becomes money. It runs **after the window has ended** — closing early would freeze a partial statement, and because closed statements are immutable, the rest of the window's usage could never be billed.
@@ -85,6 +105,8 @@ The close does five things in one transaction:
 4. **Snapshots** every rated line with its card version and segment bounds, plus the sub-cent remainder, so `Σ line cents + Σ remainders` reconstructs the revenue exactly.
 5. **Freezes** the period with a compare-and-set on `status='open'` — a concurrent close loses the race and rolls back. Re-closing a closed period returns the same statement unchanged (idempotent).
 
+Any [allocated lines](#spread-account-level-cost-across-clients) are computed in the same pass and land in the same totals as the rated and carried ones, so every source that becomes a Stripe line is inside `revenue_raw` and `total_cents`.
+
 ### Close-time gates
 
 If your rate card **rebills vendor cost** (a `cost_plus` rule), the close also checks that the vendor actuals behind those legs are real before it invoices them:
@@ -94,12 +116,59 @@ If your rate card **rebills vendor cost** (a `cost_plus` rule), the close also c
 | `unrated_usage` | Usage in a segment with no effective card version. | Set pricing (or a back-stop version) for that window, then close. |
 | `legacy_estimate_basis` | The card still carries a retired estimate flag that would rate vendor cost as $0. | Append a card version naming an explicit basis. **Not** overridable. |
 | `vendor_actuals_pending` | A vendor leg has no confirmed figure yet (a `manual` leg, or a `pending` one past its SLA). | Resolve the leg — see [vendor actuals](vendor-actuals.md) — or close with an **owner override** naming a reason. |
+| `allocation_rules_conflict` | Two **active** allocation rules claim the same adjustment kind, so the same fee would be billed twice. | Deactivate one of them (below), then close. |
 
 The override on `vendor_actuals_pending` is owner-only, reasoned, and loud: it invoices a client for a vendor cost nobody has confirmed, so it fires an ops alert and a `vendor_actuals.close_gate_overridden` webhook. Pass it in the close body:
 
 ```json
 { "actualsGateOverrideReason": "Client month-end is hard; Twilio batch is 6h late and within tolerance." }
 ```
+
+## Spread account-level cost across clients
+
+Some real dollars belong to no single leg: committed spend, a monthly minimum, a volume-tier residual, a platform fee. They sit at account scope as period adjustments, invisible on every client's bill. A **named allocation rule** claims one or more adjustment kinds and says how they spread:
+
+```http
+POST /v1/developer/allocation-rules
+{
+  "label": "Twilio monthly minimum",
+  "method": "by_units",
+  "adjustmentKinds": ["fee"],
+  "vendor": "twilio"
+}
+```
+
+| Method | Weight |
+|---|---|
+| `by_usage` | Each client's request count in the adjustment's window. |
+| `by_units` | Each client's audio seconds in the window. |
+| `fixed` | Explicit `fixedShares` — `{ customerId, bps }`, each client named at most once, summing to **at most** 10000 bps. The remainder deliberately stays with you: clients can never be billed more than the cost. |
+
+`fixedShares` is required exactly when `method` is `fixed`, and every id in it must be a client that already exists (`400 unknown_customer`) — a typo would silently eat a share of every fee. Shares are apportioned by largest remainder over the clients sorted deterministically, so every client's close computes the identical split whenever it runs and the shares of one adjustment sum exactly to it. Revenue-weighted allocation deliberately doesn't exist: it would depend on close order.
+
+At close, each claimed adjustment becomes an `allocated` line on the client's statement carrying `allocationMethod` and `allocationRuleId`, so the statement prints the method behind the number. Allocated lines are **pass-through, not pricing** — the amount equals the cost share, margin-neutral by construction. Marking up shared cost is a [rate card](rate-cards.md) concern.
+
+`GET /v1/developer/allocation-rules` is open to any role (a downgraded account can still see what its past statements meant); create, `PATCH` (relabel / deactivate) and `DELETE` need `admin` + Agency. Deleting or editing a rule never rewrites history — an issued statement's allocated line carries its own method and label forever.
+
+> **Known limit.** An adjustment that lands *after* a client's period closed is not re-allocated into that immutable statement, so that client's share of it is never billed. The carry lane covers late **vendor-cost** deltas; late account-level adjustments don't have one yet.
+
+## Variance — what the vendor billed after you closed
+
+A closed statement is frozen, but the vendor's records keep arriving. Variance is the reconciliation view for one closed period:
+
+```http
+GET /v1/developer/billing-periods/:id/variance
+```
+
+| Block | What it is |
+|---|---|
+| `snapshot` | What the close froze — revenue, cost, margin, and the vendor cost applied and carried at that moment. |
+| `live` | The **same computation** re-run today. If it now refuses (say the card gained a legacy-basis problem), the refusal is stated rather than papered over with a stale number. |
+| `pendingTrueUpRaw` | What the next carry tick would write. Negative means the vendor billed **less** than estimated. Mirrors the carry service's own formula, so this view and the next true-up line can never disagree. |
+| `trueUpsWritten` | True-up lines already carried into later periods; each carries `originPeriodId` pointing back at this period. |
+| `findings` | The open reconciliation findings behind the numbers, joined through their legs to this client and window — up to 50, with `findingsTruncated` stating when there are more. |
+
+The same client/window filter works directly on findings: `GET /v1/developer/actuals/findings?customerId=acme-co&since=…&until=…`. It reaches the client through the finding's leg — and follows an [attribution correction](attribution.md#fix-what-capture-missed) to the leg's *current* client — so findings with no leg reference drop out; the response says so with `filteredByLeg`.
 
 ## Issue the statement
 

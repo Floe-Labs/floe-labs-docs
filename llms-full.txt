@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 70 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 72 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -19,6 +19,8 @@
 - Funding your agent — https://floe-labs.gitbook.io/docs/start-here/funding.md
 - Agent Quickstart — https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
 - The live cost ledger — https://floe-labs.gitbook.io/docs/know-your-costs/unified-ledger.md
+- Calls — every leg of one call — https://floe-labs.gitbook.io/docs/know-your-costs/interactions.md
+- Cost audit — invoices in, margin out — https://floe-labs.gitbook.io/docs/know-your-costs/cost-audit.md
 - Vendor actuals — reconcile to the vendor's records — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-actuals.md
 - Vendor connections — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-connections.md
 - Coverage Score — https://floe-labs.gitbook.io/docs/know-your-costs/coverage-score.md
@@ -1098,6 +1100,288 @@ See [Floe Inference (Keyless LLM & Voice)](../developers/keyless-inference.md).
 Put the ledger to work behind a real voice agent — telephony, STT, LLM, and TTS on one bill: [The Voice Stack](voice-stack.md).
 
 ==============================================================================
+# Calls — every leg of one call
+Source: docs/build/interactions.md
+URL: https://floe-labs.gitbook.io/docs/know-your-costs/interactions.md
+==============================================================================
+
+# Calls — every leg of one call, as one object
+
+A single voice call spends across 7–20 vendors: telephony, STT, one or more LLM turns, TTS, tools. Your [ledger](unified-ledger.md) records each of those as a **leg**. An **interaction** is the call itself — every leg of one conversation bound into one row, with one duration, one client, and one cost.
+
+Floe builds interactions from identifiers **already present in the vendor data** — the task id you send, Twilio's CallSid, the vendor's own per-request id, the orchestrator's call id. There is nothing to instrument: a call assembles even from legs that never touched Floe (a `vendor_pull` leg pulled from the vendor's own billing API lands in the same call as the gateway leg for the same request).
+
+## How a call gets assembled
+
+Each leg contributes join keys under a typed namespace:
+
+| Kind | Where it comes from |
+|---|---|
+| `floe_task` | Your `X-Floe-Task-Id` header. On [Floe Phone](../developers/floe-phone.md) it defaults to the lowercased CallSid, which bootstraps voice calls with zero code. |
+| `callsid` | Twilio's CallSid, verbatim (case matters to Twilio's API). |
+| `vendor_request` | The vendor's own per-request id — `resp_…`, `chatcmpl-…`, a Deepgram `request_id`. |
+| `orchestrator_call` | The platform call id from a Vapi / Retell / Bland post-call report. |
+
+Binding is **transitive**. A leg carrying both a task id and a CallSid is the bridge that unifies the two identifier spaces; a later leg carrying only one of them still lands in the same call. When a leg's identifiers turn out to span two interactions, that leg *is* the discovery that they were one call all along — the two are merged, oldest id wins, and the losing id keeps resolving (the detail response echoes it as `requestedId`).
+
+Deliberately **not** a join key: a Deepgram `vendor_session_id`, which is per-socket rather than per-call. An id that isn't a call id can never become an edge.
+
+Every call carries a stable, operator-facing id — `int_` plus 16 hex — and that is what appears in URLs and exports. Binding runs continuously in the background, so a call appears shortly after its legs are captured, not at call-end.
+
+> **A leg is bound, unresolved with a reason, or not yet swept — never silently dropped.** A leg with no join-eligible identifier lands in the unattributed bucket under a named reason (`no_join_identifiers`, `identifier_conflict`, `resolver_error`), and the `resolution` block on every list response counts it.
+
+## List your calls
+
+```http
+GET /v1/developer/interactions?since=2026-08-01T00:00:00Z&orderBy=cost
+```
+
+| Query | Values |
+|---|---|
+| `since` / `until` | ISO-8601. Defaults to the last 30 days, clamped to your plan's ledger history. |
+| `customerId` · `campaignId` · `agentId` | The call's derived attribution (see below). |
+| `channel` | `voice` · `chat` · `email` · `video` · `job`. Today the resolver produces `voice` and `job`. |
+| `vendor` | Calls **involving** that vendor — the whole call renders, never just its matching legs. |
+| `status` | Comma-separated reconciliation statuses; matches calls containing a leg in one of them. |
+| `orderBy` | `started` (default) or `cost`. |
+| `limit` · `cursor` | 1–500 (default 100); pass `nextCursor` back verbatim. |
+
+Each row is one call:
+
+```json
+{
+  "interactionId": "int_9f2c41a0d8b37e15",
+  "channel": "voice",
+  "direction": "inbound",
+  "startedAt": "2026-08-14T15:02:11Z",
+  "endedAt": "2026-08-14T15:06:48Z",
+  "durationMs": 277000,
+  "agentId": "support-agent",
+  "customerId": "acme-corp",
+  "campaignId": "renewals-q3",
+  "outcome": "success",
+  "legCount": 9,
+  "vendors": ["deepgram", "elevenlabs", "openai", "twilio"],
+  "byKind": {
+    "telephony": { "legs": 1, "costRaw": "18700", "partial": false },
+    "stt":       { "legs": 2, "costRaw": "12400", "partial": false },
+    "llm":       { "legs": 5, "costRaw": null,    "partial": true },
+    "tts":       { "legs": 1, "costRaw": "9800",  "partial": false }
+  },
+  "totalRaw": null,
+  "totalLabel": "partial — lower bound"
+}
+```
+
+The [vendor actuals](vendor-actuals.md) honesty rules carry over **unchanged**, per call and per kind: a figure appears only when every leg behind it is `exact`, `period-rate` or `invoiced` **and** USD-denominated. Otherwise `costRaw` is `null` with `partial: true`, and the row's total reads `"partial — lower bound"` — never a `0`. Legs Floe carries on its own account are omitted entirely (`costOwnerNote` says so on every response), exactly as on `/actuals`.
+
+Attribution on the row is the call's **derived** client / campaign / agent: it is set when the bound legs agree, and left null when they conflict. Floe never picks a winner — see [Cost per client, campaign & task](attribution.md).
+
+## Where the money actually goes
+
+Margin is rarely killed by the average call; it's killed by the tail that ran fourteen minutes. `orderBy=cost` is that list, and the first page carries the distribution behind it:
+
+```json
+"distribution": {
+  "calls": 4120,
+  "partialCalls": 96,
+  "lowerBound": true,
+  "p50Raw": "41200",
+  "p95Raw": "186500",
+  "maxRaw": "1204300"
+}
+```
+
+Percentiles are computed over each call's **lower-bound** cost — the sum of its currently-costed, leg-scope, USD stamps. Calls with `pending` legs enter at that lower bound rather than being dropped, because dropping the not-yet-costed tail would bias exactly the statistic this exists to show. `lowerBound: true` means read the figures as "at least"; when `partialCalls` is `0` they're exact.
+
+The same basis is the `orderBy=cost` **sort key** — a sort key, not a displayed figure. A call whose most expensive leg is still `pending` can rank lower than it eventually will. That order also keysets over a mutable aggregate, so a call whose stamps change between page fetches can shift across the cursor boundary and appear on two pages or neither. For a stable walk, page with `orderBy=started` (an immutable key) and sort client-side.
+
+## Resolution, stated
+
+Every list and rollup response carries the fraction of legs bound to a call, with a named reason for the rest:
+
+```json
+"resolution": {
+  "legs": { "total": 38210, "bound": 37980, "unresolved": 214, "unswept": 16 },
+  "unresolvedByReason": { "no_join_identifiers": 214 },
+  "resolutionBps": 9939
+}
+```
+
+`unswept` legs are ones the background pass hasn't reached yet — transient by construction. `unresolved` legs are ones it examined and could not place; that's your work list. The figure is leg-count-weighted, not spend-weighted, because spend is only knowable for costed legs.
+
+This is deliberately **not** called coverage: the [Coverage Score](coverage-score.md) answers a different question — how much of your spend Floe can *enforce* — and the two numbers must never be read as the same thing.
+
+## Cost per minute, per client
+
+```http
+GET /v1/developer/interactions/rollups?by=customer
+```
+
+`by` is `customer`, `campaign`, `agent`, or `channel`. Rows carry the cost roll-up plus the duration behind it, over exactly the calls whose legs the cost side counted:
+
+```json
+{
+  "key": "acme-corp",
+  "interactionCount": 1204,
+  "openInteractions": 3,
+  "durationMs": 331480000,
+  "totalRaw": "96120000",
+  "costPerMinuteRaw": "17400",
+  "costPerMinuteBlockedBy": []
+}
+```
+
+`costPerMinuteRaw` is micro-USD per minute, and it is stated **only** when both sides are complete claims. Otherwise it is `null` and `costPerMinuteBlockedBy` names why: `partial_cost` (the cost side is a lower bound), `open_interactions` (a call in the bucket has no end time yet), or `no_duration`. An unknown-duration $/min is unknowable rather than lower-boundable, so it is never labelled "partial".
+
+Filters (`customerId`, `campaignId`, `agentId`, `vendor`, `status`) apply to both sides identically. `channel` is a valid **dimension** but not a filter here — passing it returns `400`, because a filter that silently didn't apply would produce figures that look filtered and aren't.
+
+Rollups need the **Pro** `attribution_reports` entitlement; the list and detail reads are free.
+
+## One call, in full
+
+```http
+GET /v1/developer/interactions/int_9f2c41a0d8b37e15
+```
+
+Returns the call, its legs in time order, and the identifiers that bound it:
+
+- **`legs[]`** — `vendor`, `legKind`, `occurredAt`, `captureSource`, `attemptOutcome`, `units`, `reconciliationStatus`, `statusReason`, `costRaw`, `currency`, and `matchedVia` (which identifier kind pulled this leg into the call).
+- **`links[]`** — every identifier currently bound to the call, with its vendor and kind.
+- **`byKind`** and the same subtotal block as the list row.
+- **`requestedId`** — non-null when you asked for an id that has since been merged into this one. A saved link never 404s.
+
+A call whose every leg is carried on Floe's own account is absent from these reads entirely, not rendered at zero.
+
+## What this replaces
+
+The older by-call surface (`GET /v1/developer/actuals/calls`) groups on `task_id`. That grain only exists where you instrumented it, and the same header also drives task budget windows. It stays wire-compatible for existing consumers, but **new consumers should read `/interactions`** — it covers calls you never tagged.
+
+## Plan gate
+
+> **The by-call ledger is free.** `GET /interactions` and `GET /interactions/:id` ride the Free `ledger_read` entitlement; `GET /interactions/rollups` rides the Pro `attribution_reports` entitlement, like every other per-client rollup. Your plan's ledger-history window clamps the range (and a call that started before the floor reads as not found). See [Plans & entitlements](../reference/plans.md).
+
+## Related
+
+- [The live cost ledger](unified-ledger.md) — the legs an interaction is assembled from.
+- [Vendor actuals](vendor-actuals.md) — the status behind every cost figure here.
+- [Cost per client, campaign & task](attribution.md) — how a call gets its client, and how to fix one that didn't.
+- [Coverage Score](coverage-score.md) — a different question from resolution.
+
+==============================================================================
+# Cost audit — invoices in, margin out
+Source: docs/build/cost-audit.md
+URL: https://floe-labs.gitbook.io/docs/know-your-costs/cost-audit.md
+==============================================================================
+
+# Cost audit — invoices in, margin per client out
+
+The fastest way to find out whether your $2/min contract actually costs you $1.80 is not to route a single call through Floe. **Cost audit** takes the invoices and usage exports you already download from Twilio, Deepgram, ElevenLabs, OpenAI, Vapi and the rest, attributes their lines to your end-clients, and gives you cost, minutes, cost-per-minute and margin per client.
+
+Nothing in your call path changes. **No vendor credentials, either** — this surface has no credential field anywhere. A Twilio auth token or an AWS key isn't read-only, and asking for one at minute zero is a bigger trust ask than routing traffic. Live [vendor connections](vendor-connections.md) are the upgrade *after* you've seen the number.
+
+It's free: the whole audit surface rides the Free `ledger_read` entitlement.
+
+## 1. Upload the invoices
+
+```http
+POST /v1/developer/audit/documents
+```
+
+```json
+{
+  "vendor": "twilio",
+  "filename": "twilio-2026-08.csv",
+  "contentType": "text/csv",
+  "body": "…the file, inline…",
+  "periodStart": "2026-08-01T00:00:00Z",
+  "periodEnd": "2026-09-01T00:00:00Z"
+}
+```
+
+- The body is sent **inline** — `text/csv`, `text/plain`, or `application/json`, up to **256 KiB**. An audit account never needs object storage to exist. If your export is bigger, upload the vendor's monthly summary rather than a per-request log.
+- Uploads are idempotent on content hash: re-posting the same file returns `200` with `duplicate: true` instead of double-counting it.
+- The response carries the parse result — `parserKey`, `parseStatus`, `lineCount`, `needsReviewCount`, `warnings` — plus an `attribution` summary of what the upload changed.
+
+`GET /v1/developer/audit/documents` lists what you've uploaded.
+
+## 2. Map identifiers to clients
+
+Your vendors' exports already carry client identity; they just don't know your client names. The mapping table is the join.
+
+```http
+PUT /v1/developer/audit/mappings
+{
+  "mappings": [
+    { "vendor": "twilio",  "identifierKind": "subaccount",   "identifier": "AC1234…", "customerId": "acme-corp" },
+    { "vendor": "twilio",  "identifierKind": "phone_number", "identifier": "+14155550123", "customerId": "globex" },
+    { "vendor": "vapi",    "identifierKind": "assistant",    "identifier": "asst_9f2c", "customerId": "acme-corp" },
+    { "vendor": "openai",  "identifierKind": "project",      "identifier": "proj_renewals", "customerId": "acme-corp" }
+  ]
+}
+```
+
+Four identifier kinds — `subaccount`, `phone_number`, `project`, `assistant` — up to 200 mappings per call. `GET` lists them; `DELETE /v1/developer/audit/mappings/:id` removes one. Every mutation re-runs the attribution pass, so the report is always a pure read of current mappings.
+
+Kinds are gated by vendor category: a phone number or subaccount only means a *client* on a telephony vendor's export, an assistant only on an orchestrator's. When one line's identifiers point at different clients, specificity decides — **phone number → assistant → subaccount → project** — because the narrower identifier is the stronger claim about that line. Floe never guesses beyond that rule.
+
+> **`from` / caller-ID columns are deliberately not mappable.** On the dominant voice-agency shape the outbound caller ID is the *agency's* shared number, so mapping it would attribute every client's outbound lines to one client.
+
+## 3. Read the report
+
+```http
+GET /v1/developer/audit/report
+```
+
+Per client: `lines`, `costRaw`, `minutesMicro`, `costPerMinuteRaw`, a per-category breakdown (`telephony` · `stt` · `tts` · `llm` · `orchestrator` · `fees_credits` · `other`), and — when that client has a [rate card](rate-cards.md) — `contractedPerMinuteRaw`, `revenueEstimateRaw` and `marginRaw`. `worstContracts` names the three lowest-margin clients whose margin was estimable at all.
+
+Revenue is an **estimate from the rate card and says so**: components that can't be derived from invoices (per-request pricing) are named in `revenueNote` rather than silently priced at zero.
+
+Every figure is labelled by its coverage:
+
+```json
+"coverage": {
+  "knownCostRaw": "412300000",
+  "attributedCostRaw": "338090000",
+  "attributionBps": 8200,
+  "byReason": {
+    "no_mapping_for_identifier": { "lines": 1840, "costRaw": "61200000" },
+    "no_identifier_on_line":     { "lines": 96,   "costRaw": "13010000" }
+  },
+  "nonUsdLines": 0,
+  "needsReviewLines": 12,
+  "excludedLines": 4
+}
+```
+
+"82% attributed, and here's the other 18% and why" is the credibility, not the apology. `no_mapping_for_identifier` is the actionable half — `unmappedIdentifiers` lists exactly those values, biggest dollars first, each one directly pasteable into step 2.
+
+Two rules inherited from the rest of the ledger hold here too: **non-USD lines are never FX-converted** — they're counted in `nonUsdLines`, and any client carrying one gets a `null` cost-per-minute, revenue and margin rather than a converted figure. And a missing number is blank, never a zero.
+
+Accounts over **100,000 invoice lines** get a `413 audit_too_large` on the report rather than a slow half-answer — upload monthly summary exports instead of per-request logs. An upload or mapping write that trips the cap still succeeds; it returns `attributionError: "audit_too_large"` so a successful write never reads as failed.
+
+## In the dashboard
+
+**Cost audit** in the sidebar (`/audit`) walks the same three steps — Vendors → Clients → Report. It's a self-contained path: nothing wallet- or agent-shaped appears while you're in it, so a finance-shaped visitor meets only invoices and clients.
+
+## When to graduate
+
+The audit lane labels invoice lines and sums them. It never stamps money onto a leg, and it isn't the reconcile lane:
+
+| You want | Go to |
+|---|---|
+| Cost per client from invoices, no traffic, no credentials | This page |
+| The vendor's own billing records pulled automatically, leg by leg | [Vendor connections](vendor-connections.md) + [vendor actuals](vendor-actuals.md) (Agency) |
+| Per-call cost across every vendor, live | [The live cost ledger](unified-ledger.md) and [Calls](interactions.md) |
+| A statement you can send a client | [Client invoicing](invoicing.md) (Agency) |
+
+## Related
+
+- [Vendor actuals](vendor-actuals.md) — the same honesty rules, applied to reconciled legs.
+- [Rate cards & the margin engine](rate-cards.md) — where the contracted rate behind the margin estimate comes from.
+- [Plans & entitlements](../reference/plans.md) — what's free, and what the upgrades buy.
+
+==============================================================================
 # Vendor actuals — reconcile to the vendor's records
 Source: docs/build/vendor-actuals.md
 URL: https://floe-labs.gitbook.io/docs/know-your-costs/vendor-actuals.md
@@ -1151,6 +1435,10 @@ A non-USD or credit-denominated vendor record is **structurally unpriceable** he
 Reconciling to a vendor's **own** records is an **Agency** capability — it's the [vendor connection](vendor-connections.md) that does it. (Reading the ledger those costs land on — per-leg and by-call — is free; the per-client rollups are Pro. See [Plans & entitlements](../reference/plans.md).) Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
 
 Read your reconciled costs — legs, by-call, and rollups, each with a provenance drawer — in the dashboard at `/actuals`, over the `floe actuals` CLI, or through the `actuals` MCP capability group (read tools only; invoice upload and footing stay human-in-the-loop). The engine records everything it couldn't reconcile as a *finding* with a reason — review and resolve them in the dashboard.
+
+The **by-call** view is [Calls](interactions.md) (`GET /v1/developer/interactions`): legs bound into whole calls from identifiers already in the vendor data, so a call appears even where you never sent a task id. Every status and totalling rule on this page applies there unchanged. The older `GET /v1/developer/actuals/calls`, which groups on `task_id`, stays wire-compatible for existing consumers.
+
+No vendor credential, and no traffic through Floe? Upload the invoices instead and read cost per client straight off them — see [Cost audit](cost-audit.md), which is free.
 
 `floe actuals` is about **your** vendors' bills. Not to be confused with `floe vendors`, which probes the health of Floe's own marketplace vendors.
 
@@ -1417,6 +1705,8 @@ All tag values are **opaque strings** — Floe never interprets them. They are t
 
 > **Note on campaign vs task.** On Floe-carried calls the [cost ledger](#roll-it-up) rolls up the **task id** as the "campaign" dimension — one id per call groups that call's legs, and grouping those ids is your campaign view. Reconciled orchestrator ingests carry a *separate* `floe_campaign_id` alongside the task id, because a Vapi/Retell/Bland assistant often maps one campaign to many calls. If you run campaigns on an orchestrator, set both.
 
+> **You no longer need a task id to get a call.** Grouping legs into calls is now done by the [Calls](interactions.md) surface, which binds legs from identifiers already in the vendor data — CallSids, vendor request ids, orchestrator call ids. Tag the task id when you want *your own* key on a call; the by-call view exists either way.
+
 ### Two ways a call gets tagged
 
 **1. Floe-carried calls** — anything through the gateway (`/v1/chat/completions`, `/v1/audio/*`), the x402 proxy (`/v1/proxy/fetch`), or Floe Phone. Set the tag as a request header:
@@ -1488,16 +1778,45 @@ That last row is the work list: 44 reconciled calls reached your ledger with no 
 
 The same client and campaign grouping is available over **[vendor actuals](vendor-actuals.md)** — the vendor's own billing number behind each client, reconciled leg by leg — when you need margin against true cost rather than Floe-settled spend.
 
+### Per client, per minute
+
+`GET /v1/developer/interactions/rollups?by=customer|campaign|agent|channel` rolls the same attribution up at the **call** grain, so each row carries the calls, the duration behind them, and a cost-per-minute — see [Calls](interactions.md#cost-per-minute-per-client). Same Pro gate as the other rollups.
+
+## Fix what capture missed
+
+Some legs arrive with no client on them — a vendor pull with nothing to tag from, an assistant that shipped without metadata. List exactly those:
+
+```http
+GET /v1/developer/actuals/legs?attributionState=unattributed
+```
+
+Then assign the client. This is a **write that moves reconciled dollars between clients' invoices**, so it needs the `admin` role and the Pro `attribution_reports` entitlement:
+
+```http
+POST /v1/developer/actuals/legs/:id/attribution
+{ "customerId": "acme-corp" }
+```
+
+The correction goes all the way through, not just to the legs page. The original leg is superseded by a corrected copy (capture is append-only — nothing is edited in place), its cost stamp is sealed so those dollars can never be counted under the old client again, and the corrected leg is re-stamped with the same figure under the new client. A [close](invoicing.md) reads stamps, so the dollars reach the next statement. The response echoes `correctedLegId`, `supersededLegId` and `restamped`.
+
+| Refusal | Why | Way forward |
+|---|---|---|
+| `unknown_customer` | No client with that id exists on the account. | Create the client first — a typo would move real dollars to a client no billing period will ever bill. |
+| `period_closed` | The leg's instant falls inside a **closed** statement of the old or the new client. | Re-send with `"acknowledgeReprice": true`. The correction still works; the carry lane trues both clients up on their next statements, which ripples through invoices you've already issued. |
+
+Corrections need no help from the [Calls](interactions.md) surface: the corrected leg re-binds to the same call on the next pass and the call's client is re-derived.
+
 ## Plan gate
 
 > **Capture is free. Rollups are Pro.**
 >
 > **Tagging every call — the headers, the metadata, the per-agent defaults, and strict mode — is free on every plan and is never throttled.** Attribution must never be the reason a call is refused for a billing reason, so tag liberally from day one.
 >
-> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. The `source` and `agent` views stay open on every plan.
+> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals and interaction rollups, the attribution correction write, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. The `source` and `agent` views stay open on every plan.
 
 ## Related
 
+- [Calls](interactions.md) — the by-call grain these tags roll up at, assembled without a task id.
 - [The live cost ledger](unified-ledger.md) — the neutral money view these tags roll up.
 - [Vendor actuals](vendor-actuals.md) — what each tagged leg actually cost at the vendor.
 - [Rate cards & the margin engine](rate-cards.md) — put a price on each tagged client and read your margin.
@@ -1690,6 +2009,26 @@ POST /v1/developer/billing-periods/:id/line-items
 - Manual items can only be added while the period is open. Once it closes, the statement is frozen — an adjustment to a closed period becomes a new line in the *next* open one, never an edit.
 - You can add a manual line but not a `true_up`: late vendor actuals are written only by the reconcile job, and disagreement with one is expressed as an *offsetting credit*, not an edit. That is what keeps a re-close byte-identical.
 
+## Preview before you close
+
+A close is one-way, so look at it first:
+
+```http
+GET /v1/developer/billing-periods/:id/preview
+```
+
+Preview runs **exactly** the computation `close` runs — the same segmentation, the same rating, the same allocation — and writes nothing. It returns the lines the statement would carry (`rated`, `allocated`, and the `carried` ones already on the period), the totals they'd produce, and a `gates` block:
+
+| Gate field | What it tells you |
+|---|---|
+| `periodEnded` | Whether the window is over — a close before that is refused. |
+| `refusal` | The `409` the close *would* return (`unrated_usage`, `legacy_estimate_basis`), stated as a field. Preview reports; close refuses. |
+| `vendorActuals` / `vendorActualsWouldBlock` | The unresolved-leg gate below, and whether it would need an override. |
+| `allocationConflict` | Two active allocation rules claiming the same adjustment kind. |
+| `unattributed` | Legs in this window that still belong to nobody, and their cost so far — the checklist. Assign them with [`POST /actuals/legs/:id/attribution`](attribution.md#fix-what-capture-missed) before you lock. |
+
+Preview is for **open** periods only; a closed statement is immutable, and the equivalent view for one is `variance` below.
+
 ## Close the period
 
 Closing is where usage becomes money. It runs **after the window has ended** — closing early would freeze a partial statement, and because closed statements are immutable, the rest of the window's usage could never be billed.
@@ -1706,6 +2045,8 @@ The close does five things in one transaction:
 4. **Snapshots** every rated line with its card version and segment bounds, plus the sub-cent remainder, so `Σ line cents + Σ remainders` reconstructs the revenue exactly.
 5. **Freezes** the period with a compare-and-set on `status='open'` — a concurrent close loses the race and rolls back. Re-closing a closed period returns the same statement unchanged (idempotent).
 
+Any [allocated lines](#spread-account-level-cost-across-clients) are computed in the same pass and land in the same totals as the rated and carried ones, so every source that becomes a Stripe line is inside `revenue_raw` and `total_cents`.
+
 ### Close-time gates
 
 If your rate card **rebills vendor cost** (a `cost_plus` rule), the close also checks that the vendor actuals behind those legs are real before it invoices them:
@@ -1715,12 +2056,59 @@ If your rate card **rebills vendor cost** (a `cost_plus` rule), the close also c
 | `unrated_usage` | Usage in a segment with no effective card version. | Set pricing (or a back-stop version) for that window, then close. |
 | `legacy_estimate_basis` | The card still carries a retired estimate flag that would rate vendor cost as $0. | Append a card version naming an explicit basis. **Not** overridable. |
 | `vendor_actuals_pending` | A vendor leg has no confirmed figure yet (a `manual` leg, or a `pending` one past its SLA). | Resolve the leg — see [vendor actuals](vendor-actuals.md) — or close with an **owner override** naming a reason. |
+| `allocation_rules_conflict` | Two **active** allocation rules claim the same adjustment kind, so the same fee would be billed twice. | Deactivate one of them (below), then close. |
 
 The override on `vendor_actuals_pending` is owner-only, reasoned, and loud: it invoices a client for a vendor cost nobody has confirmed, so it fires an ops alert and a `vendor_actuals.close_gate_overridden` webhook. Pass it in the close body:
 
 ```json
 { "actualsGateOverrideReason": "Client month-end is hard; Twilio batch is 6h late and within tolerance." }
 ```
+
+## Spread account-level cost across clients
+
+Some real dollars belong to no single leg: committed spend, a monthly minimum, a volume-tier residual, a platform fee. They sit at account scope as period adjustments, invisible on every client's bill. A **named allocation rule** claims one or more adjustment kinds and says how they spread:
+
+```http
+POST /v1/developer/allocation-rules
+{
+  "label": "Twilio monthly minimum",
+  "method": "by_units",
+  "adjustmentKinds": ["fee"],
+  "vendor": "twilio"
+}
+```
+
+| Method | Weight |
+|---|---|
+| `by_usage` | Each client's request count in the adjustment's window. |
+| `by_units` | Each client's audio seconds in the window. |
+| `fixed` | Explicit `fixedShares` — `{ customerId, bps }`, each client named at most once, summing to **at most** 10000 bps. The remainder deliberately stays with you: clients can never be billed more than the cost. |
+
+`fixedShares` is required exactly when `method` is `fixed`, and every id in it must be a client that already exists (`400 unknown_customer`) — a typo would silently eat a share of every fee. Shares are apportioned by largest remainder over the clients sorted deterministically, so every client's close computes the identical split whenever it runs and the shares of one adjustment sum exactly to it. Revenue-weighted allocation deliberately doesn't exist: it would depend on close order.
+
+At close, each claimed adjustment becomes an `allocated` line on the client's statement carrying `allocationMethod` and `allocationRuleId`, so the statement prints the method behind the number. Allocated lines are **pass-through, not pricing** — the amount equals the cost share, margin-neutral by construction. Marking up shared cost is a [rate card](rate-cards.md) concern.
+
+`GET /v1/developer/allocation-rules` is open to any role (a downgraded account can still see what its past statements meant); create, `PATCH` (relabel / deactivate) and `DELETE` need `admin` + Agency. Deleting or editing a rule never rewrites history — an issued statement's allocated line carries its own method and label forever.
+
+> **Known limit.** An adjustment that lands *after* a client's period closed is not re-allocated into that immutable statement, so that client's share of it is never billed. The carry lane covers late **vendor-cost** deltas; late account-level adjustments don't have one yet.
+
+## Variance — what the vendor billed after you closed
+
+A closed statement is frozen, but the vendor's records keep arriving. Variance is the reconciliation view for one closed period:
+
+```http
+GET /v1/developer/billing-periods/:id/variance
+```
+
+| Block | What it is |
+|---|---|
+| `snapshot` | What the close froze — revenue, cost, margin, and the vendor cost applied and carried at that moment. |
+| `live` | The **same computation** re-run today. If it now refuses (say the card gained a legacy-basis problem), the refusal is stated rather than papered over with a stale number. |
+| `pendingTrueUpRaw` | What the next carry tick would write. Negative means the vendor billed **less** than estimated. Mirrors the carry service's own formula, so this view and the next true-up line can never disagree. |
+| `trueUpsWritten` | True-up lines already carried into later periods; each carries `originPeriodId` pointing back at this period. |
+| `findings` | The open reconciliation findings behind the numbers, joined through their legs to this client and window — up to 50, with `findingsTruncated` stating when there are more. |
+
+The same client/window filter works directly on findings: `GET /v1/developer/actuals/findings?customerId=acme-co&since=…&until=…`. It reaches the client through the finding's leg — and follows an [attribution correction](attribution.md#fix-what-capture-missed) to the leg's *current* client — so findings with no leg reference drop out; the response says so with `filteredByLeg`.
 
 ## Issue the statement
 
@@ -12563,6 +12951,8 @@ Every gate below is enforced server-side. Tracked-spend caps are **soft** (a ban
 The live cost ledger and the honest number behind every leg, with no account friction:
 
 - **Live cost ledger** — per-leg and by-call cost (`ledger_read`). See [The live cost ledger](../build/unified-ledger.md). *(Reconciling those legs to a vendor's own billing records needs an Agency vendor connection — see below.)*
+- **Calls** (`ledger_read`) — every leg of one call as one object, bound from identifiers already in the vendor data, with cost-per-call percentiles. See [Calls](../build/interactions.md). *(The per-client call rollups are Pro.)*
+- **Cost audit** (`ledger_read`) — upload your vendors' invoices, map identifiers to clients, read cost and margin per client. No traffic through Floe, no vendor credentials. See [Cost audit](../build/cost-audit.md).
 - **Reconciliation findings** (read) — where a number is still an estimate, and why.
 - **Coverage Score** — how much of your spend Floe can act on. See [Coverage Score](../build/coverage-score.md).
 - **The cost calculator** — price a call before you make it. See [The cost calculator](../build/cost-calculator.md).
@@ -12572,7 +12962,7 @@ The live cost ledger and the honest number behind every leg, with no account fri
 
 Everything in Free, plus the tools to turn cost into a per-client, per-campaign picture:
 
-- **Attribution reports** (`attribution_reports`) — cost rolled up per **client, campaign, and task**. See [Cost per client, campaign & task](../build/attribution.md).
+- **Attribution reports** (`attribution_reports`) — cost rolled up per **client, campaign, and task** (including cost per minute per client), plus assigning a client to a leg capture couldn't tag. See [Cost per client, campaign & task](../build/attribution.md).
 - **CSV exports** (`exports`) — the usage bill, statements, and margin as CSV.
 - **Alerts** (`alerts`) — credit-threshold notifications.
 - **Fleet policies** (`fleet_policies`) — developer-scope budgets and suspend-agent hard stops.
@@ -12582,7 +12972,7 @@ Everything in Free, plus the tools to turn cost into a per-client, per-campaign 
 Everything in Pro, plus the margin engine and invoicing:
 
 - **Rate cards & margin engine** (`rate_cards`) — set what you bill each client, preview margin, and see signed-vs-deployed per contract. See [Rate cards & the margin engine](../build/rate-cards.md).
-- **Client invoicing** (`client_invoicing`) — billing periods and statements. See [Client invoicing](../build/invoicing.md).
+- **Client invoicing** (`client_invoicing`) — billing periods, statements, and the allocation rules that spread account-level cost across clients. See [Client invoicing](../build/invoicing.md).
 - **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 30 billed clients. See [Stripe Connect](../build/stripe-connect.md).
 - **Vendor actuals & connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles your legs to the vendor's **own** records. **USD only** — Floe prices and reconciles in USD and never converts currencies; a vendor whose billing is non-USD keeps its ISO code and lands unpriced (a `currency_unsupported` finding), by design, not FX support pending. See [Vendor connections](../build/vendor-connections.md) and [Vendor actuals — no FX, ever](../build/vendor-actuals.md#no-fx-ever).
 
@@ -12594,8 +12984,8 @@ Everything in Agency with no tracked-spend, history, or client caps, priced at *
 
 | Entitlement | Plan | Unlocks |
 |---|---|---|
-| `ledger_read` | Free | Per-leg + by-call ledger, findings, coverage score |
-| `attribution_reports` | Pro | Cost per client / campaign / task |
+| `ledger_read` | Free | Per-leg + by-call ledger, calls, cost audit, findings, coverage score |
+| `attribution_reports` | Pro | Cost per client / campaign / task, attribution corrections |
 | `exports` | Pro | CSV exports (bill, statement, margin) |
 | `alerts` | Pro | Credit-threshold alerts |
 | `fleet_policies` | Pro | Developer-scope budgets + suspend-agent |
@@ -13193,6 +13583,19 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **80 tools**; `@floelabs/cli` ships **33 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.24.0 — The call as a first-class object, Floe Audit, and the close checklist (September 2026)
+
+Cost stopped being a list of legs. A **call** is now one object with one duration and one cost; invoices alone are enough to get cost per client; and closing a month is a reviewed workflow instead of a one-shot POST.
+
+* **Calls — `GET /v1/developer/interactions`.** Legs are bound into whole calls from identifiers already in the vendor data — your task id (Floe Phone defaults it to the lowercased CallSid), Twilio CallSids, vendor per-request ids, orchestrator call ids — so a call exists even where you never instrumented one, including `vendor_pull` legs that never touched Floe. Stable `int_…` ids that survive a merge, `orderBy=cost` for the expensive tail with p50/p95/max per call, `GET /interactions/rollups?by=customer|campaign|agent|channel` with duration and **cost per minute**, and `GET /interactions/:id` for one call's legs and links. A stated `resolution` figure names a reason for every leg outside it (`no_join_identifiers`, `identifier_conflict`, `resolver_error`) — deliberately not called "coverage", which is the [Coverage Score](build/coverage-score.md)'s word for a different question. Free (`ledger_read`); rollups are Pro. The older `/actuals/calls`, which groups on `task_id`, stays wire-compatible; new consumers should read `/interactions`.
+* **Floe Audit — invoices in, margin per client out (`/v1/developer/audit/*`).** The front door that asks for neither traffic nor credentials: upload a vendor invoice or usage export inline (≤ 256 KiB), map `subaccount` / `phone_number` / `project` / `assistant` identifiers to your clients, and read cost, minutes, cost-per-minute, and estimated margin per client. Coverage is the label on every figure — attributed vs known cost with a named reason for the remainder, and `unmappedIdentifiers` as the work list. Non-USD lines are counted, never FX-converted. Free (`ledger_read`); in the dashboard at **Cost audit**.
+* **Close, reviewed — `GET /billing-periods/:id/preview`.** The same computation the close runs, with zero writes: the lines the statement would carry, the totals, every gate that would refuse, and the legs in the window still belonging to nobody.
+* **Variance — `GET /billing-periods/:id/variance`.** Estimate → vendor actual → true-up for a closed period: the frozen snapshot, the same computation re-run live, the pending true-up the next carry tick would write, the true-ups already written (`originPeriodId`), and the open findings behind them. Findings gained `customerId` / `since` / `until` filters that reach through the leg (and follow a corrected leg to its current client).
+* **Allocation rules — `/v1/developer/allocation-rules`.** Named methods that spread account-level cost (committed spend, minimums, platform fees) across clients at close: `fixed` bps shares (Σ ≤ 10000 — the remainder stays with the agency), `by_usage`, `by_units`. Allocated lines are pass-through, not pricing, and carry their method and label forever, so deleting a rule never rewrites an issued statement. Two active rules claiming one adjustment kind refuse the close (`allocation_rules_conflict`). Admin + Agency to write, open to read.
+* **Attribution corrections — `POST /v1/developer/actuals/legs/:id/attribution`.** Assign a client to a leg capture couldn't tag, and the dollars actually move: the leg is superseded by a corrected copy, its stamp is sealed, and the corrected leg is re-stamped under the new client so the next close bills it. Refuses on `unknown_customer`, and on `period_closed` until you `acknowledgeReprice`. List the work with `GET /actuals/legs?attributionState=unattributed`. Admin + Pro.
+
+→ [Calls](build/interactions.md) · [Cost audit](build/cost-audit.md) · [Client invoicing](build/invoicing.md) · [Cost per client, campaign & task](build/attribution.md)
 
 ### v1.23.0 — Client billing & margin: rate cards, invoicing, per-rail pricing (August 2026)
 

@@ -51,6 +51,10 @@ Reconciling to a vendor's **own** records is an **Agency** capability — it's t
 
 Read your reconciled costs — legs, by-call, and rollups, each with a provenance drawer — in the dashboard at `/actuals`, over the `floe actuals` CLI, or through the `actuals` MCP capability group (read tools only; invoice upload and footing stay human-in-the-loop). The engine records everything it couldn't reconcile as a *finding* with a reason — review and resolve them in the dashboard.
 
+The **by-call** view is [Calls](interactions.md) (`GET /v1/developer/interactions`): legs bound into whole calls from identifiers already in the vendor data, so a call appears even where you never sent a task id. Every status and totalling rule on this page applies there unchanged. The older `GET /v1/developer/actuals/calls`, which groups on `task_id`, stays wire-compatible for existing consumers.
+
+No vendor credential, and no traffic through Floe? Upload the invoices instead and read cost per client straight off them — see [Cost audit](cost-audit.md), which is free.
+
 `floe actuals` is about **your** vendors' bills. Not to be confused with `floe vendors`, which probes the health of Floe's own marketplace vendors.
 
 ## Related

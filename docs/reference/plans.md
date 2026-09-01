@@ -24,6 +24,8 @@ Every gate below is enforced server-side. Tracked-spend caps are **soft** (a ban
 The live cost ledger and the honest number behind every leg, with no account friction:
 
 - **Live cost ledger** — per-leg and by-call cost (`ledger_read`). See [The live cost ledger](../build/unified-ledger.md). *(Reconciling those legs to a vendor's own billing records needs an Agency vendor connection — see below.)*
+- **Calls** (`ledger_read`) — every leg of one call as one object, bound from identifiers already in the vendor data, with cost-per-call percentiles. See [Calls](../build/interactions.md). *(The per-client call rollups are Pro.)*
+- **Cost audit** (`ledger_read`) — upload your vendors' invoices, map identifiers to clients, read cost and margin per client. No traffic through Floe, no vendor credentials. See [Cost audit](../build/cost-audit.md).
 - **Reconciliation findings** (read) — where a number is still an estimate, and why.
 - **Coverage Score** — how much of your spend Floe can act on. See [Coverage Score](../build/coverage-score.md).
 - **The cost calculator** — price a call before you make it. See [The cost calculator](../build/cost-calculator.md).
@@ -33,7 +35,7 @@ The live cost ledger and the honest number behind every leg, with no account fri
 
 Everything in Free, plus the tools to turn cost into a per-client, per-campaign picture:
 
-- **Attribution reports** (`attribution_reports`) — cost rolled up per **client, campaign, and task**. See [Cost per client, campaign & task](../build/attribution.md).
+- **Attribution reports** (`attribution_reports`) — cost rolled up per **client, campaign, and task** (including cost per minute per client), plus assigning a client to a leg capture couldn't tag. See [Cost per client, campaign & task](../build/attribution.md).
 - **CSV exports** (`exports`) — the usage bill, statements, and margin as CSV.
 - **Alerts** (`alerts`) — credit-threshold notifications.
 - **Fleet policies** (`fleet_policies`) — developer-scope budgets and suspend-agent hard stops.
@@ -43,7 +45,7 @@ Everything in Free, plus the tools to turn cost into a per-client, per-campaign 
 Everything in Pro, plus the margin engine and invoicing:
 
 - **Rate cards & margin engine** (`rate_cards`) — set what you bill each client, preview margin, and see signed-vs-deployed per contract. See [Rate cards & the margin engine](../build/rate-cards.md).
-- **Client invoicing** (`client_invoicing`) — billing periods and statements. See [Client invoicing](../build/invoicing.md).
+- **Client invoicing** (`client_invoicing`) — billing periods, statements, and the allocation rules that spread account-level cost across clients. See [Client invoicing](../build/invoicing.md).
 - **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 30 billed clients. See [Stripe Connect](../build/stripe-connect.md).
 - **Vendor actuals & connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles your legs to the vendor's **own** records. **USD only** — Floe prices and reconciles in USD and never converts currencies; a vendor whose billing is non-USD keeps its ISO code and lands unpriced (a `currency_unsupported` finding), by design, not FX support pending. See [Vendor connections](../build/vendor-connections.md) and [Vendor actuals — no FX, ever](../build/vendor-actuals.md#no-fx-ever).
 
@@ -55,8 +57,8 @@ Everything in Agency with no tracked-spend, history, or client caps, priced at *
 
 | Entitlement | Plan | Unlocks |
 |---|---|---|
-| `ledger_read` | Free | Per-leg + by-call ledger, findings, coverage score |
-| `attribution_reports` | Pro | Cost per client / campaign / task |
+| `ledger_read` | Free | Per-leg + by-call ledger, calls, cost audit, findings, coverage score |
+| `attribution_reports` | Pro | Cost per client / campaign / task, attribution corrections |
 | `exports` | Pro | CSV exports (bill, statement, margin) |
 | `alerts` | Pro | Credit-threshold alerts |
 | `fleet_policies` | Pro | Developer-scope budgets + suspend-agent |
