@@ -1148,7 +1148,7 @@ A non-USD or credit-denominated vendor record is **structurally unpriceable** he
 
 ## Where to access it
 
-Reconciling to a vendor's **own** records is an **Agency** capability — it's the [vendor connection](vendor-connections.md) that does it. (Reading the ledger those costs land on — per-leg and by-call — is free; the per-client rollups are Pro. See [Plans & entitlements](../reference/plans.md).) Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
+Reconciling to a vendor's **own** records is an **Agency** capability — it's the [vendor connection](vendor-connections.md) that does it. (Reading the ledger those costs land on — per-leg and by-call — is free; the per-client rollups are Pro. See [Plans & entitlements](../reference/plans.md).) Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard at `/actuals` under the **Billing connections** tab — beside the ledger it feeds, not with the keys that route calls — or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
 
 Read your reconciled costs — legs, by-call, and rollups, each with a provenance drawer — in the dashboard at `/actuals`, over the `floe actuals` CLI, or through the `actuals` MCP capability group (read tools only; invoice upload and footing stay human-in-the-loop). The engine records everything it couldn't reconcile as a *finding* with a reason — review and resolve them in the dashboard.
 
@@ -1193,7 +1193,10 @@ gated the same way: per-leg and by-call cost, plus findings, are **free**
 
 ## Setting one up
 
-You connect a vendor from the **connect flow in the [dashboard](https://dev-dashboard.floelabs.xyz)**.
+You connect a vendor from the **Billing connections** tab on
+[`/actuals`](https://dev-dashboard.floelabs.xyz/actuals?tab=connections) in the
+dashboard — next to the ledger the connection feeds, not on the API keys page,
+because this credential reads a bill rather than routing a call.
 It lists the vendors Floe can reconcile, walks you through the exact **read-only**
 scope each one needs, and verifies the credential live before anything trusts it.
 Once connected, that vendor's costs flow onto your ledger automatically. Where a

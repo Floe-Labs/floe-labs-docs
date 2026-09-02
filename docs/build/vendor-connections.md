@@ -29,7 +29,10 @@ gated the same way: per-leg and by-call cost, plus findings, are **free**
 
 ## Setting one up
 
-You connect a vendor from the **connect flow in the [dashboard](https://dev-dashboard.floelabs.xyz)**.
+You connect a vendor from the **Billing connections** tab on
+[`/actuals`](https://dev-dashboard.floelabs.xyz/actuals?tab=connections) in the
+dashboard — next to the ledger the connection feeds, not on the API keys page,
+because this credential reads a bill rather than routing a call.
 It lists the vendors Floe can reconcile, walks you through the exact **read-only**
 scope each one needs, and verifies the credential live before anything trusts it.
 Once connected, that vendor's costs flow onto your ledger automatically. Where a
