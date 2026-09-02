@@ -104,6 +104,7 @@ Agents can call the same estimate through the [MCP tool](../developers/mcp-serve
 
 ## Related
 
+- [Own $0](https://dev-dashboard.floelabs.xyz/zero) — the other keyless surface. Already running calls? Paste a Vapi, Retell or Bland end-of-call webhook and see the legs your platform reports as `$0.00` priced at published vendor list rates. It reads vendor list rates rather than the gateway rate cards above, so its figures are a comparison against what the vendor publishes, not a quote of what Floe would charge.
 - [The live cost ledger](unified-ledger.md) — what your calls actually cost, after the fact.
 - [Model pricing — `GET /v1/models?include=pricing`](../developers/models-pricing.md) — per-model, per-rail rates read straight from the API.
 - [Pricing & cost](../getting-started/pricing.md) — how Floe prices inference and vendor calls.

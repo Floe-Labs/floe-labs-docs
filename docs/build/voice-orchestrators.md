@@ -39,6 +39,15 @@ Reconcile Mode gets its numbers — so we're explicit about it:
   **self-reports** its cost to a Floe webhook as the circuit-breaker fallback.
   See [Self-hosted frameworks](#3-self-hosted-frameworks-pipecat-livekit) below.
 
+> **What is that webhook leaving out?** A hosted platform reports `$0.00` for
+> every leg it wasn't billed for — the STT, LLM and TTS your *own* vendor keys
+> paid for. Paste a real end-of-call payload into the public **Own $0** checker
+> at [dev-dashboard.floelabs.xyz/zero](https://dev-dashboard.floelabs.xyz/zero)
+> (no login, no key) and it prints the platform's own total beside what those
+> `$0` legs cost at published vendor list rates. Legs the platform actually
+> billed are carried across unchanged — only `$0` and missing legs are modeled,
+> and a leg with no rate shows a dash, never a zero.
+
 ### Coverage boundary per platform
 
 Which leg is enforceable pre-call vs governed post-call, and where the cost

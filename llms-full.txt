@@ -1387,6 +1387,7 @@ Agents can call the same estimate through the [MCP tool](../developers/mcp-serve
 
 ## Related
 
+- [Own $0](https://dev-dashboard.floelabs.xyz/zero) — the other keyless surface. Already running calls? Paste a Vapi, Retell or Bland end-of-call webhook and see the legs your platform reports as `$0.00` priced at published vendor list rates. It reads vendor list rates rather than the gateway rate cards above, so its figures are a comparison against what the vendor publishes, not a quote of what Floe would charge.
 - [The live cost ledger](unified-ledger.md) — what your calls actually cost, after the fact.
 - [Model pricing — `GET /v1/models?include=pricing`](../developers/models-pricing.md) — per-model, per-rail rates read straight from the API.
 - [Pricing & cost](../getting-started/pricing.md) — how Floe prices inference and vendor calls.
@@ -2004,6 +2005,15 @@ Reconcile Mode gets its numbers — so we're explicit about it:
   enforcement (preferred), and if a leg stays off Floe rails, your own agent
   **self-reports** its cost to a Floe webhook as the circuit-breaker fallback.
   See [Self-hosted frameworks](#3-self-hosted-frameworks-pipecat-livekit) below.
+
+> **What is that webhook leaving out?** A hosted platform reports `$0.00` for
+> every leg it wasn't billed for — the STT, LLM and TTS your *own* vendor keys
+> paid for. Paste a real end-of-call payload into the public **Own $0** checker
+> at [dev-dashboard.floelabs.xyz/zero](https://dev-dashboard.floelabs.xyz/zero)
+> (no login, no key) and it prints the platform's own total beside what those
+> `$0` legs cost at published vendor list rates. Legs the platform actually
+> billed are carried across unchanged — only `$0` and missing legs are modeled,
+> and a leg with no rate shows a dash, never a zero.
 
 ### Coverage boundary per platform
 
