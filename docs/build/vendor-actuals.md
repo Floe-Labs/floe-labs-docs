@@ -33,7 +33,7 @@ Some vendors publish a leg's cost at call-end; others only on a next-day batch. 
 
 ## Coverage reads low on voice-heavy accounts
 
-A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.
+A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it. On a connected **Twilio** account you can skip the upload and [import the billed call history straight from the connection](vendor-connections.md#twilio-import-the-call-history-instead-of-uploading-an-invoice).
 
 ## Whose cost it is
 
