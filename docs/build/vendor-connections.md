@@ -36,6 +36,13 @@ Once connected, that vendor's costs flow onto your ledger automatically. Where a
 vendor publishes no cost API, you upload its invoice instead and Floe reconciles
 against that.
 
+Where a vendor offers a **revocable** credential, that's the one the flow asks
+for. Twilio, for example, takes an **API Key SID** (`SK…`) and its **Secret**
+from **Account → API keys & tokens**, plus your **Account SID** (`AC…`) from the
+Console home page — three values, and the Secret is shown only once. Deleting
+that API Key in the Twilio Console revokes Floe's access on its own, without
+rotating your account-wide Auth Token.
+
 Connections are managed — enable/disable, re-key, remove — from the same place.
 Removal is non-destructive: the costs already reconciled onto your ledger stay
 (they were real); only future pulls stop.

@@ -462,8 +462,9 @@ Filters on `legs` / `calls` / `rollups`: `--since` `--until` `--vendor` `--custo
 floe actuals legs --since 2026-08-01T00:00:00Z --customer acme
 floe actuals rollups --by vendor --json
 
+# Twilio: an API Key SID (SK…) + its Secret, plus your Account SID (AC…)
 printf '%s' "$TWILIO_JSON" | floe actuals connect \
-  --vendor twilio --name main --kind basic_auth --billing-tz America/Los_Angeles
+  --vendor twilio --name main --kind twilio_api_key --billing-tz America/Los_Angeles
 floe actuals verify 4
 
 floe actuals invoices upload --vendor twilio --file ./july.csv
