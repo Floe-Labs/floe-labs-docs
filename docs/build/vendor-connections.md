@@ -40,6 +40,24 @@ Connections are managed — enable/disable, re-key, remove — from the same pla
 Removal is non-destructive: the costs already reconciled onto your ledger stay
 (they were real); only future pulls stop.
 
+### Twilio: prefer a revocable API Key
+
+A Twilio connection reads the same billing records either way — what differs is
+what it costs you to take Floe's access away:
+
+| Credential | Fields | Revoking it |
+|---|---|---|
+| Account Auth Token (`basic_auth`) | `accountSid`, `authToken` | Rotating the account-wide Auth Token — which breaks everything else that uses it |
+| API Key (`twilio_api_key`) | `apiKeySid`, `apiKeySecret`, `accountSid` | Delete that key in the Twilio Console; nothing else on the account is touched |
+
+Prefer the API Key. Floe authenticates as the key (`SK…`), never as the account,
+so revoking it drops this connection alone. The `accountSid` field is still the
+account being read, so paste the Account SID (`AC…`) there and the API Key SID
+(`SK…`) in `apiKeySid` — swap the two and the connect flow rejects the credential
+on the spot rather than storing something that can't read. Only `apiKeySecret` is
+sealed; both SIDs stay legible in the mask, because telling two subaccount
+connections apart is the point of the mask.
+
 > **USD only — you're told at connect time, not at close.** Floe prices and
 > reconciles in USD and [never converts currencies](vendor-actuals.md#no-fx-ever).
 > If you tell Floe the connection bills in a non-USD currency, the connect flow

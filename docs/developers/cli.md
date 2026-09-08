@@ -470,6 +470,8 @@ floe actuals invoices upload --vendor twilio --file ./july.csv
 floe actuals invoices foot 11 --dry-run   # rehearse first — footing is irreversible
 ```
 
+`--kind` values and the fields each one needs come from the API's per-kind catalog, which `floe actuals connections` prints. Twilio takes either `basic_auth` (`accountSid` + `authToken`) or `twilio_api_key` (`apiKeySid` + `apiKeySecret` + `accountSid`) — the API Key is revocable on its own, without rotating the account Auth Token. See [Vendor connections](../build/vendor-connections.md#twilio-prefer-a-revocable-api-key).
+
 **Timing:** some legs can be costed the moment a call ends, others only on the vendor's next-day batch — so `pending` on a call from a minute ago is the steady state, not a defect.
 
 **Footing an invoice is irreversible** — `--dry-run` runs the identical computation and rolls it back. Without `--dry-run` the command asks you to type the id back; pass `--yes` in scripts.
