@@ -37,8 +37,11 @@ vendor publishes no cost API, you upload its invoice instead and Floe reconciles
 against that.
 
 Connections are managed — enable/disable, re-key, remove — from the same place.
-Removal is non-destructive: the costs already reconciled onto your ledger stay
-(they were real); only future pulls stop.
+**Disable** is the pause: the connection stays in your list, stops pulling, and
+can be re-enabled later. **Remove** deletes it outright, so it drops off the list
+for good — re-connecting means supplying the credential again. Either way the
+costs already reconciled onto your ledger stay (they were real); what stops is
+the pull, and legs the connection would have resolved stay pending.
 
 > **USD only — you're told at connect time, not at close.** Floe prices and
 > reconciles in USD and [never converts currencies](vendor-actuals.md#no-fx-ever).
