@@ -97,7 +97,9 @@ The reason to price on actuals is that **what you signed and what you deployed d
 - **The clients list** — `GET /v1/developer/customers?days=30` — every end-client seen in the ledger with its current card status (current version, any open draft) and window spend. One screen for "who's priced, who's still on a blended guess."
 - **The per-transaction margin report** — `GET /v1/developer/customers/:customerId/transactions?from=…&to=…` — every metered leg for one client with its cost, its revenue under the card version effective *at that leg's timestamp*, and its per-row margin. A `summary` block rates the whole range under all rules — the number that matches the eventual invoice. Rows a per-row figure can't honestly express (a fixed retainer, a per-minute component, an unresolved vendor leg) are flagged `perRowComplete: false` rather than shown understated.
 
-Both are **Pro** reads (`attribution_reports`). Read them side by side with the card you signed and the drift is a dollar figure, not a surprise at invoice time.
+- **Margin on the vendor-actuals ledger** — for a `cost_plus` card that rebills vendor cost, the by-call rows and the by-client rollup on [vendor actuals](vendor-actuals.md#margin-on-reconciled-cost) carry `marginRaw`: the markup your **reconciled vendor** cost earns, per call. Where a single card can't honestly rate the row — no single client on it, a card change mid-span, a non-USD leg — it is suppressed rather than guessed.
+
+The clients list and the per-transaction report are **Pro** reads (`attribution_reports`). Read them side by side with the card you signed and the drift is a dollar figure, not a surprise at invoice time.
 
 ## Plan gate
 

@@ -45,6 +45,23 @@ A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** CO
 
 A non-USD or credit-denominated vendor record is **structurally unpriceable** here. There is no FX source in Floe, and an invented rate inside an audit ledger is worse than a blank. Those legs render `—` plus the vendor's verbatim cost string in their provenance, and are excluded from every subtotal. They also open a `currency_unsupported` finding so the omission is visible rather than silent.
 
+## Margin on reconciled cost
+
+Cost is half the question. When a client has a [rate card](rate-cards.md) whose `cost_plus` rule rebills vendor cost, the **by-call rows and the by-client rollup** also carry the markup that reconciled cost earns: `marginRaw` (signed raw USDC), `marginBps` (the card's margin), and `marginPartial`. The dashboard shows it as a **Margin** column at `/actuals` on the calls view and the by-client rollup.
+
+It is the same arithmetic the invoice runs — one shared rating function, fed the reconciled buckets — so a figure here can never disagree with the statement it precedes. The card's vendor-cost basis decides what enters: an `exact`-basis card marks up `exact` and `invoiced` cost and leaves `period-rate` legs out of the basis; an `exact_and_period_rate` card marks up both.
+
+**Margin is suppressed — `marginRaw` is `null`, rendered `—`, never `0`** — wherever there is no single honest number to state:
+
+- **No single resolvable client**, so no card keys the row: a call group whose legs span two clients, or one that mixes attributed legs with unattributed ones.
+- **The client's card changed inside the row's time span.** Two versions would rate it; blending them would be invention, and picking one would misprice the other's legs.
+- **The card doesn't rebill vendor cost** — a retainer-only or per-unit card, or a `cost_plus` rule whose basis prices no vendor cost. That is zero by absence, which is not a margin of zero.
+- **A non-USD leg is present.** Same reason there is no FX anywhere else on this page: a USD markup over an unconverted figure would be fiction.
+
+The other rollup grains — `vendor`, `campaign`, `agent`, `time` — aggregate across clients, so a single card is not resolvable at all and they omit the margin fields entirely.
+
+**`marginPartial: true` means some of the row's vendor cost is still unresolved** — a `pending` or `manual` leg, an unpriceable group, an unreadable amount. The margin is computed off the resolved legs only, so it will move as the rest settles. It is *partial*, not a lower bound: an unresolved leg can settle to a vendor **credit** and take the margin down.
+
 ## Where to access it
 
 Reconciling to a vendor's **own** records is an **Agency** capability — it's the [vendor connection](vendor-connections.md) that does it. (Reading the ledger those costs land on — per-leg and by-call — is free; the per-client rollups are Pro. See [Plans & entitlements](../reference/plans.md).) Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
