@@ -53,6 +53,39 @@ Read your reconciled costs — legs, by-call, and rollups, each with a provenanc
 
 `floe actuals` is about **your** vendors' bills. Not to be confused with `floe vendors`, which probes the health of Floe's own marketplace vendors.
 
+## Erasing a data subject
+
+The **verbatim vendor payloads** on this ledger are the one place it can carry end-user personal data — a usage object from an LLM or STT vendor can hold prompts, completions or transcripts. So a GDPR/CCPA erasure request is satisfied by removing *those payloads*, not by deleting the ledger row:
+
+- **What goes.** The verbatim payload on each of the subject's legs, and on the vendor actuals those legs reconciled against.
+- **What stays.** Cost, units, timestamps, attribution and every reconciliation stamp — retained business records under the accounting basis. This ledger is append-only and is never hard-deleted, so your margin history and past statements stay reproducible after an erasure.
+
+A redacted leg stays distinguishable from one whose vendor never sent a usage object at all: the row keeps a redaction timestamp, so an empty payload is never ambiguous.
+
+```
+POST /v1/developer/erasure/requests
+{ "customerId": "acme-health" }
+```
+
+Provide at least one of `customerId`, `taskId` or `interactionId` (an interaction public id, e.g. `int_0123456789abcdef`); customer and task ids match case-insensitively. The selectors are **unioned**, not intersected — the request reaches every leg any of them names. The response reports exactly what it did:
+
+```json
+{
+  "receiptId": 42,
+  "selector": { "customerId": "acme-health" },
+  "legsMatched": 128,
+  "legsRedacted": 128,
+  "actualsRedacted": 31,
+  "createdAt": "2026-09-10T11:04:22.881Z"
+}
+```
+
+`legsMatched` is every leg the selector reached; `legsRedacted` and `actualsRedacted` count only the rows redacted **on this run**. Re-running the same request is safe — it redacts nothing new and comes back with zero counts.
+
+Every processed request appends an **erasure receipt**, and receipts are the one thing here you cannot erase — they are the proof to hand an auditor. `GET /v1/developer/erasure/requests` returns your account's 100 most recent, newest first, each with the selector, the per-table counts and the member who requested it. A receipt carries attribution keys only, never prompt or transcript content.
+
+Erasure needs the **admin** role — the same bar as installing a vendor credential — and is deliberately **not** plan-gated: a data subject's right to erasure isn't conditioned on your subscription tier. Every write is scoped to your own account's rows.
+
 ## Related
 
 - [Coverage Score](coverage-score.md) — how much of your spend Floe can enforce, which is a different question from what it cost.
