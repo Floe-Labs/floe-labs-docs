@@ -93,6 +93,8 @@ That last row is the work list: 44 reconciled calls reached your ledger with no 
 
 The same client and campaign grouping is available over **[vendor actuals](vendor-actuals.md)** — the vendor's own billing number behind each client, reconciled leg by leg — when you need margin against true cost rather than Floe-settled spend.
 
+Untagged spend is bucketed there too, and per vendor: the actuals `campaign` and `agent` rollups return one `(unattributed):<vendor>` row per vendor, so the work list says *which* vendor's charges still need a tag. The `customer` rollup buckets under `(unattributed)`.
+
 ## Plan gate
 
 > **Capture is free. Rollups are Pro.**

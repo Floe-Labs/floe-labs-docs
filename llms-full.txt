@@ -1136,6 +1136,27 @@ Some vendors publish a leg's cost at call-end; others only on a next-day batch. 
 
 A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.
 
+## How much of the bill reconciled
+
+A vendor's own bill can total more than the legs Floe captured for it. That difference — the vendor-stated dollars no captured leg carried — is booked as an **uncaptured residual** per vendor and period, and the **vendor** and **customer** rollups carry it on every row, next to a dollar coverage:
+
+| Field | What it is |
+|---|---|
+| `residualRaw` | The vendor-stated dollars no captured leg carried, raw 6-dp USD. **Signed** — a vendor credit is negative. |
+| `coverageBps` | Reconciled dollars ÷ known vendor spend (`reconciled + residual`), in basis points — what share of this vendor's spend reconciled to actuals. |
+
+A row whose whole bill reconciled reads `residualRaw: "0"` and `coverageBps: 10000`. `coverageBps` is `null` when there is nothing to take a ratio of — no known spend in the row, or a non-USD leg in it, since dividing by a figure that was never converted to USD is the same invented-rate problem as [FX](#no-fx-ever).
+
+This is a **dollar** coverage over your vendors' bills. It is not the [Coverage Score](coverage-score.md), which answers a different question — how much of your spend Floe can act on.
+
+Both fields are **absent — not zero** — when a filter is applied that the residual can't honour: `customer`, `agent`, `campaign`, `task`, attribution state, or status. Uncaptured spend is by definition spend Floe never captured, so it carries none of those tags; narrowing the reconciled figure without narrowing the residual would report a coverage percentage over a mismatched scope, so the surface omits it instead. A `vendor` filter is honoured and keeps both fields. The `campaign`, `agent` and `time` dimensions and the by-call read never carry the two fields at all — a residual is booked per vendor and period, so only the vendor and customer keys line up with one.
+
+In the dashboard, the rollups tab at `/actuals` shows the two as **Residual** and **Coverage** columns on the vendor and customer views, with `—` wherever the API omits or nulls them.
+
+## Untagged rollup rows name their vendor
+
+In the `campaign` and `agent` rollups, legs carrying no such tag bucket as **`(unattributed):<vendor>`** — one row per vendor — rather than folding every vendor's untagged spend into a single opaque lump. That makes the row a work list: it says *which* vendor's charges still lack attribution. (The `customer` rollup's untagged bucket is plain `(unattributed)`.) See [Cost per client, campaign & task](attribution.md) for how to get the tags on in the first place.
+
 ## Whose cost it is
 
 Every agency-facing read filters on `cost_owner = 'developer'` — **legs your account pays for**.
@@ -1487,6 +1508,8 @@ That last row is the work list: 44 reconciled calls reached your ledger with no 
 ### Per client, at the vendor's real cost
 
 The same client and campaign grouping is available over **[vendor actuals](vendor-actuals.md)** — the vendor's own billing number behind each client, reconciled leg by leg — when you need margin against true cost rather than Floe-settled spend.
+
+Untagged spend is bucketed there too, and per vendor: the actuals `campaign` and `agent` rollups return one `(unattributed):<vendor>` row per vendor, so the work list says *which* vendor's charges still need a tag. The `customer` rollup buckets under `(unattributed)`.
 
 ## Plan gate
 
