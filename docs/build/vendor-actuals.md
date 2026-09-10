@@ -31,6 +31,12 @@ Those two rules operate on different things, which is worth stating plainly. The
 
 Some vendors publish a leg's cost at call-end; others only on a next-day batch. So a leg from a call you placed a minute ago is *supposed* to be `pending` — that is the system working correctly, not an error or a capture failure.
 
+## Which client a pulled record belongs to
+
+A vendor's billing record knows its own request id and nothing about your clients. Where a call ran through Floe or through a connected orchestrator, Floe already holds the [tags](attribution.md) and joins them to the record. Where it didn't — a BYOK call you sent to the vendor with your own key — the only attribution Floe can recover is the one you stamped on that vendor request: a `floe:` tag the vendor echoes back on the record Floe pulls. Stamp `floe:cust=<your-client-id>` (plus `floe:camp=`, `floe:task=`, `floe:agent=` where you use them) and the pulled record becomes a leg carrying your own tag.
+
+An untagged record is never assigned to a client by inference. It produces no leg and opens an `unmatched_actual` finding instead — the audit trail working, since a guessed attribution is a silent accounting error. See [Cost per client, campaign & task](attribution.md) for the tag vocabulary and where to put it on each vendor.
+
 ## Coverage reads low on voice-heavy accounts
 
 A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.
@@ -55,6 +61,7 @@ Read your reconciled costs — legs, by-call, and rollups, each with a provenanc
 
 ## Related
 
+- [Cost per client, campaign & task](attribution.md) — how a leg gets the client tag these costs roll up by.
 - [Coverage Score](coverage-score.md) — how much of your spend Floe can enforce, which is a different question from what it cost.
 - [Unified Billing & Ledger](unified-ledger.md) — the settled Floe ledger these vendor costs sit beside.
 - [Ledger sync](ledger-sync.md) — pushing off-path spend into the ledger in the first place.

@@ -12,17 +12,17 @@ Floe never guesses. A missing tag stays missing (it buckets under `untagged`), b
 
 Every metered call can carry three independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
 
-| Tag | What it answers | On Floe-carried calls | On reconciled orchestrator calls |
-|---|---|---|---|
-| **Customer** | Which end-client is this spend for? | `X-Floe-Customer-Id` header | `floe_customer_id` call metadata |
-| **Campaign** | Which campaign / engagement? | `X-Floe-Task-Id` header (see note) | `floe_campaign_id` call metadata |
-| **Task** | Which call / job? (groups its legs) | `X-Floe-Task-Id` header | `floe_task_id` call metadata |
+| Tag | What it answers | On Floe-carried calls | On reconciled orchestrator calls | On BYOK vendor calls |
+|---|---|---|---|---|
+| **Customer** | Which end-client is this spend for? | `X-Floe-Customer-Id` header | `floe_customer_id` call metadata | `floe:cust=<id>` vendor tag |
+| **Campaign** | Which campaign / engagement? | `X-Floe-Task-Id` header (see note) | `floe_campaign_id` call metadata | `floe:camp=<id>` vendor tag |
+| **Task** | Which call / job? (groups its legs) | `X-Floe-Task-Id` header | `floe_task_id` call metadata | `floe:task=<id>` vendor tag |
 
 All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
 
 > **Note on campaign vs task.** On Floe-carried calls the [cost ledger](#roll-it-up) rolls up the **task id** as the "campaign" dimension — one id per call groups that call's legs, and grouping those ids is your campaign view. Reconciled orchestrator ingests carry a *separate* `floe_campaign_id` alongside the task id, because a Vapi/Retell/Bland assistant often maps one campaign to many calls. If you run campaigns on an orchestrator, set both.
 
-### Two ways a call gets tagged
+### Three ways a call gets tagged
 
 **1. Floe-carried calls** — anything through the gateway (`/v1/chat/completions`, `/v1/audio/*`), the x402 proxy (`/v1/proxy/fetch`), or Floe Phone. Set the tag as a request header:
 
@@ -38,6 +38,19 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 Every leg of that call — LLM turn, STT, TTS, tool call — carries `customer_id = acme-corp` and `task_id = call-8f21a` on the money ledger.
 
 **2. Reconciled orchestrator calls** — calls whose media path Vapi / Retell / Bland runs, ingested at call-end through the [end-of-call webhook](../developers/webhooks.md). You can't set a Floe header on a call Floe didn't place, so you stamp the tags as **call metadata** on the assistant instead. Floe reads `floe_customer_id`, `floe_campaign_id`, `floe_task_id`, and `floe_agent_id` from the metadata bag the orchestrator sends. An unparseable or absent tag produces `attribution_state = 'unattributed'` — an actionable finding, not a fallback.
+
+**3. BYOK calls you send to the vendor yourself** — a call that never touches Floe's gateway and has no orchestrator webhook behind it. There is no Floe request to hang a header on, so the only attribution Floe can recover is the one **you stamped on the vendor request itself**: a `floe:` tag the vendor echoes back on the billing record a [vendor connection](vendor-connections.md) later pulls. On Deepgram — the vendor whose pulled records carry customer tags today — that's the `tag` query parameter:
+
+```bash
+curl -X POST "https://api.deepgram.com/v1/listen?tag=floe:cust=acme-corp&tag=floe:task=call-8f21a" \
+  -H "Authorization: Token $DEEPGRAM_API_KEY" \
+  -H "Content-Type: audio/wav" \
+  --data-binary @call.wav
+```
+
+Four dimensions are recognised — `floe:cust=`, `floe:camp=`, `floe:task=`, and `floe:agent=` (the `floe_cust:<id>` spelling is accepted too, for vendors whose tag field takes a single string). Values follow the same rules as the headers: trimmed, lowercased, and capped at 128 characters — a longer value is **dropped rather than truncated**, so a half-id can never mis-join. Tag the same dimension twice and the first well-formed value wins.
+
+A tagged record lands on your [vendor actuals](vendor-actuals.md) ledger as a leg carrying *your* tag. An untagged one is not guessed at: it produces no leg and surfaces as an `unmatched_actual` finding to resolve. This lane needs a vendor connection (**Agency**) — the tag only pays off once Floe is pulling that vendor's own billing records.
 
 ## Resolution order & per-agent defaults
 
