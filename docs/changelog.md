@@ -10,6 +10,18 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.23.1 — The internal close pack: evidence class, basis of preparation, drill-through (September 2026)
+
+A closed statement says what you billed. The **close pack** says how you know — the audit-grade view of the same period, for your own books.
+
+* **`GET /v1/developer/billing-periods/:id/close-pack`** (JSON) and **`/close-pack.csv`** (`floe-close-pack-<client>-<date>.csv`) — a superset of `margin.csv`: every statement line with its cost basis and margin, **plus** an evidence class and the drill-through ids behind it. Closed periods only (`409 period_not_closed` on an open one); any role; a period you don't own is a `404`.
+* **Basis of preparation.** The pack opens with what the numbers were built from: connector sources and overlapping vendor documents (truncation reported, never hidden), cost basis by evidence grade, the **unallocated** spend in the window as an explicit lower bound, the named allocation methods used, and Floe's own platform fee as its own line so the net margin is your true P&L on the client.
+* **Eight evidence grades, derived — no new field to maintain.** `actual` · `document` · `stamp` · `usage` · `allocation` · `true-up` · `floe-fee`, plus an explicit `unclassified` for vendor cost with no admitted reconciliation behind it. A line backed by a mix of statuses reports the **weakest** evidence admitted, with the full breakdown per line.
+* **A frozen artifact.** Assembly never re-rates and never writes: it reads the lines the close froze and reconstructs the vendor evidence **as of the period's `closedAt`** from the append-only reconciliation ledger, so a correction footed after the close can't restate the pack an auditor already has.
+* **Internal by construction.** No disclosure flag gates it, and it carries its own third filename prefix — `floe-close-pack-…`, never `floe-statement-…` — so a hurried forward can't put your cost basis in front of a client. In the dashboard: the basis of preparation inline on a closed period, and **Download internal close pack**.
+
+→ [Client invoicing](build/invoicing.md) · [Vendor actuals](build/vendor-actuals.md)
+
 ### v1.23.0 — Client billing & margin: rate cards, invoicing, per-rail pricing (August 2026)
 
 On top of the [vendor-cost ledger](build/vendor-actuals.md) (v1.22.0), Floe now closes the loop from *what a call cost* to *what you bill your client for it* — versioned per-client rate cards, margin per contract, and a Stripe-pushed invoice.
