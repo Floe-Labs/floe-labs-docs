@@ -90,6 +90,28 @@ POST /v1/developer/rate-cards
 
 Read a client's full version history any time with `GET /v1/developer/rate-cards?customerId=acme-corp`. Reads stay open even without the Agency feature, so a downgraded account keeps seeing what it already priced (grandfathered read-only); only the pricing **writes** need `rate_cards`.
 
+## Choose what the client sees
+
+A card version also carries **disclosure governance** — how much of your own cost basis the client-facing artifacts for a period rated under it may reveal:
+
+| Field | Default | When `true`, the client statement and Stripe invoice also show |
+|---|---|---|
+| `discloseVendorNames` | `false` | The vendor behind a line that has one — a `vendor` column on `statement.csv`, appended to the invoice line description. Only allocated vendor lines name a vendor; a rated `cost_plus` line blends every vendor and names none. |
+| `discloseCosts` | `false` | The per-line cost basis — `cost_usd` and `cost_vendor_usd` columns, and the cost on the invoice line description. |
+
+```json
+{
+  "customerId": "acme-corp",
+  "rules": [{ "kind": "cost_plus", "marginBps": 2000 }],
+  "discloseVendorNames": false,
+  "discloseCosts": true
+}
+```
+
+**Both default off**, which is the statement clients have always received: rated service lines only — service, quantity, rate, amount — with no vendor identity and no cost of goods. Turning one on is an explicit, per-version opt-in, for the open-book client who contracted for a cost-plus arrangement they can audit. Your own [margin report](invoicing.md#two-csvs-and-which-one-you-send) is never gated by these flags — it always shows cost, whatever the client sees.
+
+Because the flags live on the **version**, they inherit everything append-only gives you: a statement reproduces under exactly the disclosure it was issued with, and flipping a client from closed-book to open-book is a new version, not an edit to the old one. Both flags are returned on every card read.
+
 ## Signed vs deployed — margin per contract
 
 The reason to price on actuals is that **what you signed and what you deployed drift apart.** You quote a client a per-minute rate against an assumed vendor mix; three weeks in, the agent is routing more calls to a pricier LLM and your gross margin has quietly compressed. Floe surfaces the gap two ways:

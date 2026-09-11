@@ -67,7 +67,9 @@ The push is a resumable pipeline — every step is persisted before the next, so
 5. **Finalize** — your own Stripe reminder/dunning settings take over.
 6. **Send** — Stripe emails the client with your branding.
 
-Only the statement's revenue crosses to Stripe. **No cost or margin ever appears on a Stripe object** — your markup stays on the [margin CSV](invoicing.md#two-csvs-and-which-one-you-send) and nowhere Stripe can render it.
+Only the statement's revenue crosses to Stripe by default: each invoice item is described as `label — note`, with no vendor identity and no cost. **Your margin never appears on a Stripe object** — the markup stays on the [margin CSV](invoicing.md#two-csvs-and-which-one-you-send) and nowhere Stripe can render it.
+
+For an [open-book client](invoicing.md#open-book-clients-disclosing-vendors-and-cost), the rate-card version's `discloseCosts` / `discloseVendorNames` flags append the line's cost and vendor to that description (`Voice minutes — August · cost $41.20 · vendor deepgram`). Like the statement CSV, the policy is the one **frozen when the period closed**, so a re-push renders the same descriptions a client already received.
 
 The push is idempotent: once an invoice is finalized, calling it again returns `alreadyPushed: true` with the same invoice. It's rate-limited to **5 pushes per minute per account**. If your account has phone numbers, `warnings` may include `phone_minutes_estimated` — per-minute telephony legs can be under-counted at push time.
 
