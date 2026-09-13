@@ -1516,18 +1516,45 @@ The same arithmetic runs everywhere — the margin you preview before signing, t
 
 ## What a rate card is
 
-A rate card is a **per-client price**, expressed as one or more rules. Floe supports four pricing models, and you can combine them (a retainer plus overage, say):
+A rate card is a **per-client price**, expressed as one or more rules. Floe supports five pricing models, and you can combine them (a retainer plus overage, say):
 
 | Model | Rule | Bills the client |
 |---|---|---|
 | **Cost-plus** | `cost_plus`, `marginBps` | The call's cost basis × (1 + margin). `2000` bps = cost + 20%. |
 | **Per request** | `per_unit`, `unit: request`, `ratePerUnitRaw`, `includedUnits?` | A flat rate per metered request, after any included allotment. |
 | **Per minute** | `per_unit`, `unit: audio_minute`, `ratePerUnitRaw`, `includedUnits?` | A rate per audio minute — `ceil(total audio seconds / 60)`, the voice-agency staple. |
+| **Tiered** | `tiered`, `unit`, `tiers[]` | Graduated bands over those same units — each band prices only the units inside it. |
 | **Retainer** | `fixed`, `amountRaw` | A flat amount for the period, independent of usage. |
 
 All money values are **raw 6-decimal USDC integers** (`1000000` = $1.00), the same unit the ledger uses.
 
 Cost-plus over vendor actuals is the sharpest margin tool: a `cost_plus` rule can name a `vendorCostBasis` so the cost it marks up is the vendor's **reconciled** bill, not a call-time estimate — "rebill Deepgram + 15%" prices off what Deepgram actually charged.
+
+### Tiered minutes (graduated bands)
+
+The standard voice contract — "first 1,000 minutes at $0.12, next 4,000 at $0.10, everything after that at $0.08" — is one `tiered` rule:
+
+```json
+{
+  "kind": "tiered",
+  "unit": "audio_minute",
+  "label": "voice",
+  "tiers": [
+    { "upTo": 1000, "ratePerUnitRaw": "120000" },
+    { "upTo": 5000, "ratePerUnitRaw": "100000" },
+    { "upTo": null, "ratePerUnitRaw": "80000" }
+  ]
+}
+```
+
+Tiers are **graduated, not volume**: each band prices only the units that fall inside it, and reaching a band never reprices the units below it. 6,000 minutes on the card above bills 1,000 × $0.12 + 4,000 × $0.10 + 1,000 × $0.08 = **$600**, not 6,000 × $0.08 = $480. The kind names the model it is rather than carrying a mode flag, because the two disagree by real money on the same usage and a card is immutable once written.
+
+- **1 to 10 bands, ascending and non-overlapping** — each `upTo` is strictly greater than the previous one (and at most `100000000`). Each band covers the units above the previous band's ceiling through its own.
+- **The last band must carry an explicit `upTo: null`** — the open-ended remainder. An omitted `upTo` is refused, not normalized, so usage can never run past the top of the card and silently bill at $0.
+- **A leading band priced at `0` is an included allotment** — `{ "upTo": 1000, "ratePerUnitRaw": "0" }` gives the client 1,000 free minutes before the first paid band, which is `includedUnits` generalized to more than one break.
+- **One metered rule per unit.** A card can't carry both a `per_unit` and a `tiered` rule for `audio_minute` (or two of either) — they bill the same quantity, so every minute would be charged twice, permanently, on an immutable card. Metering *different* units is fine (tiered minutes plus a per-request rate), and a retainer composes with either. The dashboard's pricing editor makes voice minutes a **One rate / Tiered bands** toggle for the same reason.
+
+A tiered rule bills as **one line item per band that has units in it**, labelled with the range it actually covered (`voice 1–1000`, `voice 1001–2500`) — a tiered invoice has to show its own arithmetic or neither the client nor you can check it. So line items are *not* one-per-rule; a band with no units in it emits nothing.
 
 ## Price the next deal — preview before you sign
 
@@ -1701,7 +1728,7 @@ POST /v1/developer/billing-periods/:id/close
 The close does five things in one transaction:
 
 1. **Segments** the window at every [rate-card](rate-cards.md) version change inside it, so a mid-period price change rates each slice under exactly one version.
-2. **Rates** each segment's usage — fixed retainers prorated by the segment's share of the window, so a retainer is charged once, never twice.
+2. **Rates** each segment's usage — fixed retainers prorated by the segment's share of the window, so a retainer is charged once, never twice. A [tiered](rate-cards.md#tiered-minutes-graduated-bands) rule writes **one line per billed band** (`voice 1–1000`, `voice 1001–5000`), so the statement shows its own arithmetic instead of a rolled-up total the client can't check.
 3. **Refuses** (`409 unrated_usage`) any segment that has usage but no effective rate-card version. Unrated spend must never silently invoice at $0.
 4. **Snapshots** every rated line with its card version and segment bounds, plus the sub-cent remainder, so `Σ line cents + Σ remainders` reconstructs the revenue exactly.
 5. **Freezes** the period with a compare-and-set on `status='open'` — a concurrent close loses the race and rolls back. Re-closing a closed period returns the same statement unchanged (idempotent).

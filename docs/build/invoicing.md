@@ -80,7 +80,7 @@ POST /v1/developer/billing-periods/:id/close
 The close does five things in one transaction:
 
 1. **Segments** the window at every [rate-card](rate-cards.md) version change inside it, so a mid-period price change rates each slice under exactly one version.
-2. **Rates** each segment's usage — fixed retainers prorated by the segment's share of the window, so a retainer is charged once, never twice.
+2. **Rates** each segment's usage — fixed retainers prorated by the segment's share of the window, so a retainer is charged once, never twice. A [tiered](rate-cards.md#tiered-minutes-graduated-bands) rule writes **one line per billed band** (`voice 1–1000`, `voice 1001–5000`), so the statement shows its own arithmetic instead of a rolled-up total the client can't check.
 3. **Refuses** (`409 unrated_usage`) any segment that has usage but no effective rate-card version. Unrated spend must never silently invoice at $0.
 4. **Snapshots** every rated line with its card version and segment bounds, plus the sub-cent remainder, so `Σ line cents + Σ remainders` reconstructs the revenue exactly.
 5. **Freezes** the period with a compare-and-set on `status='open'` — a concurrent close loses the race and rolls back. Re-closing a closed period returns the same statement unchanged (idempotent).
