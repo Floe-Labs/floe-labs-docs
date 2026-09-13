@@ -31,6 +31,23 @@ Those two rules operate on different things, which is worth stating plainly. The
 
 Some vendors publish a leg's cost at call-end; others only on a next-day batch. So a leg from a call you placed a minute ago is *supposed* to be `pending` — that is the system working correctly, not an error or a capture failure.
 
+## How much of it is reconciled
+
+One figure answers "how much of this period's COGS is reconciled to vendor actuals" — Floe shows it as a **COGS assurance** line above the `/actuals` table and on the period close, and serves it from a single aggregate over the whole window (never summed from a page of legs):
+
+```http
+GET /v1/developer/actuals/assurance?since=…&until=…[&customerId=…]
+```
+
+Reading it is **free on every plan** (`ledger_read`) — unlike the per-client rollups, which are Pro.
+
+- **Account scope** (no `customerId`) — `reconciledRaw ÷ (reconciledRaw + unreconciledRaw)`. The numerator is the `exact` / `period-rate` / `invoiced` cost stamped on the window's current legs; the denominator adds the **residual**: vendor-stated dollars that no captured leg carried.
+- **Per-client scope** (`customerId=…`) — the share of *that client's captured spend* that is reconciled. The unreconciled side is the client's `pending` / `manual` legs, still carrying only what Floe metered live at capture. The account residual isn't attributable to any one client, so it is excluded here.
+
+`coverageBps` is that ratio in basis points, and it comes back `null` — never `0` — whenever a percentage would be a claim the data doesn't support: no known spend in the window, or spend the ratio can't honestly cover. `coverageBlockedBy` then names why: `non_usd` (a non-USD leg — [no FX, ever](#no-fx-ever)), `unreadable_amount`, `unknown_group_cost`, `unpriceable_unreconciled` / `mixed_group_sibling` (per-client legs with no clean captured-cost source), or `signed_adjustment` (vendor credits pushing the ratio outside `[0, known]`). `since` is clamped to your plan's history floor; the response echoes `historyFloor` and `historyClamped` when it was, so the percentage is never read as covering a longer window than it does.
+
+> **This is not your [Coverage Score](coverage-score.md).** Coverage answers *how much of my spend can Floe see at all* — capture completeness. This answers *how much of what it saw the vendor's own records confirm*. A dollar can be fully captured and not yet reconciled.
+
 ## Coverage reads low on voice-heavy accounts
 
 A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.

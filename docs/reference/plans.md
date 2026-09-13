@@ -26,6 +26,7 @@ The live cost ledger and the honest number behind every leg, with no account fri
 - **Live cost ledger** — per-leg and by-call cost (`ledger_read`). See [The live cost ledger](../build/unified-ledger.md). *(Reconciling those legs to a vendor's own billing records needs an Agency vendor connection — see below.)*
 - **Reconciliation findings** (read) — where a number is still an estimate, and why.
 - **Coverage Score** — how much of your spend Floe can act on. See [Coverage Score](../build/coverage-score.md).
+- **COGS assurance** — the share of a period's cost reconciled to vendor actuals, account-wide or per client (`GET /v1/developer/actuals/assurance`). Free on every plan, even though the per-client *rollups* it sits beside are Pro. See [Vendor actuals](../build/vendor-actuals.md#how-much-of-it-is-reconciled).
 - **The cost calculator** — price a call before you make it. See [The cost calculator](../build/cost-calculator.md).
 - **Metering on every rail** — keyless and BYOK gateway calls land on the ledger.
 
@@ -55,7 +56,7 @@ Everything in Agency with no tracked-spend, history, or client caps, priced at *
 
 | Entitlement | Plan | Unlocks |
 |---|---|---|
-| `ledger_read` | Free | Per-leg + by-call ledger, findings, coverage score |
+| `ledger_read` | Free | Per-leg + by-call ledger, findings, coverage score, COGS assurance |
 | `attribution_reports` | Pro | Cost per client / campaign / task |
 | `exports` | Pro | CSV exports (bill, statement, margin) |
 | `alerts` | Pro | Credit-threshold alerts |

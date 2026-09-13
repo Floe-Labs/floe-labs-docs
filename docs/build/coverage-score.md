@@ -31,7 +31,7 @@ For spend Floe never routes at all — **BYOK** LLM calls, self-hosted models, o
 
 ## Reading the tile
 
-The dashboard shows the score on the agent overview and, rolled up across every agent, on the account home. When the window is empty the tile tells you *why*. The rules are checked in this order — first match wins:
+The dashboard shows the score on the agent overview and, rolled up across every agent, on the account home and its own **Coverage** screen. When the window is empty the tile tells you *why*. The rules are checked in this order — first match wins:
 
 1. **A score** — any spend in the window. On a keyless agent that is **"Coverage: 100%"**: every dollar is gateway-routed and enforceable (pre-call on request legs, live on Floe-native duration-billed legs). This is the ceiling, not an error.
 2. **"Coverage: 100%" by call count** — no spend yet, but Floe-routed calls landed at $0 (free-tier models, or BYOK on a $0 service fee). Every call went through Floe's gate; the money score renders with the first metered call.
@@ -39,6 +39,20 @@ The dashboard shows the score on the agent overview and, rolled up across every 
 4. **"No coverage score yet"** — no spend, no routed calls, no BYOK, no webhook. Floe only sees spend you route through it. **Connect webhook (2 min) →** opens the agent's Voice orchestrators card; the score computes from the next call.
 
 So a keyless agent with routed calls never sees "No coverage score yet" — rules 1–2 win. The account tile uses the same rules across the whole fleet; its **Connect webhook** button takes you to the first agent that has no webhook yet.
+
+### The fleet roll-up
+
+The per-agent tile is the builder's view: which legs are enforced. The fleet card — **Spend coverage**, on the account home and the **Coverage** screen — asks the finance version of the same question: *how much of this account's spend can Floe see at all?* It labels the split by how the spend was captured, in dollars:
+
+| Stat | Meaning |
+|---|---|
+| **Captured** | Everything Floe can see — Floe-metered plus reconciled-in. |
+| **Floe-metered** | Captured live in the money path as the call ran (keyless: what Floe settled; BYOK: Floe's catalog rate). |
+| **Reconciled in** | Ingested *after* the call from an orchestrator end-of-call webhook or a [ledger sync](ledger-sync.md). |
+
+Spend on platforms never connected to Floe is **dark** — it is framed, never given a number, because you can't divide by what you never saw. On a keyless account the card reads **100% accounted**: nothing that account spends is dark.
+
+**"Reconciled in" there names how the spend arrived — not reconciliation to a vendor's bill.** That is a stricter, separate axis: see [Vendor actuals → how much of it is reconciled](vendor-actuals.md#how-much-of-it-is-reconciled), which reads the free `GET /v1/developer/actuals/assurance` aggregate.
 
 ## API
 
