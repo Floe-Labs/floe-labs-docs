@@ -101,6 +101,18 @@ The override on `vendor_actuals_pending` is owner-only, reasoned, and loud: it i
 { "actualsGateOverrideReason": "Client month-end is hard; Twilio batch is 6h late and within tolerance." }
 ```
 
+### When the period closes at a loss
+
+A period whose revenue lands **below its reconciled cost** fires a `client_margin.negative` [webhook](../developers/webhooks.md) — you lost money serving that client for the period. The close is the one moment that number is authoritative (rated under the versions in force, reconciled, frozen), so the payload carries the snapshot's own figures rather than anything recomputed later:
+
+| Field | What it carries |
+|---|---|
+| `periodId`, `customerId`, `periodStart`, `periodEnd` | Which period closed. |
+| `revenueRaw`, `costRaw`, `marginRaw` | Raw 6-decimal USD strings from the frozen snapshot — the same numbers as the statement. |
+| `marginBps` | Margin as basis points **of revenue**, sent as a decimal *string*, not a JSON number. `null` when revenue is not positive — a credit-only period can close with negative revenue, and a margin rate is undefined there. |
+
+The threshold is strictly `margin < 0`; there is nothing to configure. A period that rated to nothing, or one where revenue and cost are both zero, is not a loss and stays quiet. It fires once per close — an idempotent re-close returns the same statement and does not re-fire.
+
 ## Issue the statement
 
 A closed statement is ready to hand over. `issue` marks it delivered:

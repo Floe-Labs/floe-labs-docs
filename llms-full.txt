@@ -1722,6 +1722,18 @@ The override on `vendor_actuals_pending` is owner-only, reasoned, and loud: it i
 { "actualsGateOverrideReason": "Client month-end is hard; Twilio batch is 6h late and within tolerance." }
 ```
 
+### When the period closes at a loss
+
+A period whose revenue lands **below its reconciled cost** fires a `client_margin.negative` [webhook](../developers/webhooks.md) — you lost money serving that client for the period. The close is the one moment that number is authoritative (rated under the versions in force, reconciled, frozen), so the payload carries the snapshot's own figures rather than anything recomputed later:
+
+| Field | What it carries |
+|---|---|
+| `periodId`, `customerId`, `periodStart`, `periodEnd` | Which period closed. |
+| `revenueRaw`, `costRaw`, `marginRaw` | Raw 6-decimal USD strings from the frozen snapshot — the same numbers as the statement. |
+| `marginBps` | Margin as basis points **of revenue**, sent as a decimal *string*, not a JSON number. `null` when revenue is not positive — a credit-only period can close with negative revenue, and a margin rate is undefined there. |
+
+The threshold is strictly `margin < 0`; there is nothing to configure. A period that rated to nothing, or one where revenue and cost are both zero, is not a loss and stays quiet. It fires once per close — an idempotent re-close returns the same statement and does not re-fire.
+
 ## Issue the statement
 
 A closed statement is ready to hand over. `issue` marks it delivered:
@@ -7964,7 +7976,7 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
 | `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: 46 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (16: `billing.*`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
+Events: 47 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (17: `billing.*`, `client_margin.negative`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
 floe webhooks create https://api.acme.com/hooks/floe --events 'call.*,marketplace.payment.settled'
@@ -9550,7 +9562,7 @@ Developer key.
 |------|-------------|
 | `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
-| `list_webhook_events` | The live event catalog: 46 events with name, title, description, category, and scope |
+| `list_webhook_events` | The live event catalog: 47 events with name, title, description, category, and scope |
 | `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
 | `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
 | `delete_webhook` | Delete an endpoint permanently |
@@ -10082,7 +10094,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **46 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **47 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -10171,6 +10183,7 @@ Account-level events — no agent attribution. They reach a `global` webhook, or
 | `billing.invoice.paid` | A Floe plan invoice was paid — carries the amount and the hosted invoice link |
 | `billing.renewal_upcoming` | Your plan renews soon — carries the amount due and the end of the current period |
 | `billing.usage_threshold` | Month-to-date tracked spend crossed 80% or 100% of your plan's cap — informational, nothing is blocked |
+| `client_margin.negative` | A billing period closed with revenue below its reconciled cost — you lost money on that client for the period. Carries the closed period's revenue, cost, margin, and margin in bps, straight from the frozen statement |
 | `client_invoice.sent` | A client invoice was sent through your connected Stripe account |
 | `client_invoice.paid` | A client paid an invoice issued from your connected Stripe account |
 | `client_invoice.voided` | A client invoice was voided in Stripe and will not be collected |
