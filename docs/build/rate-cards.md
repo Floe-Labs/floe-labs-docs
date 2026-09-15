@@ -10,17 +10,34 @@ The same arithmetic runs everywhere — the margin you preview before signing, t
 
 ## What a rate card is
 
-A rate card is a **per-client price**, expressed as one or more rules. Floe supports five pricing models, and you can combine them (a retainer plus overage, say):
+A rate card is a **per-client price**, expressed as one or more rules. Floe supports six pricing models, and you can combine them (a retainer plus overage, say):
 
 | Model | Rule | Bills the client |
 |---|---|---|
 | **Cost-plus** | `cost_plus`, `marginBps` | The call's cost basis × (1 + margin). `2000` bps = cost + 20%. |
 | **Per request** | `per_unit`, `unit: request`, `ratePerUnitRaw`, `includedUnits?` | A flat rate per metered request, after any included allotment. |
 | **Per minute** | `per_unit`, `unit: audio_minute`, `ratePerUnitRaw`, `includedUnits?` | A rate per audio minute — `ceil(total audio seconds / 60)`, the voice-agency staple. |
+| **Per call** | `per_unit`, `unit: voice_call`, `ratePerUnitRaw`, `includedUnits?` | A rate per **voice call** — one per Floe Phone call or Reconcile Mode call, counted from Floe's own row. See [Per-call pricing](#per-call-pricing). |
 | **Per task** | `per_unit`, `unit: task`, `ratePerUnitRaw`, `includedUnits?` | A rate per unit of **work** — each distinct `X-Floe-Task-Id`. On Floe Phone every call is a task automatically. See [Per-task pricing](#per-task-pricing). |
 | **Retainer** | `fixed`, `amountRaw` | A flat amount for the period, independent of usage. |
 
 All money values are **raw 6-decimal USDC integers** (`1000000` = $1.00), the same unit the ledger uses.
+
+### Per-call pricing
+
+Voice agencies often sell by the **call** — $3.50 a booked call, first 100 included — not by the minute. A `voice_call` rule bills each of that client's voice calls, in `per_unit` (with an included allotment) or in graduated `tiered` bands, alone or next to a `cost_plus` rule. First 100 calls included, then $3.00 a call:
+
+```json
+{ "kind": "tiered", "unit": "voice_call", "tiers": [
+  { "upTo": 100, "ratePerUnitRaw": "0" },
+  { "upTo": null, "ratePerUnitRaw": "3000000" }
+] }
+```
+
+- **What a call is.** One call is the single row Floe writes for it: a [Floe Phone](../developers/floe-phone.md) call, or a call ingested from your orchestrator through [Reconcile Mode](voice-orchestrators.md) (Vapi, Retell, Bland). The STT and TTS legs Floe settles for that same call never add to the count, and an aborted call isn't counted at all.
+- **Never from tags.** Because the count comes from Floe's own row rather than from client-side tagging, it cannot be under-counted — a per-call card carries no `uncounted_usage` blocker.
+- **Counted once.** A call has exactly one row, so it is billed in the period — and the card-version segment — where that row was written, never once per side of a boundary.
+- **Calls or tasks, not both.** A card may not meter `voice_call` and `task` together: on Floe Phone every call is already a task, so pricing both would bill the same call twice. Floe refuses the combination when you write the card (`'task' and 'voice_call' may not both be metered`).
 
 ### Per-task pricing
 
@@ -74,7 +91,7 @@ Floe rates the client's last 30 days of actual usage under **each** candidate an
 
 Now the deal is priced on this client's real vendor mix. Cost-plus holds your margin as the mix shifts; the flat per-minute rate is simpler to sell but you carry the mix risk — the preview makes that tradeoff a number instead of a hunch.
 
-**No history yet** (a brand-new client)? Pass `assumedUsage` — modeled requests, audio seconds, cost, and optionally tasks and reconciled vendor cost — and Floe rates that instead. `tasks` is required when a candidate prices per task (a `400` otherwise), and `untaskedRequests` defaults to `0`, so "what if I switch this client to cost-plus over actuals?" is answerable before a single call runs. The response marks `usageSource: "assumed"`.
+**No history yet** (a brand-new client)? Pass `assumedUsage` — modeled requests, audio seconds, cost, and optionally tasks, voice calls, and reconciled vendor cost — and Floe rates that instead. `tasks` is required when a candidate prices per task and `voiceCalls` when one prices per call (a `400` otherwise), and `untaskedRequests` defaults to `0`, so "what if I switch this client to cost-plus over actuals?" is answerable before a single call runs. The response marks `usageSource: "assumed"`.
 
 Preview requires the **Agency** feature `rate_cards`.
 
