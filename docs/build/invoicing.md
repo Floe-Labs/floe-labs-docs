@@ -87,19 +87,22 @@ The close does five things in one transaction:
 
 ### Close-time gates
 
-If your rate card **rebills vendor cost** (a `cost_plus` rule), the close also checks that the vendor actuals behind those legs are real before it invoices them:
+Before it invoices a number, the close checks that the number is real — the vendor actuals behind a card that **rebills vendor cost** (a `cost_plus` rule), and the task count behind a card that **prices per task**:
 
 | `409` | Why | Way forward |
 |---|---|---|
 | `unrated_usage` | Usage in a segment with no effective card version. | Set pricing (or a back-stop version) for that window, then close. |
 | `legacy_estimate_basis` | The card still carries a retired estimate flag that would rate vendor cost as $0. | Append a card version naming an explicit basis. **Not** overridable. |
 | `vendor_actuals_pending` | A vendor leg has no confirmed figure yet (a `manual` leg, or a `pending` one past its SLA). | Resolve the leg — see [vendor actuals](vendor-actuals.md) — or close with an **owner override** naming a reason. |
+| `uncounted_usage` | A rule prices [per task](rate-cards.md#per-task-pricing) and some requests in the period carry **no task id**, so the task count is only a lower bound. The refusal names `untaskedRequests` and the `blockers` behind it. | Send a task id on every billable request, or close with an **owner override** — the statement then bills only the *counted* tasks, so the client is never overcharged. |
 
-The override on `vendor_actuals_pending` is owner-only, reasoned, and loud: it invoices a client for a vendor cost nobody has confirmed, so it fires an ops alert and a `vendor_actuals.close_gate_overridden` webhook. Pass it in the close body:
+Both overridable gates take the same field, and it is owner-only, reasoned, and loud: it invoices a client on a figure nobody has confirmed, so it fires an ops alert (and, for the vendor gate, a `vendor_actuals.close_gate_overridden` webhook). Pass it in the close body:
 
 ```json
 { "actualsGateOverrideReason": "Client month-end is hard; Twilio batch is 6h late and within tolerance." }
 ```
+
+The reason is 10–500 characters and is persisted on the period. One reason covers whichever gates were blocking; sending it when **no** gate blocks is refused with `409 override_not_required`, so a reason is never recorded against nothing.
 
 ## Issue the statement
 
