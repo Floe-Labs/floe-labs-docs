@@ -38,6 +38,18 @@ An SDR shop or a back-office biller prices per unit of work — a sequence run, 
 - **Counted once.** A task is billed in the period holding its **first** billable request. A call that runs across midnight at month-end is billed in the month it started, never in both — and the same holds across a mid-period price change.
 - **No silent undercount.** If any billable request for the client in the period has **no** task id, the task count is only a lower bound. The preview still shows the numbers, with an `uncounted_usage` blocker on the option, and closing the period returns `409 uncounted_usage`. There is no tolerance threshold. Send a task id on every billable request, or have the **account owner** close with a written reason (`actualsGateOverrideReason`, 10–500 characters): the statement then bills **only the counted tasks**, so the client is never overcharged, and the reason is recorded on the period.
 
+### Conversations: a per-task rule with a label
+
+If your clients buy **conversations** (omnichannel and contact-centre contracts usually say it that way), use the **Conversations preset**. It isn't a separate unit. **A conversation is a task with a label:** Floe has no separate conversation id, so the count is exactly the per-task count, with the same counting and close rules. Only the words on the statement change:
+
+```json
+{ "kind": "per_unit", "unit": "task", "label": "Conversations", "ratePerUnitRaw": "2500000" }
+```
+
+The statement line then reads **Conversations** instead of **Tasks**. It works in `tiered` bands too (the lines read `Conversations 1–100`, `Conversations 101–…`). In the dashboard's rate-card editor, pick **Conversations (per task)** as the unit.
+
+One difference from a plain per-task rule: a custom label replaces the whole line text, so a flat rule with `includedUnits` prints just **Conversations**, without the "(10 of 10 included)" note. The billed quantity is still net of the included allotment.
+
 ### Per-call pricing
 
 A `voice_call` rule bills each voice call. It works in `per_unit` (with an included allotment) and in `tiered` bands, alone or next to a `cost_plus` rule.
