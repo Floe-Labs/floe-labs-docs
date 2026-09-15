@@ -10,6 +10,18 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.24.0 — Per-task pricing (September 2026)
+
+Rate cards can now price **work**, not just minutes and requests — the model SDR shops and back-office billers sell on.
+
+* **`unit: "task"` on rate-card rules.** Bill each distinct `X-Floe-Task-Id` through `per_unit` (with `includedUnits`) or `tiered` bands, alone or beside `cost_plus`. On Floe Phone every call is already a task.
+* **Counted once.** A task is billed in the period — and the card-version segment — holding its first billable request, so a task spanning a boundary is never billed twice.
+* **No silent undercount.** Requests without a task id make the count a lower bound: the preview shows it with an `uncounted_usage` blocker, and closing the period returns `409 uncounted_usage` — unless the account owner closes with a recorded reason, which bills only the counted tasks.
+* **Preview.** Every option now carries `blockers`; `assumedUsage` accepts `tasks` / `untaskedRequests`.
+* **Dashboard.** The pricing editor meters voice minutes or tasks, and the preview shows why a candidate can't close.
+
+→ [Rate cards](build/rate-cards.md)
+
 ### v1.23.0 — Client billing & margin: rate cards, invoicing, per-rail pricing (August 2026)
 
 On top of the [vendor-cost ledger](build/vendor-actuals.md) (v1.22.0), Floe now closes the loop from *what a call cost* to *what you bill your client for it* — versioned per-client rate cards, margin per contract, and a Stripe-pushed invoice.

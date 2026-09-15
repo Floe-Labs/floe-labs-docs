@@ -10,16 +10,32 @@ The same arithmetic runs everywhere — the margin you preview before signing, t
 
 ## What a rate card is
 
-A rate card is a **per-client price**, expressed as one or more rules. Floe supports four pricing models, and you can combine them (a retainer plus overage, say):
+A rate card is a **per-client price**, expressed as one or more rules. Floe supports five pricing models, and you can combine them (a retainer plus overage, say):
 
 | Model | Rule | Bills the client |
 |---|---|---|
 | **Cost-plus** | `cost_plus`, `marginBps` | The call's cost basis × (1 + margin). `2000` bps = cost + 20%. |
 | **Per request** | `per_unit`, `unit: request`, `ratePerUnitRaw`, `includedUnits?` | A flat rate per metered request, after any included allotment. |
 | **Per minute** | `per_unit`, `unit: audio_minute`, `ratePerUnitRaw`, `includedUnits?` | A rate per audio minute — `ceil(total audio seconds / 60)`, the voice-agency staple. |
+| **Per task** | `per_unit`, `unit: task`, `ratePerUnitRaw`, `includedUnits?` | A rate per unit of **work** — each distinct `X-Floe-Task-Id`. On Floe Phone every call is a task automatically. See [Per-task pricing](#per-task-pricing). |
 | **Retainer** | `fixed`, `amountRaw` | A flat amount for the period, independent of usage. |
 
 All money values are **raw 6-decimal USDC integers** (`1000000` = $1.00), the same unit the ledger uses.
+
+### Per-task pricing
+
+An SDR shop or a back-office biller prices per unit of work — a sequence run, a claim processed — not per minute. A `task` rule bills each distinct task id on that client's metered requests. It works in `per_unit` (with an included allotment) and in `tiered` bands, alone or next to a `cost_plus` rule — cost-plus prices the cost, per-task prices the work. Tiered bands are graduated: each band prices only the tasks inside it, and the last band's `upTo` is `null` (the open-ended remainder). First 100 tasks at $3.00, the rest at $2.00:
+
+```json
+{ "kind": "tiered", "unit": "task", "tiers": [
+  { "upTo": 100, "ratePerUnitRaw": "3000000" },
+  { "upTo": null, "ratePerUnitRaw": "2000000" }
+] }
+```
+
+- **What a task is.** Every request that carries the same [`X-Floe-Task-Id`](attribution.md) belongs to one task. Task ids are trimmed and lowercased, so `Run-42` and `run-42` are the same task. On **Floe Phone** the task id defaults to the call's CallSid, so every call is a task with no setup.
+- **Counted once.** A task is billed in the period holding its **first** billable request. A call that runs across midnight at month-end is billed in the month it started, never in both — and the same holds across a mid-period price change.
+- **No silent undercount.** If any billable request for the client in the period has **no** task id, the task count is only a lower bound. The preview still shows the numbers, with an `uncounted_usage` blocker on the option, and closing the period returns `409 uncounted_usage`. There is no tolerance threshold. Send a task id on every billable request, or have the **account owner** close with a written reason (`actualsGateOverrideReason`, 10–500 characters): the statement then bills **only the counted tasks**, so the client is never overcharged, and the reason is recorded on the period.
 
 Cost-plus over vendor actuals is the sharpest margin tool: a `cost_plus` rule can name a `vendorCostBasis` so the cost it marks up is the vendor's **reconciled** bill, not a call-time estimate — "rebill Deepgram + 15%" prices off what Deepgram actually charged.
 
@@ -42,7 +58,7 @@ POST /v1/developer/rate-cards/preview
 }
 ```
 
-Floe rates the client's last 30 days of actual usage under **each** candidate and returns, per option, `revenueRaw`, `costRaw`, and `marginRaw` (`revenueRaw − costRaw` — negative means you'd lose money):
+Floe rates the client's last 30 days of actual usage under **each** candidate and returns, per option, `revenueRaw`, `costRaw`, and `marginRaw` (`revenueRaw − costRaw` — negative means you'd lose money). Each option also carries `blockers`: the reasons that pricing could not close a period (for example `uncounted_usage` on a per-task candidate):
 
 ```json
 {
@@ -50,15 +66,15 @@ Floe rates the client's last 30 days of actual usage under **each** candidate an
   "windowDays": 30,
   "usageSource": "ledger",
   "options": [
-    { "label": "cost + 20%", "revenueRaw": "115344000", "costRaw": "96120000", "marginRaw": "19224000" },
-    { "label": "$0.12 / min", "revenueRaw": "104400000", "costRaw": "96120000", "marginRaw": "8280000" }
+    { "label": "cost + 20%", "revenueRaw": "115344000", "costRaw": "96120000", "marginRaw": "19224000", "blockers": [] },
+    { "label": "$0.12 / min", "revenueRaw": "104400000", "costRaw": "96120000", "marginRaw": "8280000", "blockers": [] }
   ]
 }
 ```
 
 Now the deal is priced on this client's real vendor mix. Cost-plus holds your margin as the mix shifts; the flat per-minute rate is simpler to sell but you carry the mix risk — the preview makes that tradeoff a number instead of a hunch.
 
-**No history yet** (a brand-new client)? Pass `assumedUsage` — modeled requests, audio seconds, cost, and optionally reconciled vendor cost — and Floe rates that instead, so "what if I switch this client to cost-plus over actuals?" is answerable before a single call runs. The response marks `usageSource: "assumed"`.
+**No history yet** (a brand-new client)? Pass `assumedUsage` — modeled requests, audio seconds, cost, and optionally tasks and reconciled vendor cost — and Floe rates that instead. `tasks` is required when a candidate prices per task (a `400` otherwise), and `untaskedRequests` defaults to `0`, so "what if I switch this client to cost-plus over actuals?" is answerable before a single call runs. The response marks `usageSource: "assumed"`.
 
 Preview requires the **Agency** feature `rate_cards`.
 
