@@ -28,7 +28,7 @@ An SDR shop or a back-office biller prices per unit of work — a sequence run, 
 
 - **What a task is.** Every request that carries the same [`X-Floe-Task-Id`](attribution.md) belongs to one task. On **Floe Phone** the task id defaults to the call's CallSid, so every call is a task with no setup.
 - **Counted once.** A task is billed in the period holding its **first** billable request. A call that runs across midnight at month-end is billed in the month it started, never in both — and the same holds across a mid-period price change.
-- **No silent undercount.** If any request for the client in the period has **no** task id, the task count is only a lower bound. The preview still shows the numbers, with an `uncounted_usage` blocker on the option, and closing the period returns `409 uncounted_usage` until every call carries a task id. There is no tolerance threshold.
+- **No silent undercount.** If any request for the client in the period has **no** task id, the task count is only a lower bound. The preview still shows the numbers, with an `uncounted_usage` blocker on the option, and closing the period returns `409 uncounted_usage`. There is no tolerance threshold. Tag the calls, or have the **account owner** close with a written reason (`actualsGateOverrideReason`, 10–500 characters): the statement then bills **only the counted tasks**, so the client is never overcharged, and the reason is recorded on the period.
 
 Cost-plus over vendor actuals is the sharpest margin tool: a `cost_plus` rule can name a `vendorCostBasis` so the cost it marks up is the vendor's **reconciled** bill, not a call-time estimate — "rebill Deepgram + 15%" prices off what Deepgram actually charged.
 
