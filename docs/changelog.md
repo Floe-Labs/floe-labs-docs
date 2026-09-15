@@ -10,6 +10,17 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.25.0 — Per-call pricing (September 2026)
+
+Rate cards can now price **voice calls** — the unit most voice agencies quote.
+
+* **`unit: "voice_call"` on rate-card rules.** Bill each Floe Phone call and each Reconcile Mode call (Vapi, Retell, Bland) through `per_unit` (with `includedUnits`) or `tiered` bands, alone or beside `cost_plus`.
+* **Counted, never tagged.** Floe counts the one row it writes per call, so the count can't fall short. A call aborted before it connected isn't billed.
+* **Calls or tasks.** A card can meter `voice_call` or `task`, not both — every Floe Phone call is also a task.
+* **Preview.** `assumedUsage` accepts `voiceCalls`; the dashboard editor offers voice calls as a unit.
+
+→ [Rate cards](build/rate-cards.md)
+
 ### v1.24.0 — Per-task pricing (September 2026)
 
 Rate cards can now price **work**, not just minutes and requests — the model SDR shops and back-office billers sell on.
