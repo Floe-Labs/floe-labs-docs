@@ -6,7 +6,7 @@ icon: tags
 
 Your [ledger](unified-ledger.md) is only as useful as it is tagged. An untagged call is a real dollar you paid that answers no business question: you know it happened, but not *for whom*. Tag every metered call with the client it serves — and, where you run campaigns, the campaign and the individual task — and the same spend that was one flat number becomes **cost per client** and **cost per campaign**. That is the number finance prices contracts against.
 
-Floe never guesses. A missing tag stays missing (it buckets under `untagged`), because a guessed attribution is a silent accounting error and a blank is the truth. So the quality of your per-client cost is exactly the quality of your tagging — this page is how you get it right.
+Floe never guesses. A missing tag stays missing (it buckets under `untagged`), because a guessed attribution is a silent accounting error and a blank is the truth. The one thing Floe *will* do is carry a tag you already set on one leg of a call across to the same call's other, untagged legs — see [inherited tags](#inherited-tags-within-one-call) — which is a fact about that call, not a guess. So the quality of your per-client cost is exactly the quality of your tagging — this page is how you get it right.
 
 ## The four tags
 
@@ -40,7 +40,7 @@ curl -X POST https://credit-api.floelabs.xyz/v1/chat/completions \
 
 Every leg of that call — LLM turn, STT, TTS, tool call — carries `customer_id = acme-corp` and `task_id = call-8f21a` on the money ledger.
 
-**2. Reconciled orchestrator calls** — calls whose media path Vapi / Retell / Bland runs, ingested at call-end through the [end-of-call webhook](../developers/webhooks.md). You can't set a Floe header on a call Floe didn't place, so you stamp the tags as **call metadata** on the assistant instead. Floe reads `floe_customer_id`, `floe_campaign_id`, `floe_task_id`, and `floe_agent_id` from the metadata bag the orchestrator sends. An unparseable or absent tag produces `attribution_state = 'unattributed'` — an actionable finding, not a fallback.
+**2. Reconciled orchestrator calls** — calls whose media path Vapi / Retell / Bland runs, ingested at call-end through the [end-of-call webhook](../developers/webhooks.md). You can't set a Floe header on a call Floe didn't place, so you stamp the tags as **call metadata** on the assistant instead. Floe reads `floe_customer_id`, `floe_campaign_id`, `floe_task_id`, and `floe_agent_id` from the metadata bag the orchestrator sends. An unparseable or absent tag produces `attribution_state = 'unattributed'` — an actionable finding, not a fallback (though a tagged sibling leg of the same call can still reach it — see [inherited tags](#inherited-tags-within-one-call)).
 
 ## Resolution order & per-agent defaults
 
@@ -52,6 +52,20 @@ Most agencies bind one end-client to one agent and never touch a header. Floe re
 4. **None** → `untagged` (or a refusal under strict mode, below).
 
 Every source runs through the same normalization, so a stored mixed-case default can never fork one client into two ledger keys.
+
+## Inherited tags within one call
+
+A call is one job, but attribution arrives per **request**. Tag the LLM turn and leave the speech-to-text leg bare, and that untagged leg is still a real dollar your client's call spent — invisible to their rollup and absent from their statement. So Floe carries a call's client and campaign **down onto that same call's untagged legs** on the [vendor-cost ledger](vendor-actuals.md), on a background pass within minutes of the call.
+
+The rules are deliberately narrow:
+
+- **Only blanks are filled.** A leg that already names a client or a campaign is never overwritten. What you stated always beats what Floe derived.
+- **Only when the call agrees.** The tag comes from the call's other legs, and only when they are unanimous. If two legs name different clients, **nothing** is inherited — not even a campaign they happen to share — and the call opens an `attribution_conflict` finding for you to settle.
+- **An inherited tag says so.** The leg carries `attribution_state = 'inferred'`, never `'exact'` — that stays reserved for a tag a caller or a human stated, so a derived attribution is never read as a declared one.
+- **It never reprices an issued invoice.** If the leg's dollars sit inside a **closed** billing period — the client losing them or the one gaining them — the move stops and opens an `attribution_locked_period` finding. Moving them is then a deliberate correction that trues up the next statement.
+- **Floe's own legs are left alone.** A leg carried on Floe's account is Floe's COGS, not your client's, and is never attributed to them (the same rule that keeps [vendor actuals](vendor-actuals.md#whose-cost-it-is) from double-billing).
+
+Inheritance closes the gap a *partly* tagged call leaves. It does not replace tagging: a call where no leg names a client stays `untagged`.
 
 ## Strict mode: refuse unattributed spend
 
