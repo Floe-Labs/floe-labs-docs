@@ -167,7 +167,7 @@ All endpoints below are payable in USDC on Base mainnet through `POST https://cr
 
 ### Infrastructure
 
-- [AWS x402 Reference](https://floe-labs.gitbook.io/docs/x402-directory/infra-gateway.md#aws-x402-reference): `GET https://docs.aws.amazon.com/x402` · preview
+- [AWS AgentCore Payments Reference](https://floe-labs.gitbook.io/docs/x402-directory/infra-gateway.md#aws-agentcore-payments-reference): `GET https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments.html` · preview
 - [Cloudflare Pay-per-Crawl](https://floe-labs.gitbook.io/docs/x402-directory/infra-gateway.md#cloudflare-pay-per-crawl): `POST https://x402.cloudflare.com/crawl` · preview
 - [Kurier](https://floe-labs.gitbook.io/docs/x402-directory/infra-gateway.md#kurier): `POST https://api.kurier.dev/v1/proof` · $0.10/call
 - [Obol Blockchain Data — Base Network Status](https://floe-labs.gitbook.io/docs/x402-directory/infra-gateway.md#obol-blockchain-data-base-network-status): `GET https://obol.danieldutoit.net/v1/base/network-status` · $0.001/call

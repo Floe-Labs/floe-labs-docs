@@ -8,7 +8,7 @@ Cloud infrastructure and gateway APIs. All payable with Floe credit on Base.
 
 | API | Provider | Price | Method | Status |
 |-----|----------|-------|--------|--------|
-| AWS x402 Reference | AWS | $0.01 | GET | Preview |
+| AWS AgentCore Payments Reference | AWS | $0.01 | GET | Preview |
 | Cloudflare Pay-per-Crawl | Cloudflare | $0.01 | POST | Preview |
 | Kurier | Horizen Labs | $0.10 | POST | Verified |
 | Obol Blockchain Data — Base Network Status | Obol Blockchain Data | $0.001 | GET | Verified |
@@ -16,21 +16,21 @@ Cloud infrastructure and gateway APIs. All payable with Floe credit on Base.
 
 ---
 
-## AWS x402 Reference
+## AWS AgentCore Payments Reference
 
 **Provider:** [AWS](https://aws.amazon.com)
-**Endpoint:** `GET https://docs.aws.amazon.com/x402`
+**Endpoint:** `GET https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments.html`
 **Price:** $0.01 USDC per call (dynamic) · Base mainnet
 **Floe compatible:** Preview — verify compatibility before production use
 
-> Monetize any HTTP app with x402 and CloudFront/Lambda@Edge.
+> Official Amazon Bedrock AgentCore documentation for agent payments using x402 and MPP.
 
 ```bash
 # Call through Floe
 curl -X POST https://credit-api.floelabs.xyz/v1/proxy/fetch \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{"url": "https://docs.aws.amazon.com/x402", "method": "GET"}'
+  -d '{"url": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments.html", "method": "GET"}'
 ```
 
 ## Cloudflare Pay-per-Crawl

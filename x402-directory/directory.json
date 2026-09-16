@@ -217,17 +217,18 @@
     },
     {
       "id": "aws-x402",
-      "name": "AWS x402 Reference",
+      "name": "AWS AgentCore Payments Reference",
       "provider": "AWS",
       "homepage": "https://aws.amazon.com",
-      "description": "Monetize any HTTP app with x402 and CloudFront/Lambda@Edge.",
-      "resource": "https://docs.aws.amazon.com/x402",
+      "description": "Official Amazon Bedrock AgentCore documentation for agent payments using x402 and MPP.",
+      "resource": "https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments.html",
       "method": "GET",
       "category": "infra-gateway",
       "tags": [
         "aws",
-        "cloudfront",
-        "lambda",
+        "bedrock",
+        "agentcore",
+        "payments",
         "reference"
       ],
       "x402Version": 2,
