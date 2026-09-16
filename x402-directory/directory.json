@@ -1,7 +1,7 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "entryCount": 75,
+  "entryCount": 76,
   "categories": [
     "web-search",
     "social-news",
@@ -1230,6 +1230,34 @@
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
+    },
+    {
+      "id": "obol-blockchain-data",
+      "name": "Obol Blockchain Data — Base Network Status",
+      "provider": "Obol Blockchain Data",
+      "homepage": "https://obol.danieldutoit.net",
+      "description": "Current Base chain ID, block number, and block timestamp from two independently operated RPC providers.",
+      "resource": "https://obol.danieldutoit.net/v1/base/network-status",
+      "method": "GET",
+      "category": "infra-gateway",
+      "tags": [
+        "base",
+        "blockchain-data",
+        "network-status",
+        "rpc-consensus"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "verified",
+      "responseExample": {
+        "status": 200,
+        "contentType": "application/json",
+        "body": "{\"network\":\"eip155:8453\",\"chain\":{\"id\":8453,\"name\":\"Base\"},\"observed_block\":51132758,\"observed_block_hash\":\"0x3c3ef53d548d15b1da11be5c5eb3e1435fd8e37e9f08a058d134cd1ee5cb7a91\",\"observed_at\":\"2026-09-10T15:41:03.000Z\",\"provider_consistency\":{\"agreement\":true,\"provider_count\":2,\"providers\":[\"base-public.nodies.app\",\"mainnet.base.org\"]}}"
+      }
     },
     {
       "id": "octomil",

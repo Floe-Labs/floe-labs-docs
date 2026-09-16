@@ -21,6 +21,7 @@ Services with endpoints in the [Floe dashboard](https://dev-dashboard.floelabs.x
 | [Search](search.md) | Exa, Parallel AI, Tavily Search, Firecrawl |
 | [Browser](browser.md) | Hyperbrowser, Browserbase, Anchor Browser |
 | [Memory](database.md) | HydraDB — vector query, ingest, memory & tenant management |
+| [Infrastructure](infra-gateway.md) | Obol Blockchain Data — Base network status from two independent RPC providers |
 | [Agent Tools](agent-tools-verified.md) | AgentMail, Pinata Cloud, PostalForm |
 
 ## Call Any Listed API

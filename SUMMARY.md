@@ -63,6 +63,7 @@
 * [Search](docs/x402-directory/search.md)
 * [Browser](docs/x402-directory/browser.md)
 * [Memory](docs/x402-directory/database.md)
+* [Infrastructure](docs/x402-directory/infra-gateway.md)
 * [Agent Tools](docs/x402-directory/agent-tools-verified.md)
 * [Submit an API](docs/x402-directory/submit.md)
 
