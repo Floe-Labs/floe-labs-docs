@@ -41,15 +41,24 @@ Every agency-facing read filters on `cost_owner = 'developer'` — **legs your a
 
 A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** from vendor cost — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
 
-That is a statement about **vendor** cost, not about what the work cost you. You did pay Floe for a keyless call, an x402 tool call or a Floe Phone minute, and that amount is exact on the money row. So the per-task view reports it alongside, never inside, the reconciled vendor figures:
+That is a statement about **vendor** cost, not about what the work cost you. You did pay Floe for a keyless call, an x402 tool call or a Floe Phone minute, and that amount is exact on the money row. So the per-task view — and the per-client and per-campaign rollups — report it alongside, never inside, the reconciled vendor figures:
 
 | Field | What it is |
 |---|---|
 | `exactRaw` / `periodRateRaw` / `totalRaw` | Your **vendor** bill for legs your account pays for. Floe-carried legs are not in here. |
-| `floeChargeRaw` | What **Floe charged you** for the legs Floe carried, counted once per charge — one charge can pay for several legs of the same call. |
-| `paidRaw` | What the task cost you: the two added. `null` while the vendor half is still partial, because adding a known charge to a partial sum would read as an answer. |
+| `floeChargeRaw` | What **Floe charged you** for the legs Floe carried, counted once per charge — one charge can pay for several legs of the same call. `null`, never `0`, where Floe carried nothing. |
+| `floeChargeRequests` | How many charges that figure covers. |
+| `paidRaw` | What the work cost you: the two added. `null` while the vendor half is still partial, because adding a known charge to a partial sum would read as an answer. |
 
 A task whose every leg is Floe-carried — keyless inference in a workflow, a Floe Phone call — therefore appears with its charge instead of being invisible. Its vendor figures stay empty, because none of that spend is a vendor bill of yours.
+
+### On the client and campaign rollups
+
+`by=customer` and `by=campaign` carry the same charge fields per row — and **a client or campaign whose spend is wholly keyless gets a row of its own**, rather than dropping out of a grain that has no vendor leg to group. That row's vendor columns are blank and its **margin is suppressed, not zero**: margin is the markup a rate card earns on reconciled vendor cost, and there is no vendor cost here to mark up.
+
+A charge is one payment, so it lands on one row or on none. `by=customer` keys it to the client the **money row itself** names — the same column your [statement](invoicing.md) is rated on, so a client's COGS can't contradict the invoice basis for the same charge — and falls back to the charge's Floe-carried legs only when that column is empty and every one of those legs names the same client. `by=campaign` has only that unanimity to go on, because the money row carries no campaign. Charges whose legs disagree are reported once at the response level, in `floeChargeUnkeyed`, rather than split across the keys they disagree about. A charge that never settled buys no row.
+
+Where a filter has no honest answer for a charge, the charge fields are **suppressed, not guessed**: a `status` or `attributionState` filter (both describe *your* vendor bill settling, which a Floe-carried leg doesn't have), a `vendor`, `agentId` or `taskId` filter, or `campaignId` on the `by=customer` view. A suppressed response omits `floeChargeRaw`, `paidRaw` and `floeChargeUnkeyed` altogether rather than returning figures that look filtered and aren't. Narrowing `by=campaign` to one `customerId` **is** supported — the charge follows the client it resolves to, and the row still keys on campaign.
 
 ## No FX, ever
 
