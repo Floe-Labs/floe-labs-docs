@@ -15,7 +15,7 @@ Every metered call can carry four independent tags. Only the first is usually ne
 | Tag | What it answers | On Floe-carried calls | On reconciled orchestrator calls |
 |---|---|---|---|
 | **Customer** | Which end-client is this spend for? | `X-Floe-Customer-Id` header | `floe_customer_id` call metadata |
-| **Campaign** | Which campaign / engagement? | `X-Floe-Task-Id` header (see note) | `floe_campaign_id` call metadata |
+| **Campaign** | Which campaign / engagement? | `X-Floe-Campaign-Id` header | `floe_campaign_id` call metadata |
 | **Task** | Which call / job? (groups its legs) | `X-Floe-Task-Id` header | `floe_task_id` call metadata |
 | **Channel** | Which kind of interaction? | `X-Floe-Channel` header (Floe Phone calls are always `voice`) | Not applied — a reconciled call's channel comes from its legs |
 
@@ -23,7 +23,11 @@ All tag values are **opaque strings** — Floe never interprets them. They are t
 
 **Channel is the exception: it is a fixed list**, not an opaque id — `voice`, `chat`, `email`, `video`, `job` or `sms` (any case). Anything else is refused with `400 invalid_channel` before any spend. On a streaming socket or mid-call the bad value is dropped with a warning instead, so a bad tag never cuts a live call. Leave the header out and Floe works the channel out from the call itself: `voice` if any leg is speech or telephony, otherwise `job`. Group by it with `by=channel` on the actuals and interactions rollups.
 
-> **Note on campaign vs task.** On Floe-carried calls the [cost ledger](#roll-it-up) rolls up the **task id** as the "campaign" dimension — one id per call groups that call's legs, and grouping those ids is your campaign view. Reconciled orchestrator ingests carry a *separate* `floe_campaign_id` alongside the task id, because a Vapi/Retell/Bland assistant often maps one campaign to many calls. If you run campaigns on an orchestrator, set both.
+> **Note on campaign vs task.** They are different questions, and now different tags everywhere. **Task** is one call or job — its id groups that call's legs. **Campaign** spans many calls, because an assistant usually maps one campaign to a whole dialling list. Send `X-Floe-Campaign-Id` on Floe-carried calls and `floe_campaign_id` in orchestrator call metadata; if a call reaches Floe both ways, the orchestrator's metadata wins.
+>
+> This page used to tell you to group **task ids** as a stand-in campaign view, because no campaign header existed on Floe-carried calls. It does now. Nothing you already sent moves or re-buckets — calls tagged before you adopt the header keep the exact grouping they have, and you can start sending `X-Floe-Campaign-Id` whenever you like.
+>
+> One behaviour worth knowing: if a single call is tagged with *two different* campaigns — say the header says one thing and the orchestrator metadata another — that call's campaign reads blank rather than picking a winner. Each leg keeps the value it was given, and the disagreement shows up as untagged spend to go fix. Floe never guesses an attribution.
 
 ### Two ways a call gets tagged
 
