@@ -85,6 +85,8 @@ The close does five things in one transaction:
 4. **Snapshots** every rated line with its card version and segment bounds, plus the sub-cent remainder, so `Σ line cents + Σ remainders` reconstructs the revenue exactly.
 5. **Freezes** the period with a compare-and-set on `status='open'` — a concurrent close loses the race and rolls back. Re-closing a closed period returns the same statement unchanged (idempotent).
 
+Rating happens before the period is locked, so a charge attributed to that client in the meantime would land in no statement at all: this one's lines were rated before it, and the next period only covers its own window. To prevent that, the close re-reads the client's billable spend once it holds the lock and compares it with what the rating saw. If the number moved, it throws the whole transaction away and returns `409 close_restart` — nothing is written, the period is still `open`, and closing again rates the new charge in. It's a retry, not an error condition.
+
 ### Close-time gates
 
 If your rate card **rebills vendor cost** (a `cost_plus` rule), the close also checks that the vendor actuals behind those legs are real before it invoices them:
