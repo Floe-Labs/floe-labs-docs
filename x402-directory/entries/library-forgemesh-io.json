@@ -1,0 +1,21 @@
+{
+  "id": "library-forgemesh-io",
+  "name": "ForgeMesh Library",
+  "provider": "ForgeMesh Labs",
+  "homepage": "https://library.forgemesh.io",
+  "description": "Curated shelf of public-domain adventure fiction, ranked by historical popularity. Returns title, author, year, book_id,",
+  "resource": "https://library.forgemesh.io/adventure",
+  "method": "POST",
+  "category": "agent-tooling",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.003",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

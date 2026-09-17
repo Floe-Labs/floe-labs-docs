@@ -1,0 +1,21 @@
+{
+  "id": "router-forgemesh-io",
+  "name": "x402-router",
+  "provider": "ForgeMesh Labs",
+  "homepage": "https://router.forgemesh.io",
+  "description": "Search and filter x402 services",
+  "resource": "https://router.forgemesh.io/api/services",
+  "method": "GET",
+  "category": "infra-gateway",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "x402-forgemesh-io",
+  "name": "x402 Utility APIs for AI Agents — ForgeMesh Utility Grid",
+  "provider": "ForgeMesh Labs",
+  "homepage": "https://x402.forgemesh.io",
+  "description": "Agent fortune API: a fortune cookie written specifically for AI agents ('A cached response is worth two upstream calls')",
+  "resource": "https://x402.forgemesh.io/agent-fortune",
+  "method": "POST",
+  "category": "agent-tooling",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

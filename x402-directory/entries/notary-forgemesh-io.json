@@ -1,0 +1,21 @@
+{
+  "id": "notary-forgemesh-io",
+  "name": "AI Notarization & Proof",
+  "provider": "ForgeMesh Labs",
+  "homepage": "https://notary.forgemesh.io",
+  "description": "Notarize one AI inference",
+  "resource": "https://notary.forgemesh.io/api/notarize",
+  "method": "POST",
+  "category": "identity-reputation",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

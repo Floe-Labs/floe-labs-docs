@@ -1,0 +1,21 @@
+{
+  "id": "disruption-forgemesh-io",
+  "name": "Layoff & Workforce Disruption Tracker",
+  "provider": "ForgeMesh Labs",
+  "homepage": "https://disruption.forgemesh.io",
+  "description": "Returns matching company names with IDs plus links to their profile and intelligence endpoints — use it to resolve a search into specific companies before paying for deeper data",
+  "resource": "https://disruption.forgemesh.io/companies/names",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

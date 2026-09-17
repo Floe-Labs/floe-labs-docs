@@ -1,0 +1,21 @@
+{
+  "id": "ads-forgemesh-io",
+  "name": "ForgeMesh x402 Ads",
+  "provider": "ForgeMesh Labs",
+  "homepage": "https://ads.forgemesh.io",
+  "description": "Network-wide intent stats",
+  "resource": "https://ads.forgemesh.io/api/network/stats",
+  "method": "GET",
+  "category": "payments-commerce",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

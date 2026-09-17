@@ -1,0 +1,21 @@
+{
+  "id": "imagegen-coinopai-com",
+  "name": "AI Image Generation",
+  "provider": "CoinOpAI",
+  "homepage": "https://imagegen.coinopai.com",
+  "description": "Generate an AI image from a text prompt (text-to-image)",
+  "resource": "https://imagegen.coinopai.com/generate",
+  "method": "GET",
+  "category": "media-generation",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.25",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

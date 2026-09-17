@@ -1,0 +1,21 @@
+{
+  "id": "seo-forgemesh-io",
+  "name": "SEO Authority API",
+  "provider": "ForgeMesh Labs",
+  "homepage": "https://seo.forgemesh.io",
+  "description": "Measure one domain's open-web authority",
+  "resource": "https://seo.forgemesh.io/v1/domain-authority",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

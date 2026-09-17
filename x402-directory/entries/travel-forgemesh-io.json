@@ -1,0 +1,21 @@
+{
+  "id": "travel-forgemesh-io",
+  "name": "Flight Fare Intelligence",
+  "provider": "ForgeMesh Labs",
+  "homepage": "https://travel.forgemesh.io",
+  "description": "Fare Pulse — cheapest live fares from JFK ($0.001)",
+  "resource": "https://travel.forgemesh.io/api/fare-pulse",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.001",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

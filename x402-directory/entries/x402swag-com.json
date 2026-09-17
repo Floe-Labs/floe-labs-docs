@@ -1,0 +1,21 @@
+{
+  "id": "x402swag-com",
+  "name": "x402 Swag storefront API",
+  "provider": "x402 Swag",
+  "homepage": "https://x402swag.com",
+  "description": "Pay-per-call merch catalog: buy a t-shirt, mug, or sticker with USDC in one x402 call",
+  "resource": "https://x402swag.com/api/agent/catalog",
+  "method": "GET",
+  "category": "payments-commerce",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.05",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

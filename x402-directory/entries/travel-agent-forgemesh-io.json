@@ -1,0 +1,21 @@
+{
+  "id": "travel-agent-forgemesh-io",
+  "name": "Travel Planning & Trip Intelligence",
+  "provider": "ForgeMesh Labs",
+  "homepage": "https://travel-agent.forgemesh.io",
+  "description": "Live paid mobility options finder",
+  "resource": "https://travel-agent.forgemesh.io/api/transit-providers",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "x402",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}
