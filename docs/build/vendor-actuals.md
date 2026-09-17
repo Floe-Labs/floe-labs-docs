@@ -37,7 +37,7 @@ A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. 
 
 ## Whose cost it is
 
-Every agency-facing read filters on `cost_owner = 'developer'` — **legs your account pays for**.
+Every vendor-cost figure counts only legs with `cost_owner = 'developer'` — **the ones your account pays for**.
 
 A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** from vendor cost — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
 
@@ -47,9 +47,15 @@ That is a statement about **vendor** cost, not about what the work cost you. You
 |---|---|
 | `exactRaw` / `periodRateRaw` / `totalRaw` | Your **vendor** bill for legs your account pays for. Floe-carried legs are not in here. |
 | `floeChargeRaw` | What **Floe charged you** for the legs Floe carried, counted once per charge — one charge can pay for several legs of the same call. |
+| `floeChargeRequests` | How many charge rows `floeChargeRaw` covers. |
 | `paidRaw` | What the task cost you: the two added. `null` while the vendor half is still partial, because adding a known charge to a partial sum would read as an answer. |
+| `floeCarriedLegCount` | How many of the task's legs Floe carried. |
 
 A task whose every leg is Floe-carried — keyless inference in a workflow, a Floe Phone call — therefore appears with its charge instead of being invisible. Its vendor figures stay empty, because none of that spend is a vendor bill of yours.
+
+Those legs are **listed** on the per-task view rather than hidden. Each leg carries a `costOwner` (`developer` or `platform`), and a Floe-carried leg's `costRaw` is `null`: its share of the charge isn't knowable per leg, so the charge is reported once, for the task. Filtering follows the same line — `?vendor=` matches a Floe-carried leg, because the row names that vendor and shows a charge, so excluding it would contradict the row you can see; `?status=` stays developer-owned, because a reconciliation status describes *your* vendor bill settling and a Floe-carried leg has no such bill to settle.
+
+The per-leg and rollup lanes are unchanged: there, Floe-carried legs are omitted entirely.
 
 ## No FX, ever
 
