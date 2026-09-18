@@ -94,6 +94,7 @@ Watch the effect on the **Coverage Score card** in your [dashboard](https://dev-
 ## When to reach for this
 
 - You call an LLM or tool with **your own provider key** and want its cost on the same score as your Floe-routed spend.
+- You run **voice legs off Floe's path** — STT, TTS, telephony, SMS on your own Deepgram / ElevenLabs / Twilio account — and want those minutes counted with the rest of the call. Each event declares what it was (`kind`: `stt`, `tts`, `telephony`, `sms`, `avatar`, `ocr`, `gpu`, `llm`, `tool`), so a carrier charge lands on the ledger as carrier spend, not as a tool call.
 - You **self-host** a model (vLLM, Ollama, a private endpoint) that Floe never sees.
 - You have **off-path** paid calls — a vendor billed on its own account — that you're not ready to move onto the [proxy](../developers/x402-facilitator.md) yet, but want counted.
 
