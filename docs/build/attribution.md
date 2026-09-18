@@ -8,9 +8,9 @@ Your [ledger](unified-ledger.md) is only as useful as it is tagged. An untagged 
 
 Floe never guesses. A missing tag stays missing (it buckets under `untagged`), because a guessed attribution is a silent accounting error and a blank is the truth. So the quality of your per-client cost is exactly the quality of your tagging — this page is how you get it right.
 
-## The four tags
+## The five tags
 
-Every metered call can carry four independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
+Every metered call can carry five independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
 
 | Tag | What it answers | On Floe-carried calls | On reconciled orchestrator calls |
 |---|---|---|---|
@@ -25,6 +25,8 @@ All tag values are **opaque strings** — Floe never interprets them. They are t
 Over-length values are **rejected, not truncated**: the tag simply goes missing rather than silently landing in the wrong bucket. Two long ids sharing a prefix would otherwise merge into one row, and a mis-grouped cost is worse than an untagged one.
 
 **Task type answers "what work was attempted"** — `claims-intake`, `invoice-match`, `kyc-refresh` — which is what makes cost-per-task mean anything when one agent runs several kinds of job. It is deliberately *not* the outcome: what result the work reached is a separate vocabulary, and the two never merge. Group by it with `by=task_type` on the actuals and interactions rollups.
+
+Unlike channel there is nothing in a leg to derive a task type from, so Floe never invents one: an untagged leg buckets under `(none)` in both rollups. For that reason `(none)` is **reserved** — send it as a header value and it is rejected to untagged rather than merged into that bucket. A whole call reads the task type its legs agree on; tag two legs of one call differently and the call's type reads blank, the same unanimity rule customer, campaign and agent follow.
 
 **Channel is the exception: it is a fixed list**, not an opaque id — `voice`, `chat`, `email`, `video`, `job` or `sms` (any case). Anything else is refused with `400 invalid_channel` before any spend. On a streaming socket or mid-call the bad value is dropped with a warning instead, so a bad tag never cuts a live call. Leave the header out and Floe works the channel out from the call itself: `voice` if any leg is speech or telephony, otherwise `job`. Group by it with `by=channel` on the actuals and interactions rollups.
 

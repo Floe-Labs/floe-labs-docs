@@ -246,6 +246,7 @@ Optional request extras on `POST /v1/calls`:
 | --- | --- | --- |
 | `X-Floe-Task-Id` | header | Task id stamped on every ledger leg of this call (≤128 chars, lowercased). Defaults to the lowercased call id. |
 | `X-Floe-Customer-Id` | header | Opaque end-customer attribution (≤128 chars, lowercased) — lands on the same rows for the cross-source ledger. |
+| `X-Floe-Task-Type` | header | What kind of work this call is (≤64 chars, lowercased) — `claims-intake`, `invoice-match`. Stamped on every leg of the call; group by it with `by=task_type` on the rollups. See [Cost per client, campaign & task](../build/attribution.md). |
 | `maxSpendRaw` | body | Per-call reserve cap, raw 6-decimal USDC (e.g. `"500000"` = $0.50). Clamped to the platform per-call ceiling ($2.00 default), rejected with `400 max_spend_too_low` if it can't cover one minute of calling. |
 
 To make a per-call budget *enforced* rather than just attributed, create a [task spend policy](spend-controls.md) whose `matchKey` is the task id — the reserve at answer, every hosted LLM turn, and any tool call tagged with that task id are then gated by it. The pre-dial check evaluates the task policy too, so an exhausted task budget denies with `403` *before* the callee's phone rings.
