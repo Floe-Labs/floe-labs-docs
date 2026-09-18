@@ -79,10 +79,12 @@ Two read surfaces turn tagged legs into per-client and per-campaign cost. Both a
 
 ```http
 GET /v1/developer/ledger?days=30&groupBy=customer
-GET /v1/developer/ledger?days=30&groupBy=campaign
+GET /v1/developer/ledger?days=30&groupBy=task
 ```
 
-Rolls up **all** spend — Floe-carried (gateway, x402 proxy, Floe Phone) *and* orchestrator-reconciled (Vapi/Retell/Bland end-of-call ingests) — by the dimension you ask for. `groupBy=source` and `groupBy=agent` answer "what did I spend"; `groupBy=customer` and `groupBy=campaign` are the attribution view. `days` is 1–90 (default 30).
+Rolls up **all** spend — Floe-carried (gateway, x402 proxy, Floe Phone) *and* orchestrator-reconciled (Vapi/Retell/Bland end-of-call ingests) — by the dimension you ask for. `groupBy=source` and `groupBy=agent` answer "what did I spend"; `groupBy=customer` and `groupBy=task` are the attribution view. `days` is 1–90 (default 30).
+
+> **`groupBy=campaign` is deprecated on this endpoint — use `groupBy=task`.** This lane reads the Floe-settled request ledger, which carries no campaign column, so `campaign` here has always returned **task** buckets (`X-Floe-Task-Id`) — a different meaning from `by=campaign` on the actuals and interactions rollups, which group on a real campaign id. `groupBy=task` returns that same data under its real name. Responses to `groupBy=campaign` carry `Deprecation: ?1`, a `Link` successor-version header, and `Sunset: Mon, 19 Oct 2026 00:00:00 GMT`; from **19 October 2026** it returns `400 groupBy_removed`, whose body names both replacements. For a rollup on an actual campaign, use `GET /v1/developer/interactions/rollups?by=campaign`.
 
 Each row carries `{ key, tagged, calls, costRaw, reconciledRaw }`. `reconciledRaw` is the portion of that bucket that came from orchestrator reconciliation rather than a Floe-carried leg. **Filter on the `tagged` flag, never on the label** — a real client literally named "untagged" stays a distinct bucket from missing-tag spend. Untagged rows are never dropped: they bucket under `untagged` so the total always reconciles with the underlying rows.
 
@@ -111,7 +113,7 @@ The same client and campaign grouping is available over **[vendor actuals](vendo
 >
 > **Tagging every call — the headers, the metadata, the per-agent defaults, and strict mode — is free on every plan and is never throttled.** Attribution must never be the reason a call is refused for a billing reason, so tag liberally from day one.
 >
-> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. The `source` and `agent` views stay open on every plan.
+> The **per-client, per-campaign and per-task rollups** (`groupBy=customer|task` — and the deprecated `campaign` alias — on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. `task` is gated exactly like the `campaign` alias it replaces — renaming a dimension doesn't change who may read it. The `source` and `agent` views stay open on every plan.
 
 ## Related
 

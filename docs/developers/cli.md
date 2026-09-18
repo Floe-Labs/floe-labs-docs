@@ -383,6 +383,8 @@ Cross-source spend ledger: one money view across Floe rails (gateway, x402 proxy
 floe ledger --group-by agent --days 7 --json
 ```
 
+`--group-by campaign` passes through to the API's deprecated `groupBy=campaign`, which returns **task** buckets and stops working on **19 October 2026** — see [the ledger rollup note](../build/attribution.md#the-cost-ledger-one-neutral-money-view). Until the CLI ships the replacement dimension, call `GET /v1/developer/ledger?groupBy=task` directly for that data.
+
 ### `floe billing`
 
 Cross-agent billing for this developer account (current calendar month, UTC).
