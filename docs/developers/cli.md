@@ -375,7 +375,7 @@ Cross-source spend ledger: one money view across Floe rails (gateway, x402 proxy
 
 | Flag | Does |
 |---|---|
-| `--group-by <dim>` | `source` (default) \| `customer` \| `campaign` \| `agent`. customer/campaign group by the `X-Floe-Customer-Id` / `X-Floe-Task-Id` tags on calls; untagged spend stays visible as its own bucket |
+| `--group-by <dim>` | `source` (default) \| `customer` \| `campaign` \| `agent`. customer/campaign group by the `X-Floe-Customer-Id` / `X-Floe-Campaign-Id` tags on calls (or the matching `floe_customer_id` / `floe_campaign_id` orchestrator metadata); untagged spend stays visible as its own bucket |
 | `--days <n>` | Window in days, 1–90 (default 30) |
 | `--agent <ref>` | Narrow to one agent (default: all agents) |
 
