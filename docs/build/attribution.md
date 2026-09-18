@@ -18,8 +18,13 @@ Every metered call can carry four independent tags. Only the first is usually ne
 | **Campaign** | Which campaign / engagement? | `X-Floe-Campaign-Id` header | `floe_campaign_id` call metadata |
 | **Task** | Which call / job? (groups its legs) | `X-Floe-Task-Id` header | `floe_task_id` call metadata |
 | **Channel** | Which kind of interaction? | `X-Floe-Channel` header (Floe Phone calls are always `voice`) | Not applied — a reconciled call's channel comes from its legs |
+| **Task type** | What kind of work was this? | `X-Floe-Task-Type` header | Not applied — set it on the Floe-carried legs |
 
-All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
+All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters — except **task type, which is capped at 64**. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
+
+Over-length values are **rejected, not truncated**: the tag simply goes missing rather than silently landing in the wrong bucket. Two long ids sharing a prefix would otherwise merge into one row, and a mis-grouped cost is worse than an untagged one.
+
+**Task type answers "what work was attempted"** — `claims-intake`, `invoice-match`, `kyc-refresh` — which is what makes cost-per-task mean anything when one agent runs several kinds of job. It is deliberately *not* the outcome: what result the work reached is a separate vocabulary, and the two never merge. Group by it with `by=task_type` on the actuals and interactions rollups.
 
 **Channel is the exception: it is a fixed list**, not an opaque id — `voice`, `chat`, `email`, `video`, `job` or `sms` (any case). Anything else is refused with `400 invalid_channel` before any spend. On a streaming socket or mid-call the bad value is dropped with a warning instead, so a bad tag never cuts a live call. Leave the header out and Floe works the channel out from the call itself: `voice` if any leg is speech or telephony, otherwise `job`. Group by it with `by=channel` on the actuals and interactions rollups.
 
