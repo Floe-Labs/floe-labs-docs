@@ -1,7 +1,7 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "entryCount": 75,
+  "entryCount": 86,
   "categories": [
     "web-search",
     "social-news",
@@ -37,6 +37,27 @@
       "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
+    },
+    {
+      "id": "ads-forgemesh-io",
+      "name": "ForgeMesh x402 Ads",
+      "provider": "ForgeMesh Labs",
+      "homepage": "https://ads.forgemesh.io",
+      "description": "Network-wide intent stats",
+      "resource": "https://ads.forgemesh.io/api/network/stats",
+      "method": "GET",
+      "category": "payments-commerce",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.005",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
     },
     {
       "id": "aeon",
@@ -537,6 +558,27 @@
       "status": "verified"
     },
     {
+      "id": "disruption-forgemesh-io",
+      "name": "Layoff & Workforce Disruption Tracker",
+      "provider": "ForgeMesh Labs",
+      "homepage": "https://disruption.forgemesh.io",
+      "description": "Returns matching company names with IDs plus links to their profile and intelligence endpoints — use it to resolve a search into specific companies before paying for deeper data",
+      "resource": "https://disruption.forgemesh.io/companies/names",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
       "id": "djd-agent-score",
       "name": "DJD Agent Score",
       "provider": "DJD",
@@ -967,6 +1009,27 @@
       }
     },
     {
+      "id": "imagegen-coinopai-com",
+      "name": "AI Image Generation",
+      "provider": "CoinOpAI",
+      "homepage": "https://imagegen.coinopai.com",
+      "description": "Generate an AI image from a text prompt (text-to-image)",
+      "resource": "https://imagegen.coinopai.com/generate",
+      "method": "GET",
+      "category": "media-generation",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.25",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
       "id": "imference",
       "name": "Imference",
       "provider": "Imference",
@@ -1100,6 +1163,27 @@
       "status": "verified"
     },
     {
+      "id": "library-forgemesh-io",
+      "name": "ForgeMesh Library",
+      "provider": "ForgeMesh Labs",
+      "homepage": "https://library.forgemesh.io",
+      "description": "Curated shelf of public-domain adventure fiction, ranked by historical popularity. Returns title, author, year, book_id, and drill-down routes for full-text retrieval. No license, no API key required.",
+      "resource": "https://library.forgemesh.io/adventure",
+      "method": "POST",
+      "category": "agent-tooling",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.003",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
       "id": "locus",
       "name": "Locus",
       "provider": "Locus",
@@ -1208,6 +1292,27 @@
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
+    },
+    {
+      "id": "notary-forgemesh-io",
+      "name": "AI Notarization & Proof",
+      "provider": "ForgeMesh Labs",
+      "homepage": "https://notary.forgemesh.io",
+      "description": "Notarize one AI inference",
+      "resource": "https://notary.forgemesh.io/api/notarize",
+      "method": "POST",
+      "category": "identity-reputation",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
     },
     {
       "id": "obol",
@@ -1387,6 +1492,27 @@
       "status": "verified"
     },
     {
+      "id": "router-forgemesh-io",
+      "name": "x402-router",
+      "provider": "ForgeMesh Labs",
+      "homepage": "https://router.forgemesh.io",
+      "description": "Search and filter x402 services",
+      "resource": "https://router.forgemesh.io/api/services",
+      "method": "GET",
+      "category": "infra-gateway",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
       "id": "sarvam",
       "name": "Sarvam AI",
       "provider": "Sarvam AI",
@@ -1438,6 +1564,27 @@
           "maxCompletionTokens": null
         }
       ]
+    },
+    {
+      "id": "seo-forgemesh-io",
+      "name": "SEO Authority API",
+      "provider": "ForgeMesh Labs",
+      "homepage": "https://seo.forgemesh.io",
+      "description": "Measure one domain's open-web authority",
+      "resource": "https://seo.forgemesh.io/v1/domain-authority",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
     },
     {
       "id": "sociologic",
@@ -1572,6 +1719,48 @@
       "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
+    },
+    {
+      "id": "travel-agent-forgemesh-io",
+      "name": "Travel Planning & Trip Intelligence",
+      "provider": "ForgeMesh Labs",
+      "homepage": "https://travel-agent.forgemesh.io",
+      "description": "Live paid mobility options finder",
+      "resource": "https://travel-agent.forgemesh.io/api/transit-providers",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
+      "id": "travel-forgemesh-io",
+      "name": "Flight Fare Intelligence",
+      "provider": "ForgeMesh Labs",
+      "homepage": "https://travel.forgemesh.io",
+      "description": "Fare Pulse — cheapest live fares from JFK ($0.001)",
+      "resource": "https://travel.forgemesh.io/api/fare-pulse",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
     },
     {
       "id": "trusta-ai",
@@ -1870,6 +2059,27 @@
       ]
     },
     {
+      "id": "x402-forgemesh-io",
+      "name": "x402 Utility APIs for AI Agents — ForgeMesh Utility Grid",
+      "provider": "ForgeMesh Labs",
+      "homepage": "https://x402.forgemesh.io",
+      "description": "Agent fortune API: a fortune cookie written specifically for AI agents ('A cached response is worth two upstream calls')",
+      "resource": "https://x402.forgemesh.io/agent-fortune",
+      "method": "POST",
+      "category": "agent-tooling",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.001",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
       "id": "x402engine",
       "name": "x402engine",
       "provider": "x402engine",
@@ -1889,6 +2099,27 @@
       "pricingModel": "tiered",
       "floeCompatible": true,
       "status": "verified"
+    },
+    {
+      "id": "x402swag-com",
+      "name": "x402 Swag storefront API",
+      "provider": "x402 Swag",
+      "homepage": "https://x402swag.com",
+      "description": "Pay-per-call merch catalog: buy a t-shirt, mug, or sticker with USDC in one x402 call",
+      "resource": "https://x402swag.com/api/agent/catalog",
+      "method": "GET",
+      "category": "payments-commerce",
+      "tags": [
+        "x402",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.05",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
     },
     {
       "id": "xai-stt",

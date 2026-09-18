@@ -3,7 +3,7 @@
   "name": "ForgeMesh Library",
   "provider": "ForgeMesh Labs",
   "homepage": "https://library.forgemesh.io",
-  "description": "Curated shelf of public-domain adventure fiction, ranked by historical popularity. Returns title, author, year, book_id,",
+  "description": "Curated shelf of public-domain adventure fiction, ranked by historical popularity. Returns title, author, year, book_id, and drill-down routes for full-text retrieval. No license, no API key required.",
   "resource": "https://library.forgemesh.io/adventure",
   "method": "POST",
   "category": "agent-tooling",
