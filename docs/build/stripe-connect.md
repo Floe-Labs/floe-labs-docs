@@ -6,7 +6,7 @@ icon: credit-card
 
 [Client invoicing](invoicing.md) turns a reconciled billing period into a statement. **Stripe Connect** is how you collect on it. You link your **own** Stripe account once, push a closed statement as a Stripe invoice, and Stripe emails your client with your branding, your terms, and your reminder settings. The money is a **direct charge on your account** — payouts land in your Stripe balance, not Floe's. Floe never holds your clients' funds; it hands Stripe a bill and tracks whether it got paid.
 
-> **Plan gate.** Connect and invoicing are **Agency** capabilities (`stripe_connect` and `client_invoicing`), for up to **30 billed clients**. Linking and disconnecting also require an admin (link) or owner (disconnect) acting in a **human dashboard session** — a leaked API key must not be able to re-point where your invoices get paid.
+> **Plan gate.** Connect and invoicing are **Agency** capabilities (`stripe_connect` and `client_invoicing`), for up to **150 billed clients**. Linking and disconnecting also require an admin (link) or owner (disconnect) acting in a **human dashboard session** — a leaked API key must not be able to re-point where your invoices get paid.
 
 ## Link your Stripe account
 

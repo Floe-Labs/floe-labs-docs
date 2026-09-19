@@ -146,4 +146,5 @@ Both are **Pro** reads (`attribution_reports`). Read them side by side with the 
 
 - [Cost per client, campaign & task](attribution.md) — tag the spend these cards price.
 - [The live cost ledger](unified-ledger.md) · [Vendor actuals](vendor-actuals.md) — the cost side of every margin figure.
+- [Your vendor rates](vendor-rates.md) — the mirror image: what you **pay** a vendor, rather than what you charge a client.
 - [Client invoicing — billing periods & statements](invoicing.md) — turn a priced period into a statement you can send.

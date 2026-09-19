@@ -16,6 +16,7 @@
 ## Know your costs
 
 * [The live cost ledger](docs/build/unified-ledger.md)
+* [Your vendor rates — what you actually pay](docs/build/vendor-rates.md)
 * [Vendor actuals — reconcile to the vendor's records](docs/build/vendor-actuals.md)
 * [Vendor connections](docs/build/vendor-connections.md)
 * [Coverage Score](docs/build/coverage-score.md)

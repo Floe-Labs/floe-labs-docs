@@ -14,8 +14,8 @@ Every gate below is enforced server-side. Tracked-spend caps are **soft** (a ban
 |---|---|---|---|---|
 | Price | $0 | $99/mo · $950/yr | $499/mo · $4,790/yr | custom |
 | Tracked spend / mo (soft) | up to $2,000 | up to $10,000 | up to $50,000 | no cap |
-| Ledger history | 7 days | 365 days | unlimited | unlimited |
-| Billed end-clients | — | — | up to 30 | unlimited |
+| Ledger history | 30 days | 365 days | unlimited | unlimited |
+| Billed end-clients | — | — | up to 150 | unlimited |
 
 ## What each plan unlocks
 
@@ -37,6 +37,7 @@ Everything in Free, plus the tools to turn cost into a per-client, per-campaign 
 - **CSV exports** (`exports`) — the usage bill, statements, and margin as CSV.
 - **Alerts** (`alerts`) — credit-threshold notifications.
 - **Fleet policies** (`fleet_policies`) — developer-scope budgets and suspend-agent hard stops.
+- **Your vendor rates** (`vendor_rates`) — tell Floe what you actually pay each vendor, so estimates use your negotiated rates instead of public list prices (and `floe-guard` can pull them). Writes need an admin. See [Your vendor rates](../build/vendor-rates.md).
 
 ### Agency — bill your own clients from the actuals
 
@@ -44,7 +45,7 @@ Everything in Pro, plus the margin engine and invoicing:
 
 - **Rate cards & margin engine** (`rate_cards`) — set what you bill each client, preview margin, and see signed-vs-deployed per contract. See [Rate cards & the margin engine](../build/rate-cards.md).
 - **Client invoicing** (`client_invoicing`) — billing periods and statements. See [Client invoicing](../build/invoicing.md).
-- **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 30 billed clients. See [Stripe Connect](../build/stripe-connect.md).
+- **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 150 billed clients. See [Stripe Connect](../build/stripe-connect.md).
 - **Vendor actuals & connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles your legs to the vendor's **own** records. **USD only** — Floe prices and reconciles in USD and never converts currencies; a vendor whose billing is non-USD keeps its ISO code and lands unpriced (a `currency_unsupported` finding), by design, not FX support pending. See [Vendor connections](../build/vendor-connections.md) and [Vendor actuals — no FX, ever](../build/vendor-actuals.md#no-fx-ever).
 
 ### Enterprise — no caps, sales-led
@@ -60,6 +61,7 @@ Everything in Agency with no tracked-spend, history, or client caps, priced at *
 | `exports` | Pro | CSV exports (bill, statement, margin) |
 | `alerts` | Pro | Credit-threshold alerts |
 | `fleet_policies` | Pro | Developer-scope budgets + suspend-agent |
+| `vendor_rates` | Pro | What you pay each vendor (estimates + `floe-guard` pull) |
 | `rate_cards` | Agency | Rate cards, margin, signed-vs-deployed |
 | `client_invoicing` | Agency | Billing periods + statements |
 | `stripe_connect` | Agency | Invoice via your own Stripe |

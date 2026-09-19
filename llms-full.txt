@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 70 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 71 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -19,6 +19,7 @@
 - Funding your agent — https://floe-labs.gitbook.io/docs/start-here/funding.md
 - Agent Quickstart — https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
 - The live cost ledger — https://floe-labs.gitbook.io/docs/know-your-costs/unified-ledger.md
+- Your vendor rates — what you actually pay — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-rates.md
 - Vendor actuals — reconcile to the vendor's records — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-actuals.md
 - Vendor connections — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-connections.md
 - Coverage Score — https://floe-labs.gitbook.io/docs/know-your-costs/coverage-score.md
@@ -1098,6 +1099,123 @@ See [Floe Inference (Keyless LLM & Voice)](../developers/keyless-inference.md).
 Put the ledger to work behind a real voice agent — telephony, STT, LLM, and TTS on one bill: [The Voice Stack](voice-stack.md).
 
 ==============================================================================
+# Your vendor rates — what you actually pay
+Source: docs/build/vendor-rates.md
+URL: https://floe-labs.gitbook.io/docs/know-your-costs/vendor-rates.md
+==============================================================================
+
+# Your vendor rates — what you actually pay
+
+Floe ships **public list prices** so a new account can price a call on day one. Almost nobody pays list. Vendor rates let you tell Floe what you *actually* pay — your negotiated Deepgram per-second, your committed-use Twilio per-minute — and every estimate uses your number instead of the published one.
+
+This is the mirror image of a [rate card](rate-cards.md): a rate card is what you **charge** a client, a vendor rate is what you **pay** a vendor. One is revenue, the other COGS, and the difference between them is the margin this product exists to show. They are deliberately never called the same thing.
+
+## An estimate, not an actual
+
+A vendor rate is an **estimate lane**. It never becomes the reconciled cost basis:
+
+- It is never written to the reconciled ledger, never summed into a vendor-cost total, and never used as the basis of a `cost_plus` rate-card rule.
+- A [reconciled vendor actual](vendor-actuals.md) — the vendor's own billing record — always supersedes it.
+- The gap between your rate and the vendor's record is the **variance**, which is the number worth looking at.
+
+So a rate improves what an estimate says before the vendor publishes anything. It does not claim what a vendor billed.
+
+## What a rate is
+
+One rate is a price for one **vendor + model + leg kind**, in that leg kind's canonical unit. The unit is fixed per leg kind and enforced in the database — a GPU rate declared per hour would be a 3,600× mis-price, so it is simply unstorable:
+
+| Leg kind | Unit |
+|---|---|
+| `stt` | USD per second |
+| `tts` | USD per 1,000 characters |
+| `telephony` | USD per minute |
+| `avatar` | USD per minute |
+| `sms` | USD per segment |
+| `ocr` | USD per page |
+| `gpu` | USD per GPU-second |
+
+`llm` and `tool` are absent on purpose: token pricing lives in the [gateway model catalog](../developers/models-pricing.md), and a tool call is an opaque per-call price with no unit.
+
+**Rates are decimal strings, never JSON numbers.** `"0.0000416667"` is precisely the scale at which an IEEE double starts drifting, so a rate travels as a string and is stored as an exact integer (`ratePico`, USD × 10¹²). A rate carrying more than **12 decimal places** is refused (`400 invalid_rate`) rather than silently rounded — dropping a digit off a rate is how a bill ends up wrong by a factor nobody can find later. Every read returns both `rate` (the decimal, for display) and `ratePico` (the exact stored value).
+
+## Append-only, like rate cards
+
+Rates are versioned and **append-only**. Changing a price means appending a new version with a later `effectiveFrom`; nothing is ever edited or deleted.
+
+- **The rate in force** is the latest version whose `effectiveFrom` is at or before now — not the highest id. A version dated for next Monday is scheduled, not current.
+- **`effectiveFrom` only moves forward** per vendor + model + leg. A back-dated version would retroactively re-price usage that has already been costed, including a closed billing period, so it returns `409 effective_from_regression`. Two versions starting at the same instant return `409 version_exists`.
+- **History explains a past figure.** `GET /v1/developer/vendor-rates/history` returns every version for one key, newest first — what a closed period was priced under is the version that was in force at the time.
+
+## Confirmed vs. unconfirmed
+
+A rate **you type** is confirmed by construction. A rate **seeded from a vendor's published price list** is not — it is a list price, and a COGS figure resting on it is a starting point, not a cost. Unconfirmed rates land in a review queue (`unconfirmedCount` on the list response, shown at the top of the dashboard tab).
+
+Confirming is the one mutation an append-only row accepts, and it is one-way: it stamps who accepted the rate and when. Re-confirming is a no-op that answers `alreadyConfirmed: true`, so the audit trail keeps the **first** acceptance. Only confirmed rates are served to [`floe-guard`](#floe-guard-pulls-your-rates).
+
+`sourceUrl` is the public price list a rate came from. A rate with no `sourceUrl` is **unverified** — that is a different claim from a citation, and the dashboard renders it as such.
+
+## The API
+
+All four routes are **Pro** (`vendor_rates`); the two writes also require an **admin** or owner role.
+
+| Endpoint | What it does |
+|---|---|
+| `GET /v1/developer/vendor-rates` | The rate in force per vendor + model + leg, plus `unconfirmedCount` and the canonical `unitForLegKind` map |
+| `POST /v1/developer/vendor-rates` | Append a new version *(admin)* |
+| `GET /v1/developer/vendor-rates/history?vendor=&model=&legKind=` | Every version for one key, newest first |
+| `POST /v1/developer/vendor-rates/{id}/confirm` | Accept a rate as yours *(admin)* |
+
+```http
+POST /v1/developer/vendor-rates
+```
+
+```json
+{
+  "vendor": "deepgram",
+  "model": "nova-2",
+  "legKind": "stt",
+  "rate": "0.0000416667",
+  "sourceUrl": "https://deepgram.com/pricing",
+  "retrievedAt": "2026-09-01T00:00:00Z",
+  "note": "committed-use tier"
+}
+```
+
+`effectiveFrom` defaults to now, `confirmed` defaults to `true` (the common path is a human entering what they actually pay — pass `false` for a scraped list price so it lands in the review queue). `vendor` and `model` are lowercased. All three of `vendor`, `model` and `legKind` are required on the history read; an unknown leg kind returns `400 unknown_leg_kind` rather than an empty list, which would read identically to "no history".
+
+## floe-guard pulls your rates
+
+[`floe-guard`](https://github.com/Floe-Labs/floe-guard) ships a bundled cost map of public list prices, so a guard with no hosted rates is enforcing a budget against a number its operator never agreed to. With an **agent key** it can pull your own confirmed rates instead:
+
+```http
+GET /v1/agents/rates
+```
+
+The response is keyed by model, in the same entry shape the open-source package already parses (`mode`, `unit`, `rate`, `provider`, `source_url`, `retrieved_at`, `confirmed`), so a rate round-trips between hosted Floe and the local package without translation. Precedence is stated in the response itself:
+
+> `override > these rates > bundled list price > UnpriceableLegError`
+
+Two fields say what was deliberately **left out** rather than guessed:
+
+- **`conflicts`** — a model that two or more current rates claim (two vendors, or two leg kinds, pricing the same model string). The guard looks a rate up by model alone, so serving one of them would hand it one vendor's price for another vendor's leg with nothing failing. The model is omitted and named instead.
+- **`needsConfirmation`** — a model whose version *in force* is still unconfirmed. It is not silently replaced by an older confirmed version, which would enforce against a superseded price.
+
+In both cases the guard falls back to its bundled list price — a figure of known provenance, and one that skews high, so the estimate errs conservative rather than under-stating COGS. A `403 plan_required` behaves the same way: nothing breaks, the guard simply keeps using list prices.
+
+## Plan gate
+
+> **Vendor rates are a Pro capability** (`vendor_rates`), alongside variance — which is exactly estimate-versus-actual. Reads need the entitlement; appending and confirming a rate also need an **admin** or owner role, because declaring what you pay is a billing-policy decision. Rates hold **no vendor credential**: they are the path for an account that has *not* wired a [vendor connection](vendor-connections.md) (Agency), not a paywalled version of one. See [Plans & entitlements](../reference/plans.md).
+
+Manage them in the dashboard at **Vendor charges → Your vendor rates**.
+
+## Related
+
+- [Vendor actuals](vendor-actuals.md) — what the vendor's own records say, which always supersedes a rate.
+- [Vendor connections](vendor-connections.md) — the read-only credential that produces those records.
+- [Rate cards & the margin engine](rate-cards.md) — the other side: what you charge a client.
+- [The cost calculator](cost-calculator.md) — price a call before you make it.
+
+==============================================================================
 # Vendor actuals — reconcile to the vendor's records
 Source: docs/build/vendor-actuals.md
 URL: https://floe-labs.gitbook.io/docs/know-your-costs/vendor-actuals.md
@@ -1140,7 +1258,17 @@ A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. 
 
 Every agency-facing read filters on `cost_owner = 'developer'` — **legs your account pays for**.
 
-A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
+A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** from vendor cost — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
+
+That is a statement about **vendor** cost, not about what the work cost you. You did pay Floe for a keyless call, an x402 tool call or a Floe Phone minute, and that amount is exact on the money row. So the per-task view reports it alongside, never inside, the reconciled vendor figures:
+
+| Field | What it is |
+|---|---|
+| `exactRaw` / `periodRateRaw` / `totalRaw` | Your **vendor** bill for legs your account pays for. Floe-carried legs are not in here. |
+| `floeChargeRaw` | What **Floe charged you** for the legs Floe carried, counted once per charge — one charge can pay for several legs of the same call. |
+| `paidRaw` | What the task cost you: the two added. `null` while the vendor half is still partial, because adding a known charge to a partial sum would read as an answer. |
+
+A task whose every leg is Floe-carried — keyless inference in a workflow, a Floe Phone call — therefore appears with its charge instead of being invisible. Its vendor figures stay empty, because none of that spend is a vendor bill of yours.
 
 ## No FX, ever
 
@@ -1156,6 +1284,7 @@ Read your reconciled costs — legs, by-call, and rollups, each with a provenanc
 
 ## Related
 
+- [Your vendor rates](vendor-rates.md) — what you *say* you pay, the estimate a reconciled actual supersedes.
 - [Coverage Score](coverage-score.md) — how much of your spend Floe can enforce, which is a different question from what it cost.
 - [Unified Billing & Ledger](unified-ledger.md) — the settled Floe ledger these vendor costs sit beside.
 - [Ledger sync](ledger-sync.md) — pushing off-path spend into the ledger in the first place.
@@ -1403,19 +1532,31 @@ Your [ledger](unified-ledger.md) is only as useful as it is tagged. An untagged 
 
 Floe never guesses. A missing tag stays missing (it buckets under `untagged`), because a guessed attribution is a silent accounting error and a blank is the truth. So the quality of your per-client cost is exactly the quality of your tagging — this page is how you get it right.
 
-## The three tags
+## The four tags
 
-Every metered call can carry three independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
+Every metered call can carry four independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
 
 | Tag | What it answers | On Floe-carried calls | On reconciled orchestrator calls |
 |---|---|---|---|
 | **Customer** | Which end-client is this spend for? | `X-Floe-Customer-Id` header | `floe_customer_id` call metadata |
-| **Campaign** | Which campaign / engagement? | `X-Floe-Task-Id` header (see note) | `floe_campaign_id` call metadata |
+| **Campaign** | Which campaign / engagement? | `X-Floe-Campaign-Id` header | `floe_campaign_id` call metadata |
 | **Task** | Which call / job? (groups its legs) | `X-Floe-Task-Id` header | `floe_task_id` call metadata |
+| **Channel** | Which kind of interaction? | `X-Floe-Channel` header (Floe Phone calls are always `voice`) | Not applied — a reconciled call's channel comes from its legs |
+| **Task type** | What kind of work was this? | `X-Floe-Task-Type` header | Not applied — set it on the Floe-carried legs |
 
-All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
+All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters — except **task type, which is capped at 64**. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
 
-> **Note on campaign vs task.** On Floe-carried calls the [cost ledger](#roll-it-up) rolls up the **task id** as the "campaign" dimension — one id per call groups that call's legs, and grouping those ids is your campaign view. Reconciled orchestrator ingests carry a *separate* `floe_campaign_id` alongside the task id, because a Vapi/Retell/Bland assistant often maps one campaign to many calls. If you run campaigns on an orchestrator, set both.
+Over-length values are **rejected, not truncated**: the tag simply goes missing rather than silently landing in the wrong bucket. Two long ids sharing a prefix would otherwise merge into one row, and a mis-grouped cost is worse than an untagged one.
+
+**Task type answers "what work was attempted"** — `claims-intake`, `invoice-match`, `kyc-refresh` — which is what makes cost-per-task mean anything when one agent runs several kinds of job. It is deliberately *not* the outcome: what result the work reached is a separate vocabulary, and the two never merge. Group by it with `by=task_type` on the actuals and interactions rollups.
+
+**Channel is the exception: it is a fixed list**, not an opaque id — `voice`, `chat`, `email`, `video`, `job` or `sms` (any case). Anything else is refused with `400 invalid_channel` before any spend. On a streaming socket or mid-call the bad value is dropped with a warning instead, so a bad tag never cuts a live call. Leave the header out and Floe works the channel out from the call itself: `voice` if any leg is speech or telephony, otherwise `job`. Group by it with `by=channel` on the actuals and interactions rollups.
+
+> **Note on campaign vs task.** They are different questions, and now different tags everywhere. **Task** is one call or job — its id groups that call's legs. **Campaign** spans many calls, because an assistant usually maps one campaign to a whole dialling list. Send `X-Floe-Campaign-Id` on Floe-carried calls and `floe_campaign_id` in orchestrator call metadata; if a call reaches Floe both ways, the orchestrator's metadata wins.
+>
+> This page used to tell you to group **task ids** as a stand-in campaign view, because no campaign header existed on Floe-carried calls. It does now. Nothing you already sent moves or re-buckets — calls tagged before you adopt the header keep the exact grouping they have, and you can start sending `X-Floe-Campaign-Id` whenever you like.
+>
+> One behaviour worth knowing: if a single call is tagged with *two different* campaigns — say the header says one thing and the orchestrator metadata another — that call's campaign reads blank rather than picking a winner. Each leg keeps the value it was given, and the disagreement shows up as untagged spend to go fix. Floe never guesses an attribution.
 
 ### Two ways a call gets tagged
 
@@ -1652,6 +1793,7 @@ Both are **Pro** reads (`attribution_reports`). Read them side by side with the 
 
 - [Cost per client, campaign & task](attribution.md) — tag the spend these cards price.
 - [The live cost ledger](unified-ledger.md) · [Vendor actuals](vendor-actuals.md) — the cost side of every margin figure.
+- [Your vendor rates](vendor-rates.md) — the mirror image: what you **pay** a vendor, rather than what you charge a client.
 - [Client invoicing — billing periods & statements](invoicing.md) — turn a priced period into a statement you can send.
 
 ==============================================================================
@@ -1816,7 +1958,7 @@ URL: https://floe-labs.gitbook.io/docs/invoicing/stripe-connect.md
 
 [Client invoicing](invoicing.md) turns a reconciled billing period into a statement. **Stripe Connect** is how you collect on it. You link your **own** Stripe account once, push a closed statement as a Stripe invoice, and Stripe emails your client with your branding, your terms, and your reminder settings. The money is a **direct charge on your account** — payouts land in your Stripe balance, not Floe's. Floe never holds your clients' funds; it hands Stripe a bill and tracks whether it got paid.
 
-> **Plan gate.** Connect and invoicing are **Agency** capabilities (`stripe_connect` and `client_invoicing`), for up to **30 billed clients**. Linking and disconnecting also require an admin (link) or owner (disconnect) acting in a **human dashboard session** — a leaked API key must not be able to re-point where your invoices get paid.
+> **Plan gate.** Connect and invoicing are **Agency** capabilities (`stripe_connect` and `client_invoicing`), for up to **150 billed clients**. Linking and disconnecting also require an admin (link) or owner (disconnect) acting in a **human dashboard session** — a leaked API key must not be able to re-point where your invoices get paid.
 
 ## Link your Stripe account
 
@@ -12590,8 +12732,8 @@ Every gate below is enforced server-side. Tracked-spend caps are **soft** (a ban
 |---|---|---|---|---|
 | Price | $0 | $99/mo · $950/yr | $499/mo · $4,790/yr | custom |
 | Tracked spend / mo (soft) | up to $2,000 | up to $10,000 | up to $50,000 | no cap |
-| Ledger history | 7 days | 365 days | unlimited | unlimited |
-| Billed end-clients | — | — | up to 30 | unlimited |
+| Ledger history | 30 days | 365 days | unlimited | unlimited |
+| Billed end-clients | — | — | up to 150 | unlimited |
 
 ## What each plan unlocks
 
@@ -12613,6 +12755,7 @@ Everything in Free, plus the tools to turn cost into a per-client, per-campaign 
 - **CSV exports** (`exports`) — the usage bill, statements, and margin as CSV.
 - **Alerts** (`alerts`) — credit-threshold notifications.
 - **Fleet policies** (`fleet_policies`) — developer-scope budgets and suspend-agent hard stops.
+- **Your vendor rates** (`vendor_rates`) — tell Floe what you actually pay each vendor, so estimates use your negotiated rates instead of public list prices (and `floe-guard` can pull them). Writes need an admin. See [Your vendor rates](../build/vendor-rates.md).
 
 ### Agency — bill your own clients from the actuals
 
@@ -12620,7 +12763,7 @@ Everything in Pro, plus the margin engine and invoicing:
 
 - **Rate cards & margin engine** (`rate_cards`) — set what you bill each client, preview margin, and see signed-vs-deployed per contract. See [Rate cards & the margin engine](../build/rate-cards.md).
 - **Client invoicing** (`client_invoicing`) — billing periods and statements. See [Client invoicing](../build/invoicing.md).
-- **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 30 billed clients. See [Stripe Connect](../build/stripe-connect.md).
+- **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 150 billed clients. See [Stripe Connect](../build/stripe-connect.md).
 - **Vendor actuals & connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles your legs to the vendor's **own** records. **USD only** — Floe prices and reconciles in USD and never converts currencies; a vendor whose billing is non-USD keeps its ISO code and lands unpriced (a `currency_unsupported` finding), by design, not FX support pending. See [Vendor connections](../build/vendor-connections.md) and [Vendor actuals — no FX, ever](../build/vendor-actuals.md#no-fx-ever).
 
 ### Enterprise — no caps, sales-led
@@ -12636,6 +12779,7 @@ Everything in Agency with no tracked-spend, history, or client caps, priced at *
 | `exports` | Pro | CSV exports (bill, statement, margin) |
 | `alerts` | Pro | Credit-threshold alerts |
 | `fleet_policies` | Pro | Developer-scope budgets + suspend-agent |
+| `vendor_rates` | Pro | What you pay each vendor (estimates + `floe-guard` pull) |
 | `rate_cards` | Agency | Rate cards, margin, signed-vs-deployed |
 | `client_invoicing` | Agency | Billing periods + statements |
 | `stripe_connect` | Agency | Invoice via your own Stripe |
@@ -13230,6 +13374,21 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **80 tools**; `@floelabs/cli` ships **33 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.26.0 — Your vendor rates: what you actually pay (September 2026)
+
+Floe ships public list prices so a new account can price a call on day one. Almost nobody pays list, so you can now tell Floe your **negotiated** rates and every estimate uses yours instead. The mirror of a rate card — that is what you *charge* a client; this is what you *pay* a vendor.
+
+* **Vendor rates API** — `GET/POST /v1/developer/vendor-rates`, `GET /v1/developer/vendor-rates/history?vendor=&model=&legKind=`, `POST /v1/developer/vendor-rates/:id/confirm`. One rate per vendor + model + leg kind (`stt`, `tts`, `telephony`, `avatar`, `sms`, `ocr`, `gpu`), each in that leg's canonical unit, enforced by a CHECK. `llm` and `tool` are out: token pricing lives in the gateway catalog, and a tool is an opaque per-call price.
+* **An estimate lane, not the cost basis.** These rates are never written to the reconciled ledger, never summed into a vendor-cost total, and never the basis of a `cost_plus` rule. A [reconciled vendor actual](build/vendor-actuals.md) always supersedes one; the gap is the variance.
+* **Append-only and monotonic**, like rate cards. A change is a new version with a later `effectiveFrom`; the rate in force is the latest effective at or before now, never the highest id. Back-dating returns `409 effective_from_regression`, a duplicate instant `409 version_exists`.
+* **Exact money.** `rate` is a decimal **string** (a JSON number at this scale is an IEEE double); the exact stored value is `ratePico` (USD × 10¹²). More than 12 decimal places is refused, not rounded.
+* **Confirmed vs. list price.** A rate seeded from a published price list lands unconfirmed in a review queue; confirming is one-way and stamps who and when (re-confirming answers `alreadyConfirmed: true`). Only confirmed rates are served to floe-guard.
+* **floe-guard rate pull — `GET /v1/agents/rates`.** An agent key fetches the account's confirmed rates in the shape the open-source package already parses, so a rate card round-trips between hosted and local. A model claimed by two current rates (`conflicts`) or whose current version is unconfirmed (`needsConfirmation`) is omitted and named rather than guessed — the guard falls back to its bundled list price. Precedence: `override > these rates > bundled list price > UnpriceableLegError`.
+* **Plan gate.** Pro (`vendor_rates`), alongside variance; writes need an admin. Rates hold no vendor credential — they are the path for an account that hasn't wired an (Agency) vendor connection, not a paywalled version of one.
+* **Dashboard.** A **Your vendor rates** tab on Vendor charges, next to Billing connections, with the review queue at the top.
+
+→ [Your vendor rates](build/vendor-rates.md) · [Plans & entitlements](reference/plans.md)
 
 ### v1.25.0 — Per-call pricing (September 2026)
 

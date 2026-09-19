@@ -65,6 +65,7 @@ Read your reconciled costs — legs, by-call, and rollups, each with a provenanc
 
 ## Related
 
+- [Your vendor rates](vendor-rates.md) — what you *say* you pay, the estimate a reconciled actual supersedes.
 - [Coverage Score](coverage-score.md) — how much of your spend Floe can enforce, which is a different question from what it cost.
 - [Unified Billing & Ledger](unified-ledger.md) — the settled Floe ledger these vendor costs sit beside.
 - [Ledger sync](ledger-sync.md) — pushing off-path spend into the ledger in the first place.

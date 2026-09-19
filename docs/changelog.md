@@ -10,6 +10,21 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.26.0 — Your vendor rates: what you actually pay (September 2026)
+
+Floe ships public list prices so a new account can price a call on day one. Almost nobody pays list, so you can now tell Floe your **negotiated** rates and every estimate uses yours instead. The mirror of a rate card — that is what you *charge* a client; this is what you *pay* a vendor.
+
+* **Vendor rates API** — `GET/POST /v1/developer/vendor-rates`, `GET /v1/developer/vendor-rates/history?vendor=&model=&legKind=`, `POST /v1/developer/vendor-rates/:id/confirm`. One rate per vendor + model + leg kind (`stt`, `tts`, `telephony`, `avatar`, `sms`, `ocr`, `gpu`), each in that leg's canonical unit, enforced by a CHECK. `llm` and `tool` are out: token pricing lives in the gateway catalog, and a tool is an opaque per-call price.
+* **An estimate lane, not the cost basis.** These rates are never written to the reconciled ledger, never summed into a vendor-cost total, and never the basis of a `cost_plus` rule. A [reconciled vendor actual](build/vendor-actuals.md) always supersedes one; the gap is the variance.
+* **Append-only and monotonic**, like rate cards. A change is a new version with a later `effectiveFrom`; the rate in force is the latest effective at or before now, never the highest id. Back-dating returns `409 effective_from_regression`, a duplicate instant `409 version_exists`.
+* **Exact money.** `rate` is a decimal **string** (a JSON number at this scale is an IEEE double); the exact stored value is `ratePico` (USD × 10¹²). More than 12 decimal places is refused, not rounded.
+* **Confirmed vs. list price.** A rate seeded from a published price list lands unconfirmed in a review queue; confirming is one-way and stamps who and when (re-confirming answers `alreadyConfirmed: true`). Only confirmed rates are served to floe-guard.
+* **floe-guard rate pull — `GET /v1/agents/rates`.** An agent key fetches the account's confirmed rates in the shape the open-source package already parses, so a rate card round-trips between hosted and local. A model claimed by two current rates (`conflicts`) or whose current version is unconfirmed (`needsConfirmation`) is omitted and named rather than guessed — the guard falls back to its bundled list price. Precedence: `override > these rates > bundled list price > UnpriceableLegError`.
+* **Plan gate.** Pro (`vendor_rates`), alongside variance; writes need an admin. Rates hold no vendor credential — they are the path for an account that hasn't wired an (Agency) vendor connection, not a paywalled version of one.
+* **Dashboard.** A **Your vendor rates** tab on Vendor charges, next to Billing connections, with the review queue at the top.
+
+→ [Your vendor rates](build/vendor-rates.md) · [Plans & entitlements](reference/plans.md)
+
 ### v1.25.0 — Per-call pricing (September 2026)
 
 Rate cards can now price **voice calls** — the unit most voice agencies quote.
