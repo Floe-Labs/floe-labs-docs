@@ -71,6 +71,8 @@ By default attribution is optional — untagged calls still run and simply bucke
 
 Strict mode is the guarantee that no dollar reaches your ledger without a client attached to it — turn it on once your defaults and headers are wired, so a mis-configured agent fails loud instead of leaking untagged spend.
 
+It is also what makes a [per-client spend cap](../developers/spend-controls.md#customer-policies) airtight: a customer cap counts only calls that carry a client id, so under optional attribution an untagged call slips past it. Under strict mode there are no untagged calls to slip.
+
 ## Roll it up
 
 Two read surfaces turn tagged legs into per-client and per-campaign cost. Both are **Pro** (see the plan gate below).
@@ -118,3 +120,4 @@ The same client and campaign grouping is available over **[vendor actuals](vendo
 - [The live cost ledger](unified-ledger.md) — the neutral money view these tags roll up.
 - [Vendor actuals](vendor-actuals.md) — what each tagged leg actually cost at the vendor.
 - [Rate cards & the margin engine](rate-cards.md) — put a price on each tagged client and read your margin.
+- [Spend controls](../developers/spend-controls.md#customer-policies) — cap what you spend for one end-client, using the same tag.

@@ -74,15 +74,15 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 
 ## Context-Aware Spend Advisory
 
-The hosted API (`credit-api.floelabs.xyz`) enables this; self-hosters turn it on with `BUDGET_ADVISORY_ENABLED=1`. Paid 2xx responses then carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, or per-vendor caps your operator has set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
+The hosted API (`credit-api.floelabs.xyz`) enables this; self-hosters turn it on with `BUDGET_ADVISORY_ENABLED=1`. Paid 2xx responses then carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, per-vendor, or per-end-client caps your operator has set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
 
 ```jsonc
 // X-Floe-Budget-Advisory (parsed)
 {
   "near_limit": true,                 // omitted if no threshold configured; otherwise true OR false
   "tightest": {
-    "scope": "vendor",                // credit_line | session | task | api | vendor
-    "match": "api.openai.com",         // value depends on scope; e.g. "0xpayee…" (vendor), "task-id" (task), or null
+    "scope": "vendor",                // credit_line | session | task | api | vendor | customer
+    "match": "api.openai.com",         // value depends on scope; e.g. "0xpayee…" (vendor), "task-id" (task), "acme-corp" (customer), or null
     "used_bps": 8500,                 // 0–10000; 8500 = 85% of this cap used
     "remaining_raw": "150000",        // raw USDC (6-decimal) left on this cap
     "window_kind": "rolling",         // once | rolling | session | credit_line | null
@@ -114,7 +114,7 @@ Notes:
 
 No Floe account yet? The open-source [`floe-guard`](https://github.com/Floe-Labs/floe-guard) library exposes the **same advisory shape** on its in-process budget guard — `guard.advisory()` returns `near_limit`, `used_bps`, and `remaining_usd` for your local cap (Python and TypeScript). Write your taper logic against it for free, no account, no network.
 
-When you move to the hosted proxy, that logic ports unchanged — it just reads `X-Floe-Budget-Advisory` and gains what a single in-process budget can't know: the **tightest** cap across `credit_line | session | task | api | vendor`, cross-vendor reasoning, server-truth balances, and `window_resets_at`. Local guard is estimate-based and single-cap; the hosted advisory is server-truth and multi-cap.
+When you move to the hosted proxy, that logic ports unchanged — it just reads `X-Floe-Budget-Advisory` and gains what a single in-process budget can't know: the **tightest** cap across `credit_line | session | task | api | vendor | customer`, cross-vendor reasoning, server-truth balances, and `window_resets_at`. Local guard is estimate-based and single-cap; the hosted advisory is server-truth and multi-cap.
 
 ## Outcome-Linked Spend Attribution
 

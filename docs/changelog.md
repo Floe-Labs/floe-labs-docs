@@ -10,6 +10,19 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.26.0 — Per-client spend caps (September 2026)
+
+Spend policies can now cap an **end-client**, not just a vendor, host, task or session — the enforcement half of [cost per client](build/attribution.md).
+
+* **`kind: "customer"` on team policies.** `POST /v1/developer/policies` with `matchKey` = the client id (the same opaque, lowercased ≤128-char tag the ledger carries) caps everything you spend for that client, across every agent and every rail Floe meters. `matchKind` is always null — a client id matches by plain equality, like `task`.
+* **Team-scoped only.** Scope decides whose spend is counted, so an agent-scoped client cap would total one agent's spend while reading as the client's whole budget.
+* **Counts in-flight spend.** Reservations carry the client id, so concurrent calls for one client can't burst past the cap. Reconciled orchestrator spend that carried `floe_customer_id` counts too.
+* **Denies before the spend.** On Floe Phone a breach is a 403 before the dial, not a cut at answer.
+* **Untagged calls match no customer cap** — by design, exactly like a call with no task id. [Strict attribution](build/attribution.md#strict-mode-refuse-unattributed-spend) (`required`) is what makes a per-client budget airtight.
+* **Dashboard.** Settings → Team Policies offers `customer (per end-client)`.
+
+→ [Spend controls](developers/spend-controls.md#customer-policies)
+
 ### v1.25.0 — Per-call pricing (September 2026)
 
 Rate cards can now price **voice calls** — the unit most voice agencies quote.

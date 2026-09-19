@@ -4,7 +4,7 @@ icon: shield-check
 
 # Spend Controls
 
-Programmable budgets for your agent wallets. Cap spending per vendor, per task, per API, or across your whole team — with optional time windows.
+Programmable budgets for your agent wallets. Cap spending per vendor, per task, per API, per end-client, or across your whole team — with optional time windows.
 
 > **Scope: one ledger, one policy set.** Spend controls cap **every paid call Floe settles** — x402 vendors through the proxy (`POST /v1/proxy/fetch`) **and** LLM/voice tokens through the keyless gateway (`POST /v1/chat/completions`, host `credit-api.floelabs.xyz`); the legacy BYOK metered proxy `/v1/llm/chat/completions` is capped the same way. Route both through Floe and a single task or session budget bounds the entire conversation cost across every vendor. The one thing a policy can't see is a call you send straight to a provider with your own key, bypassing Floe — so route it through Floe.
 
@@ -16,8 +16,11 @@ Programmable budgets for your agent wallets. Cap spending per vendor, per task, 
 | **Vendor** | Spend to a specific payee wallet | Payment recipient address | "$20/day to Venice AI" |
 | **API** | Spend to a hostname or domain | Target URL hostname | "$100/week to *.venice.ai" |
 | **Task** | Spend on a specific task ID | `X-Floe-Task-Id` header | "$5 budget for task-research-123" |
+| **Customer** | Spend for one end-client | Resolved customer ID ([attribution](../build/attribution.md)) | "$400/month for acme-corp" |
 
-Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` kind and the `session` window are **team-scoped only** (`/v1/developer/policies`).
+Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` and `customer` kinds and the `session` window are **team-scoped only** (`/v1/developer/policies`).
+
+A customer cap is team-only on purpose: scope decides *whose spend is counted*, so an agent-scoped client cap would total one agent's spend while reading as that client's whole budget — three agents at $400 would look like a $400 cap and actually be $1,200.
 
 ## Quick Start
 
@@ -72,6 +75,24 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/policies \
 
 This caps total spend across ALL your agent wallets at $500/month.
 
+### Set a per-client budget
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/policies \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "customer",
+    "matchKey": "acme-corp",
+    "limitRaw": "400000000",
+    "windowKind": "rolling",
+    "windowSeconds": 2592000,
+    "label": "Acme — monthly contract"
+  }'
+```
+
+This caps everything you spend for the end-client `acme-corp` at $400/month, across every agent and every rail Floe meters. It is the enforcement half of [cost per client](../build/attribution.md): the ledger tells you what a fixed-price contract costs you, and this cap is what keeps that number a promise instead of a report.
+
 ## Time Windows
 
 Policies can be scheduled with calendar bounds:
@@ -113,6 +134,15 @@ Match against the **target URL hostname**:
 
 ### Task policies
 Match against the **`X-Floe-Task-Id` header** sent with each proxy call. Case-insensitive.
+
+### Customer policies
+Match against the call's **resolved end-client id** — the `X-Floe-Customer-Id` header, the agent's `defaultCustomerId`, or the project default, in that order (see [Cost per client](../build/attribution.md)). Opaque string, ≤128 characters, lowercased, exact match — `matchKind` is always null.
+
+The cap counts every rail that attributes: gateway calls, x402 proxy calls, Floe Phone, and orchestrator-reconciled calls that carried `floe_customer_id` in their metadata. In-flight reservations count too, so concurrent calls for one client can't burst past the cap.
+
+> **An untagged call matches no customer cap.** A call with no resolvable client id isn't refused — it simply isn't counted against any client budget, exactly like a call with no task id. So while attribution is optional, a customer cap can be dodged by omitting the tag. Turn on [strict mode](../build/attribution.md#strict-mode-refuse-unattributed-spend) (customer attribution `required`) and Floe refuses any metered call it can't attribute before it spends — that's what makes a per-client budget airtight.
+
+One active customer cap per client id per owner; creating a second returns a conflict. A breach is enforced pre-call, and on Floe Phone that means a **403 before the dial** rather than a cut at answer.
 
 ## Enforcement
 
@@ -296,9 +326,9 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
 
 ```typescript
 {
-  kind: 'vendor' | 'api' | 'task',   // per-agent; the 'session' kind is team-only (/v1/developer/policies)
-  matchKey: string,              // Required (except for the team-only 'session' kind)
-  matchKind?: 'host_exact' | 'host_suffix' | 'recipient',
+  kind: 'vendor' | 'api' | 'task',   // per-agent; 'session' and 'customer' are team-only (/v1/developer/policies)
+  matchKey: string,              // Required (except for the team-only 'session' kind); for 'customer' it's the client id
+  matchKind?: 'host_exact' | 'host_suffix' | 'recipient',  // null for 'task' and 'customer'
   limitRaw: string,              // Raw USDC, 6 decimals (e.g. "5000000" = $5)
   windowKind?: 'rolling' | 'once',   // 'session' window is team-only
   windowSeconds?: number,        // Required for rolling (minimum 60)
@@ -317,4 +347,4 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
 
 Policies can also be managed from the [Developer Dashboard](https://dev-dashboard.floelabs.xyz):
 - **Per-agent:** Agent detail page → Policies section
-- **Team-wide:** Settings → Team Policies
+- **Team-wide:** Settings → Team Policies (kinds: `session`, `task`, `api`, `vendor`, `customer`)

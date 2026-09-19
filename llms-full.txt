@@ -1140,7 +1140,17 @@ A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. 
 
 Every agency-facing read filters on `cost_owner = 'developer'` — **legs your account pays for**.
 
-A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
+A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** from vendor cost — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
+
+That is a statement about **vendor** cost, not about what the work cost you. You did pay Floe for a keyless call, an x402 tool call or a Floe Phone minute, and that amount is exact on the money row. So the per-task view reports it alongside, never inside, the reconciled vendor figures:
+
+| Field | What it is |
+|---|---|
+| `exactRaw` / `periodRateRaw` / `totalRaw` | Your **vendor** bill for legs your account pays for. Floe-carried legs are not in here. |
+| `floeChargeRaw` | What **Floe charged you** for the legs Floe carried, counted once per charge — one charge can pay for several legs of the same call. |
+| `paidRaw` | What the task cost you: the two added. `null` while the vendor half is still partial, because adding a known charge to a partial sum would read as an answer. |
+
+A task whose every leg is Floe-carried — keyless inference in a workflow, a Floe Phone call — therefore appears with its charge instead of being invisible. Its vendor figures stay empty, because none of that spend is a vendor bill of yours.
 
 ## No FX, ever
 
@@ -1403,19 +1413,31 @@ Your [ledger](unified-ledger.md) is only as useful as it is tagged. An untagged 
 
 Floe never guesses. A missing tag stays missing (it buckets under `untagged`), because a guessed attribution is a silent accounting error and a blank is the truth. So the quality of your per-client cost is exactly the quality of your tagging — this page is how you get it right.
 
-## The three tags
+## The four tags
 
-Every metered call can carry three independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
+Every metered call can carry four independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
 
 | Tag | What it answers | On Floe-carried calls | On reconciled orchestrator calls |
 |---|---|---|---|
 | **Customer** | Which end-client is this spend for? | `X-Floe-Customer-Id` header | `floe_customer_id` call metadata |
-| **Campaign** | Which campaign / engagement? | `X-Floe-Task-Id` header (see note) | `floe_campaign_id` call metadata |
+| **Campaign** | Which campaign / engagement? | `X-Floe-Campaign-Id` header | `floe_campaign_id` call metadata |
 | **Task** | Which call / job? (groups its legs) | `X-Floe-Task-Id` header | `floe_task_id` call metadata |
+| **Channel** | Which kind of interaction? | `X-Floe-Channel` header (Floe Phone calls are always `voice`) | Not applied — a reconciled call's channel comes from its legs |
+| **Task type** | What kind of work was this? | `X-Floe-Task-Type` header | Not applied — set it on the Floe-carried legs |
 
-All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
+All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters — except **task type, which is capped at 64**. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
 
-> **Note on campaign vs task.** On Floe-carried calls the [cost ledger](#roll-it-up) rolls up the **task id** as the "campaign" dimension — one id per call groups that call's legs, and grouping those ids is your campaign view. Reconciled orchestrator ingests carry a *separate* `floe_campaign_id` alongside the task id, because a Vapi/Retell/Bland assistant often maps one campaign to many calls. If you run campaigns on an orchestrator, set both.
+Over-length values are **rejected, not truncated**: the tag simply goes missing rather than silently landing in the wrong bucket. Two long ids sharing a prefix would otherwise merge into one row, and a mis-grouped cost is worse than an untagged one.
+
+**Task type answers "what work was attempted"** — `claims-intake`, `invoice-match`, `kyc-refresh` — which is what makes cost-per-task mean anything when one agent runs several kinds of job. It is deliberately *not* the outcome: what result the work reached is a separate vocabulary, and the two never merge. Group by it with `by=task_type` on the actuals and interactions rollups.
+
+**Channel is the exception: it is a fixed list**, not an opaque id — `voice`, `chat`, `email`, `video`, `job` or `sms` (any case). Anything else is refused with `400 invalid_channel` before any spend. On a streaming socket or mid-call the bad value is dropped with a warning instead, so a bad tag never cuts a live call. Leave the header out and Floe works the channel out from the call itself: `voice` if any leg is speech or telephony, otherwise `job`. Group by it with `by=channel` on the actuals and interactions rollups.
+
+> **Note on campaign vs task.** They are different questions, and now different tags everywhere. **Task** is one call or job — its id groups that call's legs. **Campaign** spans many calls, because an assistant usually maps one campaign to a whole dialling list. Send `X-Floe-Campaign-Id` on Floe-carried calls and `floe_campaign_id` in orchestrator call metadata; if a call reaches Floe both ways, the orchestrator's metadata wins.
+>
+> This page used to tell you to group **task ids** as a stand-in campaign view, because no campaign header existed on Floe-carried calls. It does now. Nothing you already sent moves or re-buckets — calls tagged before you adopt the header keep the exact grouping they have, and you can start sending `X-Floe-Campaign-Id` whenever you like.
+>
+> One behaviour worth knowing: if a single call is tagged with *two different* campaigns — say the header says one thing and the orchestrator metadata another — that call's campaign reads blank rather than picking a winner. Each leg keeps the value it was given, and the disagreement shows up as untagged spend to go fix. Floe never guesses an attribution.
 
 ### Two ways a call gets tagged
 
@@ -1453,6 +1475,8 @@ By default attribution is optional — untagged calls still run and simply bucke
 - WebSocket surfaces (streaming STT, realtime, telephony) refuse at the handshake with the same error.
 
 Strict mode is the guarantee that no dollar reaches your ledger without a client attached to it — turn it on once your defaults and headers are wired, so a mis-configured agent fails loud instead of leaking untagged spend.
+
+It is also what makes a [per-client spend cap](../developers/spend-controls.md#customer-policies) airtight: a customer cap counts only calls that carry a client id, so under optional attribution an untagged call slips past it. Under strict mode there are no untagged calls to slip.
 
 ## Roll it up
 
@@ -1501,6 +1525,7 @@ The same client and campaign grouping is available over **[vendor actuals](vendo
 - [The live cost ledger](unified-ledger.md) — the neutral money view these tags roll up.
 - [Vendor actuals](vendor-actuals.md) — what each tagged leg actually cost at the vendor.
 - [Rate cards & the margin engine](rate-cards.md) — put a price on each tagged client and read your margin.
+- [Spend controls](../developers/spend-controls.md#customer-policies) — cap what you spend for one end-client, using the same tag.
 
 ==============================================================================
 # Rate cards & the margin engine
@@ -7052,7 +7077,7 @@ URL: https://floe-labs.gitbook.io/docs/developers/spend-controls.md
 
 # Spend Controls
 
-Programmable budgets for your agent wallets. Cap spending per vendor, per task, per API, or across your whole team — with optional time windows.
+Programmable budgets for your agent wallets. Cap spending per vendor, per task, per API, per end-client, or across your whole team — with optional time windows.
 
 > **Scope: one ledger, one policy set.** Spend controls cap **every paid call Floe settles** — x402 vendors through the proxy (`POST /v1/proxy/fetch`) **and** LLM/voice tokens through the keyless gateway (`POST /v1/chat/completions`, host `credit-api.floelabs.xyz`); the legacy BYOK metered proxy `/v1/llm/chat/completions` is capped the same way. Route both through Floe and a single task or session budget bounds the entire conversation cost across every vendor. The one thing a policy can't see is a call you send straight to a provider with your own key, bypassing Floe — so route it through Floe.
 
@@ -7064,8 +7089,11 @@ Programmable budgets for your agent wallets. Cap spending per vendor, per task, 
 | **Vendor** | Spend to a specific payee wallet | Payment recipient address | "$20/day to Venice AI" |
 | **API** | Spend to a hostname or domain | Target URL hostname | "$100/week to *.venice.ai" |
 | **Task** | Spend on a specific task ID | `X-Floe-Task-Id` header | "$5 budget for task-research-123" |
+| **Customer** | Spend for one end-client | Resolved customer ID ([attribution](../build/attribution.md)) | "$400/month for acme-corp" |
 
-Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` kind and the `session` window are **team-scoped only** (`/v1/developer/policies`).
+Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` and `customer` kinds and the `session` window are **team-scoped only** (`/v1/developer/policies`).
+
+A customer cap is team-only on purpose: scope decides *whose spend is counted*, so an agent-scoped client cap would total one agent's spend while reading as that client's whole budget — three agents at $400 would look like a $400 cap and actually be $1,200.
 
 ## Quick Start
 
@@ -7120,6 +7148,24 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/policies \
 
 This caps total spend across ALL your agent wallets at $500/month.
 
+### Set a per-client budget
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/policies \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "customer",
+    "matchKey": "acme-corp",
+    "limitRaw": "400000000",
+    "windowKind": "rolling",
+    "windowSeconds": 2592000,
+    "label": "Acme — monthly contract"
+  }'
+```
+
+This caps everything you spend for the end-client `acme-corp` at $400/month, across every agent and every rail Floe meters. It is the enforcement half of [cost per client](../build/attribution.md): the ledger tells you what a fixed-price contract costs you, and this cap is what keeps that number a promise instead of a report.
+
 ## Time Windows
 
 Policies can be scheduled with calendar bounds:
@@ -7161,6 +7207,15 @@ Match against the **target URL hostname**:
 
 ### Task policies
 Match against the **`X-Floe-Task-Id` header** sent with each proxy call. Case-insensitive.
+
+### Customer policies
+Match against the call's **resolved end-client id** — the `X-Floe-Customer-Id` header, the agent's `defaultCustomerId`, or the project default, in that order (see [Cost per client](../build/attribution.md)). Opaque string, ≤128 characters, lowercased, exact match — `matchKind` is always null.
+
+The cap counts every rail that attributes: gateway calls, x402 proxy calls, Floe Phone, and orchestrator-reconciled calls that carried `floe_customer_id` in their metadata. In-flight reservations count too, so concurrent calls for one client can't burst past the cap.
+
+> **An untagged call matches no customer cap.** A call with no resolvable client id isn't refused — it simply isn't counted against any client budget, exactly like a call with no task id. So while attribution is optional, a customer cap can be dodged by omitting the tag. Turn on [strict mode](../build/attribution.md#strict-mode-refuse-unattributed-spend) (customer attribution `required`) and Floe refuses any metered call it can't attribute before it spends — that's what makes a per-client budget airtight.
+
+One active customer cap per client id per owner; creating a second returns a conflict. A breach is enforced pre-call, and on Floe Phone that means a **403 before the dial** rather than a cut at answer.
 
 ## Enforcement
 
@@ -7344,9 +7399,9 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
 
 ```typescript
 {
-  kind: 'vendor' | 'api' | 'task',   // per-agent; the 'session' kind is team-only (/v1/developer/policies)
-  matchKey: string,              // Required (except for the team-only 'session' kind)
-  matchKind?: 'host_exact' | 'host_suffix' | 'recipient',
+  kind: 'vendor' | 'api' | 'task',   // per-agent; 'session' and 'customer' are team-only (/v1/developer/policies)
+  matchKey: string,              // Required (except for the team-only 'session' kind); for 'customer' it's the client id
+  matchKind?: 'host_exact' | 'host_suffix' | 'recipient',  // null for 'task' and 'customer'
   limitRaw: string,              // Raw USDC, 6 decimals (e.g. "5000000" = $5)
   windowKind?: 'rolling' | 'once',   // 'session' window is team-only
   windowSeconds?: number,        // Required for rolling (minimum 60)
@@ -7365,7 +7420,7 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
 
 Policies can also be managed from the [Developer Dashboard](https://dev-dashboard.floelabs.xyz):
 - **Per-agent:** Agent detail page → Policies section
-- **Team-wide:** Settings → Team Policies
+- **Team-wide:** Settings → Team Policies (kinds: `session`, `task`, `api`, `vendor`, `customer`)
 
 ==============================================================================
 # Agent Awareness
@@ -8552,15 +8607,15 @@ If the target URL returns `402 Payment Required`, the facilitator signs the EIP-
 
 ## Context-Aware Spend Advisory
 
-The hosted API (`credit-api.floelabs.xyz`) enables this; self-hosters turn it on with `BUDGET_ADVISORY_ENABLED=1`. Paid 2xx responses then carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, or per-vendor caps your operator has set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
+The hosted API (`credit-api.floelabs.xyz`) enables this; self-hosters turn it on with `BUDGET_ADVISORY_ENABLED=1`. Paid 2xx responses then carry an `X-Floe-Budget-Advisory` header. It reflects how close you are to the **tightest** spend cap Floe already enforces for you — your credit-line backstop (when a credit line is set), plus any session, per-task, per-vendor, or per-end-client caps your operator has set. The point is to let you **downgrade to a cheaper model or change path before** you hit a hard `402`. (If no credit line or policy cap applies — e.g. provisioning still in flight — the header is omitted.)
 
 ```jsonc
 // X-Floe-Budget-Advisory (parsed)
 {
   "near_limit": true,                 // omitted if no threshold configured; otherwise true OR false
   "tightest": {
-    "scope": "vendor",                // credit_line | session | task | api | vendor
-    "match": "api.openai.com",         // value depends on scope; e.g. "0xpayee…" (vendor), "task-id" (task), or null
+    "scope": "vendor",                // credit_line | session | task | api | vendor | customer
+    "match": "api.openai.com",         // value depends on scope; e.g. "0xpayee…" (vendor), "task-id" (task), "acme-corp" (customer), or null
     "used_bps": 8500,                 // 0–10000; 8500 = 85% of this cap used
     "remaining_raw": "150000",        // raw USDC (6-decimal) left on this cap
     "window_kind": "rolling",         // once | rolling | session | credit_line | null
@@ -8592,7 +8647,7 @@ Notes:
 
 No Floe account yet? The open-source [`floe-guard`](https://github.com/Floe-Labs/floe-guard) library exposes the **same advisory shape** on its in-process budget guard — `guard.advisory()` returns `near_limit`, `used_bps`, and `remaining_usd` for your local cap (Python and TypeScript). Write your taper logic against it for free, no account, no network.
 
-When you move to the hosted proxy, that logic ports unchanged — it just reads `X-Floe-Budget-Advisory` and gains what a single in-process budget can't know: the **tightest** cap across `credit_line | session | task | api | vendor`, cross-vendor reasoning, server-truth balances, and `window_resets_at`. Local guard is estimate-based and single-cap; the hosted advisory is server-truth and multi-cap.
+When you move to the hosted proxy, that logic ports unchanged — it just reads `X-Floe-Budget-Advisory` and gains what a single in-process budget can't know: the **tightest** cap across `credit_line | session | task | api | vendor | customer`, cross-vendor reasoning, server-truth balances, and `window_resets_at`. Local guard is estimate-based and single-cap; the hosted advisory is server-truth and multi-cap.
 
 ## Outcome-Linked Spend Attribution
 
@@ -13230,6 +13285,19 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **80 tools**; `@floelabs/cli` ships **33 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.26.0 — Per-client spend caps (September 2026)
+
+Spend policies can now cap an **end-client**, not just a vendor, host, task or session — the enforcement half of [cost per client](build/attribution.md).
+
+* **`kind: "customer"` on team policies.** `POST /v1/developer/policies` with `matchKey` = the client id (the same opaque, lowercased ≤128-char tag the ledger carries) caps everything you spend for that client, across every agent and every rail Floe meters. `matchKind` is always null — a client id matches by plain equality, like `task`.
+* **Team-scoped only.** Scope decides whose spend is counted, so an agent-scoped client cap would total one agent's spend while reading as the client's whole budget.
+* **Counts in-flight spend.** Reservations carry the client id, so concurrent calls for one client can't burst past the cap. Reconciled orchestrator spend that carried `floe_customer_id` counts too.
+* **Denies before the spend.** On Floe Phone a breach is a 403 before the dial, not a cut at answer.
+* **Untagged calls match no customer cap** — by design, exactly like a call with no task id. [Strict attribution](build/attribution.md#strict-mode-refuse-unattributed-spend) (`required`) is what makes a per-client budget airtight.
+* **Dashboard.** Settings → Team Policies offers `customer (per end-client)`.
+
+→ [Spend controls](developers/spend-controls.md#customer-policies)
 
 ### v1.25.0 — Per-call pricing (September 2026)
 
