@@ -64,12 +64,18 @@ Every source runs through the same normalization, so a stored mixed-case default
 
 ## Strict mode: refuse unattributed spend
 
-By default attribution is optional — untagged calls still run and simply bucket under `untagged`. Flip your account's customer-attribution mode to **required** and Floe refuses any metered call it can't attribute, **before any upstream spend**:
+Attribution starts out optional — untagged calls still run and simply bucket under `untagged`. Flip your account's customer-attribution mode to **required** and Floe refuses any metered call it can't attribute, **before any upstream spend**:
 
 - HTTP surfaces return `400` with `code: "customer_id_required"` and a `next` block naming the two fixes (send the header, or set a default on the agent).
 - WebSocket surfaces (streaming STT, realtime, telephony) refuse at the handshake with the same error.
 
 Strict mode is the guarantee that no dollar reaches your ledger without a client attached to it — turn it on once your defaults and headers are wired, so a mis-configured agent fails loud instead of leaking untagged spend.
+
+### Which mode your account starts in
+
+Every account starts **optional**. When an account first becomes entitled to per-client rollups — moving up to **Pro** or above, including a sales-led Enterprise grant — Floe adopts **required** on your behalf, but only while the ledger is still empty: if any metered call has already run on the account (x402 proxy *or* gateway), the mode is left exactly as it is. An upgrade can never start refusing traffic you are already sending untagged, and moving back down a plan never changes the mode.
+
+It stays a setting you own either way — switch it back to optional in the dashboard whenever you like, and a mode you chose yourself is never overwritten. Turning it *on* from the dashboard when your last 30 days contain untagged calls asks you to confirm first, and tells you how many calls would have been refused.
 
 ## Roll it up
 
