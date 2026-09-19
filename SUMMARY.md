@@ -25,6 +25,7 @@
 
 * [Cost per client, campaign & task](docs/build/attribution.md)
 * [Rate cards & the margin engine](docs/build/rate-cards.md)
+* [Contracts — what you signed](docs/build/contracts.md)
 
 ## Invoicing
 

@@ -43,6 +43,7 @@ Everything in Free, plus the tools to turn cost into a per-client, per-campaign 
 Everything in Pro, plus the margin engine and invoicing:
 
 - **Rate cards & margin engine** (`rate_cards`) — set what you bill each client, preview margin, and see signed-vs-deployed per contract. See [Rate cards & the margin engine](../build/rate-cards.md).
+- **Contracts** (`rate_cards` to sign or cancel a term; the Pro `attribution_reports` to read the book) — the signed term, the committed volume, and how much of it the client has used. See [Contracts](../build/contracts.md).
 - **Client invoicing** (`client_invoicing`) — billing periods and statements. See [Client invoicing](../build/invoicing.md).
 - **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 30 billed clients. See [Stripe Connect](../build/stripe-connect.md).
 - **Vendor actuals & connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles your legs to the vendor's **own** records. **USD only** — Floe prices and reconciles in USD and never converts currencies; a vendor whose billing is non-USD keeps its ISO code and lands unpriced (a `currency_unsupported` finding), by design, not FX support pending. See [Vendor connections](../build/vendor-connections.md) and [Vendor actuals — no FX, ever](../build/vendor-actuals.md#no-fx-ever).

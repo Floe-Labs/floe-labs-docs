@@ -129,12 +129,15 @@ Read a client's full version history any time with `GET /v1/developer/rate-cards
 
 ## Signed vs deployed — margin per contract
 
-The reason to price on actuals is that **what you signed and what you deployed drift apart.** You quote a client a per-minute rate against an assumed vendor mix; three weeks in, the agent is routing more calls to a pricier LLM and your gross margin has quietly compressed. Floe surfaces the gap two ways:
+The reason to price on actuals is that **what you signed and what you deployed drift apart.** You quote a client a per-minute rate against an assumed vendor mix; three weeks in, the agent is routing more calls to a pricier LLM and your gross margin has quietly compressed.
+
+The signed side lives in the [contract book](contracts.md) — the term, the committed volume, and the rate-card version pinned as signed. The deployed side is the card that is rating usage right now, and Floe reports it three ways:
 
 - **The clients list** — `GET /v1/developer/customers?days=30` — every end-client seen in the ledger with its current card status (current version, any open draft) and window spend. One screen for "who's priced, who's still on a blended guess."
+- **Margin for the whole book** — `GET /v1/developer/customers/margins?days=30` — revenue, cost and margin per client in **one** request (add `ids=acme-corp,globex` to narrow). The batched form of the per-client `summary` below, for rendering a whole client book without a request per row. At most **200** clients per response: rows are the highest-spending eligible clients, and `truncated` / `omittedCount` tell you when the book is larger, so a caller totalling the rows knows whether it has all of them. A client Floe cannot rate — no card, or a card that cannot rate that client's usage — comes back `rated: false` with `revenueRaw` and `marginRaw` null; show a dash, not a number the rating did not produce. On a rated row, `costRaw` is the **basis** the rating used (Floe-settled cost plus any vendor dollars the basis admitted), which is not always the client's settled cost alone.
 - **The per-transaction margin report** — `GET /v1/developer/customers/:customerId/transactions?from=…&to=…` — every metered leg for one client with its cost, its revenue under the card version effective *at that leg's timestamp*, and its per-row margin. A `summary` block rates the whole range under all rules — the number that matches the eventual invoice. Rows a per-row figure can't honestly express (a fixed retainer, a per-minute component, an unresolved vendor leg) are flagged `perRowComplete: false` rather than shown understated.
 
-Both are **Pro** reads (`attribution_reports`). Read them side by side with the card you signed and the drift is a dollar figure, not a surprise at invoice time.
+All three are **Pro** reads (`attribution_reports`). Read them side by side with the term you signed and the drift is a dollar figure, not a surprise at invoice time.
 
 ## Plan gate
 
@@ -145,5 +148,6 @@ Both are **Pro** reads (`attribution_reports`). Read them side by side with the 
 ## Related
 
 - [Cost per client, campaign & task](attribution.md) — tag the spend these cards price.
+- [Contracts — what you signed](contracts.md) — the signed side: terms, commitments, and renewals.
 - [The live cost ledger](unified-ledger.md) · [Vendor actuals](vendor-actuals.md) — the cost side of every margin figure.
 - [Client invoicing — billing periods & statements](invoicing.md) — turn a priced period into a statement you can send.

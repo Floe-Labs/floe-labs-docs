@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 70 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 71 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -25,6 +25,7 @@
 - The cost calculator — https://floe-labs.gitbook.io/docs/know-your-costs/cost-calculator.md
 - Cost per client, campaign & task — https://floe-labs.gitbook.io/docs/attribution-margin/attribution.md
 - Rate cards & the margin engine — https://floe-labs.gitbook.io/docs/attribution-margin/rate-cards.md
+- Contracts — what you signed — https://floe-labs.gitbook.io/docs/attribution-margin/contracts.md
 - Client invoicing — billing periods & statements — https://floe-labs.gitbook.io/docs/invoicing/invoicing.md
 - Stripe Connect — bill through your own Stripe — https://floe-labs.gitbook.io/docs/invoicing/stripe-connect.md
 - The Voice Stack — overview — https://floe-labs.gitbook.io/docs/connect-your-stack/voice-stack.md
@@ -1140,7 +1141,17 @@ A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. 
 
 Every agency-facing read filters on `cost_owner = 'developer'` — **legs your account pays for**.
 
-A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
+A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** from vendor cost — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
+
+That is a statement about **vendor** cost, not about what the work cost you. You did pay Floe for a keyless call, an x402 tool call or a Floe Phone minute, and that amount is exact on the money row. So the per-task view reports it alongside, never inside, the reconciled vendor figures:
+
+| Field | What it is |
+|---|---|
+| `exactRaw` / `periodRateRaw` / `totalRaw` | Your **vendor** bill for legs your account pays for. Floe-carried legs are not in here. |
+| `floeChargeRaw` | What **Floe charged you** for the legs Floe carried, counted once per charge — one charge can pay for several legs of the same call. |
+| `paidRaw` | What the task cost you: the two added. `null` while the vendor half is still partial, because adding a known charge to a partial sum would read as an answer. |
+
+A task whose every leg is Floe-carried — keyless inference in a workflow, a Floe Phone call — therefore appears with its charge instead of being invisible. Its vendor figures stay empty, because none of that spend is a vendor bill of yours.
 
 ## No FX, ever
 
@@ -1403,19 +1414,31 @@ Your [ledger](unified-ledger.md) is only as useful as it is tagged. An untagged 
 
 Floe never guesses. A missing tag stays missing (it buckets under `untagged`), because a guessed attribution is a silent accounting error and a blank is the truth. So the quality of your per-client cost is exactly the quality of your tagging — this page is how you get it right.
 
-## The three tags
+## The four tags
 
-Every metered call can carry three independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
+Every metered call can carry four independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
 
 | Tag | What it answers | On Floe-carried calls | On reconciled orchestrator calls |
 |---|---|---|---|
 | **Customer** | Which end-client is this spend for? | `X-Floe-Customer-Id` header | `floe_customer_id` call metadata |
-| **Campaign** | Which campaign / engagement? | `X-Floe-Task-Id` header (see note) | `floe_campaign_id` call metadata |
+| **Campaign** | Which campaign / engagement? | `X-Floe-Campaign-Id` header | `floe_campaign_id` call metadata |
 | **Task** | Which call / job? (groups its legs) | `X-Floe-Task-Id` header | `floe_task_id` call metadata |
+| **Channel** | Which kind of interaction? | `X-Floe-Channel` header (Floe Phone calls are always `voice`) | Not applied — a reconciled call's channel comes from its legs |
+| **Task type** | What kind of work was this? | `X-Floe-Task-Type` header | Not applied — set it on the Floe-carried legs |
 
-All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
+All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters — except **task type, which is capped at 64**. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
 
-> **Note on campaign vs task.** On Floe-carried calls the [cost ledger](#roll-it-up) rolls up the **task id** as the "campaign" dimension — one id per call groups that call's legs, and grouping those ids is your campaign view. Reconciled orchestrator ingests carry a *separate* `floe_campaign_id` alongside the task id, because a Vapi/Retell/Bland assistant often maps one campaign to many calls. If you run campaigns on an orchestrator, set both.
+Over-length values are **rejected, not truncated**: the tag simply goes missing rather than silently landing in the wrong bucket. Two long ids sharing a prefix would otherwise merge into one row, and a mis-grouped cost is worse than an untagged one.
+
+**Task type answers "what work was attempted"** — `claims-intake`, `invoice-match`, `kyc-refresh` — which is what makes cost-per-task mean anything when one agent runs several kinds of job. It is deliberately *not* the outcome: what result the work reached is a separate vocabulary, and the two never merge. Group by it with `by=task_type` on the actuals and interactions rollups.
+
+**Channel is the exception: it is a fixed list**, not an opaque id — `voice`, `chat`, `email`, `video`, `job` or `sms` (any case). Anything else is refused with `400 invalid_channel` before any spend. On a streaming socket or mid-call the bad value is dropped with a warning instead, so a bad tag never cuts a live call. Leave the header out and Floe works the channel out from the call itself: `voice` if any leg is speech or telephony, otherwise `job`. Group by it with `by=channel` on the actuals and interactions rollups.
+
+> **Note on campaign vs task.** They are different questions, and now different tags everywhere. **Task** is one call or job — its id groups that call's legs. **Campaign** spans many calls, because an assistant usually maps one campaign to a whole dialling list. Send `X-Floe-Campaign-Id` on Floe-carried calls and `floe_campaign_id` in orchestrator call metadata; if a call reaches Floe both ways, the orchestrator's metadata wins.
+>
+> This page used to tell you to group **task ids** as a stand-in campaign view, because no campaign header existed on Floe-carried calls. It does now. Nothing you already sent moves or re-buckets — calls tagged before you adopt the header keep the exact grouping they have, and you can start sending `X-Floe-Campaign-Id` whenever you like.
+>
+> One behaviour worth knowing: if a single call is tagged with *two different* campaigns — say the header says one thing and the orchestrator metadata another — that call's campaign reads blank rather than picking a winner. Each leg keeps the value it was given, and the disagreement shows up as untagged spend to go fix. Floe never guesses an attribution.
 
 ### Two ways a call gets tagged
 
@@ -1635,12 +1658,15 @@ Read a client's full version history any time with `GET /v1/developer/rate-cards
 
 ## Signed vs deployed — margin per contract
 
-The reason to price on actuals is that **what you signed and what you deployed drift apart.** You quote a client a per-minute rate against an assumed vendor mix; three weeks in, the agent is routing more calls to a pricier LLM and your gross margin has quietly compressed. Floe surfaces the gap two ways:
+The reason to price on actuals is that **what you signed and what you deployed drift apart.** You quote a client a per-minute rate against an assumed vendor mix; three weeks in, the agent is routing more calls to a pricier LLM and your gross margin has quietly compressed.
+
+The signed side lives in the [contract book](contracts.md) — the term, the committed volume, and the rate-card version pinned as signed. The deployed side is the card that is rating usage right now, and Floe reports it three ways:
 
 - **The clients list** — `GET /v1/developer/customers?days=30` — every end-client seen in the ledger with its current card status (current version, any open draft) and window spend. One screen for "who's priced, who's still on a blended guess."
+- **Margin for the whole book** — `GET /v1/developer/customers/margins?days=30` — revenue, cost and margin per client in **one** request (add `ids=acme-corp,globex` to narrow). The batched form of the per-client `summary` below, for rendering a whole client book without a request per row. At most **200** clients per response: rows are the highest-spending eligible clients, and `truncated` / `omittedCount` tell you when the book is larger, so a caller totalling the rows knows whether it has all of them. A client Floe cannot rate — no card, or a card that cannot rate that client's usage — comes back `rated: false` with `revenueRaw` and `marginRaw` null; show a dash, not a number the rating did not produce. On a rated row, `costRaw` is the **basis** the rating used (Floe-settled cost plus any vendor dollars the basis admitted), which is not always the client's settled cost alone.
 - **The per-transaction margin report** — `GET /v1/developer/customers/:customerId/transactions?from=…&to=…` — every metered leg for one client with its cost, its revenue under the card version effective *at that leg's timestamp*, and its per-row margin. A `summary` block rates the whole range under all rules — the number that matches the eventual invoice. Rows a per-row figure can't honestly express (a fixed retainer, a per-minute component, an unresolved vendor leg) are flagged `perRowComplete: false` rather than shown understated.
 
-Both are **Pro** reads (`attribution_reports`). Read them side by side with the card you signed and the drift is a dollar figure, not a surprise at invoice time.
+All three are **Pro** reads (`attribution_reports`). Read them side by side with the term you signed and the drift is a dollar figure, not a surprise at invoice time.
 
 ## Plan gate
 
@@ -1651,8 +1677,146 @@ Both are **Pro** reads (`attribution_reports`). Read them side by side with the 
 ## Related
 
 - [Cost per client, campaign & task](attribution.md) — tag the spend these cards price.
+- [Contracts — what you signed](contracts.md) — the signed side: terms, commitments, and renewals.
 - [The live cost ledger](unified-ledger.md) · [Vendor actuals](vendor-actuals.md) — the cost side of every margin figure.
 - [Client invoicing — billing periods & statements](invoicing.md) — turn a priced period into a statement you can send.
+
+==============================================================================
+# Contracts — what you signed
+Source: docs/build/contracts.md
+URL: https://floe-labs.gitbook.io/docs/attribution-margin/contracts.md
+==============================================================================
+
+# Contracts — what you signed
+
+A [rate card](rate-cards.md) is what is **currently rating** a client's usage. A contract is what you **signed**: the term, the volume the client committed to, and the rate-card version that was on the table when they said yes. Keeping the two apart is the point — *signed vs deployed* is only a real number when the two sides come from two different records.
+
+The contract book answers three questions a rate card cannot: **what term are we in**, **how much of the commitment has this client actually used**, and **which terms have run out with nothing signed to replace them**.
+
+> **Plan gate.** Reading the book needs the **Pro** feature `attribution_reports` (any role). Signing and cancelling need the **Agency** feature `rate_cards` and an **owner/admin** role. Reads stay open after a downgrade, so an account never loses sight of what it already signed.
+
+## One term in force, a full history behind it
+
+A contract is a half-open window `[termStart, termEnd)` for one client. **A renewal is a new contract, never an edit** — rewriting a term in place would silently move every margin figure ever computed under it, including closed [billing periods](invoicing.md) and invoices already issued.
+
+Floe enforces that as **non-overlapping terms**, not as a "one active row" rule:
+
+- A renewal that starts at the exact instant the previous term ends does **not** overlap it — the window is half-open.
+- A cancelled term occupies nothing, so cancelling frees its whole period for a re-sign.
+- Anything else returns `409 overlapping_term`, naming the term that clashes.
+
+Two fields describe where a contract stands, and they are deliberately different things:
+
+| Field | Values | What it is |
+|---|---|---|
+| `status` | `active` · `cancelled` | The stored human act. **Never** `expired`. |
+| `state` | `scheduled` · `active` · `expired` · `cancelled` | What the contract *is* right now — `status` combined with the clock, derived on every read. |
+
+Expiry is derived rather than stored, so no background job can stop running and leave a finished term looking live.
+
+## Sign a term
+
+```http
+POST /v1/developer/contracts
+```
+
+```json
+{
+  "customerId": "acme-corp",
+  "termStart": "2026-10-01T00:00:00Z",
+  "termEnd": "2027-10-01T00:00:00Z",
+  "committedVolume": "10000",
+  "committedUnit": "task",
+  "signedRateCardVersion": 4,
+  "renewalDate": "2027-09-01T00:00:00Z",
+  "note": "12-month renewal, signed 2026-09"
+}
+```
+
+| Field | Notes |
+|---|---|
+| `customerId` | Required. Lowercased server-side, like every other ledger dimension. |
+| `termStart` / `termEnd` | Required ISO timestamps. `termEnd` must be strictly after `termStart` (`400 invalid_term`). |
+| `committedVolume` / `committedUnit` | Given **together or not at all** — a volume without a unit has no meaning, a unit without a volume commits to nothing. Volume is integer **text**; for `usd` it is raw 6-decimal USDC. |
+| `signedRateCardVersion` | Pins the as-signed card **by version**, not as a scalar rate. Rate cards are append-only, so the reference reproduces the signed pricing exactly and forever — rule structure included. |
+| `renewalDate` | Advisory only. Nothing lapses off this date; `termEnd` governs. |
+| `note` | Up to 200 characters. |
+
+Returns `201` with the contract. Other failures: `403` (not admin, or the plan lacks `rate_cards`), `409 overlapping_term`, and `409 billed_clients_cap` when the plan's billed-client limit is already reached.
+
+### Commitment units
+
+`audio_minute` · `request` · `task` · `voice_call` · `usd`. The list also ships on every book response as `commitmentUnits`, so a client never hard-codes a second copy.
+
+A commitment is counted **independently of what the rate card meters**. A client can commit to 10,000 `task` while their card bills per `audio_minute`, and that is still measurable: the ledger carries all of these quantities regardless of which one the card charges for.
+
+## Read the book
+
+```http
+GET /v1/developer/contracts?customerId=acme-corp&limit=50
+```
+
+```json
+{
+  "contracts": [
+    {
+      "id": 118,
+      "customerId": "acme-corp",
+      "termStart": "2026-10-01T00:00:00Z",
+      "termEnd": "2027-10-01T00:00:00Z",
+      "status": "active",
+      "state": "active",
+      "committedVolume": "10000",
+      "committedUnit": "task",
+      "signedRateCardVersion": 4,
+      "renewalDate": "2027-09-01T00:00:00Z",
+      "consumed": { "quantity": "812", "unit": "task", "isLowerBound": true },
+      "note": "12-month renewal, signed 2026-09",
+      "createdAt": "2026-09-18T11:04:22Z"
+    }
+  ],
+  "needsRenewalCount": 2,
+  "nextCursor": null,
+  "commitmentUnits": ["audio_minute", "request", "task", "voice_call", "usd"]
+}
+```
+
+- **Newest term first**, paged by an opaque keyset `cursor` on `(termStart, id)` — a contract signed mid-page can't shift rows across page boundaries. `limit` is 1–200 (default 50) and is **refused**, not clamped, outside that range (`400 invalid_limit`); a cursor this endpoint didn't issue returns `400 invalid_cursor`.
+- `customerId` narrows to one client. Omit it for the whole book — and remember that one page is not the book: follow `nextCursor` before concluding a client has no contract.
+- **`needsRenewalCount` is account-wide, not page-wide.** It counts terms that have run out with no successor signed. Terms lapse rather than auto-renew precisely so this number is visible.
+- `GET /v1/developer/contracts/{id}` returns one contract. A contract belonging to another account answers `404`, never `403`.
+
+### Consumption — `consumed`
+
+`consumed` says how much of the commitment has been used, **counted in the contract's own unit**, and appears on the list endpoint only.
+
+- **The window is the term, clipped at now.** A running term is measured to date, not against its full-term commitment — otherwise every live contract would look behind.
+- **`isLowerBound: true` means the number is a floor.** It is set when metered requests in the window carried no `X-Floe-Task-Id` — the same condition that blocks a period close with [`uncounted_usage`](rate-cards.md#per-task-pricing). Render it as **"at least 812 of 10,000 tasks"**, never a bare "812 of 10,000": presenting a floor as exact is how a client gets told they are behind a commitment they have already met.
+- `consumed` is `null` when the contract carries no commitment. Show a dash, never a computed substitute.
+
+## End a term early
+
+```http
+POST /v1/developer/contracts/{id}/cancel
+```
+
+Cancelling is the **one mutation a contract accepts** — terms themselves are never edited; that is what signing the next one is for. A cancelled term occupies nothing, so the client can be re-signed across that whole period (otherwise a mistyped term would poison the window permanently). Cancelling twice returns `404` rather than restamping a decision already made.
+
+## Margin for the whole book in one request
+
+The signed side is only half of *signed vs deployed*. For the deployed side across every client at once:
+
+```http
+GET /v1/developer/customers/margins?days=30
+```
+
+See [Rate cards & the margin engine](rate-cards.md#signed-vs-deployed-margin-per-contract) for the response and its `rated` flag.
+
+## Related
+
+- [Rate cards & the margin engine](rate-cards.md) — the deployed side: what is rating this client's usage right now.
+- [Client invoicing — billing periods & statements](invoicing.md) — turn a priced term into a statement you can send.
+- [Cost per client, campaign & task](attribution.md) — the tags every commitment is counted from.
 
 ==============================================================================
 # Client invoicing — billing periods & statements
@@ -12619,6 +12783,7 @@ Everything in Free, plus the tools to turn cost into a per-client, per-campaign 
 Everything in Pro, plus the margin engine and invoicing:
 
 - **Rate cards & margin engine** (`rate_cards`) — set what you bill each client, preview margin, and see signed-vs-deployed per contract. See [Rate cards & the margin engine](../build/rate-cards.md).
+- **Contracts** (`rate_cards` to sign or cancel a term; the Pro `attribution_reports` to read the book) — the signed term, the committed volume, and how much of it the client has used. See [Contracts](../build/contracts.md).
 - **Client invoicing** (`client_invoicing`) — billing periods and statements. See [Client invoicing](../build/invoicing.md).
 - **Stripe Connect** (`stripe_connect`) — invoice through your **own** Stripe; payouts land in your account, up to 30 billed clients. See [Stripe Connect](../build/stripe-connect.md).
 - **Vendor actuals & connections** (`vendor_connections`) — hand Floe read-only vendor billing access so it reconciles your legs to the vendor's **own** records. **USD only** — Floe prices and reconciles in USD and never converts currencies; a vendor whose billing is non-USD keeps its ISO code and lands unpriced (a `currency_unsupported` finding), by design, not FX support pending. See [Vendor connections](../build/vendor-connections.md) and [Vendor actuals — no FX, ever](../build/vendor-actuals.md#no-fx-ever).
@@ -13230,6 +13395,19 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **80 tools**; `@floelabs/cli` ships **33 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.26.0 — Contracts: the signed side of signed-vs-deployed (September 2026)
+
+The commercial agreement is now its own entity, stored rather than derived from the rate card that is currently rating usage.
+
+* **The contract book — `GET/POST /v1/developer/contracts`, `GET /v1/developer/contracts/:id`, `POST /v1/developer/contracts/:id/cancel`.** One term in force per client at a time, with the full history behind it: a renewal is a **new** term, never an edit, so margin already computed under an old term can never move. Overlapping terms return `409 overlapping_term`; terms are half-open, so a renewal starting when the previous term ends does not clash, and cancelling frees the whole period.
+* **`status` is the stored act, `state` is the clock.** `status` is only `active` / `cancelled` and never `expired`; `state` (`scheduled` / `active` / `expired` / `cancelled`) is derived on read, so no background job can leave a finished term looking live.
+* **Commitments, counted in their own unit.** `committedVolume` + `committedUnit` (`audio_minute`, `request`, `task`, `voice_call`, `usd`) are counted independently of what the rate card meters, over the term clipped at now. A task count built from requests missing a task id is returned as `isLowerBound: true` — render "at least X of N".
+* **`needsRenewalCount`** is account-wide: terms that ran out with no successor signed. The book pages on an opaque keyset `cursor` (`limit` 1–200, default 50).
+* **`signedRateCardVersion`** pins the as-signed card by version, not as a scalar rate, so the signed pricing stays exactly reproducible.
+* **Margin for the whole book in one request — `GET /v1/developer/customers/margins`.** The batched form of the per-client transactions `summary`: revenue, cost and margin for up to 200 clients per response, with `truncated` / `omittedCount`, and `rated: false` where the rating did not run instead of an invented number.
+
+→ [Contracts](build/contracts.md) · [Rate cards](build/rate-cards.md)
 
 ### v1.25.0 — Per-call pricing (September 2026)
 

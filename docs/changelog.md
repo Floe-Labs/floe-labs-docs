@@ -10,6 +10,19 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.26.0 — Contracts: the signed side of signed-vs-deployed (September 2026)
+
+The commercial agreement is now its own entity, stored rather than derived from the rate card that is currently rating usage.
+
+* **The contract book — `GET/POST /v1/developer/contracts`, `GET /v1/developer/contracts/:id`, `POST /v1/developer/contracts/:id/cancel`.** One term in force per client at a time, with the full history behind it: a renewal is a **new** term, never an edit, so margin already computed under an old term can never move. Overlapping terms return `409 overlapping_term`; terms are half-open, so a renewal starting when the previous term ends does not clash, and cancelling frees the whole period.
+* **`status` is the stored act, `state` is the clock.** `status` is only `active` / `cancelled` and never `expired`; `state` (`scheduled` / `active` / `expired` / `cancelled`) is derived on read, so no background job can leave a finished term looking live.
+* **Commitments, counted in their own unit.** `committedVolume` + `committedUnit` (`audio_minute`, `request`, `task`, `voice_call`, `usd`) are counted independently of what the rate card meters, over the term clipped at now. A task count built from requests missing a task id is returned as `isLowerBound: true` — render "at least X of N".
+* **`needsRenewalCount`** is account-wide: terms that ran out with no successor signed. The book pages on an opaque keyset `cursor` (`limit` 1–200, default 50).
+* **`signedRateCardVersion`** pins the as-signed card by version, not as a scalar rate, so the signed pricing stays exactly reproducible.
+* **Margin for the whole book in one request — `GET /v1/developer/customers/margins`.** The batched form of the per-client transactions `summary`: revenue, cost and margin for up to 200 clients per response, with `truncated` / `omittedCount`, and `rated: false` where the rating did not run instead of an invented number.
+
+→ [Contracts](build/contracts.md) · [Rate cards](build/rate-cards.md)
+
 ### v1.25.0 — Per-call pricing (September 2026)
 
 Rate cards can now price **voice calls** — the unit most voice agencies quote.
