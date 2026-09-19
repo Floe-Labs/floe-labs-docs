@@ -105,6 +105,26 @@ That last row is the work list: 44 reconciled calls reached your ledger with no 
 
 The same client and campaign grouping is available over **[vendor actuals](vendor-actuals.md)** — the vendor's own billing number behind each client, reconciled leg by leg — when you need margin against true cost rather than Floe-settled spend.
 
+### Per campaign, with revenue and margin
+
+```http
+GET /v1/developer/interactions/rollups?by=campaign
+```
+
+One row per campaign — reconciled vendor cost, task count, cost per task, and, where it can be stated honestly, **revenue and margin**. It's the **Campaigns** screen in the dashboard. Untagged work is bucketed under `(none)`, never dropped, so the table still adds up to what you spent.
+
+A rate card prices a **client**, and a campaign is an independent tag that can span several of them — included allotments and tiered rates don't slice linearly across clients. So Floe states a campaign's revenue and margin only where that campaign's legs name exactly one client whose card covers the row's whole span. Every other row says *why* instead of splitting a number no invoice would agree with, in `marginBlockedBy`:
+
+| Reason | What it means, and the fix |
+|---|---|
+| `spans_multiple_customers` | The legs name more than one client (`distinctCustomers` counts them) — no single card applies. Scope the campaign per client if you need margin on it. |
+| `unattributed_customer` | The legs name **no** client. A tagging job, not a pricing one: send `X-Floe-Customer-Id`. A rate card here would have nothing to attach to. |
+| `no_rate_card` | One client, but no card version covers the row's whole span — none exists, or the price changed mid-row. [Price the client](rate-cards.md). |
+| `card_prices_no_vendor_cost` | The card is retainer-only, per-unit, or prices no vendor cost, so a vendor-slice margin would be zero by absence rather than a fact. |
+| `non_usd` | A non-USD vendor record. Floe never invents an FX rate — see [Vendor actuals](vendor-actuals.md#no-fx-ever). |
+
+`revenueRaw` on these rows is the **vendor slice** of revenue: the reconciled vendor cost the card's basis admits, plus the markup earned on it. It is not the client's whole invoice, which also carries per-unit and fixed lines this view never sees — for that, see [invoicing](invoicing.md). `marginBlockedBy` is empty exactly when a margin is stated.
+
 ## Plan gate
 
 > **Capture is free. Rollups are Pro.**

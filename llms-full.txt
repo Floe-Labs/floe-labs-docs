@@ -1140,7 +1140,17 @@ A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. 
 
 Every agency-facing read filters on `cost_owner = 'developer'` — **legs your account pays for**.
 
-A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
+A Twilio minute or marketplace call carried on *Floe's* account is **Floe's** COGS, and your cost for that same minute is already exact in the settled Floe ledger. Counting the vendor actual too would bill it twice. So Floe-carried legs are **omitted entirely** from vendor cost — not shown at zero, which would be a different kind of lie. Every response says so out loud in `costOwnerNote`.
+
+That is a statement about **vendor** cost, not about what the work cost you. You did pay Floe for a keyless call, an x402 tool call or a Floe Phone minute, and that amount is exact on the money row. So the per-task view reports it alongside, never inside, the reconciled vendor figures:
+
+| Field | What it is |
+|---|---|
+| `exactRaw` / `periodRateRaw` / `totalRaw` | Your **vendor** bill for legs your account pays for. Floe-carried legs are not in here. |
+| `floeChargeRaw` | What **Floe charged you** for the legs Floe carried, counted once per charge — one charge can pay for several legs of the same call. |
+| `paidRaw` | What the task cost you: the two added. `null` while the vendor half is still partial, because adding a known charge to a partial sum would read as an answer. |
+
+A task whose every leg is Floe-carried — keyless inference in a workflow, a Floe Phone call — therefore appears with its charge instead of being invisible. Its vendor figures stay empty, because none of that spend is a vendor bill of yours.
 
 ## No FX, ever
 
@@ -1403,19 +1413,31 @@ Your [ledger](unified-ledger.md) is only as useful as it is tagged. An untagged 
 
 Floe never guesses. A missing tag stays missing (it buckets under `untagged`), because a guessed attribution is a silent accounting error and a blank is the truth. So the quality of your per-client cost is exactly the quality of your tagging — this page is how you get it right.
 
-## The three tags
+## The four tags
 
-Every metered call can carry three independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
+Every metered call can carry four independent tags. Only the first is usually needed; add the others when you run campaigns or want per-call rollups.
 
 | Tag | What it answers | On Floe-carried calls | On reconciled orchestrator calls |
 |---|---|---|---|
 | **Customer** | Which end-client is this spend for? | `X-Floe-Customer-Id` header | `floe_customer_id` call metadata |
-| **Campaign** | Which campaign / engagement? | `X-Floe-Task-Id` header (see note) | `floe_campaign_id` call metadata |
+| **Campaign** | Which campaign / engagement? | `X-Floe-Campaign-Id` header | `floe_campaign_id` call metadata |
 | **Task** | Which call / job? (groups its legs) | `X-Floe-Task-Id` header | `floe_task_id` call metadata |
+| **Channel** | Which kind of interaction? | `X-Floe-Channel` header (Floe Phone calls are always `voice`) | Not applied — a reconciled call's channel comes from its legs |
+| **Task type** | What kind of work was this? | `X-Floe-Task-Type` header | Not applied — set it on the Floe-carried legs |
 
-All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
+All tag values are **opaque strings** — Floe never interprets them. They are trimmed, lowercased, and capped at 128 characters — except **task type, which is capped at 64**. Use whatever id your own system already keys on (a CRM client id, a campaign slug, a call SID).
 
-> **Note on campaign vs task.** On Floe-carried calls the [cost ledger](#roll-it-up) rolls up the **task id** as the "campaign" dimension — one id per call groups that call's legs, and grouping those ids is your campaign view. Reconciled orchestrator ingests carry a *separate* `floe_campaign_id` alongside the task id, because a Vapi/Retell/Bland assistant often maps one campaign to many calls. If you run campaigns on an orchestrator, set both.
+Over-length values are **rejected, not truncated**: the tag simply goes missing rather than silently landing in the wrong bucket. Two long ids sharing a prefix would otherwise merge into one row, and a mis-grouped cost is worse than an untagged one.
+
+**Task type answers "what work was attempted"** — `claims-intake`, `invoice-match`, `kyc-refresh` — which is what makes cost-per-task mean anything when one agent runs several kinds of job. It is deliberately *not* the outcome: what result the work reached is a separate vocabulary, and the two never merge. Group by it with `by=task_type` on the actuals and interactions rollups.
+
+**Channel is the exception: it is a fixed list**, not an opaque id — `voice`, `chat`, `email`, `video`, `job` or `sms` (any case). Anything else is refused with `400 invalid_channel` before any spend. On a streaming socket or mid-call the bad value is dropped with a warning instead, so a bad tag never cuts a live call. Leave the header out and Floe works the channel out from the call itself: `voice` if any leg is speech or telephony, otherwise `job`. Group by it with `by=channel` on the actuals and interactions rollups.
+
+> **Note on campaign vs task.** They are different questions, and now different tags everywhere. **Task** is one call or job — its id groups that call's legs. **Campaign** spans many calls, because an assistant usually maps one campaign to a whole dialling list. Send `X-Floe-Campaign-Id` on Floe-carried calls and `floe_campaign_id` in orchestrator call metadata; if a call reaches Floe both ways, the orchestrator's metadata wins.
+>
+> This page used to tell you to group **task ids** as a stand-in campaign view, because no campaign header existed on Floe-carried calls. It does now. Nothing you already sent moves or re-buckets — calls tagged before you adopt the header keep the exact grouping they have, and you can start sending `X-Floe-Campaign-Id` whenever you like.
+>
+> One behaviour worth knowing: if a single call is tagged with *two different* campaigns — say the header says one thing and the orchestrator metadata another — that call's campaign reads blank rather than picking a winner. Each leg keeps the value it was given, and the disagreement shows up as untagged spend to go fix. Floe never guesses an attribution.
 
 ### Two ways a call gets tagged
 
@@ -1487,6 +1509,26 @@ That last row is the work list: 44 reconciled calls reached your ledger with no 
 ### Per client, at the vendor's real cost
 
 The same client and campaign grouping is available over **[vendor actuals](vendor-actuals.md)** — the vendor's own billing number behind each client, reconciled leg by leg — when you need margin against true cost rather than Floe-settled spend.
+
+### Per campaign, with revenue and margin
+
+```http
+GET /v1/developer/interactions/rollups?by=campaign
+```
+
+One row per campaign — reconciled vendor cost, task count, cost per task, and, where it can be stated honestly, **revenue and margin**. It's the **Campaigns** screen in the dashboard. Untagged work is bucketed under `(none)`, never dropped, so the table still adds up to what you spent.
+
+A rate card prices a **client**, and a campaign is an independent tag that can span several of them — included allotments and tiered rates don't slice linearly across clients. So Floe states a campaign's revenue and margin only where that campaign's legs name exactly one client whose card covers the row's whole span. Every other row says *why* instead of splitting a number no invoice would agree with, in `marginBlockedBy`:
+
+| Reason | What it means, and the fix |
+|---|---|
+| `spans_multiple_customers` | The legs name more than one client (`distinctCustomers` counts them) — no single card applies. Scope the campaign per client if you need margin on it. |
+| `unattributed_customer` | The legs name **no** client. A tagging job, not a pricing one: send `X-Floe-Customer-Id`. A rate card here would have nothing to attach to. |
+| `no_rate_card` | One client, but no card version covers the row's whole span — none exists, or the price changed mid-row. [Price the client](rate-cards.md). |
+| `card_prices_no_vendor_cost` | The card is retainer-only, per-unit, or prices no vendor cost, so a vendor-slice margin would be zero by absence rather than a fact. |
+| `non_usd` | A non-USD vendor record. Floe never invents an FX rate — see [Vendor actuals](vendor-actuals.md#no-fx-ever). |
+
+`revenueRaw` on these rows is the **vendor slice** of revenue: the reconciled vendor cost the card's basis admits, plus the markup earned on it. It is not the client's whole invoice, which also carries per-unit and fixed lines this view never sees — for that, see [invoicing](invoicing.md). `marginBlockedBy` is empty exactly when a margin is stated.
 
 ## Plan gate
 
@@ -1639,6 +1681,7 @@ The reason to price on actuals is that **what you signed and what you deployed d
 
 - **The clients list** — `GET /v1/developer/customers?days=30` — every end-client seen in the ledger with its current card status (current version, any open draft) and window spend. One screen for "who's priced, who's still on a blended guess."
 - **The per-transaction margin report** — `GET /v1/developer/customers/:customerId/transactions?from=…&to=…` — every metered leg for one client with its cost, its revenue under the card version effective *at that leg's timestamp*, and its per-row margin. A `summary` block rates the whole range under all rules — the number that matches the eventual invoice. Rows a per-row figure can't honestly express (a fixed retainer, a per-minute component, an unresolved vendor leg) are flagged `perRowComplete: false` rather than shown understated.
+- **[Margin by campaign](attribution.md#per-campaign-with-revenue-and-margin)** — `GET /v1/developer/interactions/rollups?by=campaign`, the dashboard's **Campaigns** screen — which dialling list or engagement actually earned. A card prices a *client*, so a campaign states revenue and margin only where its legs name exactly one carded client; otherwise `marginBlockedBy` names the reason (`spans_multiple_customers`, `no_rate_card`, …) rather than pro-rating a card across clients.
 
 Both are **Pro** reads (`attribution_reports`). Read them side by side with the card you signed and the drift is a dollar figure, not a surprise at invoice time.
 
