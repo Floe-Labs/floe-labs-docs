@@ -20,6 +20,8 @@ Every gate below is enforced server-side. Tracked-spend caps are **soft** (a ban
 | Account API keys (`floe_live_*`) | 5 | 25 | 100 | unlimited |
 | Keys per agent (`floe_*`) | 5 | 10 | 25 | unlimited |
 
+Every count cap (agents, account keys, keys per agent, billed end-clients) refuses the create with **`409 plan_limit_exceeded`** — one body shape for all of them: `limit` (`agents` \| `api_keys` \| `keys_per_agent` \| `billed_clients`), `max`, `current`, and an `upgradeUrl`. Free's numbers are unchanged; only the paid tiers moved up. Self-hosted deployments that set `MAX_KEYS_PER_AGENT` get `409 deployment_limit_exceeded` for the per-agent key cap instead — that override binds on every plan, so the body carries no `upgradeUrl`. See [Error codes](error-codes.md#agent-registration).
+
 ## What each plan unlocks
 
 ### Free — know what every call costs

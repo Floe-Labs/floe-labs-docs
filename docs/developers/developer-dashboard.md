@@ -24,7 +24,7 @@ This is **only** for developers using the dashboard. Agents authenticate with th
 
 ### Agents (Multi-Agent)
 
-Create and manage up to **5 agents per developer**. Each agent has its own credit line, delegation, and API key.
+Create and manage agents up to your plan's cap — **5** on Free, 25 on Pro, 100 on Agency, unlimited on Enterprise ([Plans & entitlements](../reference/plans.md)). Each agent has its own credit line, delegation, and API key.
 
 1. **Create Agent** — Name it, set a borrow limit, rate cap, and delegation expiry. The dashboard provisions a managed Privy wallet for the agent and submits the on-chain `setOperator` delegation **from that Privy wallet** server-side — you sign nothing on-chain from your own wallet.
 2. **Fund Agent** — Send USDC to the agent's wallet, or **buy USDC directly via Coinbase** (credit card or bank transfer) using the "Fund Wallet" button. No crypto bridges needed.
@@ -35,8 +35,9 @@ The same flow is available programmatically via `POST /v1/developer/agents` + `P
 Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `closed`), USDC balance (live), credit limit, delegation expiry, and active loans.
 
 **Agent limits:**
-- Max 5 agents per developer
-- Max 5 active API keys per agent (`floe keys create` mints extras; `floe keys rotate` replaces one atomically)
+- Agents per account: 5 (Free) · 25 (Pro) · 100 (Agency) · unlimited (Enterprise)
+- Active API keys per agent: 5 (Free) · 10 (Pro) · 25 (Agency) · unlimited (Enterprise) — `floe keys create` mints extras; `floe keys rotate` replaces one atomically
+- Active developer keys (`floe_live_*`) per account: 5 (Free) · 25 (Pro) · 100 (Agency) · unlimited (Enterprise)
 - Borrow limit: 1–10B USDC (raw, 6 decimals)
 - Rate cap: 1–10,000 bps (0.01%–100%)
 - Delegation expiry: 1 minute–1 year
@@ -82,7 +83,7 @@ Alerts are delivered via webhooks and shown in the dashboard.
 | Section | Path | What It Does | CLI equivalent |
 |---------|------|--------------|----------------|
 | Overview | `/` | Dashboard home with usage summary | `floe usage summary` · `floe billing mtd` |
-| Agents | `/agents` | Create, fund, and manage agents (up to 5) | `floe agents` · `floe funds` |
+| Agents | `/agents` | Create, fund, and manage agents (up to your plan's cap) | `floe agents` · `floe funds` |
 | Agent Detail | `/agents/:id` | Status, balance, delegation, keys | `floe agents get <agent> [--usage]` · `floe keys list --agent <agent>` |
 | API Keys | `/keys` | Create, list, and revoke developer keys | `floe devkeys` |
 | Webhooks | `/webhooks` | Register endpoints, test deliveries, view logs | `floe webhooks` |

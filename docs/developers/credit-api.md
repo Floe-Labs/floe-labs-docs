@@ -887,6 +887,8 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/keys" \
 
 > **Important:** The full key is only returned once at creation time. Store it securely.
 
+Active `floe_live_*` keys are capped **per account, per plan** — 5 on Free, 25 on Pro, 100 on Agency, unlimited on Enterprise ([Plans & entitlements](../reference/plans.md)). Minting past the cap returns `409 plan_limit_exceeded` with `limit: "api_keys"`, `max`, `current`, and an `upgradeUrl`. Revoke a key you no longer use to free a slot.
+
 ### GET /v1/developer/keys
 
 List all API keys for your wallet.
@@ -979,7 +981,7 @@ curl "https://credit-api.floelabs.xyz/v1/developer/profile" \
 
 ## Developer Agents
 
-One developer account can own multiple agents (up to 5). Each agent has its own managed Privy wallet, its own credit line, and its own `floe_*` API key. These endpoints provision and manage agents and their keys.
+One developer account can own multiple agents — 5 on Free, 25 on Pro, 100 on Agency, unlimited on Enterprise ([Plans & entitlements](../reference/plans.md)). Each agent has its own managed Privy wallet, its own credit line, and its own `floe_*` API key. These endpoints provision and manage agents and their keys.
 
 All `/v1/developer/agents*` endpoints accept any of three credentials interchangeably — pick whichever fits your client:
 
@@ -1023,7 +1025,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents" \
 }
 ```
 
-Returns `409 limit_exceeded` if the developer is already at the 5-agent cap, `409 name_conflict` for a duplicate name, or `503 agent_creation_unavailable` if Privy or the delegation service is not configured.
+Returns `409 plan_limit_exceeded` if the account is already at its plan's agent cap — the body carries `limit: "agents"`, `max`, `current`, and an `upgradeUrl` — `409 name_conflict` for a duplicate name, or `503 agent_creation_unavailable` if Privy or the delegation service is not configured.
 
 ### GET /v1/developer/agents
 
@@ -1121,7 +1123,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/42/keys" \
 }
 ```
 
-Returns `409 limit_exceeded` if the agent already has an active key — revoke or rotate it first.
+Active keys per agent are capped by plan — 5 on Free, 10 on Pro, 25 on Agency, unlimited on Enterprise ([Plans & entitlements](../reference/plans.md)). Minting past the cap returns `409 plan_limit_exceeded` with `limit: "keys_per_agent"`, `max`, `current`, and an `upgradeUrl`; revoke a key or use the rotate endpoint below. Self-hosted deployments that set `MAX_KEYS_PER_AGENT` get `409 deployment_limit_exceeded` instead — the same fields without `upgradeUrl`, since that cap binds on every plan.
 
 ### GET /v1/developer/agents/:agentId/keys
 

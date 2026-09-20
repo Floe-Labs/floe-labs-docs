@@ -107,6 +107,7 @@ Endpoints: `POST/GET/DELETE /v1/developer/keys`
 | 401 | Any dev-auth error | JWT missing or expired | Re-authenticate |
 | 403 | `forbidden` | The key does not belong to the authenticated wallet | Double-check key ownership |
 | 404 | `Key not found` | Revoking a key that does not exist or is already revoked | No action — idempotent |
+| 409 | `plan_limit_exceeded` | The account is at its plan's active developer-key cap (Free 5, Pro 25, Agency 100; Enterprise unlimited). Body has `limit: api_keys`, `max`, `current`, `upgradeUrl` | Revoke a key you no longer use, or upgrade — see [Plans & entitlements](plans.md) |
 
 ### Key prefix confusion
 
@@ -123,7 +124,8 @@ Endpoints: `POST /v1/developer/agents`, `POST/GET/DELETE /v1/developer/agents/:a
 | 400 | `Invalid request` | Body failed Zod validation (`name`, `borrowLimitRaw`, `maxRateBps`, `expirySeconds`) | Inspect the `details` array and fix the offending field |
 | 401 | (auth error) | None of the accepted credentials (session cookie, dev key, wallet signature) were present or valid | Re-authenticate the calling client |
 | 404 | `not_found` | Agent does not exist OR belongs to a different developer (cross-tenant probes return 404, not 403) | Check the agentId; confirm ownership |
-| 409 | `limit_exceeded` | Developer is at the 5-agent cap (or the 5-active-key cap per agent on `POST /keys`) | Close an agent first, or revoke/rotate an existing key |
+| 409 | `plan_limit_exceeded` | The account is at its plan's agent cap (`limit: agents` — Free 5, Pro 25, Agency 100) or, on `POST /keys`, its per-agent active-key cap (`limit: keys_per_agent` — Free 5, Pro 10, Agency 25). Enterprise is uncapped. Body has `max`, `current`, and `upgradeUrl` | Close an agent, revoke/rotate an existing key, or upgrade — see [Plans & entitlements](plans.md) |
+| 409 | `deployment_limit_exceeded` | Self-hosted only: `POST /keys` hit the deployment's `MAX_KEYS_PER_AGENT` override, which binds on every plan. Body has `limit: keys_per_agent`, `max`, `current` — and **no** `upgradeUrl`, because no upgrade lifts it | Revoke/rotate a key, or raise `MAX_KEYS_PER_AGENT` on the deployment |
 | 409 | `name_conflict` | Another agent owned by the same developer already uses this name | Pick a different name |
 | 502 | `privy_provisioning_failed` | Privy refused to create the Privy wallet | Inspect `detail`; the agent row stays in `pending_delegation` for a retry |
 | 502 | `delegation_failed` | Server-side `setOperator` tx threw | Inspect `detail`; retry once Privy / facilitator are healthy |

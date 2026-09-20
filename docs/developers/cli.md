@@ -78,7 +78,7 @@ npx @floelabs/cli init                       # interactive: paste the key, name 
 floe init --agent support-bot --new-key      # re-point this machine at an existing agent
 ```
 
-`--key` is for non-interactive use and lands in shell history and CI logs — prefer the interactive paste or the `FLOE_API_KEY` env var. If the agent is already at its five-active-key cap, minting fails with `409 limit_exceeded` — `floe keys rotate` replaces a key atomically, or `floe keys revoke` frees a slot.
+`--key` is for non-interactive use and lands in shell history and CI logs — prefer the interactive paste or the `FLOE_API_KEY` env var. If the agent is already at its plan's active-key cap (5 on Free, 10 on Pro, 25 on Agency, unlimited on Enterprise), minting fails with `409 plan_limit_exceeded` — `floe keys rotate` replaces a key atomically, or `floe keys revoke` frees a slot.
 
 ### `floe status`
 
@@ -90,7 +90,7 @@ floe status --json
 
 ### `floe use`
 
-Switch the active agent by name or id. Each agent's key is stored in its own keychain slot, so switching never re-mints an existing key; the first switch to an agent mints one (agents cap at 5 keys).
+Switch the active agent by name or id. Each agent's key is stored in its own keychain slot, so switching never re-mints an existing key; the first switch to an agent mints one (active keys per agent cap at your plan's limit — 5 on Free).
 
 ```bash
 floe use research-bot
@@ -655,7 +655,7 @@ There is no vendor-catalog API — browse the full directory and per-vendor docs
 
 Floe has a **developer key** (`floe_live_…`, from the [dashboard](https://dev-dashboard.floelabs.xyz)) for managing the account, and per-agent **runtime keys** (`floe_…`) that the gateway meters. The CLI stores your developer key and each agent's active runtime key in your OS keychain and always sends the right one — you never pick. Extra keys minted with `keys create` / `devkeys create` are printed once and never stored.
 
-The keychain holds **one runtime-key slot per agent**: `floe use <agent>` switches the active agent without re-minting anything, and the first switch to an agent mints its key into a fresh slot (agents cap at 5 active keys). `floe keys rotate` replaces the active slot's key atomically; `floe keys create` mints extra keys for other machines or CI without touching your slots.
+The keychain holds **one runtime-key slot per agent**: `floe use <agent>` switches the active agent without re-minting anything, and the first switch to an agent mints its key into a fresh slot (active keys per agent cap at your plan's limit — 5 on Free, 10 on Pro, 25 on Agency). `floe keys rotate` replaces the active slot's key atomically; `floe keys create` mints extra keys for other machines or CI without touching your slots.
 
 On systems without a usable keychain (headless Linux, some containers) the CLI falls back to `~/.config/floe/credentials.json` with `0600` permissions and tells you so.
 

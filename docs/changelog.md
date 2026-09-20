@@ -10,6 +10,19 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.25.1 — Agent and API-key caps are per-plan (September 2026)
+
+The flat caps of 5 agents, 5 account API keys, and 5 active keys per agent now come from your plan, so a paid tier is no longer capped like Free.
+
+* **Agents per account** — 5 (Free) · 25 (Pro) · 100 (Agency) · unlimited (Enterprise).
+* **Active developer keys (`floe_live_*`) per account** — 5 · 25 · 100 · unlimited.
+* **Active agent keys (`floe_*`) per agent** — 5 · 10 · 25 · unlimited.
+* **Free is unchanged.** Only the paid tiers moved up — no existing account lands over a cap it was under yesterday.
+* **One refusal shape.** Hitting any count cap returns `409 plan_limit_exceeded` with `limit` (`agents` / `api_keys` / `keys_per_agent` / `billed_clients`), `max`, `current`, and an `upgradeUrl` — the same body billed end-clients already used. This replaces `409 limit_exceeded` on agent + agent-key creation, and **`POST /v1/developer/keys` now returns 409 where it returned `400 Limit exceeded`**.
+* **Self-hosted override.** `MAX_KEYS_PER_AGENT` still wins when set and binds on every plan; that refusal is `409 deployment_limit_exceeded` and carries no `upgradeUrl`, since no upgrade can lift it.
+
+→ [Plans & entitlements](reference/plans.md) · [Error codes](reference/error-codes.md)
+
 ### v1.25.0 — Per-call pricing (September 2026)
 
 Rate cards can now price **voice calls** — the unit most voice agencies quote.

@@ -289,7 +289,7 @@ Configuration is saved to `.floe-agent.json` (wallet type + AI provider + agent 
 
 ### Multi-agent registry
 
-One developer can register multiple agents (up to 5 per developer). Each gets its own scoped key. Typical flow:
+One developer can register multiple agents — 5 on Free, 25 on Pro, 100 on Agency, unlimited on Enterprise ([Plans & entitlements](../reference/plans.md)). Each gets its own scoped key. Typical flow:
 
 ```bash
 floe-agent register --name research --borrow-limit 5000

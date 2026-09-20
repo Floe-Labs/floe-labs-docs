@@ -195,7 +195,7 @@ console.log(markets);
 
 ### Multiple Agents
 
-One Floe developer can own up to five agents. Each agent-key session is scoped to **one agent**, so run one MCP entry per agent — plus, optionally, one developer-key entry for the lifecycle tools:
+One Floe developer can own several agents — 5 on Free, 25 on Pro, 100 on Agency, unlimited on Enterprise ([Plans & entitlements](../reference/plans.md)). Each agent-key session is scoped to **one agent**, so run one MCP entry per agent — plus, optionally, one developer-key entry for the lifecycle tools:
 
 ```json
 {

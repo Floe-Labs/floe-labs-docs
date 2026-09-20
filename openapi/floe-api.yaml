@@ -807,7 +807,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ManagedAgent"
         "409":
-          description: Max agents (5) or name conflict
+          description: >
+            `plan_limit_exceeded` — the account is at its plan's agent cap
+            (Free 5, Pro 25, Agency 100; Enterprise unlimited). Body carries
+            `limit: agents`, `max`, `current`, and `upgradeUrl`. Or
+            `name_conflict` — an agent of that name already exists.
 
   /v1/developer/agents/{agentId}:
     get:
@@ -936,7 +940,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiKey"
         "409":
-          description: Max 5 active keys per agent
+          description: >
+            `plan_limit_exceeded` — the agent is at its plan's active-key cap
+            (Free 5, Pro 10, Agency 25; Enterprise unlimited). Body carries
+            `limit: keys_per_agent`, `max`, `current`, and `upgradeUrl`.
+            Self-hosted deployments that set `MAX_KEYS_PER_AGENT` return
+            `deployment_limit_exceeded` instead — same fields, no
+            `upgradeUrl`, since no plan change lifts an operator override.
 
   /v1/developer/agents/{agentId}/keys/{keyId}:
     delete:

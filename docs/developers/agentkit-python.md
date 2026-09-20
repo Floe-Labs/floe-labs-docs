@@ -111,7 +111,7 @@ The REPL prompts for wallet provider, AI provider, and RPC URL. Configuration (w
 
 ### Multi-agent registry
 
-One developer can register up to five agents. Typical flow:
+One developer can register several agents — 5 on Free, 25 on Pro, 100 on Agency, unlimited on Enterprise ([Plans & entitlements](../reference/plans.md)). Typical flow:
 
 ```bash
 floe-agent register --name research --borrow-limit 5000

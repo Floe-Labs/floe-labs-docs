@@ -110,7 +110,7 @@ The hard dollar limit is a **[spend control](../developers/spend-controls.md)** 
 
 Because both `Floe402Tool` and `FloeLLM` route through Floe, one policy bounds the entire crew — tool spend and token spend on one ledger. See [Spend Controls](../developers/spend-controls.md) for policy types, time windows, and value-aware caps.
 
-> **Per-role caps.** Want a Researcher capped at $1 and a Buyer at $5, independently? Give each crew member its own agent key — Floe allows up to 5 managed agents per developer, each with its own key and its own spend control — and pass that key to the role's `Floe402Tool` and `FloeLLM`.
+> **Per-role caps.** Want a Researcher capped at $1 and a Buyer at $5, independently? Give each crew member its own agent key — Floe allows 5 managed agents per account on Free, 25 on Pro and 100 on Agency, each with its own key and its own spend control — and pass that key to the role's `Floe402Tool` and `FloeLLM`.
 
 ## Budget awareness (optional)
 

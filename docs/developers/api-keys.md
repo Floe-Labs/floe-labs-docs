@@ -15,11 +15,11 @@ Floe uses API keys to authenticate requests to the developer platform. There are
 
 **Developer keys** are for your backend services — monitoring loan health, managing webhooks, registering new agents, and calling developer-scoped endpoints on the [Credit API](credit-api.md). One key per environment is typical.
 
-**Agent keys** identify one specific agent. Every agent registered under a developer gets its own `floe_*` keys — up to **five active keys per agent** (`floe keys create` mints extras, optionally budget-capped at mint; `floe keys rotate` replaces one atomically). Agent keys are required for the agent-awareness endpoints (`credit-remaining`, `loan-state`, `spend-limit`, etc.) and for [MCP server](mcp-server.md) sessions scoped to a single agent.
+**Agent keys** identify one specific agent. Every agent registered under a developer gets its own `floe_*` keys — active keys per agent are capped by plan (**5** on Free, 10 on Pro, 25 on Agency, unlimited on Enterprise; `floe keys create` mints extras, optionally budget-capped at mint; `floe keys rotate` replaces one atomically). Agent keys are required for the agent-awareness endpoints (`credit-remaining`, `loan-state`, `spend-limit`, etc.) and for [MCP server](mcp-server.md) sessions scoped to a single agent.
 
 ### Agent Keys
 
-One developer can own multiple agents (up to 5 per account today). Each agent has its own scoped key. There are five ways to mint one:
+One developer can own multiple agents — 5 on Free, 25 on Pro, 100 on Agency, unlimited on Enterprise ([Plans & entitlements](../reference/plans.md)). Each agent has its own scoped key. There are five ways to mint one:
 
 1. **Platform CLI** — `npx @floelabs/cli init` creates (or selects) the agent and mints its key straight into your OS keychain — one keychain slot per agent, and `floe use <agent>` switches agents without re-minting. Mint additional keys with `floe keys create` (`--budget <usd> [--window <dur>]` caps the key's spend at mint), revoke with `floe keys revoke <keyId>`, rotate with `floe keys rotate`. See [Floe CLI](cli.md).
 2. **Dashboard wizard** — visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz), create an agent, copy the `floe_*` key shown on the final step. It is revealed once.
@@ -29,7 +29,7 @@ One developer can own multiple agents (up to 5 per account today). Each agent ha
 
 > The SDK CLIs' `--borrow-limit` flag is in **USDC** (`10000` = $10K). The REST API's `borrowLimitRaw` field is in **raw 6-decimal units** (`10000` = $0.01, `10000000000` = $10K).
 >
-> Each agent caps at **five active keys**. Mint an additional one with `POST /v1/developer/agents/:id/keys` or `floe keys create` (add `--budget <usd>` for a fail-closed spend cap at mint); replace one atomically with `POST /v1/developer/agents/:id/keys/:keyId/rotate` — the old key is revoked in the same transaction — or `floe keys rotate`; free a slot with `floe keys revoke <keyId>`.
+> Each agent's active-key cap comes from your plan — **5** on Free, 10 on Pro, 25 on Agency, unlimited on Enterprise; minting past it returns `409 plan_limit_exceeded`. Mint an additional one with `POST /v1/developer/agents/:id/keys` or `floe keys create` (add `--budget <usd>` for a fail-closed spend cap at mint); replace one atomically with `POST /v1/developer/agents/:id/keys/:keyId/rotate` — the old key is revoked in the same transaction — or `floe keys rotate`; free a slot with `floe keys revoke <keyId>`.
 
 ## Authentication
 
