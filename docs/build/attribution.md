@@ -73,7 +73,7 @@ Strict mode is the guarantee that no dollar reaches your ledger without a client
 
 ## Roll it up
 
-Two read surfaces turn tagged legs into per-client and per-campaign cost. Both are **Pro** (see the plan gate below).
+Two read surfaces turn tagged legs into per-client and per-campaign cost. Both are **free on every plan** (see the plan gate below).
 
 ### The cost ledger — one neutral money view
 
@@ -107,11 +107,11 @@ The same client and campaign grouping is available over **[vendor actuals](vendo
 
 ## Plan gate
 
-> **Capture is free. Rollups are Pro.**
+> **Capture is free. Rollups are free too.**
 >
 > **Tagging every call — the headers, the metadata, the per-agent defaults, and strict mode — is free on every plan and is never throttled.** Attribution must never be the reason a call is refused for a billing reason, so tag liberally from day one.
 >
-> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. The `source` and `agent` views stay open on every plan.
+> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) carry the `attribution_reports` feature, which is **free on every plan** — cost per client, campaign, and task is the core question Floe answers, not an upsell. The `source` and `agent` views are open on every plan too. What Pro adds is *acting* on the picture: CSV exports, alerts, and fleet policies. See [Plans & entitlements](../reference/plans.md).
 
 ## Related
 

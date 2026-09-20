@@ -1198,7 +1198,7 @@ installing one requires an **admin** role. Reconciling your legs against a
 vendor's own records is the Agency half — because it's the credential that makes
 [Vendor actuals](vendor-actuals.md) real. Reading the resulting ledger is not
 gated the same way: per-leg and by-call cost, plus findings, are **free**
-(`ledger_read`); the per-client / per-campaign **rollups** are **Pro**
+(`ledger_read`), and so are the per-client / per-campaign **rollups**
 (`attribution_reports`). See [Plans & entitlements](../reference/plans.md).
 
 ## Setting one up
@@ -1478,7 +1478,7 @@ Strict mode is the guarantee that no dollar reaches your ledger without a client
 
 ## Roll it up
 
-Two read surfaces turn tagged legs into per-client and per-campaign cost. Both are **Pro** (see the plan gate below).
+Two read surfaces turn tagged legs into per-client and per-campaign cost. Both are **free on every plan** (see the plan gate below).
 
 ### The cost ledger — one neutral money view
 
@@ -1512,11 +1512,11 @@ The same client and campaign grouping is available over **[vendor actuals](vendo
 
 ## Plan gate
 
-> **Capture is free. Rollups are Pro.**
+> **Capture is free. Rollups are free too.**
 >
 > **Tagging every call — the headers, the metadata, the per-agent defaults, and strict mode — is free on every plan and is never throttled.** Attribution must never be the reason a call is refused for a billing reason, so tag liberally from day one.
 >
-> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. The `source` and `agent` views stay open on every plan.
+> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) carry the `attribution_reports` feature, which is **free on every plan** — cost per client, campaign, and task is the core question Floe answers, not an upsell. The `source` and `agent` views are open on every plan too. What Pro adds is *acting* on the picture: CSV exports, alerts, and fleet policies. See [Plans & entitlements](../reference/plans.md).
 
 ## Related
 
@@ -1662,13 +1662,13 @@ The reason to price on actuals is that **what you signed and what you deployed d
 - **The clients list** — `GET /v1/developer/customers?days=30` — every end-client seen in the ledger with its current card status (current version, any open draft) and window spend. One screen for "who's priced, who's still on a blended guess."
 - **The per-transaction margin report** — `GET /v1/developer/customers/:customerId/transactions?from=…&to=…` — every metered leg for one client with its cost, its revenue under the card version effective *at that leg's timestamp*, and its per-row margin. A `summary` block rates the whole range under all rules — the number that matches the eventual invoice. Rows a per-row figure can't honestly express (a fixed retainer, a per-minute component, an unresolved vendor leg) are flagged `perRowComplete: false` rather than shown understated.
 
-Both are **Pro** reads (`attribution_reports`). Read them side by side with the card you signed and the drift is a dollar figure, not a surprise at invoice time.
+Both are **free** reads (`attribution_reports`). Read them side by side with the card you signed and the drift is a dollar figure, not a surprise at invoice time.
 
 ## Plan gate
 
 > **Rate cards and the margin engine are an Agency capability.**
 >
-> Every pricing **write** — creating or activating a card, running a preview, managing projects — requires the **Agency** feature `rate_cards`. The per-client cost and margin **reads** (`/customers`, `/customers/:id/transactions`) require the Pro feature `attribution_reports`. Reading existing cards stays open on every plan, so a downgrade never breaks pricing that is already running; there is also a per-plan cap on the number of *billed* clients, enforced only when you price a client that has never been priced or invoiced before (`plan_limit_exceeded`).
+> Every pricing **write** — creating or activating a card, running a preview, managing projects — requires the **Agency** feature `rate_cards`. The per-client cost and margin **reads** (`/customers`, `/customers/:id/transactions`) carry `attribution_reports`, which is **free on every plan**. Reading existing cards stays open on every plan, so a downgrade never breaks pricing that is already running; there is also a per-plan cap on the number of *billed* clients, enforced only when you price a client that has never been priced or invoiced before (`plan_limit_exceeded`).
 
 ## Related
 
@@ -9636,7 +9636,7 @@ Every cost carries a status, and the status bounds the claim: `exact` = reconcil
 | `list_vendor_connections` | Vendor billing credentials, masked (key material is never returned), plus the connector catalog. `bestStatus` is the ceiling a leg from that connection can ever reach |
 | `verify_vendor_connection` | Re-check one stored credential against the vendor now. Separates "revoked, re-key it" from "the vendor is down". Advisory — not a scope guarantee |
 
-Reads need the **Pro** feature `attribution_reports`; the two [vendor connection](../build/vendor-connections.md) tools need **Agency** `vendor_connections` (and admin/owner to verify).
+Reads are **free** (`ledger_read` for the per-leg and by-call tools, `attribution_reports` for the client/campaign rollup — both free on every plan); the two [vendor connection](../build/vendor-connections.md) tools need **Agency** `vendor_connections` (and admin/owner to verify).
 
 **Not exposed over MCP, deliberately.** Invoice **upload** is a binary PUT with nothing for an agent to send; **footing** an invoice is an irreversible finance action that keeps a human in the loop; **resolving a finding** is a human verdict the API withholds from the machine; **creating a connection** writes a sealed credential, and credentials never travel through a tool call. Use the dashboard or [`floe actuals`](cli.md).
 

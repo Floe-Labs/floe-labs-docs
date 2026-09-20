@@ -134,13 +134,13 @@ The reason to price on actuals is that **what you signed and what you deployed d
 - **The clients list** — `GET /v1/developer/customers?days=30` — every end-client seen in the ledger with its current card status (current version, any open draft) and window spend. One screen for "who's priced, who's still on a blended guess."
 - **The per-transaction margin report** — `GET /v1/developer/customers/:customerId/transactions?from=…&to=…` — every metered leg for one client with its cost, its revenue under the card version effective *at that leg's timestamp*, and its per-row margin. A `summary` block rates the whole range under all rules — the number that matches the eventual invoice. Rows a per-row figure can't honestly express (a fixed retainer, a per-minute component, an unresolved vendor leg) are flagged `perRowComplete: false` rather than shown understated.
 
-Both are **Pro** reads (`attribution_reports`). Read them side by side with the card you signed and the drift is a dollar figure, not a surprise at invoice time.
+Both are **free** reads (`attribution_reports`). Read them side by side with the card you signed and the drift is a dollar figure, not a surprise at invoice time.
 
 ## Plan gate
 
 > **Rate cards and the margin engine are an Agency capability.**
 >
-> Every pricing **write** — creating or activating a card, running a preview, managing projects — requires the **Agency** feature `rate_cards`. The per-client cost and margin **reads** (`/customers`, `/customers/:id/transactions`) require the Pro feature `attribution_reports`. Reading existing cards stays open on every plan, so a downgrade never breaks pricing that is already running; there is also a per-plan cap on the number of *billed* clients, enforced only when you price a client that has never been priced or invoiced before (`plan_limit_exceeded`).
+> Every pricing **write** — creating or activating a card, running a preview, managing projects — requires the **Agency** feature `rate_cards`. The per-client cost and margin **reads** (`/customers`, `/customers/:id/transactions`) carry `attribution_reports`, which is **free on every plan**. Reading existing cards stays open on every plan, so a downgrade never breaks pricing that is already running; there is also a per-plan cap on the number of *billed* clients, enforced only when you price a client that has never been priced or invoiced before (`plan_limit_exceeded`).
 
 ## Related
 
