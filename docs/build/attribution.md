@@ -73,16 +73,18 @@ Strict mode is the guarantee that no dollar reaches your ledger without a client
 
 ## Roll it up
 
-Two read surfaces turn tagged legs into per-client and per-campaign cost. Both are **Pro** (see the plan gate below).
+Two read surfaces turn tagged legs into per-client and per-campaign cost. Both are **free on every plan** (see the plan gate below) — only exporting them to CSV is Pro.
 
 ### The cost ledger — one neutral money view
 
 ```http
 GET /v1/developer/ledger?days=30&groupBy=customer
-GET /v1/developer/ledger?days=30&groupBy=campaign
+GET /v1/developer/ledger?days=30&groupBy=task
 ```
 
-Rolls up **all** spend — Floe-carried (gateway, x402 proxy, Floe Phone) *and* orchestrator-reconciled (Vapi/Retell/Bland end-of-call ingests) — by the dimension you ask for. `groupBy=source` and `groupBy=agent` answer "what did I spend"; `groupBy=customer` and `groupBy=campaign` are the attribution view. `days` is 1–90 (default 30).
+Rolls up **all** spend — Floe-carried (gateway, x402 proxy, Floe Phone) *and* orchestrator-reconciled (Vapi/Retell/Bland end-of-call ingests) — by the dimension you ask for. `groupBy=source` and `groupBy=agent` answer "what did I spend"; `groupBy=customer` and `groupBy=task` are the attribution view. `days` is 1–90 (default 30).
+
+> **`groupBy=campaign` on this route is deprecated and is removed on 2026-10-19.** It never grouped by campaign: `/ledger` reads `proxy_requests`, which has no campaign column, so the alias has always bucketed by **task id**. Use `groupBy=task` for exactly the same data under its real name. For a true campaign rollup — grouped on the interaction's `campaign_id` — use `GET /v1/developer/interactions/rollups?by=campaign`, which is unaffected by this deprecation. Responses to the alias carry `Deprecation`, `Sunset` and `Link: rel="successor-version"` headers until then.
 
 Each row carries `{ key, tagged, calls, costRaw, reconciledRaw }`. `reconciledRaw` is the portion of that bucket that came from orchestrator reconciliation rather than a Floe-carried leg. **Filter on the `tagged` flag, never on the label** — a real client literally named "untagged" stays a distinct bucket from missing-tag spend. Untagged rows are never dropped: they bucket under `untagged` so the total always reconciles with the underlying rows.
 
@@ -107,11 +109,36 @@ The same client and campaign grouping is available over **[vendor actuals](vendo
 
 ## Plan gate
 
-> **Capture is free. Rollups are Pro.**
+> **Capture is free. Reading it is free. Exporting it is Pro.**
 >
 > **Tagging every call — the headers, the metadata, the per-agent defaults, and strict mode — is free on every plan and is never throttled.** Attribution must never be the reason a call is refused for a billing reason, so tag liberally from day one.
 >
-> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. The `source` and `agent` views stay open on every plan.
+> **The rollups are free too.** The per-client and per-campaign views (`groupBy=customer|task` on the ledger, `by=customer|campaign|agent|channel|outcome|task_type` on the interaction rollups, and the `/customers` reads on [rate cards](rate-cards.md)) carry the `attribution_reports` feature, which is **Free on every plan**. Cost per client and per campaign is the question this product exists to answer — you cannot evaluate it behind a paywall.
+>
+> What is Pro is **`exports`**: downloading any of those rollups as a CSV. Reading the numbers on screen costs nothing; walking the whole range out to a file is the paid capability. See [plans](../reference/plans.md).
+
+## Export any of it
+
+Every rollup on this page is downloadable as a server-rendered CSV, scoped by exactly the dimension, date range and filters you are looking at.
+
+Cost by client, campaign, agent, channel, outcome or task type:
+
+```http
+GET /v1/developer/interactions/rollups.csv?by=campaign&since=…&until=…
+```
+
+One client's per-charge ledger, with the range summary that matches the invoice:
+
+```http
+GET /v1/developer/customers/{customerId}/transactions.csv?from=…&to=…
+```
+
+Two things worth knowing before you build on the file:
+
+- **It refuses rather than truncates.** Past its row ceiling the request answers `413 export_too_large` and tells you to narrow the range. A short CSV opened in a spreadsheet is indistinguishable from a complete one, so we will not hand you one.
+- **On the client ledger, the row columns are a lower bound.** Fixed retainers and per-minute components are priced over the whole range and have no per-row representation, so the trailing `# Range summary` line — not the sum of the rows — is the figure that matches the invoice. Rows priced by those components are flagged `per_row_complete=false`.
+
+In the dashboard the same exports sit on **Exports**, and on each screen that owns the data.
 
 ## Related
 

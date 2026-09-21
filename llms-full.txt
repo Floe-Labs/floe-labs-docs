@@ -1478,16 +1478,18 @@ Strict mode is the guarantee that no dollar reaches your ledger without a client
 
 ## Roll it up
 
-Two read surfaces turn tagged legs into per-client and per-campaign cost. Both are **Pro** (see the plan gate below).
+Two read surfaces turn tagged legs into per-client and per-campaign cost. Both are **free on every plan** (see the plan gate below) — only exporting them to CSV is Pro.
 
 ### The cost ledger — one neutral money view
 
 ```http
 GET /v1/developer/ledger?days=30&groupBy=customer
-GET /v1/developer/ledger?days=30&groupBy=campaign
+GET /v1/developer/ledger?days=30&groupBy=task
 ```
 
-Rolls up **all** spend — Floe-carried (gateway, x402 proxy, Floe Phone) *and* orchestrator-reconciled (Vapi/Retell/Bland end-of-call ingests) — by the dimension you ask for. `groupBy=source` and `groupBy=agent` answer "what did I spend"; `groupBy=customer` and `groupBy=campaign` are the attribution view. `days` is 1–90 (default 30).
+Rolls up **all** spend — Floe-carried (gateway, x402 proxy, Floe Phone) *and* orchestrator-reconciled (Vapi/Retell/Bland end-of-call ingests) — by the dimension you ask for. `groupBy=source` and `groupBy=agent` answer "what did I spend"; `groupBy=customer` and `groupBy=task` are the attribution view. `days` is 1–90 (default 30).
+
+> **`groupBy=campaign` on this route is deprecated and is removed on 2026-10-19.** It never grouped by campaign: `/ledger` reads `proxy_requests`, which has no campaign column, so the alias has always bucketed by **task id**. Use `groupBy=task` for exactly the same data under its real name. For a true campaign rollup — grouped on the interaction's `campaign_id` — use `GET /v1/developer/interactions/rollups?by=campaign`, which is unaffected by this deprecation. Responses to the alias carry `Deprecation`, `Sunset` and `Link: rel="successor-version"` headers until then.
 
 Each row carries `{ key, tagged, calls, costRaw, reconciledRaw }`. `reconciledRaw` is the portion of that bucket that came from orchestrator reconciliation rather than a Floe-carried leg. **Filter on the `tagged` flag, never on the label** — a real client literally named "untagged" stays a distinct bucket from missing-tag spend. Untagged rows are never dropped: they bucket under `untagged` so the total always reconciles with the underlying rows.
 
@@ -1512,11 +1514,36 @@ The same client and campaign grouping is available over **[vendor actuals](vendo
 
 ## Plan gate
 
-> **Capture is free. Rollups are Pro.**
+> **Capture is free. Reading it is free. Exporting it is Pro.**
 >
 > **Tagging every call — the headers, the metadata, the per-agent defaults, and strict mode — is free on every plan and is never throttled.** Attribution must never be the reason a call is refused for a billing reason, so tag liberally from day one.
 >
-> The **per-client and per-campaign rollups** (`groupBy=customer|campaign` on the ledger, `by=customer|campaign` on actuals rollups, and the `/customers` reads on [rate cards](rate-cards.md)) require the **Pro** feature `attribution_reports`. The `source` and `agent` views stay open on every plan.
+> **The rollups are free too.** The per-client and per-campaign views (`groupBy=customer|task` on the ledger, `by=customer|campaign|agent|channel|outcome|task_type` on the interaction rollups, and the `/customers` reads on [rate cards](rate-cards.md)) carry the `attribution_reports` feature, which is **Free on every plan**. Cost per client and per campaign is the question this product exists to answer — you cannot evaluate it behind a paywall.
+>
+> What is Pro is **`exports`**: downloading any of those rollups as a CSV. Reading the numbers on screen costs nothing; walking the whole range out to a file is the paid capability. See [plans](../reference/plans.md).
+
+## Export any of it
+
+Every rollup on this page is downloadable as a server-rendered CSV, scoped by exactly the dimension, date range and filters you are looking at.
+
+Cost by client, campaign, agent, channel, outcome or task type:
+
+```http
+GET /v1/developer/interactions/rollups.csv?by=campaign&since=…&until=…
+```
+
+One client's per-charge ledger, with the range summary that matches the invoice:
+
+```http
+GET /v1/developer/customers/{customerId}/transactions.csv?from=…&to=…
+```
+
+Two things worth knowing before you build on the file:
+
+- **It refuses rather than truncates.** Past its row ceiling the request answers `413 export_too_large` and tells you to narrow the range. A short CSV opened in a spreadsheet is indistinguishable from a complete one, so we will not hand you one.
+- **On the client ledger, the row columns are a lower bound.** Fixed retainers and per-minute components are priced over the whole range and have no per-row representation, so the trailing `# Range summary` line — not the sum of the rows — is the figure that matches the invoice. Rows priced by those components are flagged `per_row_complete=false`.
+
+In the dashboard the same exports sit on **Exports**, and on each screen that owns the data.
 
 ## Related
 
@@ -6954,7 +6981,7 @@ This is **only** for developers using the dashboard. Agents authenticate with th
 
 ### Agents (Multi-Agent)
 
-Create and manage up to **5 agents per developer**. Each agent has its own credit line, delegation, and API key.
+Create and manage agents — **how many depends on your plan** (see [plans](../reference/plans.md)). Each agent has its own credit line, delegation, and API key.
 
 1. **Create Agent** — Name it, set a borrow limit, rate cap, and delegation expiry. The dashboard provisions a managed Privy wallet for the agent and submits the on-chain `setOperator` delegation **from that Privy wallet** server-side — you sign nothing on-chain from your own wallet.
 2. **Fund Agent** — Send USDC to the agent's wallet, or **buy USDC directly via Coinbase** (credit card or bank transfer) using the "Fund Wallet" button. No crypto bridges needed.
@@ -6965,8 +6992,7 @@ The same flow is available programmatically via `POST /v1/developer/agents` + `P
 Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `closed`), USDC balance (live), credit limit, delegation expiry, and active loans.
 
 **Agent limits:**
-- Max 5 agents per developer
-- Max 5 active API keys per agent (`floe keys create` mints extras; `floe keys rotate` replaces one atomically)
+- Agents per account, and API keys per agent, are **per-plan** — Free allows 5 of each, and the ceiling rises with the plan. See [plans](../reference/plans.md) for the current numbers. (`floe keys create` mints extras; `floe keys rotate` replaces one atomically.)
 - Borrow limit: 1–10B USDC (raw, 6 decimals)
 - Rate cap: 1–10,000 bps (0.01%–100%)
 - Delegation expiry: 1 minute–1 year
@@ -6983,6 +7009,34 @@ Buy USDC directly from the dashboard using a credit card, debit card, or bank tr
 No crypto bridges, no token swaps, no gas tokens needed.
 
 CLI equivalents: `floe funds topup [--amount <usd>] [--open]` prints the same Coinbase checkout link and watches for the funds; `floe funds address` prints the agent's raw USDC deposit address for wallet/exchange transfers.
+
+### Usage & activity
+
+**Usage** (`/usage`) answers where your spend went. Pick a date range, filter by vendor, client or reconciliation status, and group the result by **client, campaign, agent, channel, outcome or task type** — the same six dimensions the API serves.
+
+One range drives the whole screen: the KPI tiles, the spend chart and the rollup table all cover the period you picked, and the API reports back the range it actually aggregated. If your plan's history window is shorter than the range you asked for, the screen says so rather than captioning a clamped result with the window you requested.
+
+Untagged spend is never hidden. Calls with no value for the dimension you grouped by are bucketed under a placeholder row — usually the most actionable line on the page, since it is spend you cannot bill back to anyone.
+
+Reading all of this is **free on every plan**. CLI equivalent: `floe usage summary` for the KPIs, and `floe interactions rollups --by <customer|campaign|agent|channel|outcome|task_type>` for the same six groupings.
+
+> Not `floe ledger --group-by campaign`: that groups `/ledger` by **task id**, which is a different question from a campaign rollup. See [attribution](../build/attribution.md).
+
+### Exports
+
+**Exports** (`/exports`) lists every CSV Floe can produce. Each one is built on the screen that owns its date range and filters, so the file always matches what you were looking at:
+
+| Export | Where | Contains |
+|---|---|---|
+| Usage rollup | `/usage` | Cost per client / campaign / agent / channel / outcome / task type, with duration and $/min where a call has both |
+| Vendor cost legs | `/actuals` | Every vendor charge with its reconciliation status, units and provenance |
+| Client ledger | `/customers` | One client's per-charge cost, revenue and margin, plus the range summary that matches their invoice |
+| Monthly charges | `/exports` | Every charge Floe settled this calendar month |
+| Statements · margin · close packs | `/close` | The artifacts for a closed billing period |
+
+Every export is rendered server-side and **refuses rather than truncates**: past its row ceiling you get `413 export_too_large` telling you to narrow the range, never a short file that looks complete.
+
+CSV export rides the **Pro** `exports` feature. Statements, margin files and close packs are deliberately **not** gated — they are artifacts you already issued to your own clients, and a downgrade never retracts them.
 
 ### API Keys
 
@@ -7012,7 +7066,9 @@ Alerts are delivered via webhooks and shown in the dashboard.
 | Section | Path | What It Does | CLI equivalent |
 |---------|------|--------------|----------------|
 | Overview | `/` | Dashboard home with usage summary | `floe usage summary` · `floe billing mtd` |
-| Agents | `/agents` | Create, fund, and manage agents (up to 5) | `floe agents` · `floe funds` |
+| Usage | `/usage` | Filter, group and chart your spend by any dimension | `floe usage summary` · `floe interactions rollups --by <dim>` |
+| Exports | `/exports` | Every CSV Floe can produce, and where it comes from | — |
+| Agents | `/agents` | Create, fund, and manage agents (per-plan limits) | `floe agents` · `floe funds` |
 | Agent Detail | `/agents/:id` | Status, balance, delegation, keys | `floe agents get <agent> [--usage]` · `floe keys list --agent <agent>` |
 | API Keys | `/keys` | Create, list, and revoke developer keys | `floe devkeys` |
 | Webhooks | `/webhooks` | Register endpoints, test deliveries, view logs | `floe webhooks` |
@@ -12635,7 +12691,7 @@ The live cost ledger and the honest number behind every leg, with no account fri
 
 Everything in Free, plus the tools to export it, watch it, and put hard stops behind it:
 
-- **CSV exports** (`exports`) — the usage bill, statements, and margin as CSV.
+- **CSV exports** (`exports`) — every rollup as a server-rendered CSV: usage by client / campaign / agent / channel / outcome / task type, vendor cost legs, one client's per-charge ledger, and the monthly charge export. Reading those numbers on screen is free on every plan; downloading them is what this feature unlocks. Statements, margin files and close packs are **not** gated here — they are artifacts you already issued to your own clients, and a downgrade never retracts them.
 - **Alerts** (`alerts`) — credit-threshold notifications.
 - **Fleet policies** (`fleet_policies`) — developer-scope budgets and suspend-agent hard stops.
 

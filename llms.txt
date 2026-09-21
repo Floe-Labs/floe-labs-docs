@@ -76,7 +76,7 @@ Floe's repositioned core: know what every call costs, attribute it, price it, an
 - [Client invoicing](https://floe-labs.gitbook.io/docs/invoicing/invoicing.md): Turn a reconciled billing period into a statement — billing periods, carry-forward credits, cost/margin CSVs (Agency) — ask: "How do I invoice a client from my ledger?"
 - [Stripe Connect](https://floe-labs.gitbook.io/docs/invoicing/stripe-connect.md): Bill through your OWN Stripe — push a statement as a Stripe invoice, payouts land in your account, up to 150 billed clients (Agency) — ask: "How do I collect on an invoice through my own Stripe?"
 - [Model pricing](https://floe-labs.gitbook.io/docs/api-reference/models-pricing.md): Per-model, per-rail rates read straight from `GET /v1/models?include=pricing` — ask: "What does gpt-4o cost per token on Floe?"
-- [Plans & entitlements](https://floe-labs.gitbook.io/docs/reference/plans.md): Free / Pro / Agency / Enterprise — the entitlement behind every gated surface (`ledger_read`, `attribution_reports`, `rate_cards`, `client_invoicing`, `stripe_connect`, `vendor_connections`) — ask: "What do I get on the free plan vs Pro?"
+- [Plans & entitlements](https://floe-labs.gitbook.io/docs/reference/plans.md): Free / Pro / Agency / Enterprise — the entitlement behind every gated surface (`ledger_read`, `attribution_reports`, `exports`, `rate_cards`, `client_invoicing`, `stripe_connect`, `vendor_connections`) — ask: "What do I get on the free plan vs Pro?"
 
 ## Floe Inference — model catalog (120 models across 28 providers)
 
