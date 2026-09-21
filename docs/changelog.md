@@ -10,6 +10,18 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.26.0 — Outcome claims bound to the call (September 2026)
+
+Cost per call had no counterpart on the result side. Now an agent can **emit an outcome and Floe joins the cost** — the claim is bound to the call it describes, and the operator confirms it from their own evidence.
+
+* **`POST /v1/agents/outcomes`** (agent key) records a claim against the `X-Floe-Task-Id` the caller already has. Floe resolves that id to the call and binds the claim there; a task id that names no call is refused (`404 task_not_found`) rather than stored unattached. `outcomeKind` is opaque and never interpreted; `idempotencyKey` is required, so a retried orchestrator webhook replays instead of double-claiming.
+* **Confirming is an operator act.** `POST /v1/developer/outcomes/:eventId/confirm` and `/void` need a developer credential with the **admin** role — only `operator` and `client` confirmations may bill, and the evidence for one (a CRM webhook, a calendar invitation) lands in the operator's backend, not the agent's process. An agent key reports a first claim and nothing else.
+* **Append-only.** Every write is a new `oev_…` event superseding its predecessor, never an update. A claim stamped by a period close is frozen: correcting it returns `409 outcome_claim_billed`, and the fix is a reversal in the next open period.
+* **Collisions are a finding, not a guess.** Two current claims of one kind on one call (a post-call webhook and the agent reporting the same thing, or two real results) open an `outcome_claim_collision` finding. Resolve it by voiding one with a *proven* `duplicateOfEventId`, or with `POST /v1/developer/outcomes/collisions/confirm-distinct` when both are genuine.
+* **Not the action-outcome signal.** `POST /v1/agents/actions/:actionId/outcome` is still the per-action quality score for eval; it never reaches an invoice. The two surfaces share a word and nothing else.
+
+→ [Outcome claims](build/outcomes.md) · [Agent Runtime Contract](developers/agent-runtime-contract.md)
+
 ### v1.25.0 — Per-call pricing (September 2026)
 
 Rate cards can now price **voice calls** — the unit most voice agencies quote.

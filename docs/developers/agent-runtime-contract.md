@@ -152,6 +152,27 @@ Notes:
 - Spend is aggregated from settled calls only; failed/refunded calls are counted but not summed.
 - An outcome may be reported before (or without) any tagged spend — it shows as a zero-cost action.
 
+## Outcome claims — the billable kind
+
+The section above is a **quality signal**: your own status and score for one action, for eval. It never reaches an invoice. When what you are reporting is a business result your operator bills on — a booked meeting, a qualified lead, a resolution — emit an **outcome claim** against the task id instead:
+
+```ts
+await fetch('https://credit-api.floelabs.xyz/v1/agents/outcomes', {
+  method: 'POST',
+  headers: { 'Authorization': `Bearer ${process.env.FLOE_API_KEY}`, 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    taskId: 'call-8f21a',            // the X-Floe-Task-Id this call carried
+    outcomeKind: 'meeting_booked',   // opaque, lowercased, ≤64 chars
+    quantity: 1,
+    idempotencyKey: 'vapi-evt-9d1c4a', // required — retries must not double-claim
+  }),
+});
+```
+
+Floe resolves the task id to the call and binds the claim to it. A task id that names no call is refused with `404 task_not_found` rather than stored unattached. An agent key may **report** a first claim and nothing else — confirming, correcting, or voiding one is your operator's action on the developer surface (`409 outcome_claim_exists` if a current claim of that kind already exists). Unknown fields are rejected, not ignored.
+
+Full field list, the operator half, and the collision rules: [Outcome claims](../build/outcomes.md).
+
 ## Error Handling Matrix
 
 | Status | `error` body | Meaning | Retry? | How |

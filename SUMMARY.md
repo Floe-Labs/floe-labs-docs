@@ -24,6 +24,7 @@
 ## Attribution & margin
 
 * [Cost per client, campaign & task](docs/build/attribution.md)
+* [Outcome claims — what each call produced](docs/build/outcomes.md)
 * [Rate cards & the margin engine](docs/build/rate-cards.md)
 
 ## Invoicing
