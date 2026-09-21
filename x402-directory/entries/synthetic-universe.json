@@ -1,0 +1,19 @@
+{
+  "id": "synthetic-universe",
+  "name": "Synthetic Universe",
+  "provider": "Synthetic Universe",
+  "homepage": "https://brianbooms.com/agents/",
+  "description": "Live x402 merchant selling Brian Booms digital products — wallpapers, iPhone ringtones, and ambient music collections — for USDC on Base. 24 buyable SKUs ($0.05-$9.99); exact product name and price required per purchase.",
+  "resource": "https://pay.brianbooms.com/api/v1/buy/wallpaper-pack-vol1",
+  "method": "GET",
+  "category": "payments-commerce",
+  "tags": ["music", "wallpapers", "ringtones", "digital-goods", "usdc"],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.05",
+  "pricingModel": "tiered",
+  "floeCompatible": true,
+  "status": "unverified",
+  "modelCatalogUrl": "https://pay.brianbooms.com/offers.json"
+}
