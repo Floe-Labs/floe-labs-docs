@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 70 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 71 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -25,6 +25,7 @@
 - The cost calculator — https://floe-labs.gitbook.io/docs/know-your-costs/cost-calculator.md
 - Cost per client, campaign & task — https://floe-labs.gitbook.io/docs/attribution-margin/attribution.md
 - Rate cards & the margin engine — https://floe-labs.gitbook.io/docs/attribution-margin/rate-cards.md
+- Outcomes — what a task produced — https://floe-labs.gitbook.io/docs/attribution-margin/outcomes.md
 - Client invoicing — billing periods & statements — https://floe-labs.gitbook.io/docs/invoicing/invoicing.md
 - Stripe Connect — bill through your own Stripe — https://floe-labs.gitbook.io/docs/invoicing/stripe-connect.md
 - The Voice Stack — overview — https://floe-labs.gitbook.io/docs/connect-your-stack/voice-stack.md
@@ -295,7 +296,7 @@ One-click install links — the config carries the endpoint URL only, never a ke
 - Cursor — `cursor://anysphere.cursor-deeplink/mcp/install?name=floe&config=eyJ1cmwiOiJodHRwczovL21jcC5mbG9lbGFicy54eXovbWNwIn0`
 - VS Code — [`https://vscode.dev/redirect/mcp/install?name=floe&config=…`](https://vscode.dev/redirect/mcp/install?name=floe&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.floelabs.xyz%2Fmcp%22%7D)
 
-80 tools, full reference: [MCP Server](../developers/mcp-server.md).
+88 tools, full reference: [MCP Server](../developers/mcp-server.md).
 {% endtab %}
 {% tab title="CLI" %}
 
@@ -417,7 +418,7 @@ One real metered call against the **$3 welcome credit** your first agent starts 
 ## Next steps
 
 - [Quickstart](quickstart.md) — create an agent, connect your tools, first paid call
-- [MCP Server](../developers/mcp-server.md) — all 80 tools with input schemas
+- [MCP Server](../developers/mcp-server.md) — all 88 tools with input schemas
 - [Floe CLI](../developers/cli.md) — every command, flag, and exit code
 - [Spend Controls](../developers/spend-controls.md) — the guardrails to set before you let it run
 
@@ -1702,6 +1703,155 @@ Both are **Pro** reads (`attribution_reports`). Read them side by side with the 
 - [Cost per client, campaign & task](attribution.md) — tag the spend these cards price.
 - [The live cost ledger](unified-ledger.md) · [Vendor actuals](vendor-actuals.md) — the cost side of every margin figure.
 - [Client invoicing — billing periods & statements](invoicing.md) — turn a priced period into a statement you can send.
+
+==============================================================================
+# Outcomes — what a task produced
+Source: docs/build/outcomes.md
+URL: https://floe-labs.gitbook.io/docs/attribution-margin/outcomes.md
+==============================================================================
+
+# Outcomes — what a task produced
+
+[Attribution](attribution.md) tells you what a task **cost**. This page is the other half: what it **produced** — a booked meeting, a qualified lead, a resolved ticket. Report the outcome against the task id you already send, and Floe binds it to the same call your costs are on. Cost and outcome then sit on one row.
+
+That is what turns *cost per outcome* into a number instead of an estimate. "Our meetings cost $4.10 each" is only sayable if the meeting and the spend are the same record.
+
+Floe never judges whether an outcome is good, and never infers one. You state what happened; Floe joins it to the money.
+
+## Two different things called "outcome"
+
+This trips people up more than anything else on this page, so take thirty seconds on it.
+
+| | **Action outcome** (`reportOutcome`) | **Outcome claim** (`emitOutcome`) |
+|---|---|---|
+| What it is | Your own eval signal for a tagged action | The billable claim for a task |
+| Keyed on | `actionId` | `taskId` |
+| Shape | `status` + `scoreBps` + `note` | `outcomeKind` + `quantity` + evidence |
+| Reaches an invoice | Never | Yes — this is what gets rated |
+| Re-reporting | Overwrites the previous signal | Appends a new event; nothing is updated |
+
+If you are asking *"did this decision work?"*, that is the action outcome. If you are asking *"what did this task produce that we bill for?"*, that is an outcome claim — this page.
+
+## Emit a claim
+
+Your agent reports the fact, using its **agent key** (`floe_…`), as soon as it knows.
+
+{% tabs %}
+{% tab title="TypeScript" %}
+```ts
+await agent.fetch({ url, taskId: "call-8821" });
+
+await agent.emitOutcome({
+  taskId: "call-8821",
+  outcomeKind: "meeting_booked",
+  idempotencyKey: "call-8821:meeting_booked",
+});
+```
+{% endtab %}
+
+{% tab title="Python" %}
+```python
+agent.fetch(url, task_id="call-8821")
+
+agent.emit_outcome(
+    "call-8821", "meeting_booked",
+    idempotency_key="call-8821:meeting_booked",
+)
+```
+{% endtab %}
+
+{% tab title="curl" %}
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/agents/outcomes \
+  -H "Authorization: Bearer $FLOE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taskId": "call-8821",
+    "outcomeKind": "meeting_booked",
+    "idempotencyKey": "call-8821:meeting_booked"
+  }'
+```
+{% endtab %}
+{% endtabs %}
+
+An MCP-connected agent uses the `emit_outcome` tool instead — same fields in snake_case.
+
+### The rules worth knowing before you build on it
+
+**A task id that names no call is refused** with `404 task_not_found`, not stored. An outcome nothing can bill is worse than no outcome, because it looks like one. Tag the call first (see [attribution](attribution.md)), emit after.
+
+**`outcomeKind` is opaque.** Lowercased, ≤64 characters, never interpreted by Floe. What a kind is *worth* belongs on the [rate card](rate-cards.md), where money meaning lives. Pick stable machine-ish names — `meeting_booked`, `lead_qualified`, `ticket_resolved` — because the rate card keys on them.
+
+**`idempotencyKey` is required.** Emitters retry; a replay of the same key returns the stored claim rather than creating a second one. Derive it from the fact itself (`<taskId>:<kind>`) rather than generating a random one, or a retry becomes a duplicate claim. Reusing one key under a *different* task id is refused — the claim is already attached to the first call.
+
+**Two meetings on one call is `quantity: 2` on one claim**, not two claims.
+
+## Reporting is not confirming
+
+An agent key may **report** a claim and nothing else. It cannot confirm one, void one, or resolve a conflict — those move money, and the evidence that justifies them (a CRM webhook, a calendar invitation) reaches your backend minutes to days after the call, not the agent's process.
+
+So a freshly emitted claim is `reported`, and its `confirmedAt` is null. It becomes billable when **you** confirm it with a developer credential:
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/outcomes/oev_00112233445566aa/confirm \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"idempotencyKey": "close-sep:oev_0011", "externalSystem": "hubspot", "externalRef": "DEAL-9"}'
+```
+
+| Status | Meaning |
+|---|---|
+| `reported` | Stated by an agent or an orchestrator. Not billable yet. |
+| `confirmed` | An operator (or the client) vouched for it. This is what rates. |
+| `void` | Retired — typically a proven duplicate. |
+| `disputed` / `reversed` | Contested, or credited back after it was already billed. |
+
+Every claim is **append-only**. Confirming does not edit the reported row; it writes a new event that supersedes it, so the chain of who said what, when, survives. A claim already billed into a closed statement is frozen — the correction is a reversal in the next open period, never an edit.
+
+## Evidence is an allowlist
+
+Three optional fields, and nothing else is accepted:
+
+| Field | Notes |
+|---|---|
+| `externalSystem` | The namespace — `hubspot`, `google_calendar`. Lowercased. |
+| `externalRef` | Its id, stored **verbatim** (these are case-sensitive). Requires `externalSystem`. |
+| `note` | Free text, ≤500 characters. |
+
+Equality on `(externalSystem, externalRef)` is the only thing that **proves** two claims are one fact, which is why the reference is never normalised. All three are erasable: a subject erasure nulls them and stamps the claim. The claim itself survives, because an invoice line must outlive an erasure — a CRM id need not.
+
+> **Don't put personal data in `note`.** It is erasable, but it is still the wrong place for it.
+
+## When two claims land on one call
+
+A post-call webhook reporting against the orchestrator's call id, and your agent reporting against the task id, can both resolve to the same call. That is either **one meeting reported twice** or **two meetings booked once** — and nothing in the data distinguishes them.
+
+Floe does not guess. Both claims are kept, each with its own chain, and an `outcome_claim_collision` finding names the conflict for a person. You resolve it by voiding one as a proven duplicate, or by confirming that both are genuinely distinct — after which both rate.
+
+This is the same rule the rest of the ledger follows: a guessed attribution is a silent accounting error, and a named conflict is not.
+
+## Reading them back
+
+Discovery is **by the call**, because when you are asking the question you have a task or a client — not a claim id.
+
+```bash
+# every claim on one campaign, newest first
+curl "https://credit-api.floelabs.xyz/v1/developer/outcomes?campaignId=q3-outbound&status=confirmed" \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY"
+
+# one claim, with the chain it belongs to
+curl "https://credit-api.floelabs.xyz/v1/developer/outcomes/oev_00112233445566aa" \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY"
+```
+
+Filter by `taskId`, `interactionId`, `customerId`, `campaignId`, `outcomeKind`, `status`, `source` and a date range. Results are keyset paged — pass `nextCursor` back verbatim. MCP clients have the same two reads as `list_outcomes` and `get_outcome`.
+
+Two behaviours worth relying on:
+
+- **A saved claim id never 404s because it was corrected.** Naming any event in a chain answers with the current head and tells you whether the id you held is still it (`isHead`).
+- **Unbound claims are returned, not hidden.** A claim with no call comes back with a reason rather than being dropped, so a hole in your outcome data is something you can see and fix.
+
+Reading outcomes is on the **free** plan, like the rest of the [by-call ledger](unified-ledger.md).
 
 ==============================================================================
 # Client invoicing — billing periods & statements
@@ -6137,7 +6287,7 @@ A native `floe-agent` adapter for the OpenAI Agents SDK is in development. Until
 }
 ```
 
-Your OpenAI agent now sees all 80 server-exposed Floe MCP tools. A `floe_live_…` developer key unlocks the lifecycle, observability, and webhook tools; runtime tools like `x402_pay` and the spend controls need an agent key (`floe_…`).
+Your OpenAI agent now sees all 88 server-exposed Floe MCP tools. A `floe_live_…` developer key unlocks the lifecycle, observability, and webhook tools; runtime tools like `x402_pay` and the spend controls need an agent key (`floe_…`).
 
 ## Roadmap
 
@@ -6194,7 +6344,7 @@ claude mcp add --transport http floe https://mcp.floelabs.xyz/mcp \
 
 ## What you get
 
-All 80 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, and docs search. See the [MCP Server reference](../developers/mcp-server.md) for the full tool catalog.
+All 88 Floe MCP tools — agent lifecycle, key minting, spend controls, cost preflight, **x402 payment execution**, funding instructions, usage analytics, webhooks, and docs search. See the [MCP Server reference](../developers/mcp-server.md) for the full tool catalog.
 
 Narrow the set with scope params — `?read_only=true` or `?features=spend,pricing,payments` on the endpoint URL.
 
@@ -6380,7 +6530,7 @@ const tools = await getLangChainTools(agentkit);
 
 ### MCP Server (Claude Desktop / Cursor)
 
-Wrap this provider's actions (30 with `floeActionProvider()` alone, 54 with `x402ActionProvider()` too) as MCP tools in Claude Desktop / Cursor. For the hosted server and its 80 tools — including agent lifecycle, key minting, and `x402_pay` — use [MCP Server](mcp-server.md) instead; it needs no wallet provider.
+Wrap this provider's actions (30 with `floeActionProvider()` alone, 54 with `x402ActionProvider()` too) as MCP tools in Claude Desktop / Cursor. For the hosted server and its 88 tools — including agent lifecycle, key minting, and `x402_pay` — use [MCP Server](mcp-server.md) instead; it needs no wallet provider.
 
 ```bash
 npm install @coinbase/agentkit-model-context-protocol @modelcontextprotocol/sdk
@@ -9348,7 +9498,7 @@ URL: https://floe-labs.gitbook.io/docs/developers/mcp-server.md
 
 # MCP Server
 
-Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **80 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
+Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **88 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
 
 > **Payments are in MCP now.** `estimate_x402_cost` (or `x402_forecast` for a whole plan) prices the call; `x402_pay` makes it, settles the vendor from the agent's balance, and returns the vendor's response plus the `X-Floe-*` receipt headers. An agent no longer has to leave MCP to spend.
 >
@@ -9403,8 +9553,8 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 
 | Key | Format | Unlocks | Get one |
 |---|---|---|---|
-| Developer key | `floe_live_…` | Developer-key surface (34 tools — lifecycle 12, observability 5, webhooks 11, actuals 6): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, coverage, webhooks + delivery logs, vendor actuals | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
-| Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe init`, or the dashboard |
+| Developer key | `floe_live_…` | Developer-key surface (41 tools — lifecycle 12, observability 5, webhooks 11, actuals 9, contracts 2, outcomes 2): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, coverage, webhooks + delivery logs, vendor actuals, interactions, signed contracts, outcome claims | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
+| Agent key | `floe_…` | Runtime (18 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation, `emit_outcome` | `create_agent_key` tool, `floe init`, or the dashboard |
 | Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
 | None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
 
@@ -9431,7 +9581,7 @@ https://mcp.floelabs.xyz/mcp?read_only=true          # 36 non-mutating tools
 https://mcp.floelabs.xyz/mcp?features=spend,pricing  # 19 tools — the decision loop only
 ```
 
-Capability groups: `lending`, `spend`, `pricing`, `lifecycle`, `observability`, `payments`, `webhooks`, `actuals`, `docs`. Both params combine, and an unknown feature name simply matches nothing.
+Capability groups: `lending`, `spend`, `pricing`, `lifecycle`, `observability`, `payments`, `webhooks`, `actuals`, `contracts`, `outcomes`, `docs`. Both params combine, and an unknown feature name simply matches nothing.
 
 ### Option 1: Remote Endpoint (recommended)
 
@@ -9567,9 +9717,9 @@ Each session is scoped to one agent — balances, spend limits, and webhook subs
 
 ---
 
-## Tools Reference (80)
+## Tools Reference (88)
 
-Eighty tools in nine capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
+Eighty-eight tools in eleven capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
 
 | Group | Tools | What it's for |
 |---|---|---|
@@ -9579,7 +9729,9 @@ Eighty tools in nine capability groups. The **Group** name is what you pass to `
 | [`pricing`](#cost-preflight-5) | 5 | Price a call or a whole plan before spending |
 | [`spend`](#spend-governance-and-awareness-14) | 14 | Caps, thresholds, merchant allowlist, reputation |
 | [`webhooks`](#webhooks-11) | 11 | Push notifications for account events + the delivery log |
-| [`actuals`](#vendor-actuals-6) | 6 | What your own vendors charged you, reconciled to their billing records |
+| [`actuals`](#vendor-actuals-9) | 9 | What your own vendors charged you, reconciled to their billing records — per leg, and joined at the task grain |
+| [`contracts`](#contracts-2) | 2 | What you SIGNED per client — terms, commitment progress, signed-vs-deployed drift |
+| [`outcomes`](#outcomes-3) | 3 | What a task PRODUCED — the billable claim, bound to the call |
 | [`docs`](#docs-1) | 1 | Search these docs from inside MCP |
 | [`lending`](#advanced-lending-protocol-25) | 25 | On-chain protocol layer (advanced / self-custody) |
 
@@ -9677,9 +9829,11 @@ Developer key.
 
 Event catalog, delivery semantics, and signature verification: [Webhooks](webhooks.md).
 
-### Vendor actuals (6)
+### Vendor actuals (9)
 
 Developer key. What **your own** vendors charged you (not what Floe charged you), reconciled against those vendors' billing records. Concepts and the status vocabulary: [Vendor actuals](../build/vendor-actuals.md).
+
+The group covers the same money at two grains: **per leg** (the six tools reconciling individual vendor charges) and **per task** (the three `interaction` tools, where every leg of one call or job is joined into a single row — the grain that knows how long the work took, and therefore the only one that can state cost per minute).
 
 Every cost carries a status, and the status bounds the claim: `exact` = reconciled to the vendor's own per-request billing record · `period-rate` = priced at the vendor's own realized rate for that period, **never** described as exact · `invoiced` = footed to the vendor's invoice · `pending` = the vendor hasn't published this cost yet · `manual` = no vendor API publishes this. **`pending` and `manual` legs have no cost at all** — `costRaw` is `null` and the surface shows units.
 
@@ -9691,10 +9845,40 @@ Every cost carries a status, and the status bounds the claim: `exact` = reconcil
 | `list_reconciliation_findings` | Everything the engine could **not** reconcile — the named reasons a total is a lower bound |
 | `list_vendor_connections` | Vendor billing credentials, masked (key material is never returned), plus the connector catalog. `bestStatus` is the ceiling a leg from that connection can ever reach |
 | `verify_vendor_connection` | Re-check one stored credential against the vendor now. Separates "revoked, re-key it" from "the vendor is down". Advisory — not a scope guarantee |
+| `list_interactions` | One row per AI task (voice call, SMS, or non-call job) with every vendor leg joined into one cost: duration, vendors involved, a per-leg-kind breakdown, and `topKind` naming the most expensive kind. `order_by="cost"` gives the outlier list — the calls eating the margin |
+| `get_interaction` | Open one task and show where its money went: every leg in time order with vendor, leg kind, typed units, capture source, status and cost, plus the identifiers the legs were joined on. Use after `list_interactions` to explain an expensive call leg by leg |
+| `get_interaction_cost_rollup` | Roll task cost up by customer, campaign, agent, channel, outcome or task type — and, uniquely, **cost per minute** per row, because the task is the only grain that knows how long the work took. Stated only when the cost is a real total and every task in the row has closed |
 
 Reads need the **Pro** feature `attribution_reports`; the two [vendor connection](../build/vendor-connections.md) tools need **Agency** `vendor_connections` (and admin/owner to verify).
 
 **Not exposed over MCP, deliberately.** Invoice **upload** is a binary PUT with nothing for an agent to send; **footing** an invoice is an irreversible finance action that keeps a human in the loop; **resolving a finding** is a human verdict the API withholds from the machine; **creating a connection** writes a sealed credential, and credentials never travel through a tool call. Use the dashboard or [`floe actuals`](cli.md).
+
+### Contracts (2)
+
+Developer key. What you **signed** per client — the mirror of a rate card. A rate card is what is *currently rating*; a contract is what was *agreed*, and the drift between them is the whole "signed vs deployed" question.
+
+| Tool | Description |
+|------|-------------|
+| `list_contracts` | The contract book, newest term first: term dates, committed volume, the rate-card version pinned as signed, and commitment progress counted in the contract's own unit |
+| `get_contract` | One signed contract by id. `signedRateCardVersion` pins the as-signed pricing **by version** rather than as a scalar — rate cards are append-only, so the reference reproduces the signed pricing exactly and forever |
+
+Read `status` and `state` differently: `status` is the stored human act (`active` / `cancelled`) and is **never** `expired`; `state` is what the contract *is* right now, combining that act with the clock. A contract on another account answers **404, not 403**, so the endpoint never confirms an id exists elsewhere.
+
+Its own capability group, separate from `actuals`, on purpose: `actuals` is what your *vendors* charged you, this is what your *client* agreed to pay. An operator can hand over one without the other — they are sensitive in different directions.
+
+### Outcomes (3)
+
+What a task **produced** — the billable claim, bound to the call its costs are on. Concepts: [Outcomes](../build/outcomes.md).
+
+| Tool | Description |
+|------|-------------|
+| `emit_outcome` | **Agent key.** Report a billable outcome against a task id; Floe resolves it to the call and binds the claim there. A task id naming no call is refused rather than stored unattached |
+| `list_outcomes` | Developer key. Find claims **by the call** — task, interaction, customer, campaign, kind, status, source. Returns chain heads only; unbound claims come back with a reason rather than being dropped |
+| `get_outcome` | Developer key. One claim with the chain it belongs to. Naming any event in a chain answers with the current head and reports `isHead`, so an id saved before a confirmation still resolves |
+
+**An agent key may only report.** There is no `status` argument on `emit_outcome`: confirming a claim, voiding one and resolving a collision are operator acts on the developer surface, because they move money and the evidence justifying them reaches your backend long after the call. Reads need the free `ledger_read` feature.
+
+**Not exposed over MCP, deliberately.** Confirming, voiding and resolving a collision are money-moving verdicts that keep a human in the loop — use the dashboard or the developer API.
 
 ### Docs (1)
 
@@ -13308,7 +13492,7 @@ URL: https://floe-labs.gitbook.io/docs/reference/changelog.md
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **80 tools**; `@floelabs/cli` ships **33 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **33 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
 

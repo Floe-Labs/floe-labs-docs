@@ -4,7 +4,7 @@ icon: plug
 
 # MCP Server
 
-Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **80 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
+Connect any AI agent to Floe using the [Model Context Protocol](https://modelcontextprotocol.io). The server exposes **88 tools** covering the whole lifecycle: provision agents, mint and rotate their keys, set budgets and policies, price a call, **execute the x402 payment**, and watch what the fleet spent. Works with Claude Code, Claude Desktop, Cursor, Codex, LangChain, CrewAI, and any MCP-compatible client.
 
 > **Payments are in MCP now.** `estimate_x402_cost` (or `x402_forecast` for a whole plan) prices the call; `x402_pay` makes it, settles the vendor from the agent's balance, and returns the vendor's response plus the `X-Floe-*` receipt headers. An agent no longer has to leave MCP to spend.
 >
@@ -59,8 +59,8 @@ The server is **dual-key aware**. Every tool declares which credential it needs,
 
 | Key | Format | Unlocks | Get one |
 |---|---|---|---|
-| Developer key | `floe_live_…` | Developer-key surface (34 tools — lifecycle 12, observability 5, webhooks 11, actuals 6): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, coverage, webhooks + delivery logs, vendor actuals | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
-| Agent key | `floe_…` | Runtime (17 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation | `create_agent_key` tool, `floe init`, or the dashboard |
+| Developer key | `floe_live_…` | Developer-key surface (41 tools — lifecycle 12, observability 5, webhooks 11, actuals 9, contracts 2, outcomes 2): create/pause/close agents, mint-rotate-revoke agent keys, key budgets, credit lines, funding instructions, balances, activity, usage, coverage, webhooks + delivery logs, vendor actuals, interactions, signed contracts, outcome claims | [Dashboard → Keys](https://dev-dashboard.floelabs.xyz/keys) |
+| Agent key | `floe_…` | Runtime (18 tools): `x402_pay`, cost estimates against real credit, spend limits, credit thresholds, merchant allowlist, reputation, `emit_outcome` | `create_agent_key` tool, `floe init`, or the dashboard |
 | Either | — | 26 tools: the 24 keyed lending/protocol tools, plus `list_models` and `estimate_inference_cost` | — |
 | None | — | `get_markets`, `check_x402_url`, `search_floe_docs` | — |
 
@@ -87,7 +87,7 @@ https://mcp.floelabs.xyz/mcp?read_only=true          # 36 non-mutating tools
 https://mcp.floelabs.xyz/mcp?features=spend,pricing  # 19 tools — the decision loop only
 ```
 
-Capability groups: `lending`, `spend`, `pricing`, `lifecycle`, `observability`, `payments`, `webhooks`, `actuals`, `docs`. Both params combine, and an unknown feature name simply matches nothing.
+Capability groups: `lending`, `spend`, `pricing`, `lifecycle`, `observability`, `payments`, `webhooks`, `actuals`, `contracts`, `outcomes`, `docs`. Both params combine, and an unknown feature name simply matches nothing.
 
 ### Option 1: Remote Endpoint (recommended)
 
@@ -223,9 +223,9 @@ Each session is scoped to one agent — balances, spend limits, and webhook subs
 
 ---
 
-## Tools Reference (80)
+## Tools Reference (88)
 
-Eighty tools in nine capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
+Eighty-eight tools in eleven capability groups. The **Group** name is what you pass to `?features=`; **Key** is the credential the tool needs (see [Which key?](#which-key)).
 
 | Group | Tools | What it's for |
 |---|---|---|
@@ -235,7 +235,9 @@ Eighty tools in nine capability groups. The **Group** name is what you pass to `
 | [`pricing`](#cost-preflight-5) | 5 | Price a call or a whole plan before spending |
 | [`spend`](#spend-governance-and-awareness-14) | 14 | Caps, thresholds, merchant allowlist, reputation |
 | [`webhooks`](#webhooks-11) | 11 | Push notifications for account events + the delivery log |
-| [`actuals`](#vendor-actuals-6) | 6 | What your own vendors charged you, reconciled to their billing records |
+| [`actuals`](#vendor-actuals-9) | 9 | What your own vendors charged you, reconciled to their billing records — per leg, and joined at the task grain |
+| [`contracts`](#contracts-2) | 2 | What you SIGNED per client — terms, commitment progress, signed-vs-deployed drift |
+| [`outcomes`](#outcomes-3) | 3 | What a task PRODUCED — the billable claim, bound to the call |
 | [`docs`](#docs-1) | 1 | Search these docs from inside MCP |
 | [`lending`](#advanced-lending-protocol-25) | 25 | On-chain protocol layer (advanced / self-custody) |
 
@@ -333,9 +335,11 @@ Developer key.
 
 Event catalog, delivery semantics, and signature verification: [Webhooks](webhooks.md).
 
-### Vendor actuals (6)
+### Vendor actuals (9)
 
 Developer key. What **your own** vendors charged you (not what Floe charged you), reconciled against those vendors' billing records. Concepts and the status vocabulary: [Vendor actuals](../build/vendor-actuals.md).
+
+The group covers the same money at two grains: **per leg** (the six tools reconciling individual vendor charges) and **per task** (the three `interaction` tools, where every leg of one call or job is joined into a single row — the grain that knows how long the work took, and therefore the only one that can state cost per minute).
 
 Every cost carries a status, and the status bounds the claim: `exact` = reconciled to the vendor's own per-request billing record · `period-rate` = priced at the vendor's own realized rate for that period, **never** described as exact · `invoiced` = footed to the vendor's invoice · `pending` = the vendor hasn't published this cost yet · `manual` = no vendor API publishes this. **`pending` and `manual` legs have no cost at all** — `costRaw` is `null` and the surface shows units.
 
@@ -347,10 +351,40 @@ Every cost carries a status, and the status bounds the claim: `exact` = reconcil
 | `list_reconciliation_findings` | Everything the engine could **not** reconcile — the named reasons a total is a lower bound |
 | `list_vendor_connections` | Vendor billing credentials, masked (key material is never returned), plus the connector catalog. `bestStatus` is the ceiling a leg from that connection can ever reach |
 | `verify_vendor_connection` | Re-check one stored credential against the vendor now. Separates "revoked, re-key it" from "the vendor is down". Advisory — not a scope guarantee |
+| `list_interactions` | One row per AI task (voice call, SMS, or non-call job) with every vendor leg joined into one cost: duration, vendors involved, a per-leg-kind breakdown, and `topKind` naming the most expensive kind. `order_by="cost"` gives the outlier list — the calls eating the margin |
+| `get_interaction` | Open one task and show where its money went: every leg in time order with vendor, leg kind, typed units, capture source, status and cost, plus the identifiers the legs were joined on. Use after `list_interactions` to explain an expensive call leg by leg |
+| `get_interaction_cost_rollup` | Roll task cost up by customer, campaign, agent, channel, outcome or task type — and, uniquely, **cost per minute** per row, because the task is the only grain that knows how long the work took. Stated only when the cost is a real total and every task in the row has closed |
 
 Reads need the **Pro** feature `attribution_reports`; the two [vendor connection](../build/vendor-connections.md) tools need **Agency** `vendor_connections` (and admin/owner to verify).
 
 **Not exposed over MCP, deliberately.** Invoice **upload** is a binary PUT with nothing for an agent to send; **footing** an invoice is an irreversible finance action that keeps a human in the loop; **resolving a finding** is a human verdict the API withholds from the machine; **creating a connection** writes a sealed credential, and credentials never travel through a tool call. Use the dashboard or [`floe actuals`](cli.md).
+
+### Contracts (2)
+
+Developer key. What you **signed** per client — the mirror of a rate card. A rate card is what is *currently rating*; a contract is what was *agreed*, and the drift between them is the whole "signed vs deployed" question.
+
+| Tool | Description |
+|------|-------------|
+| `list_contracts` | The contract book, newest term first: term dates, committed volume, the rate-card version pinned as signed, and commitment progress counted in the contract's own unit |
+| `get_contract` | One signed contract by id. `signedRateCardVersion` pins the as-signed pricing **by version** rather than as a scalar — rate cards are append-only, so the reference reproduces the signed pricing exactly and forever |
+
+Read `status` and `state` differently: `status` is the stored human act (`active` / `cancelled`) and is **never** `expired`; `state` is what the contract *is* right now, combining that act with the clock. A contract on another account answers **404, not 403**, so the endpoint never confirms an id exists elsewhere.
+
+Its own capability group, separate from `actuals`, on purpose: `actuals` is what your *vendors* charged you, this is what your *client* agreed to pay. An operator can hand over one without the other — they are sensitive in different directions.
+
+### Outcomes (3)
+
+What a task **produced** — the billable claim, bound to the call its costs are on. Concepts: [Outcomes](../build/outcomes.md).
+
+| Tool | Description |
+|------|-------------|
+| `emit_outcome` | **Agent key.** Report a billable outcome against a task id; Floe resolves it to the call and binds the claim there. A task id naming no call is refused rather than stored unattached |
+| `list_outcomes` | Developer key. Find claims **by the call** — task, interaction, customer, campaign, kind, status, source. Returns chain heads only; unbound claims come back with a reason rather than being dropped |
+| `get_outcome` | Developer key. One claim with the chain it belongs to. Naming any event in a chain answers with the current head and reports `isHead`, so an id saved before a confirmation still resolves |
+
+**An agent key may only report.** There is no `status` argument on `emit_outcome`: confirming a claim, voiding one and resolving a collision are operator acts on the developer surface, because they move money and the evidence justifying them reaches your backend long after the call. Reads need the free `ledger_read` feature.
+
+**Not exposed over MCP, deliberately.** Confirming, voiding and resolving a collision are money-moving verdicts that keep a human in the loop — use the dashboard or the developer API.
 
 ### Docs (1)
 
