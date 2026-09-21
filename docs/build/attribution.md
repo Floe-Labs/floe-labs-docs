@@ -107,6 +107,8 @@ That last row is the work list: 44 reconciled calls reached your ledger with no 
 
 The same client and campaign grouping is available over **[vendor actuals](vendor-actuals.md)** — the vendor's own billing number behind each client, reconciled leg by leg — when you need margin against true cost rather than Floe-settled spend.
 
+Each interaction-rollup row also states `paidRaw`: that key's vendor bill **plus** what Floe charged for the legs it carried (keyless, Floe Phone, x402). It is the figure to compare one client or campaign against another, and it comes with rules about when it can and can't be stated — see [the same pair on the rollups](vendor-actuals.md#the-same-pair-on-the-rollups). Filtering those rollups with `campaignId` matches the **call's** resolved campaign — the same value the rollup groups on — so a filtered total covers exactly the calls its count covers.
+
 ## Plan gate
 
 > **Capture is free. Reading it is free. Exporting it is Pro.**

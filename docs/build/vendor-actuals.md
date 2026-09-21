@@ -51,6 +51,16 @@ That is a statement about **vendor** cost, not about what the work cost you. You
 
 A task whose every leg is Floe-carried — keyless inference in a workflow, a Floe Phone call — therefore appears with its charge instead of being invisible. Its vendor figures stay empty, because none of that spend is a vendor bill of yours.
 
+### The same pair on the rollups
+
+`GET /v1/developer/interactions/rollups?by=customer|campaign|agent|channel|outcome|task_type` reports `floeChargeRaw`, `floeChargeRequests` and `paidRaw` per row, so a per-client or per-campaign row states what that work **cost** — not just its vendor bill. `paidRaw` is the only figure on the row safe to compare against another paid figure. Three rules to read them by:
+
+- **Absent — not null — when the question can't be answered.** Filter the request by vendor, reconciliation status, client or agent and the charge fields are left off the response entirely, rather than reporting unfiltered charges inside a filtered response. A Floe charge is one payment across all of a call's legs, so it cannot be narrowed to just the legs a leg-level filter matched. Test for the key itself (`'floeChargeRaw' in row`) to tell **"Floe carried nothing for this key"** (`floeChargeRaw: null`) from **"not answerable under this filter"** (no field at all). `costOwnerNote` moves with the fields, so the note never advertises a figure the rows don't carry. Filtering by **campaign** or **outcome** — properties of the call, not of a leg — keeps the fields, because those filters are re-applied to the charges too.
+- **`paidRaw` is `null` while the row's vendor half is partial**, for the same reason it is on the per-task view: adding a known charge to a lower bound would render it as though it were a total.
+- **Unlike the per-task view, a key whose spend is *entirely* Floe-carried still doesn't appear at this grain.** It has no developer-owned leg to group on, so it contributes neither a row nor a charge. What changed is that a key which *does* appear no longer understates itself.
+
+The response also carries `floeChargeUnkeyed` — charges that resolved to no row, reported beside the rows rather than folded into one. It is present exactly when the rows carry charge fields, and is normally `{ "chargeRaw": "0", "requests": 0 }`.
+
 ## No FX, ever
 
 A non-USD or credit-denominated vendor record is **structurally unpriceable** here. There is no FX source in Floe, and an invented rate inside an audit ledger is worse than a blank. Those legs render `—` plus the vendor's verbatim cost string in their provenance, and are excluded from every subtotal. They also open a `currency_unsupported` finding so the omission is visible rather than silent.
@@ -60,6 +70,8 @@ A non-USD or credit-denominated vendor record is **structurally unpriceable** he
 Reconciling to a vendor's **own** records is an **Agency** capability — it's the [vendor connection](vendor-connections.md) that does it. (Reading the ledger those costs land on — per-leg and by-call — is free; the per-client rollups are Pro. See [Plans & entitlements](../reference/plans.md).) Floe pulls each vendor's billing records with a **read-only credential you supply** — separate from any key that routes traffic; Floe never writes to your vendor account and never rotates your keys. Connect one in the dashboard under **Keys → Vendor billing connections**, or from the `floe actuals` CLI; some vendors (e.g. Twilio) require you to set your billing timezone when connecting. Where no vendor API publishes a cost, upload the vendor's invoice and foot it to reconcile it.
 
 Read your reconciled costs — legs, by-call, and rollups, each with a provenance drawer — in the dashboard at `/actuals`, over the `floe actuals` CLI, or through the `actuals` MCP capability group (read tools only; invoice upload and footing stay human-in-the-loop). The engine records everything it couldn't reconcile as a *finding* with a reason — review and resolve them in the dashboard.
+
+On a **campaign-tagged** call, the by-call view also measures that call against its campaign's average cost per call, over your whole history window. Where it can't state a percentage it says why instead of showing a dash — this call's own cost is still a lower bound, some calls in the campaign aren't costed yet, or it's the only call in the campaign. Both sides of that comparison are paid cost (`paidRaw`), so a call with keyless, Floe Phone or x402 work in it isn't measured against a vendor-only mean.
 
 `floe actuals` is about **your** vendors' bills. Not to be confused with `floe vendors`, which probes the health of Floe's own marketplace vendors.
 
