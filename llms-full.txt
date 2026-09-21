@@ -1728,7 +1728,7 @@ This trips people up more than anything else on this page, so take thirty second
 | Keyed on | `actionId` | `taskId` |
 | Shape | `status` + `scoreBps` + `note` | `outcomeKind` + `quantity` + evidence |
 | Reaches an invoice | Never | Yes — this is what gets rated |
-| Re-reporting | Overwrites the previous signal | Appends a new event; nothing is updated |
+| Re-reporting | Overwrites the previous signal | **Refused** — see [Emitting the same outcome twice](#emitting-the-same-outcome-twice). Only an operator appends a correction |
 
 If you are asking *"did this decision work?"*, that is the action outcome. If you are asking *"what did this task produce that we bill for?"*, that is an outcome claim — this page.
 
@@ -1789,6 +1789,19 @@ An MCP-connected agent uses the `emit_outcome` tool instead — same fields in s
 **`idempotencyKey` is required.** Emitters retry; a replay of the same key returns the stored claim rather than creating a second one. Derive it from the fact itself (`<taskId>:<kind>`) rather than generating a random one, or a retry becomes a duplicate claim. Reusing one key under a *different* task id is refused — the claim is already attached to the first call.
 
 **Two meetings on one call is `quantity: 2` on one claim**, not two claims.
+
+### Emitting the same outcome twice
+
+The one thing to get right before you build a retry loop:
+
+| What you send | What happens |
+|---|---|
+| Same `idempotencyKey` | `200` with the stored claim — no second row. This is why retries are safe |
+| New key, same task **and** kind, claim still live | `409 outcome_claim_exists` |
+| New key, **different** kind on the same task | `201` — a separate claim, which is correct |
+| Same key, **different** task | `409 outcome_claim_bound_elsewhere` |
+
+**Your agent never appends to a chain.** Appending is a *revision* — confirming or voiding — and that is the operator surface, not this one. So there is no way for an agent to "re-report" an outcome: it either replays the claim it already made, or it is refused.
 
 ## Reporting is not confirming
 
