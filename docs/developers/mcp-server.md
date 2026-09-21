@@ -83,7 +83,7 @@ Use it to vet a vendor URL's price (`check_x402_url`) or search these docs befor
 Narrow what a session can do straight from the URL — useful for read-only reviewers or for keeping the tool list small in context-constrained clients:
 
 ```text
-https://mcp.floelabs.xyz/mcp?read_only=true          # 36 non-mutating tools
+https://mcp.floelabs.xyz/mcp?read_only=true          # 53 non-mutating tools
 https://mcp.floelabs.xyz/mcp?features=spend,pricing  # 19 tools — the decision loop only
 ```
 

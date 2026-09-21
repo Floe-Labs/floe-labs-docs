@@ -1762,6 +1762,8 @@ agent.emit_outcome(
 
 {% tab title="curl" %}
 ```bash
+# $FLOE_API_KEY holds the AGENT key (floe_…) for this route — a floe_live_…
+# developer key is refused with wrong_credential_type.
 curl -X POST https://credit-api.floelabs.xyz/v1/agents/outcomes \
   -H "Authorization: Bearer $FLOE_API_KEY" \
   -H "Content-Type: application/json" \
@@ -1780,7 +1782,9 @@ An MCP-connected agent uses the `emit_outcome` tool instead — same fields in s
 
 **A task id that names no call is refused** with `404 task_not_found`, not stored. An outcome nothing can bill is worse than no outcome, because it looks like one. Tag the call first (see [attribution](attribution.md)), emit after.
 
-**`outcomeKind` is opaque.** Lowercased, ≤64 characters, never interpreted by Floe. What a kind is *worth* belongs on the [rate card](rate-cards.md), where money meaning lives. Pick stable machine-ish names — `meeting_booked`, `lead_qualified`, `ticket_resolved` — because the rate card keys on them.
+**`outcomeKind` is opaque.** Lowercased, ≤64 characters, never interpreted by Floe — the vocabulary is yours. Pick stable machine-ish names (`meeting_booked`, `lead_qualified`, `ticket_resolved`) and keep them stable once you start emitting, because anything that later prices an outcome will key on the kind.
+
+> **Pricing per outcome kind is not available yet.** [Rate cards](rate-cards.md) today meter per request, per audio minute, per task and per voice call — there is no outcome unit. Emitting claims, confirming them and reading them back all work now; rating a kind against a price comes with the rating work. Record the outcomes in the meantime: the claims are what that will rate.
 
 **`idempotencyKey` is required.** Emitters retry; a replay of the same key returns the stored claim rather than creating a second one. Derive it from the fact itself (`<taskId>:<kind>`) rather than generating a random one, or a retry becomes a duplicate claim. Reusing one key under a *different* task id is refused — the claim is already attached to the first call.
 
@@ -1852,6 +1856,8 @@ Two behaviours worth relying on:
 - **A claim that cannot be bound is returned, not hidden.** In practice you should never see one: every claim reaches Floe through a path that binds it at write, and emitting against a task id that names no call is refused outright. The reason field exists because the read surface will not drop a row it cannot explain — if a claim ever does arrive unbound, it comes back saying so instead of going quietly missing from your outcome data.
 
 Reading outcomes is on the **free** plan, like the rest of the [by-call ledger](unified-ledger.md).
+
+Full request and response schemas for every route on this page live in the [OpenAPI specification](https://credit-api.floelabs.xyz/.well-known/openapi.yaml).
 
 ==============================================================================
 # Client invoicing — billing periods & statements
@@ -9577,7 +9583,7 @@ Use it to vet a vendor URL's price (`check_x402_url`) or search these docs befor
 Narrow what a session can do straight from the URL — useful for read-only reviewers or for keeping the tool list small in context-constrained clients:
 
 ```text
-https://mcp.floelabs.xyz/mcp?read_only=true          # 36 non-mutating tools
+https://mcp.floelabs.xyz/mcp?read_only=true          # 53 non-mutating tools
 https://mcp.floelabs.xyz/mcp?features=spend,pricing  # 19 tools — the decision loop only
 ```
 
