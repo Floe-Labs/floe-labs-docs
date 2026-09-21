@@ -1,0 +1,32 @@
+{
+  "id": "x402wrapper",
+  "name": "x402 Middleman Wrapper",
+  "provider": "x402wrapper",
+  "homepage": "https://x402-wrapper.onrender.com",
+  "description": "Pay-per-call x402 proxy for AI agents: live weather (Open-Meteo), crypto prices (CoinGecko), and HTTP echo. Near-free per-call pricing, settled in native USDC on Base (chain 8453). x402 v2 with PAYMENT-REQUIRED header; discovery at /.well-known/x402.",
+  "resource": "https://x402-wrapper.onrender.com/v1/weather-now",
+  "method": "GET",
+  "category": "infra-gateway",
+  "tags": [
+    "weather",
+    "crypto-prices",
+    "http-echo",
+    "proxy",
+    "agents"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.0005",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified",
+  "requestExample": {
+    "query": "latitude=40.71&longitude=-74.00"
+  },
+  "responseExample": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\"latitude\":40.71,\"longitude\":-74.0,\"current\":{\"temperature_2m\":21.5,\"relative_humidity_2m\":62,\"weather_code\":2}}"
+  }
+}
