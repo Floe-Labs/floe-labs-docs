@@ -141,6 +141,6 @@ Filter by `taskId`, `interactionId`, `customerId`, `campaignId`, `outcomeKind`, 
 Two behaviours worth relying on:
 
 - **A saved claim id never 404s because it was corrected.** Naming any event in a chain answers with the current head and tells you whether the id you held is still it (`isHead`).
-- **Unbound claims are returned, not hidden.** A claim with no call comes back with a reason rather than being dropped, so a hole in your outcome data is something you can see and fix.
+- **A claim that cannot be bound is returned, not hidden.** In practice you should never see one: every claim reaches Floe through a path that binds it at write, and emitting against a task id that names no call is refused outright. The reason field exists because the read surface will not drop a row it cannot explain — if a claim ever does arrive unbound, it comes back saying so instead of going quietly missing from your outcome data.
 
 Reading outcomes is on the **free** plan, like the rest of the [by-call ledger](unified-ledger.md).

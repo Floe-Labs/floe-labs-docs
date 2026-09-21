@@ -339,7 +339,7 @@ Event catalog, delivery semantics, and signature verification: [Webhooks](webhoo
 
 Developer key. What **your own** vendors charged you (not what Floe charged you), reconciled against those vendors' billing records. Concepts and the status vocabulary: [Vendor actuals](../build/vendor-actuals.md).
 
-The group covers the same money at two grains: **per leg** (the six tools reconciling individual vendor charges) and **per task** (the three `interaction` tools, where every leg of one call or job is joined into a single row — the grain that knows how long the work took, and therefore the only one that can state cost per minute).
+The group spans two grains plus the plumbing underneath. `list_vendor_cost_legs` is the only **per-leg** read — one row per vendor charge; `list_vendor_cost_calls` and `get_vendor_cost_rollup` aggregate that same money, `list_reconciliation_findings` names what could not be reconciled, and the two connection tools cover the billing credentials behind it. The three `interaction` tools read at the **task** grain, where every leg of one call or job is joined into a single row — the grain that knows how long the work took, and therefore the only one that can state cost per minute.
 
 Every cost carries a status, and the status bounds the claim: `exact` = reconciled to the vendor's own per-request billing record · `period-rate` = priced at the vendor's own realized rate for that period, **never** described as exact · `invoiced` = footed to the vendor's invoice · `pending` = the vendor hasn't published this cost yet · `manual` = no vendor API publishes this. **`pending` and `manual` legs have no cost at all** — `costRaw` is `null` and the surface shows units.
 
@@ -379,7 +379,7 @@ What a task **produced** — the billable claim, bound to the call its costs are
 | Tool | Description |
 |------|-------------|
 | `emit_outcome` | **Agent key.** Report a billable outcome against a task id; Floe resolves it to the call and binds the claim there. A task id naming no call is refused rather than stored unattached |
-| `list_outcomes` | Developer key. Find claims **by the call** — task, interaction, customer, campaign, kind, status, source. Returns chain heads only; unbound claims come back with a reason rather than being dropped |
+| `list_outcomes` | Developer key. Find claims **by the call** — task, interaction, customer, campaign, kind, status, source. Returns chain heads only. A claim that cannot be bound comes back with a reason rather than being dropped, though no current ingestion path produces one: emitting against a task id with no call is refused outright |
 | `get_outcome` | Developer key. One claim with the chain it belongs to. Naming any event in a chain answers with the current head and reports `isHead`, so an id saved before a confirmation still resolves |
 
 **An agent key may only report.** There is no `status` argument on `emit_outcome`: confirming a claim, voiding one and resolving a collision are operator acts on the developer surface, because they move money and the evidence justifying them reaches your backend long after the call. Reads need the free `ledger_read` feature.
