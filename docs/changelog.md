@@ -6,9 +6,24 @@ icon: swap
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **33 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **35 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.26.0 — Outcomes: what a task produced (September 2026)
+
+A task's **cost** has had a home since v1.22.0. This is what it **produced** — a booked meeting, a qualified lead, a resolution — bound to the same call, so the two sit on one row.
+
+* **Emit a claim from the agent.** `POST /v1/agents/outcomes` takes the task id you already send; Floe resolves it to the call and binds the claim there. A task id that names no call is **refused**, not stored unattached. `emitOutcome` / `emit_outcome` ship in both SDKs and as an MCP tool.
+* **Reporting is not confirming.** An agent key may only *report*. Confirming a claim, voiding one, and resolving a collision are operator acts on the developer credential — they move money, and the evidence that justifies them reaches your backend long after the call.
+* **Two claims of one kind on one call are kept, not merged.** That is either one outcome reported twice or two genuine outcomes; Floe cannot tell, so it records an `outcome_claim_collision` finding for a person rather than guessing.
+* **Read them back by the call.** `GET /v1/developer/outcomes` filters by task, interaction, client, campaign, kind, status and source; `GET /v1/developer/outcomes/{eventId}` returns the current head of a chain plus what it corrected — a saved id never 404s because it was superseded.
+* **From the terminal.** `floe outcomes list | get | confirm | void | confirm-distinct`. A write naming `--task`/`--interaction` resolves the claim itself, and **refuses** when more than one current claim of that kind comes back.
+* **Counts.** `@floelabs/mcp-server` now exposes **88 tools** (new `outcomes` capability group: `emit_outcome`, `list_outcomes`, `get_outcome`; the previously undocumented `interactions` and `contracts` tools are now in the reference too). `@floelabs/cli` ships **35 commands**.
+
+Pricing per outcome kind is not available yet — rate cards meter per request, minute, task and call. Claims are recorded and readable now; rating is what they are for.
+
+→ [Outcomes](build/outcomes.md) · [Floe CLI](developers/cli.md) · [MCP Server](developers/mcp-server.md)
 
 ### v1.25.0 — Per-call pricing (September 2026)
 

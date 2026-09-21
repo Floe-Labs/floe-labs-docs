@@ -51,7 +51,7 @@ npm i -g @floelabs/cli    # or keep the `floe` bin around
 | [Get started](#get-started) | `init` · `status` · `use` · `test` |
 | [Metered calls](#metered-calls) | `chat` · `embed` · `speak` · `transcribe` · `pay` |
 | [Agents & limits](#agents-limits) | `agents` · `keys` · `devkeys` · `budget` · `policy` · `allowlist` · `credit` |
-| [Observability & billing](#observability-billing) | `activity` · `usage` · `actuals` · `ledger` · `billing` · `account` · `team` |
+| [Observability & billing](#observability-billing) | `activity` · `usage` · `interactions` · `outcomes` · `actuals` · `ledger` · `billing` · `account` · `team` |
 | [Money](#money) | `funds` · `cashout` |
 | [Platform](#platform) | `webhooks` · `models` · `estimate` · `providers` · `phone` · `actions` · `orchestrators` · `vendors` |
 
@@ -427,6 +427,64 @@ Teammates share this account: its agents, keys, and billing. Destructive verbs (
 ```bash
 floe team invite dev@acme.com --role member
 ```
+
+### `floe interactions`
+
+One **task** — a call, or a non-call job — with every vendor leg it spent money on joined into one row: telephony, STT, LLM, TTS, tools. This is the unit of COGS. (`floe actuals` is the same money sliced by *vendor* instead.)
+
+| Subcommand | Does |
+|---|---|
+| `list` | Recent tasks with duration, the culprit leg, and cost. `--order cost` gives the outlier list: which calls are eating the margin |
+| `show <int_id>` | One task opened up — every leg, its units and status, the per-kind breakdown, and what the task cost |
+| `rollups --by <customer\|campaign\|agent\|channel\|outcome\|task_type>` | Cost **and cost per minute** by dimension. The task is the only grain that knows how long the work took |
+
+Filters: `--since` `--until` `--customer` `--campaign` `--agent` `--vendor` `--outcome` `--status <csv>` `--limit` `--cursor` (and `--channel` on `list`).
+
+```bash
+floe interactions list --order cost --since 2026-09-01T00:00:00Z
+floe interactions show int_00112233445566bb
+floe interactions rollups --by customer --json
+```
+
+**Two kinds of money, never added together.** *Vendor cost* is what your vendors billed you, reconciled to their own records; *Floe charge* is what Floe charged for legs it carried (keyless, Floe Phone, x402), which carry no vendor bill of yours. `PAID` is the server's own sum of the two, and reads `partial` until the vendor half is a real total.
+
+A total prints only when every leg is `exact`/`period-rate`/`invoiced` and USD. Otherwise you get the label and the blocking reasons — never a zero, never a partial sum wearing a total's clothes. `pending` on a task from a minute ago is the steady state: some vendors only publish cost on the next-day batch.
+
+---
+
+### `floe outcomes`
+
+What a task **produced** — a booked meeting, a qualified lead, a resolution — bound to the call its costs are on. Joined with `floe interactions`, that is cost per outcome. See [Outcomes](../build/outcomes.md).
+
+Not `floe actions`, which is the per-action *quality* signal (status + score) and never reaches an invoice. They share a word and nothing else.
+
+| Subcommand | Does |
+|---|---|
+| `list` | Claims by **call** — the front door. Keyset-paginated |
+| `get <oev_id>` | One claim plus the chain it corrected. A corrected id still resolves: you get the current head and are told so |
+| `confirm <oev_id>` | Make a reported claim billable. Only operator/client confirmations rate |
+| `void <oev_id> --reason <text>` | Retire a claim. `--reason` is required |
+| `confirm-distinct --interaction <int_id> --kind <k>` | Two claims of one kind on one call are **both** real — the other resolution is voiding one as a proven duplicate |
+
+Filters: `--since` `--until` `--task` `--interaction` `--customer` `--campaign` `--kind` `--status <csv>` `--source` `--limit` `--cursor`.
+
+```bash
+# discovery is by the call — you rarely have an oev_ id to hand
+floe outcomes list --campaign q3-outbound --status reported
+floe outcomes confirm --task call-8821 --kind meeting_booked \
+  --external-system hubspot --external-ref DEAL-9
+
+floe outcomes void oev_00112233445566aa --reason "duplicate of the webhook claim" \
+  --duplicate-of oev_1122334455667788
+```
+
+**Every write also accepts `--task` / `--interaction` with `--kind`** instead of an id, and resolves it for you. If more than one current claim of that kind is on the call, the command **refuses rather than picking one** — that is a collision (one outcome reported twice, or two genuine outcomes), and it is a human's call. Resolve it with `confirm-distinct`, or void the duplicate by its own id.
+
+**Reporting is not confirming.** An agent key may only *report* a claim; confirming, voiding and resolving a collision are operator acts on the developer credential, because they move money and the evidence justifying them lands in your backend long after the call.
+
+**`--reason` is required on `void`** and is refused before any network call: retiring a claim removes billable money, and a reason reconstructed later is a reason nobody wrote.
+
+---
 
 ### `floe actuals`
 

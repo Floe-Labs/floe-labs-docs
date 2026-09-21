@@ -91,7 +91,7 @@ floe budget set 5 --per day   # cap this key at $5 per rolling 24 h
 floe test                     # one real metered call — cost printed from X-Floe-Cost-USDC
 ```
 
-`--json` on every command; `--yes` skips confirmations on destructive/money verbs; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. The rest of the platform lives on the same bin — `agents`, `keys`, `policy`, `pay`, `chat`, `funds`, `phone`, `actuals`, and more (33 commands, dashboard parity). Full reference: [Floe CLI](../developers/cli.md).
+`--json` on every command; `--yes` skips confirmations on destructive/money verbs; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. The rest of the platform lives on the same bin — `agents`, `keys`, `policy`, `pay`, `chat`, `funds`, `phone`, `actuals`, and more (35 commands, dashboard parity). Full reference: [Floe CLI](../developers/cli.md).
 {% endtab %}
 {% tab title="SDK" %}
 Both SDKs take the **agent** key (`floe_…`), not the `floe_live_…` developer key: a developer key passes the client's prefix check but the proxy rejects it with `wrong_credential_type`. The agent key comes from `npx @floelabs/cli init` (minted into your OS keychain) or the dashboard — read it from `FLOE_AGENT_KEY`.
