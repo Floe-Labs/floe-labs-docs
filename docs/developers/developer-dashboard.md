@@ -24,7 +24,7 @@ This is **only** for developers using the dashboard. Agents authenticate with th
 
 ### Agents (Multi-Agent)
 
-Create and manage up to **5 agents per developer**. Each agent has its own credit line, delegation, and API key.
+Create and manage agents — **how many depends on your plan** (see [plans](../reference/plans.md)). Each agent has its own credit line, delegation, and API key.
 
 1. **Create Agent** — Name it, set a borrow limit, rate cap, and delegation expiry. The dashboard provisions a managed Privy wallet for the agent and submits the on-chain `setOperator` delegation **from that Privy wallet** server-side — you sign nothing on-chain from your own wallet.
 2. **Fund Agent** — Send USDC to the agent's wallet, or **buy USDC directly via Coinbase** (credit card or bank transfer) using the "Fund Wallet" button. No crypto bridges needed.
@@ -35,8 +35,7 @@ The same flow is available programmatically via `POST /v1/developer/agents` + `P
 Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `closed`), USDC balance (live), credit limit, delegation expiry, and active loans.
 
 **Agent limits:**
-- Max 5 agents per developer
-- Max 5 active API keys per agent (`floe keys create` mints extras; `floe keys rotate` replaces one atomically)
+- Agents per account, and API keys per agent, are **per-plan** — Free allows 5 of each, and the ceiling rises with the plan. See [plans](../reference/plans.md) for the current numbers. (`floe keys create` mints extras; `floe keys rotate` replaces one atomically.)
 - Borrow limit: 1–10B USDC (raw, 6 decimals)
 - Rate cap: 1–10,000 bps (0.01%–100%)
 - Delegation expiry: 1 minute–1 year
@@ -53,6 +52,34 @@ Buy USDC directly from the dashboard using a credit card, debit card, or bank tr
 No crypto bridges, no token swaps, no gas tokens needed.
 
 CLI equivalents: `floe funds topup [--amount <usd>] [--open]` prints the same Coinbase checkout link and watches for the funds; `floe funds address` prints the agent's raw USDC deposit address for wallet/exchange transfers.
+
+### Usage & activity
+
+**Usage** (`/usage`) answers where your spend went. Pick a date range, filter by vendor, client or reconciliation status, and group the result by **client, campaign, agent, channel, outcome or task type** — the same six dimensions the API serves.
+
+One range drives the whole screen: the KPI tiles, the spend chart and the rollup table all cover the period you picked, and the API reports back the range it actually aggregated. If your plan's history window is shorter than the range you asked for, the screen says so rather than captioning a clamped result with the window you requested.
+
+Untagged spend is never hidden. Calls with no value for the dimension you grouped by are bucketed under a placeholder row — usually the most actionable line on the page, since it is spend you cannot bill back to anyone.
+
+Reading all of this is **free on every plan**. CLI equivalent: `floe usage summary` for the KPIs, and `floe interactions rollups --by <customer|campaign|agent|channel|outcome|task_type>` for the same six groupings.
+
+> Not `floe ledger --group-by campaign`: that groups `/ledger` by **task id**, which is a different question from a campaign rollup. See [attribution](../build/attribution.md).
+
+### Exports
+
+**Exports** (`/exports`) lists every CSV Floe can produce. Each one is built on the screen that owns its date range and filters, so the file always matches what you were looking at:
+
+| Export | Where | Contains |
+|---|---|---|
+| Usage rollup | `/usage` | Cost per client / campaign / agent / channel / outcome / task type, with duration and $/min where a call has both |
+| Vendor cost legs | `/actuals` | Every vendor charge with its reconciliation status, units and provenance |
+| Client ledger | `/customers` | One client's per-charge cost, revenue and margin, plus the range summary that matches their invoice |
+| Monthly charges | `/exports` | Every charge Floe settled this calendar month |
+| Statements · margin · close packs | `/close` | The artifacts for a closed billing period |
+
+Every export is rendered server-side and **refuses rather than truncates**: past its row ceiling you get `413 export_too_large` telling you to narrow the range, never a short file that looks complete.
+
+CSV export rides the **Pro** `exports` feature. Statements, margin files and close packs are deliberately **not** gated — they are artifacts you already issued to your own clients, and a downgrade never retracts them.
 
 ### API Keys
 
@@ -82,7 +109,9 @@ Alerts are delivered via webhooks and shown in the dashboard.
 | Section | Path | What It Does | CLI equivalent |
 |---------|------|--------------|----------------|
 | Overview | `/` | Dashboard home with usage summary | `floe usage summary` · `floe billing mtd` |
-| Agents | `/agents` | Create, fund, and manage agents (up to 5) | `floe agents` · `floe funds` |
+| Usage | `/usage` | Filter, group and chart your spend by any dimension | `floe usage summary` · `floe interactions rollups --by <dim>` |
+| Exports | `/exports` | Every CSV Floe can produce, and where it comes from | — |
+| Agents | `/agents` | Create, fund, and manage agents (per-plan limits) | `floe agents` · `floe funds` |
 | Agent Detail | `/agents/:id` | Status, balance, delegation, keys | `floe agents get <agent> [--usage]` · `floe keys list --agent <agent>` |
 | API Keys | `/keys` | Create, list, and revoke developer keys | `floe devkeys` |
 | Webhooks | `/webhooks` | Register endpoints, test deliveries, view logs | `floe webhooks` |

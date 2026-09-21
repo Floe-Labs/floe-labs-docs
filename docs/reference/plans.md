@@ -37,7 +37,7 @@ The live cost ledger and the honest number behind every leg, with no account fri
 
 Everything in Free, plus the tools to export it, watch it, and put hard stops behind it:
 
-- **CSV exports** (`exports`) — the usage bill, statements, and margin as CSV.
+- **CSV exports** (`exports`) — every rollup as a server-rendered CSV: usage by client / campaign / agent / channel / outcome / task type, vendor cost legs, one client's per-charge ledger, and the monthly charge export. Reading those numbers on screen is free on every plan; downloading them is what this feature unlocks. Statements, margin files and close packs are **not** gated here — they are artifacts you already issued to your own clients, and a downgrade never retracts them.
 - **Alerts** (`alerts`) — credit-threshold notifications.
 - **Fleet policies** (`fleet_policies`) — developer-scope budgets and suspend-agent hard stops.
 
