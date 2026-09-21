@@ -25,6 +25,7 @@
 
 * [Cost per client, campaign & task](docs/build/attribution.md)
 * [Rate cards & the margin engine](docs/build/rate-cards.md)
+* [Outcomes — what a task produced](docs/build/outcomes.md)
 
 ## Invoicing
 

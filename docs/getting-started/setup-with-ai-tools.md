@@ -76,7 +76,7 @@ One-click install links — the config carries the endpoint URL only, never a ke
 - Cursor — `cursor://anysphere.cursor-deeplink/mcp/install?name=floe&config=eyJ1cmwiOiJodHRwczovL21jcC5mbG9lbGFicy54eXovbWNwIn0`
 - VS Code — [`https://vscode.dev/redirect/mcp/install?name=floe&config=…`](https://vscode.dev/redirect/mcp/install?name=floe&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.floelabs.xyz%2Fmcp%22%7D)
 
-80 tools, full reference: [MCP Server](../developers/mcp-server.md).
+88 tools, full reference: [MCP Server](../developers/mcp-server.md).
 {% endtab %}
 {% tab title="CLI" %}
 
@@ -198,6 +198,6 @@ One real metered call against the **$3 welcome credit** your first agent starts 
 ## Next steps
 
 - [Quickstart](quickstart.md) — create an agent, connect your tools, first paid call
-- [MCP Server](../developers/mcp-server.md) — all 80 tools with input schemas
+- [MCP Server](../developers/mcp-server.md) — all 88 tools with input schemas
 - [Floe CLI](../developers/cli.md) — every command, flag, and exit code
 - [Spend Controls](../developers/spend-controls.md) — the guardrails to set before you let it run
