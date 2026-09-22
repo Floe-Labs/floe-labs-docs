@@ -16,8 +16,11 @@ Programmable budgets for your agent wallets. Cap spending per vendor, per task, 
 | **Vendor** | Spend to a specific payee wallet | Payment recipient address | "$20/day to Venice AI" |
 | **API** | Spend to a hostname or domain | Target URL hostname | "$100/week to *.venice.ai" |
 | **Task** | Spend on a specific task ID | `X-Floe-Task-Id` header | "$5 budget for task-research-123" |
+| **Customer** | Spend attributed to one end-client | The call's resolved client id (`X-Floe-Customer-Id` header, or orchestrator metadata) | "$500/month for acme-corp" |
 
-Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` kind and the `session` window are **team-scoped only** (`/v1/developer/policies`).
+Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` and `customer` kinds and the `session` window are **team-scoped only** (`/v1/developer/policies`). A `customer` cap is team-scoped by design: scoped to one agent it would count that agent's spend while reading as the whole client's budget.
+
+**Per-key budgets** are a fifth cap, set on the key itself rather than through `/v1/developer/policies`: `PUT /v1/developer/agents/{agentId}/keys/{keyId}/budget` (`DELETE` the same path clears it), or `floe budget set 5 --per day` from the CLI. It records a `key` policy that sums spend across the key's **rotation lineage**, so rotating a key preserves the in-window total already spent instead of handing out a fresh budget.
 
 ## Quick Start
 
