@@ -16,8 +16,13 @@ Programmable budgets for your agent wallets. Cap spending per vendor, per task, 
 | **Vendor** | Spend to a specific payee wallet | Payment recipient address | "$20/day to Venice AI" |
 | **API** | Spend to a hostname or domain | Target URL hostname | "$100/week to *.venice.ai" |
 | **Task** | Spend on a specific task ID | `X-Floe-Task-Id` header | "$5 budget for task-research-123" |
+| **Customer** | Spend attributed to one end-client | The call's resolved client id (`X-Floe-Customer-Id` header, or orchestrator metadata) | "$500/month for acme-corp" |
 
-Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` kind and the `session` window are **team-scoped only** (`/v1/developer/policies`).
+Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` and `customer` kinds and the `session` window are **team-scoped only** (`/v1/developer/policies`). A `customer` cap is team-scoped by design: scoped to one agent it would count that agent's spend while reading as the whole client's budget.
+
+> **A customer cap binds only what is attributed.** A metered call that carries no client id matches no `customer` policy — there is nothing for the cap to match on. Under the default `optional` attribution an untagged call therefore slips past a per-client cap. Under **required** attribution an untagged metered call is refused outright, so the cap has no gap. Switch customer attribution to required in dashboard settings (owner/admin) before relying on a customer cap as a hard limit.
+
+**Per-key budgets** are an additional cap, set on the key itself rather than through `/v1/developer/policies`: `PUT /v1/developer/agents/{agentId}/keys/{keyId}/budget` (`DELETE` the same path clears it), or `floe budget set 5 --per day` from the CLI. It records a `key` policy that sums spend across the key's **rotation lineage**, so rotating a key preserves the in-window total already spent instead of handing out a fresh budget.
 
 ## Quick Start
 
@@ -296,7 +301,7 @@ Same routes available at `/v1/developer/agents/:agentId/policies` with session c
 
 ```typescript
 {
-  kind: 'vendor' | 'api' | 'task',   // per-agent; the 'session' kind is team-only (/v1/developer/policies)
+  kind: 'vendor' | 'api' | 'task',   // per-agent; the 'session' and 'customer' kinds are team-only (/v1/developer/policies)
   matchKey: string,              // Required (except for the team-only 'session' kind)
   matchKind?: 'host_exact' | 'host_suffix' | 'recipient',
   limitRaw: string,              // Raw USDC, 6 decimals (e.g. "5000000" = $5)
