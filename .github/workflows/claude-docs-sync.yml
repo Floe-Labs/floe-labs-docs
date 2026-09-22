@@ -47,8 +47,8 @@ jobs:
   openapi:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Floe-Labs/floe-monorepo
           token: ${{ secrets.DOCS_SYNC_TOKEN }}
@@ -111,9 +111,9 @@ jobs:
           echo "COMPARE_URL=https://github.com/Floe-Labs/floe-monorepo/compare/${BEFORE}...${AFTER}" >> "$GITHUB_ENV"
           echo "AFTER7=${AFTER:0:7}" >> "$GITHUB_ENV"
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Floe-Labs/floe-monorepo
           token: ${{ secrets.DOCS_SYNC_TOKEN }}
