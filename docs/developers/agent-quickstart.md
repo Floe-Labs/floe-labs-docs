@@ -89,9 +89,9 @@ See **[x402 Credit Facilitator](x402-facilitator.md)** for the complete referenc
 
 End-to-end, from zero to your agent's first paid API call. Everything the deployer does once, and the agent code that runs forever after.
 
-### 1. Developer signs in (SIWE)
+### 1. Developer signs in
 
-Visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and connect a wallet. The dashboard asks for a signature (no passwords, no email — wallet signature is identity) and issues a 7-day JWT.
+Visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with your email (a one-time code) or Google. There's no wallet to connect and nothing to sign, and your first sign-in creates the account unless one already matches your identity or a wallet linked to it — Floe signs you in to the existing account rather than creating a second. The dashboard keeps you signed in for 7 days. If you signed up with a wallet (MetaMask, Coinbase Wallet, and others), choose **Use a wallet instead**. See [Developer Dashboard → Authentication](developer-dashboard.md#authentication).
 
 ### 2. Mint a developer API key
 
@@ -126,7 +126,7 @@ The CLI signs a wallet auth message (no on-chain tx), calls the same `POST /v1/d
 
 ### 4. Fund the agent wallet
 
-The recommended path is the dashboard's **Fund Wallet** button — pay with card, Apple Pay, Google Pay, or bank transfer. USDC lands in the agent's wallet on Base within seconds. No ETH, no gas tokens, no bridge.
+The recommended path is the dashboard's **Add funds** button, under **Plan & billing → Funding** or the agent's **Balance & funding** tab. The first time, click **Turn on funding**, a one-time step. Pay with card, Apple Pay, Google Pay, or bank transfer. USDC lands in the agent's wallet on Base within seconds. No ETH, no gas tokens, no bridge.
 
 Advanced (only if you already hold USDC on Base): you can also transfer USDC directly from your own wallet to the agent's deposit address shown in the dashboard. Make sure you're on **Base** — sending from any other chain is unrecoverable. Full details: [Funding the agent](../getting-started/funding.md).
 

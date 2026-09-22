@@ -11,7 +11,7 @@ For the agent-runtime subset (the error matrix that appears on `/v1/proxy/fetch`
 ## Quick Index
 
 - [Agent runtime (`/v1/proxy/fetch`)](#agent-runtime-v1proxyfetch)
-- [Developer auth (SIWE + JWT)](#developer-auth)
+- [Dashboard session (`/v1/developer/auth/*`)](#dashboard-session)
 - [Developer keys (`/v1/developer/keys`)](#developer-keys)
 - [Agent registration (`/v1/agents/*`)](#agent-registration)
 - [Floe Phone numbers (`/v1/developer/agents/:agentId/numbers`, `/v1/numbers`)](#floe-phone-numbers)
@@ -82,18 +82,40 @@ Under the hood, the helpers poll `GET /v1/agents/reservations/{nonce}` (document
 
 ---
 
-## Developer auth
+## Dashboard session
 
-Endpoints: `POST /v1/developer/auth/verify`
+Endpoints: `POST /v1/developer/auth/privy` (email / Google sign-in) and `POST /v1/developer/auth/verify` (wallet sign-in). Both set the HttpOnly `floe_session` cookie. See [Credit API → Dashboard sign-in](../developers/credit-api.md#dashboard-sign-in).
+
+### Email / Google sign-in (`POST /v1/developer/auth/privy`)
+
+Every error body is `{ "error": "<code>", "message": "<sentence>" }`, plus `retryable` or `retryAfterSeconds` where noted.
 
 | Status | `error` | Cause | Fix |
 |---|---|---|---|
-| 401 | `Unauthorized` | Wallet signature missing, expired, or invalid | Re-sign — the dashboard does this automatically if the session drops |
-| 401 | `Invalid signature` | `X-Signature` does not recover to the claimed address | Client bug — check signing library; wagmi should handle this correctly |
-| 401 | `Timestamp out of window` | `X-Timestamp` is more than ±5 minutes from server time | Check client clock (NTP drift); re-sign |
-| 401 | `Invalid JWT` | Bearer JWT signature failed HMAC verification, is malformed, or is expired (>7 days old) | Re-authenticate via the dashboard |
+| 400 | `invalid_request` | `Content-Type` isn't `application/json`, the body isn't a JSON object, `walletHint` isn't a `0x` address, or `allowNew` isn't a boolean | Send a JSON object with `Content-Type: application/json` |
+| 401 | `invalid_privy_token` | No `Authorization: Bearer` token, a `floe_…` API key sent instead, or a Privy access token that is expired or invalid (a token issued for a different Privy app is `503 privy_app_mismatch` instead) | Sign in again for a fresh token |
+| 409 | `embedded_wallet_pending` | A brand-new email / Google sign-in whose account isn't fully set up yet. Body has `retryable: true` | Retry after a moment (the dashboard does this for you) |
+| 409 | `wallet_signature_required` | This sign-in would create a new account, but the account this browser already uses (`walletHint`) exists and doesn't belong to this sign-in | Choose. To create a new account, repeat with `allowNew: true`. To continue with the existing account, sign out of this sign-in and sign in the way you originally did: with its wallet at `/auth/verify`, or with the email / Google account you used before. The two sign-ins are not linked |
+| 409 | `identity_ambiguous` | More than one Floe account could belong to this sign-in. For a new account, this also happens when the sign-in has several wallets and Floe can't tell which one to use | Sign in with the wallet of the account you want (`/auth/verify`) |
+| 409 | `identity_conflict` | The account already belongs to a different email / Google sign-in (one per account) | Sign in the way you originally did: with that email / Google account, or with the account's wallet (`/auth/verify`) |
+| 429 | `rate_limited` | More than 30 attempts a minute from one IP, or 24 a minute for one signed-in user. Body has `retryAfterSeconds`; `Retry-After` is set too | Wait `retryAfterSeconds`, then retry. The dashboard waits for you |
+| 502 | `privy_unavailable` | Temporary Privy outage: Floe couldn't reach Privy to verify the sign-in | Retry shortly. The dashboard retries for you |
+| 503 | `privy_auth_unavailable` | Email / Google sign-in isn't configured on this server, or Privy rejects the server's own credentials (a wrong or rotated `PRIVY_APP_SECRET`, or a `PRIVY_APP_ID` Privy doesn't recognize) | Sign in with a wallet instead; the dashboard falls back to wallet sign-in automatically. Self-hosters: set `PRIVY_APP_ID` and `PRIVY_APP_SECRET` from the same Privy app (see [Environment Variables](environment-variables.md#dashboard-sign-in-privy)). When Privy rejects them, the API logs `privy_login_misconfigured` |
+| 503 | `privy_app_mismatch` | The sign-in token was issued for a different Privy app than the server's: the dashboard's `NEXT_PUBLIC_PRIVY_APP_ID` and the API's `PRIVY_APP_ID` name different apps. A server misconfiguration, not a problem with your sign-in; every sign-in through that dashboard fails until it's fixed | Retrying doesn't help. The dashboard shows "Sign-in is temporarily unavailable" and does **not** fall back to wallet sign-in, because that would sign you in to a different, new account. Self-hosters: point both variables at the same Privy app; the API logs `privy_login_app_mismatch` with both app IDs |
 
-> Server-side nonces are **not** used. Replay protection comes from the timestamp window and the short JWT TTL. A future SIWE upgrade will add one-shot nonces.
+### Wallet sign-in (`POST /v1/developer/auth/verify`) and signed requests
+
+Every error here has `"error": "Unauthorized"`. The `message` tells you which check failed.
+
+| Status | `message` | Cause | Fix |
+|---|---|---|---|
+| 401 | *"Signing in requires a fresh wallet signature (X-Wallet-Address, X-Signature, X-Timestamp). API keys and existing sessions cannot start a new dashboard session."* | `/auth/verify` received a `floe_live_` developer key instead of a fresh wallet signature | Send fresh `X-Wallet-Address` / `X-Signature` / `X-Timestamp` headers |
+| 401 | *"Missing required auth headers: X-Wallet-Address, X-Signature, X-Timestamp"* | No signature headers. On `/auth/verify`, a request that carries only an existing session (cookie or Bearer token) also gets this, because a session can't start a new one. On other routes, it means there's no valid session either: missing, or expired after 7 days | Send fresh signature headers, or sign in to the dashboard again |
+| 401 | *"Invalid wallet address format"* / *"Invalid signature format."* / *"Invalid timestamp"* | A signature header is malformed | Client bug — send a `0x` address, a hex signature, and a Unix timestamp in seconds |
+| 401 | *"Timestamp too stale. Must be within 300 seconds of server time."* | `X-Timestamp` is more than ±5 minutes from server time | Check client clock (NTP drift); re-sign |
+| 401 | *"Signature verification failed."* | The signature doesn't verify for `X-Wallet-Address` over `Floe Credit API\nTimestamp: <X-Timestamp>` (EOA, ERC-1271, or ERC-6492) | Check the signed message and signing library, then re-sign |
+
+> Signed requests don't use server-side nonces, and the signed message covers only the timestamp — not the method, path, or body. Treat `X-Wallet-Address` / `X-Signature` / `X-Timestamp` as a **bearer credential for the whole ±5-minute window**: never log them, never put them in a URL or a bug report, and prefer the dashboard session cookie for browser traffic. Dashboard sessions expire after 7 days.
 
 ---
 
@@ -104,7 +126,7 @@ Endpoints: `POST/GET/DELETE /v1/developer/keys`
 | Status | `error` | Cause | Fix |
 |---|---|---|---|
 | 400 | `Invalid request body` | Missing `label` or malformed JSON | Fix payload |
-| 401 | Any dev-auth error | JWT missing or expired | Re-authenticate |
+| 401 | Any [dashboard-session](#dashboard-session) error | No valid developer credential (session missing or expired, bad key or signature) | Re-authenticate |
 | 403 | `forbidden` | The key does not belong to the authenticated wallet | Double-check key ownership |
 | 404 | `Key not found` | Revoking a key that does not exist or is already revoked | No action — idempotent |
 
@@ -127,7 +149,7 @@ Endpoints: `POST /v1/developer/agents`, `POST/GET/DELETE /v1/developer/agents/:a
 | 409 | `name_conflict` | Another agent owned by the same developer already uses this name | Pick a different name |
 | 502 | `privy_provisioning_failed` | Privy refused to create the Privy wallet | Inspect `detail`; the agent row stays in `pending_delegation` for a retry |
 | 502 | `delegation_failed` | Server-side `setOperator` tx threw | Inspect `detail`; retry once Privy / facilitator are healthy |
-| 503 | `agent_creation_unavailable` | `privyService` or `agentDelegationService` not initialized at boot | Self-hosters: set `PRIVY_APP_ID` / `PRIVY_APP_SECRET` / `PRIVY_AUTHORIZATION_PRIVATE_KEY` and `FACILITATOR_PRIVATE_KEY` |
+| 503 | `agent_creation_unavailable` | `privyService` or `agentDelegationService` not initialized at boot | Self-hosters: set `PRIVY_APP_ID` / `PRIVY_APP_SECRET` / `PRIVY_AUTHORIZATION_PRIVATE_KEY` / `PRIVY_SIGNER_ID` and `FACILITATOR_PRIVATE_KEY` |
 | 503 | `winddown_unavailable` | `POST /:id/close` called without `WinddownService` configured AND agent has active loans | Configure the winddown service or close manually via on-chain repay |
 
 ---

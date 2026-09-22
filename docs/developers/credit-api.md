@@ -859,7 +859,7 @@ def retry_with_backoff(fn, max_retries=3):
 
 These endpoints let you manage API keys, webhooks, and your developer profile programmatically. You can also manage these through the [Developer Dashboard](developer-dashboard.md).
 
-All developer endpoints require authentication (wallet signature or API key).
+All developer endpoints require authentication (wallet signature, developer key, or dashboard session). The one exception is `POST /v1/developer/auth/privy`, which takes a Privy access token instead (see [Dashboard sign-in](#dashboard-sign-in)).
 
 ### POST /v1/developer/keys
 
@@ -975,6 +975,74 @@ curl "https://credit-api.floelabs.xyz/v1/developer/profile" \
   -H "X-Timestamp: 1711814400"
 ```
 
+Two fields always describe the person who is signed in, even when they're working in a teammate's account:
+
+| Field | Type | Description |
+|---|---|---|
+| `privyDid` | string \| null | Their Privy user ID (`did:privy:…`), recorded on their first sign-in through `POST /v1/developer/auth/privy`. `null` if they have only ever signed in with a wallet signature (`POST /v1/developer/auth/verify`). |
+| `walletActivatedAt` | ISO 8601 \| null | When they turned on funding in the dashboard (the one-time **Turn on funding** step). `null` until then. |
+
+### PATCH /v1/developer/me
+
+Update account settings. Send only the fields that change. To record that the signed-in person turned on funding, send `{ "walletActivated": true }`. Only `true` is accepted. The time is recorded once on the caller's own profile and is never cleared, so a repeat call returns the original `walletActivatedAt`.
+
+```bash
+curl -X PATCH "https://credit-api.floelabs.xyz/v1/developer/me" \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{ "walletActivated": true }'
+```
+
+**Response:** `{ "developer": { "walletAddress": "0x…", …, "walletActivatedAt": "2026-09-21T12:00:00.000Z" } }`
+
+### Dashboard sign-in
+
+These two routes start a dashboard session. Both set the same HttpOnly `floe_session` cookie, valid for 7 days and renewed while in use. The token itself is never in the response body. SDKs and scripts don't need either route: they sign each request with the [wallet-signature headers](#wallet-signature-authentication-eip-191) or send a developer key.
+
+#### POST /v1/developer/auth/privy
+
+Email / Google sign-in. Exchanges a Privy access token for the session cookie, with no wallet signature. The route is public: the Privy token is the credential.
+
+| Part | Value |
+|---|---|
+| `Authorization` | `Bearer <Privy access token>`. A `floe_…` API key is refused. |
+| `Content-Type` | `application/json` (required) |
+| Body | `{ "src"?: string, "walletHint"?: "0x…", "allowNew"?: boolean }` |
+
+- `src`: first-touch acquisition source (`?src=` / `utm_source`). Stored only when this sign-in creates the account.
+- `walletHint`: the Floe account this browser already uses. It never selects the account. It only matters when this sign-in would create a new account: if the hinted account exists and doesn't belong to this sign-in, the call returns `409 wallet_signature_required`, and the dashboard asks whether to continue with that account or create a new one.
+- `allowNew`: send `true` after the user chooses **create a new one**. It skips the `walletHint` check and never overrides an existing account. If the user chooses to continue with the existing account, the dashboard signs out of the new sign-in and asks them to sign in the way they originally did.
+
+Floe picks the account from the verified sign-in, never from anything else in the request: first the account this sign-in already belongs to, then the one existing account among the sign-in's wallets, and otherwise a new account.
+
+**Response (200):**
+
+```json
+{
+  "developer": {
+    "walletAddress": "0x…",
+    "displayName": null,
+    "email": "you@example.com",
+    "accountId": "acct_…",
+    "createdAt": "2026-09-21T12:00:00.000Z",
+    "privyDid": "did:privy:…",
+    "walletActivatedAt": null
+  },
+  "isNew": true
+}
+```
+
+`isNew` is `true` when this sign-in created the account. Rate limit: 30 requests per minute per client IP and 24 per minute per signed-in user. A `429 rate_limited` body carries `retryAfterSeconds` (also sent as `Retry-After`).
+
+**Errors:** `400 invalid_request`, `401 invalid_privy_token`, `409 embedded_wallet_pending` (retry shortly), `409 wallet_signature_required`, `409 identity_ambiguous`, `409 identity_conflict`, `429 rate_limited` (wait `retryAfterSeconds`), `502 privy_unavailable` (temporary Privy outage; retry), `503 privy_auth_unavailable` (email / Google sign-in isn't configured on that server, or Privy rejects the server's credentials; use wallet sign-in), `503 privy_app_mismatch` (the token was issued for a different Privy app than the server's, a server misconfiguration; retrying doesn't help; don't fall back to wallet sign-in, which would sign in to a different, new account). See [Error Codes → Dashboard session](../reference/error-codes.md#dashboard-session).
+
+#### POST /v1/developer/auth/verify
+
+Wallet sign-in. Send a fresh wallet signature in the `X-Wallet-Address`, `X-Signature`, and `X-Timestamp` headers (the same message as [Wallet Signature Authentication](#wallet-signature-authentication-eip-191)). Optional body: `{ "src"?: string }`. Returns `{ "developer": { … } }`, with the same fields as above.
+
+- The session is always for the wallet that signed. Selecting a team account on the request doesn't change it.
+- It only accepts a fresh signature. A `floe_live_` developer key or an existing session can't start a new session; the route answers `401`.
+
 ---
 
 ## Developer Agents
@@ -983,7 +1051,7 @@ One developer account can own multiple agents (up to 5). Each agent has its own 
 
 All `/v1/developer/agents*` endpoints accept any of three credentials interchangeably — pick whichever fits your client:
 
-- **Dashboard session cookie** — set by `/v1/developer/auth/verify` after wallet sign-in. Used by the web dashboard.
+- **Dashboard session cookie** — the HttpOnly `floe_session` cookie, set when you sign in to the dashboard: by `POST /v1/developer/auth/privy` for email / Google sign-in, or by `POST /v1/developer/auth/verify` for wallet sign-in (see [Dashboard sign-in](#dashboard-sign-in)). Used by the web dashboard.
 - **Developer key** — `Authorization: Bearer floe_live_<base62>`. Convenient for backend services.
 - **Wallet signature** — `X-Wallet-Address` + `X-Signature` + `X-Timestamp` headers, signing the message `"Floe Credit API\nTimestamp: <unix>"`. Used by the agentkit SDKs (no developer key needed).
 

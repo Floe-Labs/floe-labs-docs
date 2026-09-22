@@ -698,7 +698,7 @@ Watch the [pipeline integration guide](integrate-existing-pipeline.md) and the [
 
 You don't need this to make your first call — Track 2 rides the Welcome Credit, and Track 1 rides your own vendor keys. Come back once you've seen the loop work.
 
-- **Fund it.** When the Welcome Credit runs low, click **Fund Wallet** on the agent and pay with **card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds. See [Funding your agent](funding.md).
+- **Fund it.** When the Welcome Credit runs low, go to **Plan & billing → Funding**, click **Add funds**, and pay with **card, Apple Pay, Google Pay, or bank transfer** (the first time, you turn on funding with one click). Funds arrive within seconds. See [Funding your agent](funding.md).
 - **Set a spend control.** Cap what the agent can spend — per call, per day, per vendor, or across your team. Enforced server-side, so a runaway loop can't blow your budget. See [Spend Controls](../developers/spend-controls.md).
 
 ## What's next
@@ -970,11 +970,14 @@ Your first agent gets a **$3 Welcome Credit** to try paid APIs — no card neede
 
 ---
 
-## Fund Wallet from the dashboard
+## Add funds from the dashboard
 
-1. Sign in at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz).
-2. Pick your agent and click **Fund Wallet**.
-3. Choose a method: **Card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds.
+1. Sign in at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) with your email or Google.
+2. Open **Plan & billing** and scroll to **Funding**.
+3. **First time only:** click **Turn on funding**. Floe keeps your balance in a wallet it sets up and runs for you. You install nothing and need no crypto knowledge, and the balance stays yours: you can cash out or export it anytime. If your account already had agents or had moved money before this step existed, funding is already on.
+4. Click **Add funds**, pick your agent under **Card funds go to**, and choose a method: **Card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds.
+
+You can also fund one agent from its **Balance & funding** tab. Only the account owner can add or move funds.
 
 That's it. Your agent's balance updates and it can immediately call paid APIs. Each call spends from that balance until it runs down; top it up whenever you like.
 
@@ -1017,7 +1020,7 @@ If a top-up gets stuck, the agent itself is unharmed — you can always close it
 
 When you close an agent in the dashboard, any remaining balance is returned to your developer account. From there you can:
 
-- **Withdraw to your bank** (supported regions): through the dashboard, lands in your bank within 1–3 business days.
+- **Withdraw to your bank** (supported regions): **Cash out** in **Plan & billing → Funding**; lands in your bank within 1–3 business days.
 - **Move it to another agent**: the dashboard transfers the balance internally.
 
 ---
@@ -7136,15 +7139,19 @@ The Developer Dashboard is your home base for managing agents, API keys, webhook
 
 ## Authentication
 
-The dashboard authenticates developers by having you sign a timestamped message with your wallet via RainbowKit. No usernames, passwords, or email signups — your wallet is your identity.
+Sign in with your **email** (a one-time code) or your **Google** account. There is no wallet to connect, no message to sign, and no network to switch. Your first sign-in creates your account — unless one already matches: Floe looks for an account pinned to that identity, then for one among the wallets linked to it, and signs you in to that instead of creating a second.
 
-1. Connect a wallet (MetaMask, Coinbase Wallet, Rainbow, or WalletConnect)
-2. Sign a timestamped message
-3. Receive a 7-day JWT — attached automatically to every dashboard API call
+1. Open [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz). The sign-in window opens by itself; if you closed it, click **Sign up or sign in**.
+2. Enter your email and the one-time code you receive, or continue with Google.
+3. You land in the dashboard, signed in for 7 days. The session renews while you use the dashboard.
 
-> Email and Google login also work — Privy auto-creates an embedded wallet for users without an external wallet.
+**Signed up with a wallet?** If you created your account with MetaMask, Coinbase Wallet, Rainbow, or WalletConnect, sign in with that wallet. In a browser where you've signed in with a wallet before, the sign-in window lists the wallet option next to email and Google, so pick it there. In a new browser the window shows only email and Google: close it, click **Use a wallet instead** (next to **Sign up or sign in**), and choose your wallet.
 
-This is **only** for developers using the dashboard. Agents authenticate with their `floe_*` API key at runtime — see [Agent Runtime Contract](agent-runtime-contract.md).
+**Already have an account?** If this browser already has a Floe account and you sign in a different way (for example with Google, when your account was created with a wallet), the dashboard asks whether to **continue with your existing account** or **create a new one**. If you continue, the dashboard signs you out of the new sign-in and asks you to sign in the way you originally did: with your wallet, or with the email or Google account you used before. The two sign-ins stay separate, so keep using your original sign-in to reach that account.
+
+If you sign up with email or Google you never need a wallet to use the dashboard: it appears only on the funding screens, and only after you turn funding on (see [Add funds](#add-funds)). Gateway, Marketplace, keys, usage, and every other screen work without it. Accounts created with a wallet keep signing in with that wallet, as above — the wallet is their identity, not just a funding step.
+
+This is **only** for developers using the dashboard. Agents authenticate with their `floe_*` API key at runtime — see [Agent Runtime Contract](agent-runtime-contract.md). SDKs and scripts that sign each request with a wallet (`X-Wallet-Address` + `X-Signature` + `X-Timestamp`) keep working unchanged — see [Credit API → Wallet Signature Authentication](credit-api.md#wallet-signature-authentication-eip-191).
 
 ## What You Can Do
 
@@ -7153,7 +7160,7 @@ This is **only** for developers using the dashboard. Agents authenticate with th
 Create and manage agents — **how many depends on your plan** (see [plans](../reference/plans.md)). Each agent has its own credit line, delegation, and API key.
 
 1. **Create Agent** — Name it, set a borrow limit, rate cap, and delegation expiry. The dashboard provisions a managed Privy wallet for the agent and submits the on-chain `setOperator` delegation **from that Privy wallet** server-side — you sign nothing on-chain from your own wallet.
-2. **Fund Agent** — Send USDC to the agent's wallet, or **buy USDC directly via Coinbase** (credit card or bank transfer) using the "Fund Wallet" button. No crypto bridges needed.
+2. **Fund Agent** — Add funds by card, Apple Pay, Google Pay, bank transfer, or a USDC deposit from the agent's **Balance & funding** tab or from **Plan & billing → Funding**. No crypto bridges needed. See [Add funds](#add-funds).
 3. **Mint API Key** — Once the agent shows `active`, click **Reveal API Key** to mint the agent's `floe_*` runtime key. It is shown once — copy it immediately. To rotate, click **Rotate** (revokes the old key and mints a new one atomically).
 
 The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), with the full fleet surface on the same bin — `floe agents list|get|create|pause|resume|close|lock` — or `npx floe-agent register --name <name>` (TypeScript SDK) / `floe-agent register --name <name>` (Python SDK). See [agentkit-typescript](agentkit-typescript.md#cli-floe-agent) / [agentkit-python](agentkit-python.md#cli-floe-agent).
@@ -7166,14 +7173,19 @@ Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `c
 - Rate cap: 1–10,000 bps (0.01%–100%)
 - Delegation expiry: 1 minute–1 year
 
-### Fund Wallet (Fiat On-Ramp)
+### Add funds
 
-Buy USDC directly from the dashboard using a credit card, debit card, or bank transfer — powered by Coinbase CDP. Funds land as USDC on Base directly in your agent's wallet.
+Funding lives in **Plan & billing → Funding**. For a single agent, it's also on that agent's **Balance & funding** tab.
 
-1. Click **Fund Wallet** on any agent card
-2. Enter an amount ($1–$100,000 USD) or use a preset ($50, $100, $500)
-3. Complete the Coinbase checkout in the popup
-4. Dashboard polls your agent's balance — shows success when USDC arrives (~30s–2min)
+**Turn on funding (one time).** The first time you open Funding, the dashboard explains how it works and shows a **Turn on funding** button. Floe keeps your balance in a wallet it sets up and runs for you. You install nothing and need no crypto knowledge. The balance stays yours, and you can cash out or export it anytime. Until you turn funding on, the dashboard shows no wallet at all. If your account already had agents or had moved money before this step existed, funding is already on. Only the account owner can add or move funds.
+
+Once funding is on:
+
+1. Click **Add funds**, choose where the money goes (your account balance or a specific agent), and pay by card, Apple Pay, Google Pay, or bank transfer. Coinbase handles the checkout in a popup, with $50 / $100 / $500 presets or a custom amount. Money added to the account balance stays there until you move it to an agent with **Move between** in the same window.
+2. Or choose **Deposit USDC directly** to get a deposit address.
+3. Your balance updates once the payment clears.
+
+The Funding section also holds the wallet's own actions: copy its address and **Cash out** to your bank or Coinbase account. For a wallet Floe runs for you, you can also send USDC and export its private key. If you signed up with your own wallet, you already hold that key.
 
 No crypto bridges, no token swaps, no gas tokens needed.
 
@@ -8721,7 +8733,7 @@ Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign 
 
 ## Step 2 — Add funds
 
-Click **Fund Wallet** in the dashboard and pay with **card, Apple Pay, Google Pay, or bank transfer**. The balance shows in dollars and arrives within seconds — ready to spend on the next call.
+In the dashboard, open **Plan & billing → Funding**, click **Add funds**, and pay with **card, Apple Pay, Google Pay, or bank transfer** (the first time, you turn on funding with one click). The balance shows in dollars and arrives within seconds — ready to spend on the next call.
 
 No exchange account, no setup, nothing to convert.
 
@@ -11991,7 +12003,7 @@ def retry_with_backoff(fn, max_retries=3):
 
 These endpoints let you manage API keys, webhooks, and your developer profile programmatically. You can also manage these through the [Developer Dashboard](developer-dashboard.md).
 
-All developer endpoints require authentication (wallet signature or API key).
+All developer endpoints require authentication (wallet signature, developer key, or dashboard session). The one exception is `POST /v1/developer/auth/privy`, which takes a Privy access token instead (see [Dashboard sign-in](#dashboard-sign-in)).
 
 ### POST /v1/developer/keys
 
@@ -12107,6 +12119,74 @@ curl "https://credit-api.floelabs.xyz/v1/developer/profile" \
   -H "X-Timestamp: 1711814400"
 ```
 
+Two fields always describe the person who is signed in, even when they're working in a teammate's account:
+
+| Field | Type | Description |
+|---|---|---|
+| `privyDid` | string \| null | Their Privy user ID (`did:privy:…`), recorded on their first sign-in through `POST /v1/developer/auth/privy`. `null` if they have only ever signed in with a wallet signature (`POST /v1/developer/auth/verify`). |
+| `walletActivatedAt` | ISO 8601 \| null | When they turned on funding in the dashboard (the one-time **Turn on funding** step). `null` until then. |
+
+### PATCH /v1/developer/me
+
+Update account settings. Send only the fields that change. To record that the signed-in person turned on funding, send `{ "walletActivated": true }`. Only `true` is accepted. The time is recorded once on the caller's own profile and is never cleared, so a repeat call returns the original `walletActivatedAt`.
+
+```bash
+curl -X PATCH "https://credit-api.floelabs.xyz/v1/developer/me" \
+  -H "Cookie: floe_session=..." \
+  -H "Content-Type: application/json" \
+  -d '{ "walletActivated": true }'
+```
+
+**Response:** `{ "developer": { "walletAddress": "0x…", …, "walletActivatedAt": "2026-09-21T12:00:00.000Z" } }`
+
+### Dashboard sign-in
+
+These two routes start a dashboard session. Both set the same HttpOnly `floe_session` cookie, valid for 7 days and renewed while in use. The token itself is never in the response body. SDKs and scripts don't need either route: they sign each request with the [wallet-signature headers](#wallet-signature-authentication-eip-191) or send a developer key.
+
+#### POST /v1/developer/auth/privy
+
+Email / Google sign-in. Exchanges a Privy access token for the session cookie, with no wallet signature. The route is public: the Privy token is the credential.
+
+| Part | Value |
+|---|---|
+| `Authorization` | `Bearer <Privy access token>`. A `floe_…` API key is refused. |
+| `Content-Type` | `application/json` (required) |
+| Body | `{ "src"?: string, "walletHint"?: "0x…", "allowNew"?: boolean }` |
+
+- `src`: first-touch acquisition source (`?src=` / `utm_source`). Stored only when this sign-in creates the account.
+- `walletHint`: the Floe account this browser already uses. It never selects the account. It only matters when this sign-in would create a new account: if the hinted account exists and doesn't belong to this sign-in, the call returns `409 wallet_signature_required`, and the dashboard asks whether to continue with that account or create a new one.
+- `allowNew`: send `true` after the user chooses **create a new one**. It skips the `walletHint` check and never overrides an existing account. If the user chooses to continue with the existing account, the dashboard signs out of the new sign-in and asks them to sign in the way they originally did.
+
+Floe picks the account from the verified sign-in, never from anything else in the request: first the account this sign-in already belongs to, then the one existing account among the sign-in's wallets, and otherwise a new account.
+
+**Response (200):**
+
+```json
+{
+  "developer": {
+    "walletAddress": "0x…",
+    "displayName": null,
+    "email": "you@example.com",
+    "accountId": "acct_…",
+    "createdAt": "2026-09-21T12:00:00.000Z",
+    "privyDid": "did:privy:…",
+    "walletActivatedAt": null
+  },
+  "isNew": true
+}
+```
+
+`isNew` is `true` when this sign-in created the account. Rate limit: 30 requests per minute per client IP and 24 per minute per signed-in user. A `429 rate_limited` body carries `retryAfterSeconds` (also sent as `Retry-After`).
+
+**Errors:** `400 invalid_request`, `401 invalid_privy_token`, `409 embedded_wallet_pending` (retry shortly), `409 wallet_signature_required`, `409 identity_ambiguous`, `409 identity_conflict`, `429 rate_limited` (wait `retryAfterSeconds`), `502 privy_unavailable` (temporary Privy outage; retry), `503 privy_auth_unavailable` (email / Google sign-in isn't configured on that server, or Privy rejects the server's credentials; use wallet sign-in), `503 privy_app_mismatch` (the token was issued for a different Privy app than the server's, a server misconfiguration; retrying doesn't help; don't fall back to wallet sign-in, which would sign in to a different, new account). See [Error Codes → Dashboard session](../reference/error-codes.md#dashboard-session).
+
+#### POST /v1/developer/auth/verify
+
+Wallet sign-in. Send a fresh wallet signature in the `X-Wallet-Address`, `X-Signature`, and `X-Timestamp` headers (the same message as [Wallet Signature Authentication](#wallet-signature-authentication-eip-191)). Optional body: `{ "src"?: string }`. Returns `{ "developer": { … } }`, with the same fields as above.
+
+- The session is always for the wallet that signed. Selecting a team account on the request doesn't change it.
+- It only accepts a fresh signature. A `floe_live_` developer key or an existing session can't start a new session; the route answers `401`.
+
 ---
 
 ## Developer Agents
@@ -12115,7 +12195,7 @@ One developer account can own multiple agents (up to 5). Each agent has its own 
 
 All `/v1/developer/agents*` endpoints accept any of three credentials interchangeably — pick whichever fits your client:
 
-- **Dashboard session cookie** — set by `/v1/developer/auth/verify` after wallet sign-in. Used by the web dashboard.
+- **Dashboard session cookie** — the HttpOnly `floe_session` cookie, set when you sign in to the dashboard: by `POST /v1/developer/auth/privy` for email / Google sign-in, or by `POST /v1/developer/auth/verify` for wallet sign-in (see [Dashboard sign-in](#dashboard-sign-in)). Used by the web dashboard.
 - **Developer key** — `Authorization: Bearer floe_live_<base62>`. Convenient for backend services.
 - **Wallet signature** — `X-Wallet-Address` + `X-Signature` + `X-Timestamp` headers, signing the message `"Floe Credit API\nTimestamp: <unix>"`. Used by the agentkit SDKs (no developer key needed).
 
@@ -13072,7 +13152,7 @@ For the agent-runtime subset (the error matrix that appears on `/v1/proxy/fetch`
 ## Quick Index
 
 - [Agent runtime (`/v1/proxy/fetch`)](#agent-runtime-v1proxyfetch)
-- [Developer auth (SIWE + JWT)](#developer-auth)
+- [Dashboard session (`/v1/developer/auth/*`)](#dashboard-session)
 - [Developer keys (`/v1/developer/keys`)](#developer-keys)
 - [Agent registration (`/v1/agents/*`)](#agent-registration)
 - [Floe Phone numbers (`/v1/developer/agents/:agentId/numbers`, `/v1/numbers`)](#floe-phone-numbers)
@@ -13143,18 +13223,40 @@ Under the hood, the helpers poll `GET /v1/agents/reservations/{nonce}` (document
 
 ---
 
-## Developer auth
+## Dashboard session
 
-Endpoints: `POST /v1/developer/auth/verify`
+Endpoints: `POST /v1/developer/auth/privy` (email / Google sign-in) and `POST /v1/developer/auth/verify` (wallet sign-in). Both set the HttpOnly `floe_session` cookie. See [Credit API → Dashboard sign-in](../developers/credit-api.md#dashboard-sign-in).
+
+### Email / Google sign-in (`POST /v1/developer/auth/privy`)
+
+Every error body is `{ "error": "<code>", "message": "<sentence>" }`, plus `retryable` or `retryAfterSeconds` where noted.
 
 | Status | `error` | Cause | Fix |
 |---|---|---|---|
-| 401 | `Unauthorized` | Wallet signature missing, expired, or invalid | Re-sign — the dashboard does this automatically if the session drops |
-| 401 | `Invalid signature` | `X-Signature` does not recover to the claimed address | Client bug — check signing library; wagmi should handle this correctly |
-| 401 | `Timestamp out of window` | `X-Timestamp` is more than ±5 minutes from server time | Check client clock (NTP drift); re-sign |
-| 401 | `Invalid JWT` | Bearer JWT signature failed HMAC verification, is malformed, or is expired (>7 days old) | Re-authenticate via the dashboard |
+| 400 | `invalid_request` | `Content-Type` isn't `application/json`, the body isn't a JSON object, `walletHint` isn't a `0x` address, or `allowNew` isn't a boolean | Send a JSON object with `Content-Type: application/json` |
+| 401 | `invalid_privy_token` | No `Authorization: Bearer` token, a `floe_…` API key sent instead, or a Privy access token that is expired or invalid (a token issued for a different Privy app is `503 privy_app_mismatch` instead) | Sign in again for a fresh token |
+| 409 | `embedded_wallet_pending` | A brand-new email / Google sign-in whose account isn't fully set up yet. Body has `retryable: true` | Retry after a moment (the dashboard does this for you) |
+| 409 | `wallet_signature_required` | This sign-in would create a new account, but the account this browser already uses (`walletHint`) exists and doesn't belong to this sign-in | Choose. To create a new account, repeat with `allowNew: true`. To continue with the existing account, sign out of this sign-in and sign in the way you originally did: with its wallet at `/auth/verify`, or with the email / Google account you used before. The two sign-ins are not linked |
+| 409 | `identity_ambiguous` | More than one Floe account could belong to this sign-in. For a new account, this also happens when the sign-in has several wallets and Floe can't tell which one to use | Sign in with the wallet of the account you want (`/auth/verify`) |
+| 409 | `identity_conflict` | The account already belongs to a different email / Google sign-in (one per account) | Sign in the way you originally did: with that email / Google account, or with the account's wallet (`/auth/verify`) |
+| 429 | `rate_limited` | More than 30 attempts a minute from one IP, or 24 a minute for one signed-in user. Body has `retryAfterSeconds`; `Retry-After` is set too | Wait `retryAfterSeconds`, then retry. The dashboard waits for you |
+| 502 | `privy_unavailable` | Temporary Privy outage: Floe couldn't reach Privy to verify the sign-in | Retry shortly. The dashboard retries for you |
+| 503 | `privy_auth_unavailable` | Email / Google sign-in isn't configured on this server, or Privy rejects the server's own credentials (a wrong or rotated `PRIVY_APP_SECRET`, or a `PRIVY_APP_ID` Privy doesn't recognize) | Sign in with a wallet instead; the dashboard falls back to wallet sign-in automatically. Self-hosters: set `PRIVY_APP_ID` and `PRIVY_APP_SECRET` from the same Privy app (see [Environment Variables](environment-variables.md#dashboard-sign-in-privy)). When Privy rejects them, the API logs `privy_login_misconfigured` |
+| 503 | `privy_app_mismatch` | The sign-in token was issued for a different Privy app than the server's: the dashboard's `NEXT_PUBLIC_PRIVY_APP_ID` and the API's `PRIVY_APP_ID` name different apps. A server misconfiguration, not a problem with your sign-in; every sign-in through that dashboard fails until it's fixed | Retrying doesn't help. The dashboard shows "Sign-in is temporarily unavailable" and does **not** fall back to wallet sign-in, because that would sign you in to a different, new account. Self-hosters: point both variables at the same Privy app; the API logs `privy_login_app_mismatch` with both app IDs |
 
-> Server-side nonces are **not** used. Replay protection comes from the timestamp window and the short JWT TTL. A future SIWE upgrade will add one-shot nonces.
+### Wallet sign-in (`POST /v1/developer/auth/verify`) and signed requests
+
+Every error here has `"error": "Unauthorized"`. The `message` tells you which check failed.
+
+| Status | `message` | Cause | Fix |
+|---|---|---|---|
+| 401 | *"Signing in requires a fresh wallet signature (X-Wallet-Address, X-Signature, X-Timestamp). API keys and existing sessions cannot start a new dashboard session."* | `/auth/verify` received a `floe_live_` developer key instead of a fresh wallet signature | Send fresh `X-Wallet-Address` / `X-Signature` / `X-Timestamp` headers |
+| 401 | *"Missing required auth headers: X-Wallet-Address, X-Signature, X-Timestamp"* | No signature headers. On `/auth/verify`, a request that carries only an existing session (cookie or Bearer token) also gets this, because a session can't start a new one. On other routes, it means there's no valid session either: missing, or expired after 7 days | Send fresh signature headers, or sign in to the dashboard again |
+| 401 | *"Invalid wallet address format"* / *"Invalid signature format."* / *"Invalid timestamp"* | A signature header is malformed | Client bug — send a `0x` address, a hex signature, and a Unix timestamp in seconds |
+| 401 | *"Timestamp too stale. Must be within 300 seconds of server time."* | `X-Timestamp` is more than ±5 minutes from server time | Check client clock (NTP drift); re-sign |
+| 401 | *"Signature verification failed."* | The signature doesn't verify for `X-Wallet-Address` over `Floe Credit API\nTimestamp: <X-Timestamp>` (EOA, ERC-1271, or ERC-6492) | Check the signed message and signing library, then re-sign |
+
+> Signed requests don't use server-side nonces, and the signed message covers only the timestamp — not the method, path, or body. Treat `X-Wallet-Address` / `X-Signature` / `X-Timestamp` as a **bearer credential for the whole ±5-minute window**: never log them, never put them in a URL or a bug report, and prefer the dashboard session cookie for browser traffic. Dashboard sessions expire after 7 days.
 
 ---
 
@@ -13165,7 +13267,7 @@ Endpoints: `POST/GET/DELETE /v1/developer/keys`
 | Status | `error` | Cause | Fix |
 |---|---|---|---|
 | 400 | `Invalid request body` | Missing `label` or malformed JSON | Fix payload |
-| 401 | Any dev-auth error | JWT missing or expired | Re-authenticate |
+| 401 | Any [dashboard-session](#dashboard-session) error | No valid developer credential (session missing or expired, bad key or signature) | Re-authenticate |
 | 403 | `forbidden` | The key does not belong to the authenticated wallet | Double-check key ownership |
 | 404 | `Key not found` | Revoking a key that does not exist or is already revoked | No action — idempotent |
 
@@ -13188,7 +13290,7 @@ Endpoints: `POST /v1/developer/agents`, `POST/GET/DELETE /v1/developer/agents/:a
 | 409 | `name_conflict` | Another agent owned by the same developer already uses this name | Pick a different name |
 | 502 | `privy_provisioning_failed` | Privy refused to create the Privy wallet | Inspect `detail`; the agent row stays in `pending_delegation` for a retry |
 | 502 | `delegation_failed` | Server-side `setOperator` tx threw | Inspect `detail`; retry once Privy / facilitator are healthy |
-| 503 | `agent_creation_unavailable` | `privyService` or `agentDelegationService` not initialized at boot | Self-hosters: set `PRIVY_APP_ID` / `PRIVY_APP_SECRET` / `PRIVY_AUTHORIZATION_PRIVATE_KEY` and `FACILITATOR_PRIVATE_KEY` |
+| 503 | `agent_creation_unavailable` | `privyService` or `agentDelegationService` not initialized at boot | Self-hosters: set `PRIVY_APP_ID` / `PRIVY_APP_SECRET` / `PRIVY_AUTHORIZATION_PRIVATE_KEY` / `PRIVY_SIGNER_ID` and `FACILITATOR_PRIVATE_KEY` |
 | 503 | `winddown_unavailable` | `POST /:id/close` called without `WinddownService` configured AND agent has active loans | Configure the winddown service or close manually via on-chain repay |
 
 ---
@@ -13306,15 +13408,17 @@ Every environment variable the Floe Credit API (`apps/api`) reads at startup or 
 | `PORT` | — | Server | HTTP listen port (default 3001) |
 | `NODE_ENV` | — | Server | `development` / `test` / `production` — enables fail-fast |
 | `DATABASE_URL` | **Prod** | Server | SQLite file path |
-| `JWT_SECRET` | **Prod** | Server | HMAC signing key for developer session JWTs |
+| `JWT_SECRET` | **Prod** | Server | HMAC signing key for the dashboard session cookie (`floe_session`) |
 | `API_KEY_HMAC_SECRET` | **Prod** | Server | HMAC key used to hash `floe_live_*` and `floe_*` API keys at rest |
 | `ADMIN_API_KEY` | **Prod** | Server | Bearer token for `/v1/admin/*` endpoints |
 | `RPC_URL` | Yes | Server | Base chain RPC — used for balance reads and `setOperator` verification |
 | `ENVIO_HTTP_ENDPOINT` | Yes | Server | Envio indexer GraphQL endpoint |
 | `ENVIO_API_TOKEN` | — | Server | Envio bearer token (required for hosted Envio) |
-| `PRIVY_APP_ID` | **Agents** | Server | Privy project ID — required for agent features |
-| `PRIVY_APP_SECRET` | **Agents** | Server | Privy project secret |
+| `PRIVY_APP_ID` | **Login**, **Agents** | Server | Privy app ID. With `PRIVY_APP_SECRET`, turns on dashboard email / Google sign-in; must match the dashboard's `NEXT_PUBLIC_PRIVY_APP_ID`. Also required for agent features |
+| `PRIVY_APP_SECRET` | **Login**, **Agents** | Server | Privy app secret |
+| `PRIVY_JWT_VERIFICATION_KEY` | — | Server | Optional. Privy verification key, for verifying sign-in tokens offline instead of via Privy's JWKS endpoint |
 | `PRIVY_AUTHORIZATION_PRIVATE_KEY` | **Agents** | Server | Privy server-signer private key |
+| `PRIVY_SIGNER_ID` | **Agents** | Server | Privy signer ID for the authorization key above, attached to every agent wallet |
 | `FACILITATOR_PRIVATE_KEY` | **Agents** | Server | Private key for the facilitator EOA — required for agent registration and all on-chain matching |
 | `ENVIO_ADMIN_SECRET` | — | Server | Envio admin secret for deep queries |
 | `LENDING_INTENT_MATCHER` | — | Server | Matcher contract (defaults to Base mainnet) |
@@ -13339,7 +13443,7 @@ These four will crash the server at startup when `NODE_ENV=production`. The cras
 
 ### `JWT_SECRET`
 
-**Required in production.** HMAC-SHA256 key used to sign developer session JWTs issued by `/v1/developer/auth/verify`. A compromised value lets an attacker mint valid JWTs for any wallet.
+**Required in production.** HMAC-SHA256 key used to sign the dashboard session cookie (`floe_session`), which `/v1/developer/auth/privy` (email / Google sign-in) and `/v1/developer/auth/verify` (wallet sign-in) both issue. A compromised value lets an attacker mint valid sessions for any account.
 
 - **Generate:** `openssl rand -hex 32`
 - **Length:** ≥32 bytes
@@ -13368,18 +13472,28 @@ These four will crash the server at startup when `NODE_ENV=production`. The cras
 
 ---
 
-## Agent features (Privy)
+## Dashboard sign-in (Privy)
 
-Agent registration, wallet provisioning, and x402 signing all require Privy credentials. If any of the three are missing, the server boots with a warning and agent endpoints return `503 agent_features_unavailable`.
+`PRIVY_APP_ID` + `PRIVY_APP_SECRET` alone turn on dashboard email and Google sign-in (`POST /v1/developer/auth/privy`). Set them wherever your dashboard offers email / Google login. Without them the server still boots and logs `Privy login: disabled`, and that route answers `503 privy_auth_unavailable`, so everyone has to sign in with a wallet.
 
 ### `PRIVY_APP_ID`
-Your Privy project ID (`cm...`).
+Your Privy app ID (`cm...`). **It must be the same Privy app as the dashboard's `NEXT_PUBLIC_PRIVY_APP_ID`.** Sign-in tokens from any other app are refused with `503 privy_app_mismatch`, and the API logs `privy_login_app_mismatch` with both app IDs. At boot the API logs `Privy login: enabled (app …)`, so you can compare the two.
 
 ### `PRIVY_APP_SECRET`
-Your Privy project secret. Scoped to the app ID above.
+Your Privy app secret. Scoped to the app ID above. If Privy rejects it (wrong, rotated, or from another app), sign-in answers `503 privy_auth_unavailable`, the dashboard falls back to wallet sign-in, and the API logs `privy_login_misconfigured`.
+
+### `PRIVY_JWT_VERIFICATION_KEY` (optional)
+The app's access-token verification key (Privy dashboard → **App settings → Verification key**; a P-256 public key in PEM form). When it's set, sign-in tokens are verified offline instead of against Privy's JWKS endpoint. A single line with `\n` escapes is fine. If the key can't be parsed, the server logs that it was ignored and falls back to JWKS.
+
+## Agent features (Privy)
+
+Agent registration, wallet provisioning, and x402 signing need all four Privy variables: `PRIVY_APP_ID` and `PRIVY_APP_SECRET` (above) plus the two below. If any is missing, the server boots with a warning and agent endpoints return `503 agent_features_unavailable`. Dashboard sign-in keeps working as long as the first two are set.
 
 ### `PRIVY_AUTHORIZATION_PRIVATE_KEY`
 The server-signer private key used to sign `setOperator` confirmation messages and EIP-3009 authorizations on behalf of agent Privy wallets. Generate via the Privy dashboard under **Server wallets → Authorization keys**. **Never commit this.**
+
+### `PRIVY_SIGNER_ID`
+The Privy signer ID of the authorization key above. Floe attaches it as an additional signer to every agent wallet it creates. Without it, Privy refuses every signing call. So if the other three Privy variables are set but this one isn't, the server refuses to turn on agent features and logs `Privy: NOT initialized — … PRIVY_SIGNER_ID is missing`.
 
 ### `FACILITATOR_PRIVATE_KEY`
 The private key for the **facilitator EOA** — a purpose-built wallet that submits `matchLoanIntents`, `repayLoan`, and lifecycle transactions on behalf of delegated agents. Without this key set, `POST /v1/developer/agents` returns `503 agent_creation_unavailable — AgentDelegationService not initialized`.
@@ -13525,10 +13639,12 @@ PRICE_ORACLE_ADDRESS=0xEA058a06b54dce078567f9aa4dBBE82a100210Cc
 ENVIO_HTTP_ENDPOINT=https://indexer.bigdevenergy.link/<project>/v1/graphql
 ENVIO_API_TOKEN=<token>
 
-# Privy — required for agent features
-PRIVY_APP_ID=cm...
+# Privy — the first two turn on dashboard email / Google sign-in; agent features need all four
+PRIVY_APP_ID=cm...                    # must match the dashboard's NEXT_PUBLIC_PRIVY_APP_ID
 PRIVY_APP_SECRET=<secret>
 PRIVY_AUTHORIZATION_PRIVATE_KEY=<server-signer key>
+PRIVY_SIGNER_ID=<signer id>
+# PRIVY_JWT_VERIFICATION_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"  # optional: verify sign-in tokens offline
 
 # x402
 X402_VALID_BEFORE_SECONDS=90
@@ -13556,10 +13672,11 @@ ENVIO_HTTP_ENDPOINT=http://localhost:8090/v1/graphql
 
 SSRF_ALLOW_LOCALHOST=1            # dev only — allows localhost targets
 
-# Optional — leave Privy out entirely to test without agent features
-# PRIVY_APP_ID=...
+# Optional — without Privy, dashboard sign-in is wallet-only and agent features are off
+# PRIVY_APP_ID=...                # alone with the secret: email / Google sign-in
 # PRIVY_APP_SECRET=...
 # PRIVY_AUTHORIZATION_PRIVATE_KEY=...
+# PRIVY_SIGNER_ID=...
 ```
 
 See **[Error Codes → Self-hosting startup errors](error-codes.md#self-hosting-startup-errors)** for the exact text of every fail-fast exception and what to set to resolve it.
@@ -13577,6 +13694,18 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **35 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.27.0 — Email & Google sign-in; the wallet moves to Funding (September 2026)
+
+Signing in to the dashboard no longer involves a wallet.
+
+* **Sign in with email or Google.** Use a one-time email code or your Google account. There's no wallet signature, no network switch, and no wallet on screen. Your first sign-in creates your account unless one already matches — Floe resolves an existing account from the Privy identity or a linked wallet first, and signs you in to that. Signed up with MetaMask, Coinbase Wallet, or another wallet? A browser you've signed in to with a wallet before lists it in the sign-in window next to email and Google; in a new browser, choose **Use a wallet instead**.
+* **No accidental second account.** If this browser already has a Floe account and you sign in a different way, the dashboard asks whether to continue with your existing account or create a new one. Continuing signs you out of the new sign-in and asks you to sign in the way you originally did (your wallet, or the email or Google account you used before).
+* **The wallet is opt-in, and only on Funding.** **Plan & billing → Funding** (and each agent's **Balance & funding** tab) has a one-time **Turn on funding** step that explains Floe keeps your balance in a wallet it runs for you. Card top-ups (**Add funds**), USDC deposits, cash out, send, and private-key export sit behind it. Gateway, Marketplace, and every other screen need no wallet step. Accounts that already had agents or had moved money have funding on already.
+* **API.** A new public endpoint, `POST /v1/developer/auth/privy`, exchanges a Privy access token for the `floe_session` cookie. `POST /v1/developer/auth/verify` has two changes: it always signs in the wallet that signed, and it refuses a `floe_live_` developer key or an existing session (`401`, send a fresh signature). `GET /v1/developer/profile` adds `privyDid` and `walletActivatedAt`, and `PATCH /v1/developer/me` accepts `{ "walletActivated": true }`. Per-request signing with `X-Wallet-Address` / `X-Signature` / `X-Timestamp`, used by `floe-agent` and AgentKit, is unchanged.
+* **Self-hosting.** `PRIVY_APP_ID` + `PRIVY_APP_SECRET` now turn on dashboard email / Google sign-in on their own; the API's `PRIVY_APP_ID` must match the dashboard's `NEXT_PUBLIC_PRIVY_APP_ID`. If they name different Privy apps, sign-in answers `503 privy_app_mismatch` and nobody can sign in until they match; the dashboard does not fall back to wallet sign-in for this error. The optional `PRIVY_JWT_VERIFICATION_KEY` verifies sign-in tokens offline. Agent features still need all four Privy variables, including `PRIVY_SIGNER_ID`.
+
+→ [Developer Dashboard](developers/developer-dashboard.md#authentication) · [Funding](getting-started/funding.md) · [Credit API → Dashboard sign-in](developers/credit-api.md#dashboard-sign-in) · [Error codes](reference/error-codes.md#dashboard-session) · [Environment variables](reference/environment-variables.md#dashboard-sign-in-privy)
 
 ### v1.26.0 — Outcomes: what a task produced (September 2026)
 

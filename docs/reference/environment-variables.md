@@ -15,15 +15,17 @@ Every environment variable the Floe Credit API (`apps/api`) reads at startup or 
 | `PORT` | — | Server | HTTP listen port (default 3001) |
 | `NODE_ENV` | — | Server | `development` / `test` / `production` — enables fail-fast |
 | `DATABASE_URL` | **Prod** | Server | SQLite file path |
-| `JWT_SECRET` | **Prod** | Server | HMAC signing key for developer session JWTs |
+| `JWT_SECRET` | **Prod** | Server | HMAC signing key for the dashboard session cookie (`floe_session`) |
 | `API_KEY_HMAC_SECRET` | **Prod** | Server | HMAC key used to hash `floe_live_*` and `floe_*` API keys at rest |
 | `ADMIN_API_KEY` | **Prod** | Server | Bearer token for `/v1/admin/*` endpoints |
 | `RPC_URL` | Yes | Server | Base chain RPC — used for balance reads and `setOperator` verification |
 | `ENVIO_HTTP_ENDPOINT` | Yes | Server | Envio indexer GraphQL endpoint |
 | `ENVIO_API_TOKEN` | — | Server | Envio bearer token (required for hosted Envio) |
-| `PRIVY_APP_ID` | **Agents** | Server | Privy project ID — required for agent features |
-| `PRIVY_APP_SECRET` | **Agents** | Server | Privy project secret |
+| `PRIVY_APP_ID` | **Login**, **Agents** | Server | Privy app ID. With `PRIVY_APP_SECRET`, turns on dashboard email / Google sign-in; must match the dashboard's `NEXT_PUBLIC_PRIVY_APP_ID`. Also required for agent features |
+| `PRIVY_APP_SECRET` | **Login**, **Agents** | Server | Privy app secret |
+| `PRIVY_JWT_VERIFICATION_KEY` | — | Server | Optional. Privy verification key, for verifying sign-in tokens offline instead of via Privy's JWKS endpoint |
 | `PRIVY_AUTHORIZATION_PRIVATE_KEY` | **Agents** | Server | Privy server-signer private key |
+| `PRIVY_SIGNER_ID` | **Agents** | Server | Privy signer ID for the authorization key above, attached to every agent wallet |
 | `FACILITATOR_PRIVATE_KEY` | **Agents** | Server | Private key for the facilitator EOA — required for agent registration and all on-chain matching |
 | `ENVIO_ADMIN_SECRET` | — | Server | Envio admin secret for deep queries |
 | `LENDING_INTENT_MATCHER` | — | Server | Matcher contract (defaults to Base mainnet) |
@@ -48,7 +50,7 @@ These four will crash the server at startup when `NODE_ENV=production`. The cras
 
 ### `JWT_SECRET`
 
-**Required in production.** HMAC-SHA256 key used to sign developer session JWTs issued by `/v1/developer/auth/verify`. A compromised value lets an attacker mint valid JWTs for any wallet.
+**Required in production.** HMAC-SHA256 key used to sign the dashboard session cookie (`floe_session`), which `/v1/developer/auth/privy` (email / Google sign-in) and `/v1/developer/auth/verify` (wallet sign-in) both issue. A compromised value lets an attacker mint valid sessions for any account.
 
 - **Generate:** `openssl rand -hex 32`
 - **Length:** ≥32 bytes
@@ -77,18 +79,28 @@ These four will crash the server at startup when `NODE_ENV=production`. The cras
 
 ---
 
-## Agent features (Privy)
+## Dashboard sign-in (Privy)
 
-Agent registration, wallet provisioning, and x402 signing all require Privy credentials. If any of the three are missing, the server boots with a warning and agent endpoints return `503 agent_features_unavailable`.
+`PRIVY_APP_ID` + `PRIVY_APP_SECRET` alone turn on dashboard email and Google sign-in (`POST /v1/developer/auth/privy`). Set them wherever your dashboard offers email / Google login. Without them the server still boots and logs `Privy login: disabled`, and that route answers `503 privy_auth_unavailable`, so everyone has to sign in with a wallet.
 
 ### `PRIVY_APP_ID`
-Your Privy project ID (`cm...`).
+Your Privy app ID (`cm...`). **It must be the same Privy app as the dashboard's `NEXT_PUBLIC_PRIVY_APP_ID`.** Sign-in tokens from any other app are refused with `503 privy_app_mismatch`, and the API logs `privy_login_app_mismatch` with both app IDs. At boot the API logs `Privy login: enabled (app …)`, so you can compare the two.
 
 ### `PRIVY_APP_SECRET`
-Your Privy project secret. Scoped to the app ID above.
+Your Privy app secret. Scoped to the app ID above. If Privy rejects it (wrong, rotated, or from another app), sign-in answers `503 privy_auth_unavailable`, the dashboard falls back to wallet sign-in, and the API logs `privy_login_misconfigured`.
+
+### `PRIVY_JWT_VERIFICATION_KEY` (optional)
+The app's access-token verification key (Privy dashboard → **App settings → Verification key**; a P-256 public key in PEM form). When it's set, sign-in tokens are verified offline instead of against Privy's JWKS endpoint. A single line with `\n` escapes is fine. If the key can't be parsed, the server logs that it was ignored and falls back to JWKS.
+
+## Agent features (Privy)
+
+Agent registration, wallet provisioning, and x402 signing need all four Privy variables: `PRIVY_APP_ID` and `PRIVY_APP_SECRET` (above) plus the two below. If any is missing, the server boots with a warning and agent endpoints return `503 agent_features_unavailable`. Dashboard sign-in keeps working as long as the first two are set.
 
 ### `PRIVY_AUTHORIZATION_PRIVATE_KEY`
 The server-signer private key used to sign `setOperator` confirmation messages and EIP-3009 authorizations on behalf of agent Privy wallets. Generate via the Privy dashboard under **Server wallets → Authorization keys**. **Never commit this.**
+
+### `PRIVY_SIGNER_ID`
+The Privy signer ID of the authorization key above. Floe attaches it as an additional signer to every agent wallet it creates. Without it, Privy refuses every signing call. So if the other three Privy variables are set but this one isn't, the server refuses to turn on agent features and logs `Privy: NOT initialized — … PRIVY_SIGNER_ID is missing`.
 
 ### `FACILITATOR_PRIVATE_KEY`
 The private key for the **facilitator EOA** — a purpose-built wallet that submits `matchLoanIntents`, `repayLoan`, and lifecycle transactions on behalf of delegated agents. Without this key set, `POST /v1/developer/agents` returns `503 agent_creation_unavailable — AgentDelegationService not initialized`.
@@ -234,10 +246,12 @@ PRICE_ORACLE_ADDRESS=0xEA058a06b54dce078567f9aa4dBBE82a100210Cc
 ENVIO_HTTP_ENDPOINT=https://indexer.bigdevenergy.link/<project>/v1/graphql
 ENVIO_API_TOKEN=<token>
 
-# Privy — required for agent features
-PRIVY_APP_ID=cm...
+# Privy — the first two turn on dashboard email / Google sign-in; agent features need all four
+PRIVY_APP_ID=cm...                    # must match the dashboard's NEXT_PUBLIC_PRIVY_APP_ID
 PRIVY_APP_SECRET=<secret>
 PRIVY_AUTHORIZATION_PRIVATE_KEY=<server-signer key>
+PRIVY_SIGNER_ID=<signer id>
+# PRIVY_JWT_VERIFICATION_KEY="-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"  # optional: verify sign-in tokens offline
 
 # x402
 X402_VALID_BEFORE_SECONDS=90
@@ -265,10 +279,11 @@ ENVIO_HTTP_ENDPOINT=http://localhost:8090/v1/graphql
 
 SSRF_ALLOW_LOCALHOST=1            # dev only — allows localhost targets
 
-# Optional — leave Privy out entirely to test without agent features
-# PRIVY_APP_ID=...
+# Optional — without Privy, dashboard sign-in is wallet-only and agent features are off
+# PRIVY_APP_ID=...                # alone with the secret: email / Google sign-in
 # PRIVY_APP_SECRET=...
 # PRIVY_AUTHORIZATION_PRIVATE_KEY=...
+# PRIVY_SIGNER_ID=...
 ```
 
 See **[Error Codes → Self-hosting startup errors](error-codes.md#self-hosting-startup-errors)** for the exact text of every fail-fast exception and what to set to resolve it.

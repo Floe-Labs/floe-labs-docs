@@ -188,7 +188,7 @@ Watch the [pipeline integration guide](integrate-existing-pipeline.md) and the [
 
 You don't need this to make your first call — Track 2 rides the Welcome Credit, and Track 1 rides your own vendor keys. Come back once you've seen the loop work.
 
-- **Fund it.** When the Welcome Credit runs low, click **Fund Wallet** on the agent and pay with **card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds. See [Funding your agent](funding.md).
+- **Fund it.** When the Welcome Credit runs low, go to **Plan & billing → Funding**, click **Add funds**, and pay with **card, Apple Pay, Google Pay, or bank transfer** (the first time, you turn on funding with one click). Funds arrive within seconds. See [Funding your agent](funding.md).
 - **Set a spend control.** Cap what the agent can spend — per call, per day, per vendor, or across your team. Enforced server-side, so a runaway loop can't blow your budget. See [Spend Controls](../developers/spend-controls.md).
 
 ## What's next
