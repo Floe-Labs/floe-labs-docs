@@ -20,6 +20,8 @@ Programmable budgets for your agent wallets. Cap spending per vendor, per task, 
 
 Most types are **agent-scoped** (one agent wallet) or **team-scoped** (all your agent wallets combined); the `session` and `customer` kinds and the `session` window are **team-scoped only** (`/v1/developer/policies`). A `customer` cap is team-scoped by design: scoped to one agent it would count that agent's spend while reading as the whole client's budget.
 
+> **A customer cap binds only what is attributed.** A metered call that carries no client id matches no `customer` policy — there is nothing for the cap to match on. Under the default `optional` attribution an untagged call therefore slips past a per-client cap. Under **required** attribution an untagged metered call is refused outright, so the cap has no gap. Switch customer attribution to required in dashboard settings (owner/admin) before relying on a customer cap as a hard limit.
+
 **Per-key budgets** are a fifth cap, set on the key itself rather than through `/v1/developer/policies`: `PUT /v1/developer/agents/{agentId}/keys/{keyId}/budget` (`DELETE` the same path clears it), or `floe budget set 5 --per day` from the CLI. It records a `key` policy that sums spend across the key's **rotation lineage**, so rotating a key preserves the in-window total already spent instead of handing out a fresh budget.
 
 ## Quick Start
