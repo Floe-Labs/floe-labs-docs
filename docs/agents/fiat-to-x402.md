@@ -25,7 +25,7 @@ Go to [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign 
 
 ## Step 2 — Add funds
 
-Click **Fund Wallet** in the dashboard and pay with **card, Apple Pay, Google Pay, or bank transfer**. The balance shows in dollars and arrives within seconds — ready to spend on the next call.
+In the dashboard, open **Plan & billing → Funding**, click **Add funds**, and pay with **card, Apple Pay, Google Pay, or bank transfer** (the first time, you turn on funding with one click). The balance shows in dollars and arrives within seconds — ready to spend on the next call.
 
 No exchange account, no setup, nothing to convert.
 

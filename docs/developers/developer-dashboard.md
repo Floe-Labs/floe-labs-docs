@@ -10,15 +10,19 @@ The Developer Dashboard is your home base for managing agents, API keys, webhook
 
 ## Authentication
 
-The dashboard authenticates developers by having you sign a timestamped message with your wallet via RainbowKit. No usernames, passwords, or email signups — your wallet is your identity.
+Sign in with your **email** (a one-time code) or your **Google** account. There is no wallet to connect, no message to sign, and no network to switch. Your first sign-in creates your account.
 
-1. Connect a wallet (MetaMask, Coinbase Wallet, Rainbow, or WalletConnect)
-2. Sign a timestamped message
-3. Receive a 7-day JWT — attached automatically to every dashboard API call
+1. Open [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz). The sign-in window opens by itself; if you closed it, click **Sign up or sign in**.
+2. Enter your email and the one-time code you receive, or continue with Google.
+3. You land in the dashboard, signed in for 7 days. The session renews while you use the dashboard.
 
-> Email and Google login also work — Privy auto-creates an embedded wallet for users without an external wallet.
+**Signed up with a wallet?** If you created your account with MetaMask, Coinbase Wallet, Rainbow, or WalletConnect, sign in with that wallet. In a browser where you've signed in with a wallet before, the sign-in window lists the wallet option next to email and Google, so pick it there. In a new browser the window shows only email and Google: close it, click **Use a wallet instead** (next to **Sign up or sign in**), and choose your wallet.
 
-This is **only** for developers using the dashboard. Agents authenticate with their `floe_*` API key at runtime — see [Agent Runtime Contract](agent-runtime-contract.md).
+**Already have an account?** If this browser already has a Floe account and you sign in a different way (for example with Google, when your account was created with a wallet), the dashboard asks whether to **continue with your existing account** or **create a new one**. If you continue, the dashboard signs you out of the new sign-in and asks you to sign in the way you originally did: with your wallet, or with the email or Google account you used before. The two sign-ins stay separate, so keep using your original sign-in to reach that account.
+
+You never need a wallet to use the dashboard. It only appears on the funding screens, and only after you turn funding on (see [Add funds](#add-funds)). Gateway, Marketplace, keys, usage, and every other screen work without it.
+
+This is **only** for developers using the dashboard. Agents authenticate with their `floe_*` API key at runtime — see [Agent Runtime Contract](agent-runtime-contract.md). SDKs and scripts that sign each request with a wallet (`X-Wallet-Address` + `X-Signature` + `X-Timestamp`) keep working unchanged — see [Credit API → Wallet Signature Authentication](credit-api.md#wallet-signature-authentication-eip-191).
 
 ## What You Can Do
 
@@ -27,7 +31,7 @@ This is **only** for developers using the dashboard. Agents authenticate with th
 Create and manage agents — **how many depends on your plan** (see [plans](../reference/plans.md)). Each agent has its own credit line, delegation, and API key.
 
 1. **Create Agent** — Name it, set a borrow limit, rate cap, and delegation expiry. The dashboard provisions a managed Privy wallet for the agent and submits the on-chain `setOperator` delegation **from that Privy wallet** server-side — you sign nothing on-chain from your own wallet.
-2. **Fund Agent** — Send USDC to the agent's wallet, or **buy USDC directly via Coinbase** (credit card or bank transfer) using the "Fund Wallet" button. No crypto bridges needed.
+2. **Fund Agent** — Add funds by card, Apple Pay, Google Pay, bank transfer, or a USDC deposit from the agent's **Balance & funding** tab or from **Plan & billing → Funding**. No crypto bridges needed. See [Add funds](#add-funds).
 3. **Mint API Key** — Once the agent shows `active`, click **Reveal API Key** to mint the agent's `floe_*` runtime key. It is shown once — copy it immediately. To rotate, click **Rotate** (revokes the old key and mints a new one atomically).
 
 The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), with the full fleet surface on the same bin — `floe agents list|get|create|pause|resume|close|lock` — or `npx floe-agent register --name <name>` (TypeScript SDK) / `floe-agent register --name <name>` (Python SDK). See [agentkit-typescript](agentkit-typescript.md#cli-floe-agent) / [agentkit-python](agentkit-python.md#cli-floe-agent).
@@ -40,14 +44,19 @@ Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `c
 - Rate cap: 1–10,000 bps (0.01%–100%)
 - Delegation expiry: 1 minute–1 year
 
-### Fund Wallet (Fiat On-Ramp)
+### Add funds
 
-Buy USDC directly from the dashboard using a credit card, debit card, or bank transfer — powered by Coinbase CDP. Funds land as USDC on Base directly in your agent's wallet.
+Funding lives in **Plan & billing → Funding**. For a single agent, it's also on that agent's **Balance & funding** tab.
 
-1. Click **Fund Wallet** on any agent card
-2. Enter an amount ($1–$100,000 USD) or use a preset ($50, $100, $500)
-3. Complete the Coinbase checkout in the popup
-4. Dashboard polls your agent's balance — shows success when USDC arrives (~30s–2min)
+**Turn on funding (one time).** The first time you open Funding, the dashboard explains how it works and shows a **Turn on funding** button. Floe keeps your balance in a wallet it sets up and runs for you. You install nothing and need no crypto knowledge. The balance stays yours, and you can cash out or export it anytime. Until you turn funding on, the dashboard shows no wallet at all. If your account already had agents or had moved money before this step existed, funding is already on. Only the account owner can add or move funds.
+
+Once funding is on:
+
+1. Click **Add funds**, choose where the money goes (your account balance or a specific agent), and pay by card, Apple Pay, Google Pay, or bank transfer. Coinbase handles the checkout in a popup, with $50 / $100 / $500 presets or a custom amount. Money added to the account balance stays there until you move it to an agent with **Move between** in the same window.
+2. Or choose **Deposit USDC directly** to get a deposit address.
+3. Your balance updates once the payment clears.
+
+The Funding section also holds the wallet's own actions: copy its address and **Cash out** to your bank or Coinbase account. For a wallet Floe runs for you, you can also send USDC and export its private key. If you signed up with your own wallet, you already hold that key.
 
 No crypto bridges, no token swaps, no gas tokens needed.
 

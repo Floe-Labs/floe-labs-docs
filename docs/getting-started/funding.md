@@ -14,11 +14,14 @@ Your first agent gets a **$3 Welcome Credit** to try paid APIs — no card neede
 
 ---
 
-## Fund Wallet from the dashboard
+## Add funds from the dashboard
 
-1. Sign in at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz).
-2. Pick your agent and click **Fund Wallet**.
-3. Choose a method: **Card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds.
+1. Sign in at [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) with your email or Google.
+2. Open **Plan & billing** and scroll to **Funding**.
+3. **First time only:** click **Turn on funding**. Floe keeps your balance in a wallet it sets up and runs for you. You install nothing and need no crypto knowledge, and the balance stays yours: you can cash out or export it anytime. If your account already had agents or had moved money before this step existed, funding is already on.
+4. Click **Add funds**, pick your agent under **Card funds go to**, and choose a method: **Card, Apple Pay, Google Pay, or bank transfer**. Funds arrive within seconds.
+
+You can also fund one agent from its **Balance & funding** tab. Only the account owner can add or move funds.
 
 That's it. Your agent's balance updates and it can immediately call paid APIs. Each call spends from that balance until it runs down; top it up whenever you like.
 
@@ -61,7 +64,7 @@ If a top-up gets stuck, the agent itself is unharmed — you can always close it
 
 When you close an agent in the dashboard, any remaining balance is returned to your developer account. From there you can:
 
-- **Withdraw to your bank** (supported regions): through the dashboard, lands in your bank within 1–3 business days.
+- **Withdraw to your bank** (supported regions): **Cash out** in **Plan & billing → Funding**; lands in your bank within 1–3 business days.
 - **Move it to another agent**: the dashboard transfers the balance internally.
 
 ---

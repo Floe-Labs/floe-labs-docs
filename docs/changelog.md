@@ -10,6 +10,18 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.27.0 — Email & Google sign-in; the wallet moves to Funding (September 2026)
+
+Signing in to the dashboard no longer involves a wallet.
+
+* **Sign in with email or Google.** Use a one-time email code or your Google account. There's no wallet signature, no network switch, and no wallet on screen, and your first sign-in creates your account. Signed up with MetaMask, Coinbase Wallet, or another wallet? A browser you've signed in to with a wallet before lists it in the sign-in window next to email and Google; in a new browser, choose **Use a wallet instead**.
+* **No accidental second account.** If this browser already has a Floe account and you sign in a different way, the dashboard asks whether to continue with your existing account or create a new one. Continuing signs you out of the new sign-in and asks you to sign in the way you originally did (your wallet, or the email or Google account you used before).
+* **The wallet is opt-in, and only on Funding.** **Plan & billing → Funding** (and each agent's **Balance & funding** tab) has a one-time **Turn on funding** step that explains Floe keeps your balance in a wallet it runs for you. Card top-ups (**Add funds**), USDC deposits, cash out, send, and private-key export sit behind it. Gateway, Marketplace, and every other screen need no wallet step. Accounts that already had agents or had moved money have funding on already.
+* **API.** A new public endpoint, `POST /v1/developer/auth/privy`, exchanges a Privy access token for the `floe_session` cookie. `POST /v1/developer/auth/verify` has two changes: it always signs in the wallet that signed, and it refuses a `floe_live_` developer key or an existing session (`401`, send a fresh signature). `GET /v1/developer/profile` adds `privyDid` and `walletActivatedAt`, and `PATCH /v1/developer/me` accepts `{ "walletActivated": true }`. Per-request signing with `X-Wallet-Address` / `X-Signature` / `X-Timestamp`, used by `floe-agent` and AgentKit, is unchanged.
+* **Self-hosting.** `PRIVY_APP_ID` + `PRIVY_APP_SECRET` now turn on dashboard email / Google sign-in on their own; the API's `PRIVY_APP_ID` must match the dashboard's `NEXT_PUBLIC_PRIVY_APP_ID`. If they name different Privy apps, sign-in answers `503 privy_app_mismatch` and nobody can sign in until they match; the dashboard does not fall back to wallet sign-in for this error. The optional `PRIVY_JWT_VERIFICATION_KEY` verifies sign-in tokens offline. Agent features still need all four Privy variables, including `PRIVY_SIGNER_ID`.
+
+→ [Developer Dashboard](developers/developer-dashboard.md#authentication) · [Funding](getting-started/funding.md) · [Credit API → Dashboard sign-in](developers/credit-api.md#dashboard-sign-in) · [Error codes](reference/error-codes.md#dashboard-session) · [Environment variables](reference/environment-variables.md#dashboard-sign-in-privy)
+
 ### v1.26.0 — Outcomes: what a task produced (September 2026)
 
 A task's **cost** has had a home since v1.22.0. This is what it **produced** — a booked meeting, a qualified lead, a resolution — bound to the same call, so the two sit on one row.

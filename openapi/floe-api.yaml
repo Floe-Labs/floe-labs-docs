@@ -9,7 +9,8 @@ info:
     - **Public endpoints** — no auth required (marked with `security: []`)
     - **Agent API key** — `Authorization: Bearer floe_...`
     - **Wallet signature** — EIP-191 signed message via X-Wallet-Address + X-Signature + X-Timestamp headers
-    - **Developer session** — `Authorization: Bearer <jwt>` (from SIWE auth flow)
+    - **Developer session** — the `floe_session` HttpOnly cookie set by POST /v1/developer/auth/privy (dashboard email / Google sign-in) or POST /v1/developer/auth/verify (a wallet signature); `Authorization: Bearer <jwt>` is a legacy fallback
+    - **Privy access token** — `Authorization: Bearer <Privy access token>`, accepted only by POST /v1/developer/auth/privy
     - **Admin API key** — `Authorization: Bearer <admin-key>`
   version: 1.1.0
   contact:
@@ -36,7 +37,7 @@ tags:
   - name: Agent
     description: Agent self-service (agent API key auth)
   - name: Developer
-    description: Dashboard multi-agent management (JWT session)
+    description: Dashboard sign-in, profile, and multi-agent management (developer session)
   - name: Admin
     description: Operations (admin API key)
 
@@ -751,6 +752,356 @@ paths:
               schema:
                 $ref: "#/components/schemas/CloseResult"
 
+  /v1/developer/auth/privy:
+    post:
+      tags: [Developer]
+      summary: Exchange a Privy access token for a dashboard session (email / Google sign-in)
+      operationId: devAuthPrivy
+      description: |
+        Email and Google sign-in for the dashboard. Exchanges a verified Privy
+        access token for the same `floe_session` cookie that
+        POST /v1/developer/auth/verify issues, with no wallet signature.
+
+        The token is read only from `Authorization: Bearer <Privy access
+        token>`; a `Bearer floe_…` API key is refused. The server verifies the
+        token (signature, issuer `privy.io`, audience = this deployment's
+        Privy app, expiry), reads the user's linked sign-ins from Privy, and
+        picks the Floe account itself. A token minted for a different Privy
+        app is a deployment misconfiguration (503 `privy_app_mismatch`), not a
+        bad token (401). Nothing else the client sends (wallet headers, team
+        account selection, an existing session cookie) can choose it.
+
+        Account resolution is existing-account-first: the account this Privy
+        user already belongs to; else the one existing account among the
+        user's Privy-linked wallets; else a new account. Before a new account
+        is created, a `walletHint` naming a different, existing account refuses
+        with `wallet_signature_required` unless the request says
+        `allowNew: true`. Each account belongs to at most one Privy user
+        (recorded write-once as `privyDid`).
+
+        On `wallet_signature_required` the user already has a Floe account on
+        this browser and must choose: create a new one (repeat with
+        `allowNew: true`), or continue with the existing one — the dashboard
+        signs out of this Privy session and asks the user to sign in the way
+        they originally did (their wallet via POST /v1/developer/auth/verify,
+        or the email / Google account they used before). The two sign-ins are
+        never linked. `identity_ambiguous` and `identity_conflict` mean: sign
+        in the original way instead. `embedded_wallet_pending` means retry
+        shortly.
+
+        Rate limited to 30 requests per minute per client IP and 24 per
+        minute per Privy user; a 429 body carries `retryAfterSeconds`.
+      security:
+        - privyAccessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                src:
+                  type: string
+                  description: >
+                    First-touch acquisition source (`?src=` / utm_source).
+                    Sanitized to `[a-z0-9_-]`, max 64 chars; stored only when
+                    this sign-in creates the account.
+                walletHint:
+                  type: string
+                  pattern: "^0x[a-fA-F0-9]{40}$"
+                  description: >
+                    The Floe account this browser already uses. Never chooses
+                    the account: it is read only when this sign-in would create
+                    a new account, and then can only turn the exchange into
+                    `wallet_signature_required`.
+                allowNew:
+                  type: boolean
+                  description: >
+                    `true` = the user explicitly chose to create a new account
+                    over the one `walletHint` names (the answer to
+                    `wallet_signature_required`). Never overrides an existing
+                    or linked account, `identity_ambiguous`, or
+                    `embedded_wallet_pending`. `false` / null are the same as
+                    absent.
+      responses:
+        "200":
+          description: Session issued — `floe_session` set as an HttpOnly cookie (7-day sliding window). The token is never in the body.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [developer, isNew]
+                properties:
+                  developer:
+                    $ref: "#/components/schemas/DeveloperSession"
+                  isNew:
+                    type: boolean
+                    description: True when this sign-in created the account.
+        "400":
+          description: invalid_request — Content-Type is not application/json, the body is not a JSON object, `walletHint` is not an address, or `allowNew` is not a boolean
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+        "401":
+          description: invalid_privy_token — the Authorization header is missing, carries a `floe_` API key, or the token is expired / invalid. A token for another Privy app is a 503 `privy_app_mismatch`, not this.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+        "409":
+          description: >
+            embedded_wallet_pending (`retryable: true` — retry shortly),
+            wallet_signature_required (the `walletHint` account already exists —
+            continue with it, or repeat with `allowNew: true`),
+            identity_ambiguous (several candidate accounts), identity_conflict
+            (the account already belongs to a different Privy user)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+        "429":
+          description: rate_limited — too many attempts for this client IP (30 per minute) or Privy user (24 per minute). `retryAfterSeconds` in the body and the `Retry-After` header say when to retry.
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+        "502":
+          description: privy_unavailable — temporary Privy outage; Privy could not be reached while verifying the sign-in. Retry shortly (the dashboard retries automatically)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+        "503":
+          description: >
+            Not transient; retrying does not help.
+
+            privy_auth_unavailable — email / Google sign-in is not usable on
+            this deployment: it is not configured (PRIVY_APP_ID /
+            PRIVY_APP_SECRET unset), or Privy rejects the configured app
+            credentials (a wrong or rotated PRIVY_APP_SECRET, or an app id
+            Privy does not recognize). Sign in with a wallet via POST
+            /v1/developer/auth/verify instead (the dashboard falls back to it
+            automatically).
+
+            privy_app_mismatch — the token was minted for a different Privy
+            app than this deployment's PRIVY_APP_ID (the dashboard's
+            NEXT_PUBLIC_PRIVY_APP_ID must name the same app). A server
+            misconfiguration: do NOT fall back to a wallet signature, because
+            the caller's Privy wallet belongs to the other app and POST
+            /v1/developer/auth/verify would sign it in to a different, new
+            account. Nothing signs in until the deployment is fixed; the
+            dashboard shows "Sign-in is temporarily unavailable".
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+
+  /v1/developer/auth/verify:
+    post:
+      tags: [Developer]
+      summary: Exchange a fresh wallet signature for a dashboard session (wallet sign-in)
+      operationId: devAuthVerify
+      description: |
+        Wallet sign-in for the dashboard. Requires a fresh wallet signature in
+        the X-Wallet-Address / X-Signature / X-Timestamp headers and sets the
+        `floe_session` cookie for the wallet that signed — team account
+        selection on the request cannot change it. A `floe_live_*` developer
+        key or an existing session cannot start a new session (401).
+
+        SDKs that sign every request with these headers do not need this
+        route.
+      security:
+        - walletAddress: []
+          walletSignature: []
+          walletTimestamp: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                src:
+                  type: string
+                  description: First-touch acquisition source; stored only when this sign-in creates the account.
+      responses:
+        "200":
+          description: Session issued — `floe_session` set as an HttpOnly cookie (7-day sliding window). The token is never in the body.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  developer:
+                    $ref: "#/components/schemas/DeveloperSession"
+        "401":
+          description: No fresh wallet signature — missing, invalid, or expired signature headers, or a developer key / existing session was sent instead
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /v1/developer/profile:
+    get:
+      tags: [Developer]
+      summary: Developer profile and agents
+      operationId: devGetProfile
+      security:
+        - developerSession: []
+      responses:
+        "200":
+          description: Profile plus the account's agents (abridged — the response carries additional plan and console-settings fields)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  developer:
+                    type: object
+                    properties:
+                      walletAddress:
+                        type: string
+                      displayName:
+                        type: string
+                        nullable: true
+                      email:
+                        type: string
+                        nullable: true
+                      accountId:
+                        type: string
+                        nullable: true
+                      role:
+                        type: string
+                        nullable: true
+                        enum: [owner, admin, member, viewer, null]
+                      createdAt:
+                        type: string
+                        format: date-time
+                      privyDid:
+                        type: string
+                        nullable: true
+                        description: >
+                          The signed-in person's Privy user id (`did:privy:…`),
+                          recorded on their first POST /v1/developer/auth/privy
+                          sign-in. Null for someone who has only ever signed in
+                          with a wallet signature (POST /v1/developer/auth/verify).
+                          Read from the caller's own profile, even when
+                          a teammate is working in someone else's account.
+                      walletActivatedAt:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        description: >
+                          When the signed-in person turned on funding
+                          (PATCH /v1/developer/me `walletActivated: true`); null
+                          until then. Read from the caller's own profile, like
+                          `privyDid`.
+                  agents:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ManagedAgent"
+        "404":
+          description: Developer not registered
+
+  /v1/developer/me:
+    patch:
+      tags: [Developer]
+      summary: Update account settings or record the funding opt-in
+      operationId: devUpdateMe
+      description: |
+        Partial update — send only the fields that change (at least one).
+        `displayName` and `customerAttribution` change the account and need the
+        owner or admin role. `walletActivated: true` records the signed-in
+        person's own funding opt-in (the dashboard's one-time "Turn on
+        funding" step): stamped once on the caller's own profile, never
+        cleared; a repeat returns the original time.
+      security:
+        - developerSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Account name. Owner / admin only.
+                customerAttribution:
+                  type: string
+                  enum: [optional, required]
+                  description: "`required` makes the gateway refuse untagged metered calls. Owner / admin only."
+                unitNoun:
+                  type: string
+                  enum: [call, conversation, task, meeting, interaction, resolution]
+                  description: The console's noun for one unit of work. Display only.
+                campaignNoun:
+                  type: string
+                  enum: [campaign, queue]
+                  description: The console's noun for a group of work. Display only.
+                walletActivated:
+                  type: boolean
+                  enum: [true]
+                  description: Record the signed-in person's funding opt-in. Only `true` is accepted.
+      responses:
+        "200":
+          description: Updated account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  developer:
+                    type: object
+                    properties:
+                      walletAddress:
+                        type: string
+                      displayName:
+                        type: string
+                        nullable: true
+                      accountId:
+                        type: string
+                        nullable: true
+                      customerAttribution:
+                        type: string
+                        enum: [optional, required]
+                      walletActivatedAt:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        description: The signed-in person's own funding opt-in (see GET /v1/developer/profile).
+        "400":
+          description: Body is not a JSON object, no updatable field was sent, or a field is invalid (e.g. `walletActivated` other than `true`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Developer credential required
+        "403":
+          description: Role below owner / admin for an account-level field
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Developer not registered
+
   /v1/developer/agents:
     get:
       tags: [Developer]
@@ -1168,7 +1519,32 @@ components:
     developerSession:
       type: http
       scheme: bearer
-      description: JWT session token (from SIWE auth)
+      description: >
+        Developer (operator) credential. Routes marked with this scheme accept
+        any developer credential: the `floe_session` HttpOnly cookie set by
+        POST /v1/developer/auth/privy or POST /v1/developer/auth/verify (the
+        dashboard's normal path), the same token as `Authorization: Bearer
+        <jwt>` (legacy fallback), a `floe_live_*` developer API key, or the
+        wallet-signature headers (X-Wallet-Address + X-Signature +
+        X-Timestamp). A Privy access token is not a developer credential.
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: floe_session
+      description: >
+        HttpOnly dashboard session cookie (7-day sliding window) set by
+        POST /v1/developer/auth/privy (email / Google sign-in) or
+        POST /v1/developer/auth/verify (a fresh wallet signature). Same format
+        whichever route issued it. Equivalent to `developerSession`.
+    privyAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        A Privy access token for this deployment's Privy app (what the
+        dashboard's Privy sign-in returns). Accepted only by
+        POST /v1/developer/auth/privy, which exchanges it for the
+        `floe_session` cookie; every other route refuses it.
 
   schemas:
     CheckResult:
@@ -1738,6 +2114,66 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    DeveloperSession:
+      type: object
+      description: >
+        The account a dashboard session was just issued for
+        (POST /v1/developer/auth/privy, POST /v1/developer/auth/verify).
+      properties:
+        walletAddress:
+          type: string
+          description: The account key (lowercase 0x address).
+        displayName:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        accountId:
+          type: string
+          nullable: true
+          description: Stable public account id (`acct_…`).
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        privyDid:
+          type: string
+          nullable: true
+          description: The Privy user the account belongs to (`did:privy:…`), recorded write-once on its first POST /v1/developer/auth/privy sign-in; null until then.
+        walletActivatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When funding was turned on; null until then.
+
+    PrivyAuthError:
+      type: object
+      description: POST /v1/developer/auth/privy refusal — `error` is the machine code, `message` a sentence for humans.
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          enum:
+            - invalid_request
+            - invalid_privy_token
+            - embedded_wallet_pending
+            - wallet_signature_required
+            - identity_ambiguous
+            - identity_conflict
+            - rate_limited
+            - privy_unavailable
+            - privy_auth_unavailable
+            - privy_app_mismatch
+        message:
+          type: string
+        retryable:
+          type: boolean
+          description: Present (true) on embedded_wallet_pending only.
+        retryAfterSeconds:
+          type: integer
+          description: Present on rate_limited only; mirrors the Retry-After header.
 
     Error:
       type: object
