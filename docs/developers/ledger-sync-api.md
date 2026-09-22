@@ -44,10 +44,10 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/agents/ledger/sync" \
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `timestamp` | string | Yes | When the spend occurred (ISO 8601). |
-| `kind` | string | Yes | `"llm"` or `"tool"`. |
+| `kind` | string | Yes | One of `"llm"`, `"tool"`, `"stt"`, `"tts"`, `"telephony"`, `"avatar"`, `"sms"`, `"ocr"`, `"gpu"`. |
 | `model_or_tool` | string | Yes | The model id (`openai/gpt-4o`) or tool identifier the cost is attributed to. |
-| `prompt_tokens` | number \| null | Yes | Input tokens for `llm` events; `null` for `tool` events. |
-| `completion_tokens` | number \| null | Yes | Output tokens for `llm` events; `null` for `tool` events. |
+| `prompt_tokens` | number \| null | Yes | Input tokens for `llm` events; `null` for every other kind. |
+| `completion_tokens` | number \| null | Yes | Output tokens for `llm` events; `null` for every other kind. |
 | `cost_usd` | number | Yes | Priced cost of the call, in **USD** (a decimal, e.g. `0.0064`). This is the guard's local USD ledger value echoed verbatim — note it is **not** the raw 6-decimal USDC-units convention used elsewhere in this API. |
 | `label` | string | No | The one free-form field you may set — used for attribution. The only caller-supplied identifier the endpoint accepts; there is no field for prompts, content, or user ids. |
 | `reserved` | boolean | No | Marks a held-but-not-yet-settled row from the guard's reservation flow. Optional. |

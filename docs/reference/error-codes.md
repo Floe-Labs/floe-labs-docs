@@ -115,7 +115,7 @@ Every error here has `"error": "Unauthorized"`. The `message` tells you which ch
 | 401 | *"Timestamp too stale. Must be within 300 seconds of server time."* | `X-Timestamp` is more than ±5 minutes from server time | Check client clock (NTP drift); re-sign |
 | 401 | *"Signature verification failed."* | The signature doesn't verify for `X-Wallet-Address` over `Floe Credit API\nTimestamp: <X-Timestamp>` (EOA, ERC-1271, or ERC-6492) | Check the signed message and signing library, then re-sign |
 
-> Signed requests don't use server-side nonces. Replay protection comes from the ±5-minute timestamp window, and dashboard sessions expire after 7 days.
+> Signed requests don't use server-side nonces, and the signed message covers only the timestamp — not the method, path, or body. Treat `X-Wallet-Address` / `X-Signature` / `X-Timestamp` as a **bearer credential for the whole ±5-minute window**: never log them, never put them in a URL or a bug report, and prefer the dashboard session cookie for browser traffic. Dashboard sessions expire after 7 days.
 
 ---
 

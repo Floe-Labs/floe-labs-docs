@@ -91,7 +91,7 @@ End-to-end, from zero to your agent's first paid API call. Everything the deploy
 
 ### 1. Developer signs in
 
-Visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with your email (a one-time code) or Google. There's no wallet to connect and nothing to sign, and your first sign-in creates the account. The dashboard keeps you signed in for 7 days. If you signed up with a wallet (MetaMask, Coinbase Wallet, and others), choose **Use a wallet instead**. See [Developer Dashboard → Authentication](developer-dashboard.md#authentication).
+Visit [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz) and sign in with your email (a one-time code) or Google. There's no wallet to connect and nothing to sign, and your first sign-in creates the account unless one already matches your identity or a wallet linked to it — Floe signs you in to the existing account rather than creating a second. The dashboard keeps you signed in for 7 days. If you signed up with a wallet (MetaMask, Coinbase Wallet, and others), choose **Use a wallet instead**. See [Developer Dashboard → Authentication](developer-dashboard.md#authentication).
 
 ### 2. Mint a developer API key
 

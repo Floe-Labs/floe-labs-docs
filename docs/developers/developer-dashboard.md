@@ -10,7 +10,7 @@ The Developer Dashboard is your home base for managing agents, API keys, webhook
 
 ## Authentication
 
-Sign in with your **email** (a one-time code) or your **Google** account. There is no wallet to connect, no message to sign, and no network to switch. Your first sign-in creates your account.
+Sign in with your **email** (a one-time code) or your **Google** account. There is no wallet to connect, no message to sign, and no network to switch. Your first sign-in creates your account — unless one already matches: Floe looks for an account pinned to that identity, then for one among the wallets linked to it, and signs you in to that instead of creating a second.
 
 1. Open [dev-dashboard.floelabs.xyz](https://dev-dashboard.floelabs.xyz). The sign-in window opens by itself; if you closed it, click **Sign up or sign in**.
 2. Enter your email and the one-time code you receive, or continue with Google.
@@ -20,7 +20,7 @@ Sign in with your **email** (a one-time code) or your **Google** account. There 
 
 **Already have an account?** If this browser already has a Floe account and you sign in a different way (for example with Google, when your account was created with a wallet), the dashboard asks whether to **continue with your existing account** or **create a new one**. If you continue, the dashboard signs you out of the new sign-in and asks you to sign in the way you originally did: with your wallet, or with the email or Google account you used before. The two sign-ins stay separate, so keep using your original sign-in to reach that account.
 
-You never need a wallet to use the dashboard. It only appears on the funding screens, and only after you turn funding on (see [Add funds](#add-funds)). Gateway, Marketplace, keys, usage, and every other screen work without it.
+If you sign up with email or Google you never need a wallet to use the dashboard: it appears only on the funding screens, and only after you turn funding on (see [Add funds](#add-funds)). Gateway, Marketplace, keys, usage, and every other screen work without it. Accounts created with a wallet keep signing in with that wallet, as above — the wallet is their identity, not just a funding step.
 
 This is **only** for developers using the dashboard. Agents authenticate with their `floe_*` API key at runtime — see [Agent Runtime Contract](agent-runtime-contract.md). SDKs and scripts that sign each request with a wallet (`X-Wallet-Address` + `X-Signature` + `X-Timestamp`) keep working unchanged — see [Credit API → Wallet Signature Authentication](credit-api.md#wallet-signature-authentication-eip-191).
 
