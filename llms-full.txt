@@ -9,7 +9,7 @@
 
 ## Contents
 
-- Floe — what every call actually costs — https://floe-labs.gitbook.io/docs/readme.md
+- Floe — what every AI task actually costs — https://floe-labs.gitbook.io/docs/readme.md
 - Set up with your AI tools — https://floe-labs.gitbook.io/docs/start-here/setup-with-ai-tools.md
 - Claude Code / Agent Skills — https://floe-labs.gitbook.io/docs/start-here/claude-code-skill.md
 - Quickstart (5 minutes) — https://floe-labs.gitbook.io/docs/start-here/quickstart.md
@@ -82,18 +82,18 @@
 - Changelog — https://floe-labs.gitbook.io/docs/reference/changelog.md
 
 ==============================================================================
-# Floe — what every call actually costs
+# Floe — what every AI task actually costs
 Source: README.md
 URL: https://floe-labs.gitbook.io/docs/readme.md
 ==============================================================================
 
 <p align="center"><img src="https://raw.githubusercontent.com/Floe-Labs/.github/main/profile/banner.png" alt="Floe" width="100%" /></p>
 
-# Floe — What every voice call actually costs
+# Floe — What every AI task actually costs
 
-**Across every carrier, speech, and model vendor — so finance can price contracts on real numbers, protect gross margin, and stop guessing at the gap between what they signed and what they deployed.**
+**Across every model, voice, tool, and infrastructure vendor — so finance can price the next deal on actuals, protect gross margin, attribute COGS to the client and campaign, and rebill customers off real numbers instead of a blended guess.**
 
-Every voice call your agent makes spends money across a dozen vendors — the phone carrier, the speech-to-text, the language model, the voice, the tools. Those bills arrive separately, in different units, on different days, and your finance team spends weeks stitching them together to answer one question: **what did this client, this campaign, this call actually cost us?** Floe costs every call the moment it ends, tags the spend to the client and campaign, and shows you your margin per contract — so you can price the next deal on actuals instead of a blended guess, and walk into your next raise with your unit economics under control. (Floe is the join across every vendor — a token router meters only the LLM slice, ~40% of the bill, and is blind to the other 60%; on BYOK, platform dashboards report $0 — plus enforcement where Floe is in the path. One ledger, tagged by agent, task, and customer.)
+A **task** is any AI interaction or workflow — an agent run, an LLM/tool chain, a document or vision job, a voice call. Whatever the task, it spends across a dozen vendors: the model, retrieval, the tools, the voice and carrier legs when it's voice, the infra. Those bills arrive separately, in different units, on different days, and your finance team spends weeks stitching them together to answer one question: **what did this client, this campaign, this task actually cost us?** Floe costs every task the moment it ends, closes it to vendor actuals, tags the spend to the client and campaign, and shows you your margin per contract — so you can price the next deal on actuals instead of a blended guess, and walk into your next raise with your unit economics under control. (Floe is the join across every vendor — a token router meters only the model slice, and on a voice task that is only ~40% of the bill; on BYOK, provider dashboards report $0 — plus enforcement where Floe is in the path. One ledger, tagged by agent, task, and customer.)
 
 [Website](https://floefinance.com) · [Live docs](https://floe-labs.gitbook.io/docs) · [Dashboard](https://dev-dashboard.floelabs.xyz) · [𝕏 @FloeLabs](https://x.com/FloeLabs)
 
