@@ -40,6 +40,55 @@ permissions:
   pull-requests: write
 
 jobs:
+  # A file copy, kept OUT of the Claude job deliberately. Syncing the OpenAPI
+  # artifact is mechanical: routing it through an LLM turn budget makes a `cp`
+  # unreliable and spends turns the prose sync needs. The logic lives in
+  # scripts/sync-openapi.ts so this stays a few plain steps.
+  openapi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Floe-Labs/floe-monorepo
+          token: ${{ secrets.DOCS_SYNC_TOKEN }}
+          path: monorepo
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Sync the spec
+        id: sync
+        run: npx tsx scripts/sync-openapi.ts monorepo/apps/api/openapi.yaml
+
+      - name: Did anything change?
+        id: changed
+        run: |
+          if git diff --quiet -- openapi/floe-api.yaml; then
+            echo "value=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Regenerate the corpus
+        if: steps.changed.outputs.value == 'true'
+        run: npx tsx scripts/build-llms-full.ts
+
+      - name: Open a draft PR
+        if: steps.changed.outputs.value == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AFTER: ${{ github.event.client_payload.after || inputs.after }}
+        run: |
+          set -euo pipefail
+          branch="openapi-sync/${AFTER:0:7}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add openapi/floe-api.yaml llms-full.txt
+          git commit -m "docs: sync the OpenAPI artifact with the served spec"
+          git push -u origin "$branch"
+          gh pr create --draft --title "[openapi-sync] refresh the committed spec" --body-file .github/openapi-sync-body.md
+
   sync:
     runs-on: ubuntu-latest
     env:
@@ -62,9 +111,9 @@ jobs:
           echo "COMPARE_URL=https://github.com/Floe-Labs/floe-monorepo/compare/${BEFORE}...${AFTER}" >> "$GITHUB_ENV"
           echo "AFTER7=${AFTER:0:7}" >> "$GITHUB_ENV"
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: Floe-Labs/floe-monorepo
           token: ${{ secrets.DOCS_SYNC_TOKEN }}
