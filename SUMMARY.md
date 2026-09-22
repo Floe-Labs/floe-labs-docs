@@ -1,6 +1,6 @@
 # Table of contents
 
-* [Floe — what every call actually costs](README.md)
+* [Floe — what every AI task actually costs](README.md)
 
 ## Start here
 
