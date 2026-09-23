@@ -7264,9 +7264,11 @@ paths:
         predecessor, and a confirmed claim that lost its binding would be
         invisible to every rollup that reads through one.
 
-        `confirmedAt` is the billing anchor for THIS confirmation. A later
-        reversal anchors on its own, never on this one, which is what keeps a
-        closed statement immutable.
+        `confirmedAt` is the billing anchor for THIS confirmation, and the
+        server stamps it at the moment of confirmation — it is not a request
+        field, so a caller cannot choose which period a confirmation lands in.
+        A later reversal anchors on its own, never on this one, which is what
+        keeps a closed statement immutable.
 
         Operator evidence wins where given; otherwise the reported claim's own
         evidence carries forward rather than being dropped.
@@ -7292,9 +7294,6 @@ paths:
                   type: string
                   maxLength: 200
                   description: Required — an operator's backend retries too.
-                confirmedAt:
-                  type: string
-                  format: date-time
                 quantity:
                   type: integer
                   minimum: 1
@@ -9590,14 +9589,6 @@ paths:
                   type: string
                   format: date-time
                   description: When the outcome happened. Defaults to now.
-                confirmedAt:
-                  type: string
-                  format: date-time
-                  nullable: true
-                  description: >
-                    The billing anchor for first confirmation. A reversal
-                    anchors on its OWN confirmedAt, never the original's —
-                    which is what keeps a closed statement immutable.
                 externalSystem:
                   type: string
                   maxLength: 64
