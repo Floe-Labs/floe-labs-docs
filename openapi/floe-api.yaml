@@ -10,7 +10,7 @@ info:
     - **Agent API key** — `Authorization: Bearer floe_...` (runtime credential; pays for calls)
     - **Developer API key** — `Authorization: Bearer floe_live_...` (operator credential)
     - **Wallet signature** — EIP-191 signed message via X-Wallet-Address + X-Signature + X-Timestamp headers
-    - **Developer session** — the `floe_session` HttpOnly cookie set by POST /v1/developer/auth/verify (or `Authorization: Bearer <jwt>` as a legacy fallback)
+    - **Developer session** — the `floe_session` HttpOnly cookie set by POST /v1/developer/auth/privy (dashboard email / Google sign-in, from a Privy access token) or POST /v1/developer/auth/verify (a wallet signature); `Authorization: Bearer <jwt>` is a legacy fallback
     - **Admin API key** — `Authorization: Bearer <admin-key>`
 
     Every `/v1/developer/*` route (and the money-movement surfaces `/v1/transfers`,
@@ -18,6 +18,12 @@ info:
     a `floe_live_*` developer key, the session cookie/JWT, or wallet-signature
     headers. Agent keys (`floe_*` without `_live_`) are runtime credentials and
     are refused on those surfaces with 403 `developer_credential_required`.
+
+    **One exception: `POST /v1/developer/auth/verify`.** It MINTS a session, so
+    it accepts a fresh wallet signature only. A developer key, an existing
+    session cookie or JWT, and an agent key are each refused with 401 — trading
+    a long-lived credential for a 7-day human session would sidestep the
+    human-session checks that guard Checkout, Portal and Connect link minting.
 
     ## Webhooks
 
@@ -87,6 +93,20 @@ tags:
     description: Operations (admin API key)
 
 paths:
+  /v1/status:
+    get:
+      tags: [Public]
+      summary: Aggregated status (cached 30s)
+      operationId: getStatus
+      security: []
+      responses:
+        "200":
+          description: System status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemStatus"
+
   /.well-known/openapi.yaml:
     get:
       tags: [Public]
@@ -136,23 +156,6 @@ paths:
                   timestamp:
                     type: string
                     format: date-time
-
-  # Served by @floe/status-api, a separate deployment from the credit API.
-  # Kept in this artifact because it is a public, documented endpoint and
-  # this file is what agents fetch; the served credit-api spec omits it.
-  /v1/status:
-    get:
-      tags: [Public]
-      summary: Aggregated status (cached 30s)
-      operationId: getStatus
-      security: []
-      responses:
-        "200":
-          description: System status
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SystemStatus"
 
   /v1/markets:
     get:
@@ -1685,6 +1688,251 @@ paths:
         "429":
           description: IP rate limit exceeded
 
+  /v1/developer/auth/verify:
+    post:
+      tags: [Developer]
+      summary: Exchange a fresh wallet signature for a dashboard session
+      operationId: devAuthVerify
+      description: |
+        Wallet sign-in for the dashboard: the request carries the wallet
+        signature headers (X-Wallet-Address + X-Signature + X-Timestamp, the
+        same EIP-191 message the SDKs sign), and the server issues the
+        `floe_session` cookie for exactly that wallet. On this path the
+        signature headers alone decide identity: an existing `floe_session`
+        cookie or Bearer JWT is ignored, and a request authenticated by an
+        API key or a session (rather than a fresh signature) is refused — a
+        key or a stale cookie can never start a new dashboard session. The
+        session is always for the wallet that signed, never for an account
+        selected with `X-Floe-Account` / the `floe_account` cookie.
+
+        This route never links or pins a Privy user to the account: any body
+        field other than `src` — including a `privyAccessToken` — is ignored.
+        The signed message names no route or Privy user and is valid for
+        five minutes, so it cannot be allowed to bind one; Privy users are
+        pinned only by POST /v1/developer/auth/privy, from a verified token.
+      security:
+        - walletAddress: []
+          walletSignature: []
+          walletTimestamp: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                src:
+                  type: string
+                  description: >
+                    First-touch acquisition source (`?src=` / utm_source).
+                    Sanitized to `[a-z0-9_-]`, max 64 chars; written only when
+                    this sign-in creates the account.
+      responses:
+        "200":
+          description: >
+            Session issued — `floe_session` set as an HttpOnly cookie (7-day
+            sliding window). `developer.privyDid` is the Privy user the
+            account is already pinned to (by an earlier email / Google
+            sign-in), or null; this route never changes it.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [developer]
+                properties:
+                  developer:
+                    $ref: "#/components/schemas/DeveloperSession"
+        "401":
+          description: >
+            Missing, stale (outside 5 minutes) or invalid wallet signature
+            headers, or the request was authenticated by an API key or an
+            existing session instead of a fresh signature
+
+  /v1/developer/auth/privy:
+    post:
+      tags: [Developer]
+      summary: Exchange a Privy access token for a dashboard session (email / Google sign-in)
+      operationId: devAuthPrivy
+      description: |
+        FLO-784. Email and Google sign-in for the dashboard: exchanges a
+        verified Privy access token for the same `floe_session` cookie that
+        POST /v1/developer/auth/verify issues — with no wallet signature.
+
+        The token is read ONLY from `Authorization: Bearer <Privy access
+        token>` (never the body); a `Bearer floe_…` API key is refused. The
+        server verifies it (ES256 signature, issuer `privy.io`, audience = this
+        deployment's Privy app, expiry), fetches the user's current linked
+        accounts from Privy and picks the Floe account itself. A Privy token
+        minted for a DIFFERENT Privy app is a deployment misconfiguration
+        (503 `privy_app_mismatch`), not a bad token (401). Nothing else the
+        client sends — wallet headers, `X-Floe-Account`, the `floe_account` or
+        an existing `floe_session` cookie — can choose it.
+
+        Account resolution is existing-account-first: the account already
+        pinned to this Privy user; else the one existing account among the
+        user's linked Ethereum wallets (several → the Privy embedded wallet's,
+        else `identity_ambiguous`); else a NEW account keyed by the Privy
+        embedded wallet (or by the single linked external wallet). Before a
+        new account is created, a `walletHint` naming a different, existing
+        account refuses with `wallet_signature_required` unless the request
+        says `allowNew: true`. The Privy user id is then pinned to the
+        account, write-once. On success a verified email fills an empty
+        `email`, the embedded wallet is recorded as `embeddedWalletAddress`,
+        and a first-ever sign-in sends the welcome email.
+
+        On `wallet_signature_required` the caller already has a Floe account
+        and must choose: create a new one (repeat this request with
+        `allowNew: true`), or continue with the existing one by signing in to
+        Privy the way that account was created — with its wallet, or with the
+        email / Google account used before — which this route then resolves to
+        that account. `identity_ambiguous` and `identity_conflict` cannot be
+        settled here: sign in with a wallet signature (POST
+        /v1/developer/auth/verify), which proves which account is meant.
+        `embedded_wallet_pending` means retry shortly.
+
+        This is the only route that pins a Privy user to an account; POST
+        /v1/developer/auth/verify never does.
+
+        Rate limited per Privy user to 24 requests per minute — sized above
+        the dashboard's own `embedded_wallet_pending` retries, Try again
+        included. That bucket is keyed on a DID taken from a token that has
+        already verified, so it cannot be forged, and it is the real control.
+
+        A 30/minute per-client-IP bucket sits in front of it as defence in
+        depth only. It keys on the left-most `X-Forwarded-For` hop, which is
+        caller-supplied wherever the proxy appends rather than overwrites, so
+        treat it as best-effort: rotating the header dodges it. Keying the
+        right-most hop instead would lump every user behind one shared proxy
+        into a single bucket and lock them out of sign-in.
+      security:
+        - privyAccessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                src:
+                  type: string
+                  description: >
+                    First-touch acquisition source (`?src=` / utm_source).
+                    Sanitized to `[a-z0-9_-]`, max 64 chars; written only when
+                    this sign-in creates the account.
+                walletHint:
+                  type: string
+                  pattern: "^0x[a-fA-F0-9]{40}$"
+                  description: >
+                    The Floe account this browser already uses (its live or
+                    last session). Never chooses the account: it is read only
+                    when this sign-in would CREATE a new account, and then can
+                    only downgrade the exchange to `wallet_signature_required`
+                    — when it is NOT one of the Privy user's linked wallets but
+                    already has a Floe account.
+                allowNew:
+                  type: boolean
+                  description: >
+                    `true` = the user explicitly chose to create a new account
+                    over the one `walletHint` names (the answer to
+                    `wallet_signature_required`): skips the `walletHint` check.
+                    It never overrides an existing or pinned account, nor
+                    `identity_ambiguous` / `embedded_wallet_pending`. Only
+                    `true` has an effect; `false` / null are the same as
+                    absent.
+      responses:
+        "200":
+          description: Session issued — `floe_session` set as an HttpOnly cookie (7-day sliding window). The token is never in the body.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [developer, isNew]
+                properties:
+                  developer:
+                    $ref: "#/components/schemas/DeveloperSession"
+                  isNew:
+                    type: boolean
+                    description: True when this sign-in created the account.
+        "400":
+          description: invalid_request — Content-Type is not application/json, the body is not a JSON object, `walletHint` is not an address, or `allowNew` is not a boolean
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+        "401":
+          description: >
+            invalid_privy_token — the Authorization header is missing, carries
+            a `floe_` API key, or the token is expired / invalid (malformed,
+            bad signature, not issued by `privy.io`), or its Privy user no
+            longer exists. A token for another Privy app is a 503, not this.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+        "409":
+          description: >
+            embedded_wallet_pending (`retryable: true` — the Privy user has no
+            Ethereum wallet yet; the dashboard creates the embedded wallet just
+            after sign-in, so retry shortly), wallet_signature_required (this
+            sign-in would create a new account but the `walletHint` account
+            already exists — continue with that account, or repeat with
+            `allowNew: true`),
+            identity_ambiguous (several candidate accounts, or several linked
+            external wallets and no embedded wallet), identity_conflict (the
+            account is already pinned to a different Privy user)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+        "429":
+          description: rate_limited — too many attempts for this client IP or Privy user (`retryAfterSeconds` + a `Retry-After` header say when)
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+        "502":
+          description: >
+            privy_unavailable — Privy could not be reached, timed out,
+            rate-limited this server or answered 5xx while verifying the token
+            or reading the user. Transient: retry with backoff (the dashboard
+            does).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+        "503":
+          description: >
+            Not transient; retrying does not help.
+            privy_auth_unavailable — Privy sign-in is not usable on this
+            deployment: it is not configured (PRIVY_APP_ID / PRIVY_APP_SECRET
+            unset), or Privy rejects the configured app credentials (a wrong
+            or rotated PRIVY_APP_SECRET, or an app id Privy does not
+            recognize). Sign in with a wallet signature (POST
+            /v1/developer/auth/verify) instead.
+            privy_app_mismatch — the token was minted for a different Privy
+            app than this deployment's PRIVY_APP_ID (the dashboard's
+            NEXT_PUBLIC_PRIVY_APP_ID must name the same app; the server logs
+            `privy_login_app_mismatch` with both ids). Do NOT fall back to a
+            wallet signature: the caller's Privy wallet belongs to the other
+            app, so /auth/verify would sign it in to a different, new
+            account. Nothing signs in until the deployment is fixed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrivyAuthError"
+
   /v1/developer/profile:
     get:
       tags: [Developer]
@@ -1728,6 +1976,26 @@ paths:
                         type: string
                         format: date-time
                         nullable: true
+                      privyDid:
+                        type: string
+                        nullable: true
+                        description: |
+                          FLO-784 — the SIGNED-IN human's Privy user id
+                          (`did:privy:…`), pinned on their first
+                          POST /v1/developer/auth/privy sign-in. NULL for a
+                          human who has only ever signed in with a wallet
+                          signature. Read from the caller's own account, even
+                          when a teammate is acting in someone else's.
+                      walletActivatedAt:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        description: |
+                          FLO-784 — when the signed-in human opted into the
+                          wallet UI (PATCH /v1/developer/me
+                          `walletActivated: true`); NULL until then. UI gating
+                          only — money routes enforce their own auth. Read from
+                          the caller's own account, like `privyDid`.
                       aiToolConnectedAt:
                         type: string
                         format: date-time
@@ -1796,6 +2064,126 @@ paths:
                               type: string
         "404":
           description: Developer not registered
+
+  /v1/developer/me:
+    patch:
+      tags: [Developer]
+      summary: Update the account name, console settings, embedded-wallet audit fields, or the wallet opt-in
+      operationId: devUpdateMe
+      description: |
+        Partial update — send only the fields that change (at least one).
+        Every field is validated and permission-checked before anything is
+        written, so a request refused on any field (400 / 403 / 404) leaves
+        the account untouched — including the fields that were valid.
+
+        `displayName` and `customerAttribution` change the ACCOUNT and need the
+        owner or admin role. `embeddedWalletAddress` / `embeddedWalletExported`
+        concern the Privy embedded wallet for the CDP non-custodial review and
+        are accepted only on your own account, once the SERVER has recorded
+        your session wallet as your Privy embedded wallet (POST
+        /v1/developer/auth/privy does this from Privy's verified linked
+        accounts at email / Google sign-in). A Privy user id alone is not
+        enough — external-wallet accounts have one too. `walletActivated`
+        records the signed-in human's own opt-in to the wallet UI.
+      security:
+        - developerSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Account name. Owner / admin only.
+                customerAttribution:
+                  type: string
+                  enum: [optional, required]
+                  description: |
+                    Rebilling T1 — `required` makes the gateway refuse untagged
+                    metered calls pre-spend. Owner / admin only.
+                unitNoun:
+                  type: string
+                  enum: [call, conversation, task, meeting, interaction, resolution]
+                  description: The console's noun for one unit of work. Display only.
+                campaignNoun:
+                  type: string
+                  enum: [campaign, queue]
+                  description: The console's noun for a group of work. Display only.
+                embeddedWalletAddress:
+                  type: string
+                  pattern: "^0x[a-fA-F0-9]{40}$"
+                  description: |
+                    The Privy embedded wallet. Accepted only as a confirmation
+                    of the value the server already recorded — it must equal
+                    both the session wallet and the recorded embedded wallet,
+                    and never writes. Kept for older dashboards; anything else
+                    is 403.
+                embeddedWalletExported:
+                  type: boolean
+                  enum: [true]
+                  description: Record a private-key export (audit trail). Requires the server-recorded embedded wallet to be the session wallet; otherwise 403.
+                walletActivated:
+                  type: boolean
+                  enum: [true]
+                  description: |
+                    FLO-784 — the signed-in human opts into the wallet UI (the
+                    dashboard's "Activate wallet" step on Funding). Stamped
+                    once on the CALLER's own account, never cleared; a repeat
+                    returns the original time. Only `true` is accepted.
+      responses:
+        "200":
+          description: Updated account
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  developer:
+                    type: object
+                    properties:
+                      walletAddress:
+                        type: string
+                      displayName:
+                        type: string
+                        nullable: true
+                      accountId:
+                        type: string
+                        nullable: true
+                      embeddedWalletAddress:
+                        type: string
+                        nullable: true
+                      embeddedWalletExportedAt:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      customerAttribution:
+                        type: string
+                        enum: [optional, required]
+                      walletActivatedAt:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        description: The signed-in human's own wallet opt-in (see GET /v1/developer/profile).
+        "400":
+          description: Body is not a JSON object, no updatable field was sent, or a field is invalid (e.g. `walletActivated` other than `true`)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Developer credential required
+        "403":
+          description: Role below owner / admin for an account-level field, or an embedded-wallet field when your own account has no server-recorded embedded wallet equal to the session wallet (external-wallet accounts, signature-only sign-ins, or another account)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Developer not registered — the account, or (with `walletActivated`) your own row when you are acting in a teammate's account
 
   /v1/developer/keys:
     get:
@@ -5384,7 +5772,7 @@ paths:
   /v1/developer/billing-periods:
     get:
       tags: [Developer]
-      summary: Billing periods for one customer (newest first)
+      summary: Billing periods for one customer (newest first, keyset-paged)
       description: |
         Lifecycle `open → closed → issued`, then the collection states
         `paid / void / uncollectible` set by Stripe once the statement was
@@ -5401,6 +5789,28 @@ paths:
           schema:
             type: string
             maxLength: 128
+        - name: limit
+          in: query
+          required: false
+          description: Page size. Defaults to 50.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - name: cursor
+          in: query
+          required: false
+          description: >
+            Opaque keyset cursor taken verbatim from a previous response's
+            `nextCursor`. Validated for SHAPE only — it is not signed and not
+            bound to this endpoint, so a well-formed cursor is accepted and
+            simply positions the window; only a malformed one is a 400. That is
+            safe rather than lax: the query is always scoped to the
+            authenticated wallet and `customerId`, so a hand-made cursor can
+            only move the window within rows the caller may already read.
+          schema:
+            type: string
       responses:
         "200":
           description: Periods
@@ -5415,8 +5825,14 @@ paths:
                     type: array
                     items:
                       $ref: "#/components/schemas/BillingPeriod"
+                  nextCursor:
+                    type: string
+                    nullable: true
+                    description: Cursor for the next page; null on the last page.
+                  hasMore:
+                    type: boolean
         "400":
-          description: customerId query param required
+          description: Invalid customerId, limit or cursor
     post:
       tags: [Developer]
       summary: Create an OPEN billing period
@@ -7335,6 +7751,193 @@ paths:
             outcome_claim_billed — the claim sits in a closed statement, which
             is immutable. The correction is a reversal in the next open period,
             never an edit.
+
+  /v1/developer/outcomes:
+    get:
+      tags: [Developer]
+      summary: List outcome claims — discovery by the call, not by the event id
+      description: |
+        The read half of the outcome fact. Until this existed a claim could be
+        created and corrected but never looked up, which is why discovery here
+        is by the CALL — `taskId`, `interactionId`, `customerId`, `campaignId`
+        — and not by an `oev_…` nobody has yet. The event id from an emit
+        response or a webhook is the shortcut, not the front door.
+
+        Returns CHAIN HEADS only. A corrected claim's predecessors are history
+        and are reachable through `GET /v1/developer/outcomes/{eventId}`;
+        listing them here would double-count one fact.
+
+        UNBOUND CLAIMS ARE RETURNED, never dropped. A claim with no current
+        binding comes back with `binding.unresolvedReason` instead of a call.
+        Hiding it would leave a silent hole in the number this lane exists to
+        produce.
+
+        `binding.matchedVia` is the claim's own identifier kind — HOW it
+        reached the call. It is derived, not a stored column: `matched_via`
+        lives on `interaction_legs`, and a binding has no such field.
+
+        Ranges key on `occurredAt` (when the outcome HAPPENED), like every
+        other range read in this lane. Anchoring on `confirmedAt` would hide
+        every reported-but-unconfirmed claim from a range that plainly
+        contains it.
+
+        This is NOT the billable-in-period view. That one anchors on
+        `confirmedAt` and belongs to Phase 4 pricing; here a claim appears as
+        soon as it is reported, confirmed or not.
+      operationId: devListOutcomes
+      security:
+        - developerSession: []
+        - developerApiKey: []
+      parameters:
+        - name: since
+          in: query
+          schema: { type: string, format: date-time }
+        - name: until
+          in: query
+          schema: { type: string, format: date-time }
+        - name: taskId
+          in: query
+          description: >
+            Claims bound to a call carrying this task id. Matched through the
+            call's `floe_task` link, so a claim keyed on a CallSid is still
+            found by the task id you know.
+          schema: { type: string }
+        - name: interactionId
+          in: query
+          schema: { type: string, pattern: '^int_[0-9a-f]{16}$' }
+        - name: customerId
+          in: query
+          schema: { type: string }
+        - name: campaignId
+          in: query
+          schema: { type: string }
+        - name: outcomeKind
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          description: Comma-separated subset.
+          schema:
+            type: string
+            example: reported,confirmed
+        - name: source
+          in: query
+          schema:
+            type: string
+            enum: [agent, operator, orchestrator, client, floe]
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1 }
+        - name: cursor
+          in: query
+          description: Opaque keyset cursor; pass a previous page's nextCursor verbatim.
+          schema: { type: string }
+      responses:
+        "200":
+          description: A page of outcome claims
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [outcomes, nextCursor, hasMore, range, historyFloor, historyClamped]
+                properties:
+                  outcomes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OutcomeClaimRow'
+                  nextCursor:
+                    type: string
+                    nullable: true
+                  hasMore:
+                    type: boolean
+                  range:
+                    type: object
+                    required: [since, until]
+                    properties:
+                      since: { type: string, format: date-time }
+                      until: { type: string, format: date-time }
+                  historyFloor:
+                    type: string
+                    nullable: true
+                    description: The plan's history floor, when the range was clamped to it.
+                  historyClamped:
+                    type: boolean
+        "400":
+          description: Invalid query parameter
+        "403":
+          description: Plan lacks `ledger_read`
+
+  /v1/developer/outcomes/{eventId}:
+    get:
+      tags: [Developer]
+      summary: One outcome claim — the current head, with its chain
+      description: |
+        A SAVED LINK TO A CORRECTED CLAIM NEVER 404s. Naming any event in a
+        chain answers with the CURRENT head and reports which id was asked
+        for, the same courtesy `GET /v1/developer/interactions/{publicId}`
+        extends to a merged call. `isHead` tells you whether the id you held
+        is still the billable one.
+
+        The head is resolved through the claim's identity tuple — vendor,
+        identifier kind, identifier, outcome kind — which is exactly what the
+        current-claim unique index keys on.
+
+        `predecessors` walks back through what this claim corrected, newest
+        first, capped at 32 hops: a cycle is corruption, and a read must not
+        spin on one.
+
+        `assertedBy` appears here and NOT on the agent surface. It carries a
+        key id or a wallet, frozen at write, and answering "who asserted this?"
+        a year later is the operator's question, not the agent's.
+      operationId: devGetOutcome
+      security:
+        - developerSession: []
+        - developerApiKey: []
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^oev_[0-9a-f]{16}$'
+      responses:
+        "200":
+          description: The claim, its binding and its chain
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [requested, isHead, outcome, predecessors]
+                properties:
+                  requested:
+                    type: string
+                    description: The event id asked for, which may not be the head.
+                  isHead:
+                    type: boolean
+                  outcome:
+                    $ref: '#/components/schemas/OutcomeClaimRow'
+                  predecessors:
+                    type: array
+                    description: What this claim corrected, newest first.
+                    items:
+                      type: object
+                      required: [eventId, status, quantity, source, assertedBy, occurredAt, confirmedAt, supersededAt, billedInPeriodId]
+                      properties:
+                        eventId: { type: string, pattern: '^oev_[0-9a-f]{16}$' }
+                        status: { type: string, enum: [reported, confirmed, disputed, void, reversed] }
+                        quantity: { type: integer }
+                        source: { type: string, enum: [agent, operator, orchestrator, client, floe] }
+                        assertedBy: { type: string }
+                        occurredAt: { type: string, format: date-time }
+                        confirmedAt: { type: string, format: date-time, nullable: true }
+                        supersededAt: { type: string, format: date-time, nullable: true }
+                        billedInPeriodId: { type: integer, nullable: true }
+        "400":
+          description: Malformed outcome id
+        "404":
+          description: No claim with this id exists in the account
+        "403":
+          description: Plan lacks `ledger_read`
 
   /v1/developer/outcomes/{eventId}/void:
     post:
@@ -10852,20 +11455,37 @@ components:
         Developer (operator) credential. Despite the bearer-JWT declaration,
         every route marked with this scheme accepts ANY developer credential
         interchangeably: the `floe_session` HttpOnly cookie set by
-        POST /v1/developer/auth/verify (the dashboard's normal path), the
-        same JWT as `Authorization: Bearer <jwt>` (legacy fallback), a
-        `floe_live_*` developer API key (Bearer), or the wallet-signature
-        headers (X-Wallet-Address + X-Signature + X-Timestamp). Agent keys
-        (`floe_*` without `_live_`) are refused with 403
-        developer_credential_required.
+        POST /v1/developer/auth/privy or POST /v1/developer/auth/verify (the
+        dashboard's normal path), the same JWT as `Authorization: Bearer
+        <jwt>` (legacy fallback), a `floe_live_*` developer API key (Bearer),
+        or the wallet-signature headers (X-Wallet-Address + X-Signature +
+        X-Timestamp). Agent keys (`floe_*` without `_live_`) are refused with
+        403 developer_credential_required. A Privy access token is NOT a
+        developer credential — it is accepted by POST /v1/developer/auth/privy
+        only.
+
+        EXCEPTION: POST /v1/developer/auth/verify mints a session and therefore
+        takes a fresh wallet signature ONLY — a developer key, an existing
+        session cookie/JWT, or an agent key are each refused with 401.
     sessionCookie:
       type: apiKey
       in: cookie
       name: floe_session
       description: >
         HttpOnly dashboard session cookie (HMAC-signed JWT, 7-day sliding
-        window) set by POST /v1/developer/auth/verify. Equivalent to
-        `developerSession`.
+        window) set by POST /v1/developer/auth/privy (email / Google sign-in,
+        from a verified Privy access token) or POST /v1/developer/auth/verify
+        (a fresh wallet signature). Same format whichever route issued it.
+        Equivalent to `developerSession`.
+    privyAccessToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        A Privy access token (ES256 JWT issued by privy.io for this
+        deployment's Privy app — the dashboard's `getAccessToken()`). Accepted
+        as a credential ONLY by POST /v1/developer/auth/privy, which exchanges
+        it for the `floe_session` cookie; every other route refuses it.
 
   headers:
     FloeCostUsdc:
@@ -10970,6 +11590,122 @@ components:
               type: integer
             avgTimeToMatchSeconds:
               type: number
+    OutcomeClaimRow:
+      type: object
+      description: >
+        One outcome claim as an OPERATOR reads it. Distinct from the shape the
+        agent surface returns: this one carries `assertedBy`, which is not an
+        agent's to read back, and it carries the binding — the call the claim
+        describes, or the reason it has none.
+      required:
+        - eventId
+        - outcomeKind
+        - status
+        - quantity
+        - occurredAt
+        - confirmedAt
+        - source
+        - assertedBy
+        - identifier
+        - binding
+        - evidence
+        - billedInPeriodId
+      properties:
+        eventId:
+          type: string
+          pattern: '^oev_[0-9a-f]{16}$'
+        outcomeKind:
+          type: string
+        status:
+          type: string
+          enum: [reported, confirmed, disputed, void, reversed]
+        quantity:
+          type: integer
+        occurredAt:
+          type: string
+          format: date-time
+          description: When the outcome HAPPENED. Not the billing anchor.
+        confirmedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: The billing anchor. Null until an operator confirms.
+        source:
+          type: string
+          enum: [agent, operator, orchestrator, client, floe]
+        assertedBy:
+          type: string
+          description: >
+            Scheme-prefixed and frozen at write — `key:<id>`, `dev:<wallet>`,
+            `session:<subject>`, `webhook:<vendor>:<run_id>`. A string and not
+            only a foreign key, because keys rotate and sessions are ephemeral,
+            and a dispute a year out needs the value as it was.
+        identifier:
+          type: object
+          description: The claim's identity tuple — what uniqueness is keyed on.
+          required: [vendor, kind, identifier]
+          properties:
+            vendor: { type: string }
+            kind:
+              type: string
+              enum: [floe_task, callsid, vendor_request, orchestrator_call, proxy_request]
+            identifier: { type: string }
+        binding:
+          type: object
+          required: [interactionId, customerId, campaignId, matchedVia, unresolvedReason]
+          properties:
+            interactionId:
+              type: string
+              nullable: true
+              description: The call this claim is bound to; null when unbound.
+            customerId:
+              type: string
+              nullable: true
+            campaignId:
+              type: string
+              nullable: true
+            matchedVia:
+              type: string
+              nullable: true
+              description: >
+                HOW the claim reached the call — its own identifier kind.
+                DERIVED, not stored: `matched_via` is an `interaction_legs`
+                column and a binding has no such field.
+            unresolvedReason:
+              type: string
+              nullable: true
+              enum: [no_current_binding, null]
+              description: >
+                Why the claim has no call. Present instead of dropping the row:
+                a claim nothing can bill must stay visible, or it becomes a
+                silent hole in the number this lane produces.
+        evidence:
+          type: object
+          required: [externalSystem, externalRef, note, redactedAt]
+          properties:
+            externalSystem:
+              type: string
+              nullable: true
+            externalRef:
+              type: string
+              nullable: true
+              description: Stored verbatim — case-sensitive CRM and calendar ids.
+            note:
+              type: string
+              nullable: true
+            redactedAt:
+              type: string
+              format: date-time
+              nullable: true
+              description: >
+                Stamped when a subject erasure cleared the three fields above.
+                The claim, its kind, quantity and period stamp all survive: an
+                invoice line must outlive an erasure, a CRM id need not.
+        billedInPeriodId:
+          type: integer
+          nullable: true
+          description: Set once a close has billed the claim, which then freezes.
+
     OutcomeEventEnvelope:
       type: object
       required: [outcome]
@@ -13728,6 +14464,66 @@ components:
         updatedAt:
           type: string
           format: date-time
+
+    DeveloperSession:
+      type: object
+      description: >
+        The account a dashboard session was just issued for
+        (POST /v1/developer/auth/privy, POST /v1/developer/auth/verify).
+      properties:
+        walletAddress:
+          type: string
+          description: The account key (lowercase 0x address).
+        displayName:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        accountId:
+          type: string
+          nullable: true
+          description: Stable public account id (`acct_…`).
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+        privyDid:
+          type: string
+          nullable: true
+          description: Privy user id pinned to the account (`did:privy:…`), write-once; NULL until its first email / Google / Privy-wallet sign-in (POST /v1/developer/auth/privy). A wallet-signature sign-in never sets it.
+        walletActivatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the account opted into the wallet UI; NULL until then.
+
+    PrivyAuthError:
+      type: object
+      description: POST /v1/developer/auth/privy refusal — `error` is the machine code, `message` a sentence for humans.
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          enum:
+            - invalid_request
+            - invalid_privy_token
+            - embedded_wallet_pending
+            - wallet_signature_required
+            - identity_ambiguous
+            - identity_conflict
+            - rate_limited
+            - privy_unavailable
+            - privy_auth_unavailable
+            - privy_app_mismatch
+        message:
+          type: string
+        retryable:
+          type: boolean
+          description: Present (true) on embedded_wallet_pending only.
+        retryAfterSeconds:
+          type: integer
+          description: Present on rate_limited only.
 
     Error:
       type: object
