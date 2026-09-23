@@ -99,7 +99,7 @@ The one thing to get right before you build a retry loop:
 
 An agent key may **report** a claim and nothing else. It cannot confirm one, void one, or resolve a conflict — those move money, and the evidence that justifies them (a CRM webhook, a calendar invitation) reaches your backend minutes to days after the call, not the agent's process.
 
-So a freshly emitted claim is `reported`, and its `confirmedAt` is null. It becomes billable when **you** confirm it with a developer credential:
+So a freshly emitted claim is `reported`, and its `confirmedAt` is null. It becomes billable when **you** confirm it with a developer credential. Floe stamps `confirmedAt` with the time it receives the confirmation. You can't send your own, because that time decides which billing period the claim lands in. (`occurredAt` is still yours to send: it's when the outcome happened.)
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/developer/outcomes/oev_00112233445566aa/confirm \

@@ -138,6 +138,8 @@ await fetch('https://credit-api.floelabs.xyz/v1/agents/actions/summarize-doc-42/
 
 Re-reporting the same action replaces the previous signal (a `reportCount` tracks how many times). Floe never judges quality — the status/score are yours, stored verbatim.
 
+That overwrite is deliberate. An action outcome is a **quality signal**: it feeds the quality throttle, the cost-vs-outcome view, and the call's displayed outcome, and every one of those wants the latest word. It never reaches an invoice. The billable fact is an [outcome claim](../build/outcomes.md), which is append-only and can't be overwritten.
+
 With the `floe-agent` SDK this is two calls:
 
 ```ts
