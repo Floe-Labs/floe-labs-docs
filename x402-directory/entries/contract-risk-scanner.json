@@ -1,0 +1,23 @@
+{
+  "id": "contract-risk-scanner",
+  "name": "Contract Risk Scanner",
+  "provider": "Janice",
+  "description": "Smart-contract risk scanner: submit a contract address or bytecode, receive a risk score with findings.",
+  "resource": "https://contract-scanner-zrjr.onrender.com/scan",
+  "method": "POST",
+  "category": "agent-tooling",
+  "tags": [
+    "smart-contracts",
+    "security",
+    "risk-scoring",
+    "auditing",
+    "base"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.02",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}
