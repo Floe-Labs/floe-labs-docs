@@ -162,4 +162,31 @@ Two behaviours worth relying on:
 
 Reading outcomes is on the **free** plan, like the rest of the [by-call ledger](unified-ledger.md).
 
+## How failed-attempt cost is allocated
+
+An outcome rarely costs only the call that produced it. If six calls failed before the seventh booked the meeting, the meeting really cost all seven. A cost per outcome that counts only the seventh call makes your margin look better than it is.
+
+Floe's reports can spread the cost of failed and unresolved attempts across the attempts that succeeded. The rule is fixed and written down here, so you can check any number it produces.
+
+**What gets pooled.** Allocation runs over one cohort: every call for one customer, one outcome kind, one period and one time anchor. Calls that produced the outcome are **successes**. Every other call in the cohort, failed or never resolved, is an **attempt**. The attempts' cost, including any human-handoff cost you report for them, is the pool. A success keeps its own cost, handoff included, and receives a share of the pool.
+
+**How the pool is split.** There are two methods:
+
+| Method | How a success's share is set | When to use it |
+|---|---|---|
+| `proportional_by_cost` **(default)** | In proportion to the success's own cost. A success that cost three times as much carries three times the share. | Expensive successes usually followed expensive attempts (longer calls, bigger models). |
+| `equal_per_success` | The same share for every success. | Attempts cost about the same regardless of which success they led to. |
+
+Worked example: one attempt cost $0.40. Two successes cost $0.10 and $0.30. Under `proportional_by_cost` they carry $0.10 and $0.30 of the attempt, for fully loaded costs of $0.20 and $0.60. Under `equal_per_success` each carries $0.20, for $0.30 and $0.50.
+
+**Nothing leaks.** Every unit of tracked cost ends up in exactly one place: allocated to a success, or reported as unallocated. Allocated plus unallocated always equals the tracked total, to the micro-dollar. When a share doesn't divide evenly, the leftover micro-dollars go one at a time to the successes with the largest remainders. The result is deterministic, so the same input always gives the same split.
+
+**A cohort with no successes** has nothing to carry its cost. That cost is not dropped and not moved to another cohort. It is reported as unallocated, flagged `no_successes`, so you can see what you spent on work that didn't pay off.
+
+**If every success cost nothing**, proportional weights don't exist. `proportional_by_cost` then splits equally, and the result says so: `method` is the method you asked for and `appliedMethod` is the one that ran.
+
+**The method is recorded, and changes are versioned.** Every allocation carries its `method` and a `methodVersion`. Changing the default method, or how either method calculates, is a new version. A number produced under one version can always be re-derived under the same rule.
+
+**It never reaches an invoice.** Allocation is for reports only. Your statement lines are rated from tracked cost by the rate card and never from an allocated figure. Floe enforces this in its code, not just by convention.
+
 Full request and response schemas for every route on this page live in the [OpenAPI specification](https://credit-api.floelabs.xyz/.well-known/openapi.yaml).
