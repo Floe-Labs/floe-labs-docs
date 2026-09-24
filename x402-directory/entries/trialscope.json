@@ -1,0 +1,23 @@
+{
+  "id": "trialscope",
+  "name": "TrialScope",
+  "provider": "Jebadiah",
+  "homepage": "https://x402-trialscope.onrender.com",
+  "description": "ClinicalTrials.gov search: recruiting studies by term/phase/status/sponsor/location, full normalized study dossiers, snapshots, and change-deltas. Endpoints: GET /search ($0.01), GET /study/{nctId} ($0.01), POST /snapshot ($0.01), GET /delta ($0.02).",
+  "resource": "https://x402-trialscope.onrender.com/search",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "clinical-trials",
+    "healthcare",
+    "research",
+    "pharma"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.01",
+  "pricingModel": "tiered",
+  "floeCompatible": true,
+  "status": "unverified"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "edgar-lens",
+  "name": "EDGAR Lens",
+  "provider": "Jebadiah",
+  "homepage": "https://x402-edgar-lens.onrender.com",
+  "description": "Full-text SEC EDGAR search (10-K/10-Q/8-K) with Item 1A Risk Factors and Item 7 MD&A section extraction plus extractive briefs with section citations. Endpoints: GET /search ($0.02), GET /filing/{cik}/{accession}/sections ($0.03), GET /brief/{cik}/{accession} ($0.05).",
+  "resource": "https://x402-edgar-lens.onrender.com/search",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "sec",
+    "edgar",
+    "filings",
+    "finance",
+    "research"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.02",
+  "pricingModel": "tiered",
+  "floeCompatible": true,
+  "status": "unverified"
+}

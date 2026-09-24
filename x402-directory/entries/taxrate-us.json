@@ -1,0 +1,24 @@
+{
+  "id": "taxrate-us",
+  "name": "TaxRate US",
+  "provider": "Jebadiah",
+  "homepage": "https://x402-taxrate.onrender.com",
+  "description": "US sales-tax rate lookup for checkout and invoicing agents: state base rate by 5-digit ZIP or 2-letter state, plus economic-nexus filing thresholds. GET /rate ($0.03), GET /nexus ($0.01). State granularity only; data vintage 2026-01. Not tax advice.",
+  "resource": "https://x402-taxrate.onrender.com/rate",
+  "method": "GET",
+  "category": "payments-commerce",
+  "tags": [
+    "sales-tax",
+    "tax",
+    "checkout",
+    "invoicing",
+    "ecommerce"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.03",
+  "pricingModel": "tiered",
+  "floeCompatible": true,
+  "status": "unverified"
+}

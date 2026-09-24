@@ -1,7 +1,7 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "entryCount": 75,
+  "entryCount": 84,
   "categories": [
     "web-search",
     "social-news",
@@ -125,6 +125,29 @@
       "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
+    },
+    {
+      "id": "alexandria",
+      "name": "Alexandria",
+      "provider": "Jebadiah",
+      "homepage": "https://x402-alexandria.onrender.com",
+      "description": "Automotive parts intelligence for agents helping people fix cars: parts/procedure/failure-mode search, fitment checks with cross-badge interchange guidance, and demand signals. Endpoints: GET /parts/search ($0.03), GET /fitment/check ($0.05), GET /failures ($0.02), GET /demand ($0.02).",
+      "resource": "https://x402-alexandria.onrender.com/parts/search",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "automotive",
+        "parts",
+        "fitment",
+        "repair"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.03",
+      "pricingModel": "tiered",
+      "floeCompatible": true,
+      "status": "unverified"
     },
     {
       "id": "apify",
@@ -559,6 +582,30 @@
       "status": "verified"
     },
     {
+      "id": "docextract",
+      "name": "DocExtract",
+      "provider": "Jebadiah",
+      "homepage": "https://x402-docextract.onrender.com",
+      "description": "PDF to structured JSON for back-office agents: invoices, statements, and contracts become line items, tables, totals, parties, and dates. POST /extract (multipart, $0.02 + $0.005/page, capped at $0.10) via the x402 upto scheme.",
+      "resource": "https://x402-docextract.onrender.com/extract",
+      "method": "POST",
+      "category": "agent-tooling",
+      "tags": [
+        "pdf",
+        "extraction",
+        "documents",
+        "ocr",
+        "back-office"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.10",
+      "pricingModel": "upto",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
       "id": "dtelecom-stt",
       "name": "dTelecom Voice",
       "provider": "dTelecom",
@@ -580,6 +627,30 @@
       "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
+    },
+    {
+      "id": "edgar-lens",
+      "name": "EDGAR Lens",
+      "provider": "Jebadiah",
+      "homepage": "https://x402-edgar-lens.onrender.com",
+      "description": "Full-text SEC EDGAR search (10-K/10-Q/8-K) with Item 1A Risk Factors and Item 7 MD&A section extraction plus extractive briefs with section citations. Endpoints: GET /search ($0.02), GET /filing/{cik}/{accession}/sections ($0.03), GET /brief/{cik}/{accession} ($0.05).",
+      "resource": "https://x402-edgar-lens.onrender.com/search",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "sec",
+        "edgar",
+        "filings",
+        "finance",
+        "research"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.02",
+      "pricingModel": "tiered",
+      "floeCompatible": true,
+      "status": "unverified"
     },
     {
       "id": "ekai-labs",
@@ -657,6 +728,29 @@
         "contentType": "application/json",
         "body": "{\"result\":{\"audioBase64\":\"SUQzB…\",\"contentType\":\"audio/mpeg\",\"characters\":16}}"
       }
+    },
+    {
+      "id": "entityverify",
+      "name": "EntityVerify",
+      "provider": "Jebadiah",
+      "homepage": "https://x402-entityverify.onrender.com",
+      "description": "US business verification / KYB-lite for onboarding agents: matches a business name against SEC-reporting public companies and returns the official Secretary-of-State registry deep link. GET /entity ($0.07). State registries are not scraped.",
+      "resource": "https://x402-entityverify.onrender.com/entity",
+      "method": "GET",
+      "category": "identity-reputation",
+      "tags": [
+        "kyb",
+        "business-verification",
+        "compliance",
+        "onboarding"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.07",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
     },
     {
       "id": "exa-contents",
@@ -989,6 +1083,29 @@
       "status": "verified"
     },
     {
+      "id": "invoiceiq",
+      "name": "InvoiceIQ",
+      "provider": "Jebadiah",
+      "homepage": "https://x402-invoiceiq.onrender.com",
+      "description": "AP invoice extraction for bookkeeping agents: invoice PDFs become vendor, invoice number/dates, line items, subtotal/tax/total with arithmetic validation, duplicate-invoice detection, and PO-match fields. POST /extract (multipart, $0.05/document). Text-based PDFs only.",
+      "resource": "https://x402-invoiceiq.onrender.com/extract",
+      "method": "POST",
+      "category": "payments-commerce",
+      "tags": [
+        "invoicing",
+        "ap-automation",
+        "accounting",
+        "bookkeeping"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.05",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
       "id": "inworld-tts",
       "name": "Inworld TTS",
       "provider": "Inworld AI",
@@ -1276,6 +1393,29 @@
       "status": "verified"
     },
     {
+      "id": "patentscope",
+      "name": "PatentScope",
+      "provider": "Jebadiah",
+      "homepage": "https://x402-patentscope.onrender.com",
+      "description": "USPTO patent search, independent-claim extraction, and TF-IDF ranked prior-art search against an invention description. Endpoints: GET /search ($0.03), GET /patent/{number} ($0.02), POST /prior-art ($0.05).",
+      "resource": "https://x402-patentscope.onrender.com/search",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "patents",
+        "uspto",
+        "prior-art",
+        "intellectual-property"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.03",
+      "pricingModel": "tiered",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
       "id": "pinata",
       "name": "Pinata",
       "provider": "Pinata",
@@ -1552,6 +1692,53 @@
       "status": "preview"
     },
     {
+      "id": "taxrate-us",
+      "name": "TaxRate US",
+      "provider": "Jebadiah",
+      "homepage": "https://x402-taxrate.onrender.com",
+      "description": "US sales-tax rate lookup for checkout and invoicing agents: state base rate by 5-digit ZIP or 2-letter state, plus economic-nexus filing thresholds. GET /rate ($0.03), GET /nexus ($0.01). State granularity only; data vintage 2026-01. Not tax advice.",
+      "resource": "https://x402-taxrate.onrender.com/rate",
+      "method": "GET",
+      "category": "payments-commerce",
+      "tags": [
+        "sales-tax",
+        "tax",
+        "checkout",
+        "invoicing",
+        "ecommerce"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.03",
+      "pricingModel": "tiered",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
+      "id": "tenderwatch",
+      "name": "TenderWatch",
+      "provider": "Jebadiah",
+      "homepage": "https://x402-tenderwatch.onrender.com",
+      "description": "Government procurement search for BD/sales agents: open tenders across EU TED and US SAM.gov with full notice detail and heuristic 0-100 fit-scoring. Endpoints: GET /search ($0.02), GET /opportunity/{id} ($0.01), POST /fit-score ($0.02).",
+      "resource": "https://x402-tenderwatch.onrender.com/search",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "procurement",
+        "government-contracts",
+        "b2b-sales",
+        "lead-generation"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.02",
+      "pricingModel": "tiered",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
       "id": "tip-md",
       "name": "tip.md",
       "provider": "tip.md",
@@ -1572,6 +1759,29 @@
       "pricingModel": "dynamic",
       "floeCompatible": true,
       "status": "verified"
+    },
+    {
+      "id": "trialscope",
+      "name": "TrialScope",
+      "provider": "Jebadiah",
+      "homepage": "https://x402-trialscope.onrender.com",
+      "description": "ClinicalTrials.gov search: recruiting studies by term/phase/status/sponsor/location, full normalized study dossiers, snapshots, and change-deltas. Endpoints: GET /search ($0.01), GET /study/{nctId} ($0.01), POST /snapshot ($0.01), GET /delta ($0.02).",
+      "resource": "https://x402-trialscope.onrender.com/search",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "clinical-trials",
+        "healthcare",
+        "research",
+        "pharma"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.01",
+      "pricingModel": "tiered",
+      "floeCompatible": true,
+      "status": "unverified"
     },
     {
       "id": "trusta-ai",

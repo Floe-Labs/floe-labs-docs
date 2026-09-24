@@ -1,0 +1,23 @@
+{
+  "id": "alexandria",
+  "name": "Alexandria",
+  "provider": "Jebadiah",
+  "homepage": "https://x402-alexandria.onrender.com",
+  "description": "Automotive parts intelligence for agents helping people fix cars: parts/procedure/failure-mode search, fitment checks with cross-badge interchange guidance, and demand signals. Endpoints: GET /parts/search ($0.03), GET /fitment/check ($0.05), GET /failures ($0.02), GET /demand ($0.02).",
+  "resource": "https://x402-alexandria.onrender.com/parts/search",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "automotive",
+    "parts",
+    "fitment",
+    "repair"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.03",
+  "pricingModel": "tiered",
+  "floeCompatible": true,
+  "status": "unverified"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "invoiceiq",
+  "name": "InvoiceIQ",
+  "provider": "Jebadiah",
+  "homepage": "https://x402-invoiceiq.onrender.com",
+  "description": "AP invoice extraction for bookkeeping agents: invoice PDFs become vendor, invoice number/dates, line items, subtotal/tax/total with arithmetic validation, duplicate-invoice detection, and PO-match fields. POST /extract (multipart, $0.05/document). Text-based PDFs only.",
+  "resource": "https://x402-invoiceiq.onrender.com/extract",
+  "method": "POST",
+  "category": "payments-commerce",
+  "tags": [
+    "invoicing",
+    "ap-automation",
+    "accounting",
+    "bookkeeping"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.05",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

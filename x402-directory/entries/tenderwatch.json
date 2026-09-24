@@ -1,0 +1,23 @@
+{
+  "id": "tenderwatch",
+  "name": "TenderWatch",
+  "provider": "Jebadiah",
+  "homepage": "https://x402-tenderwatch.onrender.com",
+  "description": "Government procurement search for BD/sales agents: open tenders across EU TED and US SAM.gov with full notice detail and heuristic 0-100 fit-scoring. Endpoints: GET /search ($0.02), GET /opportunity/{id} ($0.01), POST /fit-score ($0.02).",
+  "resource": "https://x402-tenderwatch.onrender.com/search",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "procurement",
+    "government-contracts",
+    "b2b-sales",
+    "lead-generation"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.02",
+  "pricingModel": "tiered",
+  "floeCompatible": true,
+  "status": "unverified"
+}

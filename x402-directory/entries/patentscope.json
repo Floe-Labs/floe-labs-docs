@@ -1,0 +1,23 @@
+{
+  "id": "patentscope",
+  "name": "PatentScope",
+  "provider": "Jebadiah",
+  "homepage": "https://x402-patentscope.onrender.com",
+  "description": "USPTO patent search, independent-claim extraction, and TF-IDF ranked prior-art search against an invention description. Endpoints: GET /search ($0.03), GET /patent/{number} ($0.02), POST /prior-art ($0.05).",
+  "resource": "https://x402-patentscope.onrender.com/search",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "patents",
+    "uspto",
+    "prior-art",
+    "intellectual-property"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.03",
+  "pricingModel": "tiered",
+  "floeCompatible": true,
+  "status": "unverified"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "docextract",
+  "name": "DocExtract",
+  "provider": "Jebadiah",
+  "homepage": "https://x402-docextract.onrender.com",
+  "description": "PDF to structured JSON for back-office agents: invoices, statements, and contracts become line items, tables, totals, parties, and dates. POST /extract (multipart, $0.02 + $0.005/page, capped at $0.10) via the x402 upto scheme.",
+  "resource": "https://x402-docextract.onrender.com/extract",
+  "method": "POST",
+  "category": "agent-tooling",
+  "tags": [
+    "pdf",
+    "extraction",
+    "documents",
+    "ocr",
+    "back-office"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.10",
+  "pricingModel": "upto",
+  "floeCompatible": true,
+  "status": "unverified"
+}

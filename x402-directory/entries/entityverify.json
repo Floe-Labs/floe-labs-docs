@@ -1,0 +1,23 @@
+{
+  "id": "entityverify",
+  "name": "EntityVerify",
+  "provider": "Jebadiah",
+  "homepage": "https://x402-entityverify.onrender.com",
+  "description": "US business verification / KYB-lite for onboarding agents: matches a business name against SEC-reporting public companies and returns the official Secretary-of-State registry deep link. GET /entity ($0.07). State registries are not scraped.",
+  "resource": "https://x402-entityverify.onrender.com/entity",
+  "method": "GET",
+  "category": "identity-reputation",
+  "tags": [
+    "kyb",
+    "business-verification",
+    "compliance",
+    "onboarding"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.07",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}
