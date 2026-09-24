@@ -1,0 +1,26 @@
+{
+  "id": "netintel-ip-reputation",
+  "name": "NetIntel IP Reputation",
+  "provider": "NetIntel",
+  "homepage": "https://netintel.dev",
+  "description": "Malicious-IP check: screens an address against AbuseIPDB and AlienVault OTX and returns a composite risk score, threat categories, malware families and the full source data.",
+  "resource": "https://netintel.dev/ip-reputation/analyze",
+  "method": "GET",
+  "category": "identity-reputation",
+  "tags": ["ip", "threat-intel", "abuseipdb", "otx", "risk-score"],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.05",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified",
+  "requestExample": {
+    "query": "ip=185.220.101.45"
+  },
+  "responseExample": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\"ip\":\"185.220.101.45\",\"risk_score\":87,\"risk_level\":\"critical\",\"composite\":{\"is_malicious\":true,\"threat_categories\":[\"brute_force\",\"port_scan\"],\"first_seen\":\"2022-03-11\",\"last_seen\":\"2024-11-01T14:22:00Z\"},\"abuseipdb\":{\"confidence_score\":100,\"total_reports\":1842,\"distinct_reporters\":312,\"isp\":\"Frantech Solutions\",\"usage_type\":\"Data Center/Web Hosting/Transit\"},\"otx\":{\"pulse_count\":38,\"malware_families\":[\"Mirai\"],\"threat_types\":[\"scanning\"],\"asn\":\"AS53667\",\"country_code\":\"NL\"}}"
+  }
+}

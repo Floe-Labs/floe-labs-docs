@@ -1,0 +1,27 @@
+{
+  "id": "netintel-web-fetch",
+  "name": "NetIntel Web Fetch",
+  "provider": "NetIntel",
+  "homepage": "https://netintel.dev",
+  "description": "Fetch any URL server-side and get the raw body back — JSON parsed, everything else as text — for data APIs and pages an agent can't reach directly. Failed fetches are never charged.",
+  "resource": "https://netintel.dev/web/fetch",
+  "method": "POST",
+  "category": "web-search",
+  "tags": ["fetch", "scraping", "data-api", "json"],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.003",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified",
+  "requestExample": {
+    "headers": { "Content-Type": "application/json" },
+    "body": "{\"url\":\"https://api.dexscreener.com/latest/dex/tokens/0x833589fcd6edb6e08f4c7c32d4f71b54bda02913\"}"
+  },
+  "responseExample": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\"url\":\"https://api.dexscreener.com/latest/dex/tokens/0x833589…\",\"final_url\":\"https://api.dexscreener.com/latest/dex/tokens/0x833589…\",\"status\":200,\"content_type\":\"application/json\",\"bytes\":25499,\"truncated\":false,\"json\":{\"schemaVersion\":\"1.0.0\",\"pairs\":[{\"chainId\":\"base\",\"dexId\":\"quickswap\",\"baseToken\":{\"symbol\":\"USDC\"},\"…\":\"…\"}]}}"
+  }
+}
