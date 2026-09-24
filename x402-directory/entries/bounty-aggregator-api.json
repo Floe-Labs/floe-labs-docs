@@ -1,0 +1,24 @@
+{
+  "id": "bounty-aggregator-api",
+  "name": "Bounty Aggregator API",
+  "provider": "Janice",
+  "homepage": "https://bounty-api-ajis.onrender.com/demo",
+  "description": "Aggregated open bounty listings for AI agents: title, USDC reward, required skills, deadline, source URL.",
+  "resource": "https://bounty-api-ajis.onrender.com/bounties",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "bounties",
+    "gigs",
+    "usdc",
+    "base",
+    "ai-agents"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.02",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}
