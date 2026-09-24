@@ -1,7 +1,7 @@
 {
   "schema": "floe-directory/v1",
   "version": "1.0.0",
-  "entryCount": 75,
+  "entryCount": 77,
   "categories": [
     "web-search",
     "social-news",
@@ -87,7 +87,7 @@
       "name": "Agent402",
       "provider": "Agent402",
       "homepage": "https://agent402.tools",
-      "description": "Agent voice tools — TTS ($0.05), HD TTS ($0.10), and transcription ($0.03). Multi-chain settlement: Base, Solana, Polygon, Arbitrum, Stellar.",
+      "description": "Agent voice tools \u2014 TTS ($0.05), HD TTS ($0.10), and transcription ($0.03). Multi-chain settlement: Base, Solana, Polygon, Arbitrum, Stellar.",
       "resource": "https://agent402.tools/api/tts",
       "method": "POST",
       "category": "voice",
@@ -309,7 +309,7 @@
       "name": "BlockRun.AI",
       "provider": "BlockRun.AI",
       "homepage": "https://blockrun.ai",
-      "description": "ChatGPT, Claude, Google, DeepSeek, xAI — pay-as-you-go on Base.",
+      "description": "ChatGPT, Claude, Google, DeepSeek, xAI \u2014 pay-as-you-go on Base.",
       "resource": "https://api.blockrun.ai/v1/chat",
       "method": "POST",
       "category": "llm-inference",
@@ -422,7 +422,7 @@
       "responseExample": {
         "status": 200,
         "contentType": "application/json",
-        "body": "{\"result\":{\"audioBase64\":\"SUQzB…\",\"contentType\":\"audio/mpeg\",\"characters\":16}}"
+        "body": "{\"result\":{\"audioBase64\":\"SUQzB\u2026\",\"contentType\":\"audio/mpeg\",\"characters\":16}}"
       }
     },
     {
@@ -453,7 +453,7 @@
       "name": "cnvrt.ing",
       "provider": "cnvrt.ing",
       "homepage": "https://cnvrt.ing",
-      "description": "Whisper transcription of any media URL at a flat price per call. Runs an older payment-protocol version — confirm Floe proxy compatibility before wiring into a pipeline.",
+      "description": "Whisper transcription of any media URL at a flat price per call. Runs an older payment-protocol version \u2014 confirm Floe proxy compatibility before wiring into a pipeline.",
       "resource": "https://cnvrt.ing/api/transcribe",
       "method": "POST",
       "category": "voice",
@@ -563,7 +563,7 @@
       "name": "dTelecom Voice",
       "provider": "dTelecom",
       "homepage": "https://dtelecom.org",
-      "description": "Full voice stack on a prepaid-credits model — buy credits (min $0.10), then open STT sessions ($0.006/min, 99+ languages), TTS sessions ($0.008/1K chars), WebRTC tokens ($0.001/participant-min), or managed agent sessions (~$0.015/min). Also settles on Solana and Tempo.",
+      "description": "Full voice stack on a prepaid-credits model \u2014 buy credits (min $0.10), then open STT sessions ($0.006/min, 99+ languages), TTS sessions ($0.008/1K chars), WebRTC tokens ($0.001/participant-min), or managed agent sessions (~$0.015/min). Also settles on Solana and Tempo.",
       "resource": "https://x402.dtelecom.org/v1/credits/purchase",
       "method": "POST",
       "category": "voice",
@@ -655,7 +655,7 @@
       "responseExample": {
         "status": 200,
         "contentType": "application/json",
-        "body": "{\"result\":{\"audioBase64\":\"SUQzB…\",\"contentType\":\"audio/mpeg\",\"characters\":16}}"
+        "body": "{\"result\":{\"audioBase64\":\"SUQzB\u2026\",\"contentType\":\"audio/mpeg\",\"characters\":16}}"
       }
     },
     {
@@ -663,7 +663,7 @@
       "name": "Exa Contents",
       "provider": "Exa",
       "homepage": "https://exa.ai",
-      "description": "Extract clean text, highlights, or summaries from any URL. The cheapest verified endpoint in the directory — the standard first proof-of-life paid call.",
+      "description": "Extract clean text, highlights, or summaries from any URL. The cheapest verified endpoint in the directory \u2014 the standard first proof-of-life paid call.",
       "resource": "https://api.exa.ai/contents",
       "method": "POST",
       "category": "web-search",
@@ -688,7 +688,7 @@
       "responseExample": {
         "status": 200,
         "contentType": "application/json",
-        "body": "{\"requestId\":\"…\",\"results\":[{\"id\":\"https://example.com\",\"url\":\"https://example.com\",\"title\":\"Example Domain\",\"text\":\"This domain is for use in illustrative examples…\"}]}"
+        "body": "{\"requestId\":\"\u2026\",\"results\":[{\"id\":\"https://example.com\",\"url\":\"https://example.com\",\"title\":\"Example Domain\",\"text\":\"This domain is for use in illustrative examples\u2026\"}]}"
       }
     },
     {
@@ -721,7 +721,7 @@
       "responseExample": {
         "status": 200,
         "contentType": "application/json",
-        "body": "{\"requestId\":\"…\",\"results\":[{\"title\":\"…\",\"url\":\"https://…\",\"publishedDate\":\"2026-07-01\",\"author\":\"…\",\"score\":0.19}]}"
+        "body": "{\"requestId\":\"\u2026\",\"results\":[{\"title\":\"\u2026\",\"url\":\"https://\u2026\",\"publishedDate\":\"2026-07-01\",\"author\":\"\u2026\",\"score\":0.19}]}"
       }
     },
     {
@@ -754,7 +754,7 @@
       "responseExample": {
         "status": 200,
         "contentType": "application/json",
-        "body": "{\"success\":true,\"data\":{\"web\":[{\"title\":\"…\",\"url\":\"https://…\",\"description\":\"…\"}]}}"
+        "body": "{\"success\":true,\"data\":{\"web\":[{\"title\":\"\u2026\",\"url\":\"https://\u2026\",\"description\":\"\u2026\"}]}}"
       }
     },
     {
@@ -784,7 +784,7 @@
       "name": "ForgeMesh Voice",
       "provider": "ForgeMesh",
       "homepage": "https://forgemesh.io",
-      "description": "OpenAI-compatible text-to-speech (POST /v1/audio/speech) at a flat price per call — the cheapest live pay-per-call TTS.",
+      "description": "OpenAI-compatible text-to-speech (POST /v1/audio/speech) at a flat price per call \u2014 the cheapest live pay-per-call TTS.",
       "resource": "https://voice.forgemesh.io/v1/audio/speech",
       "method": "POST",
       "category": "voice",
@@ -828,7 +828,7 @@
       "name": "GEDX402",
       "provider": "GEDX402",
       "homepage": "https://media.gedx402.com",
-      "description": "Voice media suite — TTS (MeloTTS $0.005, Aura-2 $0.0395), ASR (whisper-large-v3-turbo $0.006, Nova-3 $0.0085), and full voice sessions ($1.49) at media.gedx402.com.",
+      "description": "Voice media suite \u2014 TTS (MeloTTS $0.005, Aura-2 $0.0395), ASR (whisper-large-v3-turbo $0.006, Nova-3 $0.0085), and full voice sessions ($1.49) at media.gedx402.com.",
       "resource": "https://media.gedx402.com/v1/tts/melotts",
       "method": "POST",
       "category": "voice",
@@ -963,7 +963,7 @@
       "responseExample": {
         "status": 200,
         "contentType": "application/json",
-        "body": "{\"url\":\"https://news.ycombinator.com\",\"markdown\":\"# Hacker News…\"}"
+        "body": "{\"url\":\"https://news.ycombinator.com\",\"markdown\":\"# Hacker News\u2026\"}"
       }
     },
     {
@@ -1391,7 +1391,7 @@
       "name": "Sarvam AI",
       "provider": "Sarvam AI",
       "homepage": "https://www.sarvam.ai",
-      "description": "Sovereign India-focused AI — Indic-language chat (Sarvam 105B/30B) across 22+ Indian languages, plus proprietary Bulbul TTS, Saaras STT, Mayura translation, transliteration, language ID, and Sarvam Vision document digitization. Server-side subscription-key auth, held by Floe.",
+      "description": "Sovereign India-focused AI \u2014 Indic-language chat (Sarvam 105B/30B) across 22+ Indian languages, plus proprietary Bulbul TTS, Saaras STT, Mayura translation, transliteration, language ID, and Sarvam Vision document digitization. Server-side subscription-key auth, held by Floe.",
       "resource": "https://api.sarvam.ai/v1/chat/completions",
       "method": "POST",
       "category": "llm-inference",
@@ -1511,7 +1511,7 @@
       "name": "Spraay",
       "provider": "Spraay",
       "homepage": "https://spraay.ai",
-      "description": "AI inference including Replicate-backed image/video/audio, plus voice at gateway.spraay.app — text-to-speech (XTTS-v2, $0.03) and speech-to-text (Whisper, $0.02). Also settles on Solana.",
+      "description": "AI inference including Replicate-backed image/video/audio, plus voice at gateway.spraay.app \u2014 text-to-speech (XTTS-v2, $0.03) and speech-to-text (Whisper, $0.02). Also settles on Solana.",
       "resource": "https://gateway.spraay.app/api/v1/compute/text-to-speech",
       "method": "POST",
       "category": "voice",
@@ -1622,7 +1622,7 @@
       "name": "Venice",
       "provider": "Venice",
       "homepage": "https://venice.ai",
-      "description": "90+ open-source and frontier AI models (chat + embeddings) — reasoning, vision, code, and private TEE-attested E2EE inference. Uncensored options, zero data retention.",
+      "description": "90+ open-source and frontier AI models (chat + embeddings) \u2014 reasoning, vision, code, and private TEE-attested E2EE inference. Uncensored options, zero data retention.",
       "resource": "https://api.venice.ai/v1/chat",
       "method": "POST",
       "category": "llm-inference",
@@ -1873,7 +1873,7 @@
       "id": "x402engine",
       "name": "x402engine",
       "provider": "x402engine",
-      "description": "Voice gateway — OpenAI TTS ($0.01), ElevenLabs TTS ($0.02), and Nova-3 transcription ($0.10) behind one x402 host. Also settles on Solana and MegaETH.",
+      "description": "Voice gateway \u2014 OpenAI TTS ($0.01), ElevenLabs TTS ($0.02), and Nova-3 transcription ($0.10) behind one x402 host. Also settles on Solana and MegaETH.",
       "resource": "https://x402-gateway-production.up.railway.app/api/tts/openai",
       "method": "POST",
       "category": "voice",
@@ -1997,6 +1997,53 @@
       "pricingModel": "fixed-per-call",
       "floeCompatible": true,
       "status": "verified"
+    },
+    {
+      "id": "bounty-aggregator-api",
+      "name": "Bounty Aggregator API",
+      "provider": "Janice",
+      "homepage": "https://bounty-api-ajis.onrender.com/demo",
+      "description": "Aggregated open bounty listings for AI agents: title, USDC reward, required skills, deadline, source URL.",
+      "resource": "https://bounty-api-ajis.onrender.com/bounties",
+      "method": "GET",
+      "category": "agent-tooling",
+      "tags": [
+        "bounties",
+        "gigs",
+        "usdc",
+        "base",
+        "ai-agents"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.02",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
+    },
+    {
+      "id": "contract-risk-scanner",
+      "name": "Contract Risk Scanner",
+      "provider": "Janice",
+      "description": "Smart-contract risk scanner: submit a contract address or bytecode, receive a risk score with findings.",
+      "resource": "https://contract-scanner-zrjr.onrender.com/scan",
+      "method": "POST",
+      "category": "agent-tooling",
+      "tags": [
+        "smart-contracts",
+        "security",
+        "risk-scoring",
+        "auditing",
+        "base"
+      ],
+      "x402Version": 2,
+      "network": "eip155:8453",
+      "asset": "USDC",
+      "priceUsd": "0.02",
+      "pricingModel": "fixed-per-call",
+      "floeCompatible": true,
+      "status": "unverified"
     }
   ]
 }
