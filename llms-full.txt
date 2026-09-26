@@ -1569,7 +1569,7 @@ The same arithmetic runs everywhere — the margin you preview before signing, t
 
 ## What a rate card is
 
-A rate card is a **per-client price**, expressed as one or more rules. Floe supports six pricing models, and you can combine them (a retainer plus overage, say):
+A rate card is a **per-client price**, expressed as one or more rules. Floe supports nine pricing models, and you can combine them (a retainer plus overage, say):
 
 | Model | Rule | Bills the client |
 |---|---|---|
@@ -1578,6 +1578,9 @@ A rate card is a **per-client price**, expressed as one or more rules. Floe supp
 | **Per minute** | `per_unit`, `unit: audio_minute`, `ratePerUnitRaw`, `includedUnits?` | A rate per audio minute — `ceil(total audio seconds / 60)`, the voice-agency staple. |
 | **Per task** | `per_unit`, `unit: task`, `ratePerUnitRaw`, `includedUnits?` | A rate per unit of **work** — each distinct `X-Floe-Task-Id`. On Floe Phone every call is a task automatically. See [Per-task pricing](#per-task-pricing). |
 | **Per call** | `per_unit`, `unit: voice_call`, `ratePerUnitRaw`, `includedUnits?` | A rate per voice call — each Floe Phone call or Reconcile Mode call (Vapi, Retell, Bland), counted from the row Floe writes for it. See [Per-call pricing](#per-call-pricing). |
+| **Per resolution** | `per_unit`, `unit: resolution`, `ratePerUnitRaw`, `includedUnits?` | A rate per confirmed `resolution` outcome claim, summed by `quantity`. See [Outcome units](#outcome-units). |
+| **Per booked meeting** | `per_unit`, `unit: meeting_booked`, `ratePerUnitRaw`, `includedUnits?` | A rate per confirmed `meeting_booked` outcome claim, summed by `quantity`. See [Outcome units](#outcome-units). |
+| **Per qualified lead** | `per_unit`, `unit: qualified_lead`, `ratePerUnitRaw`, `includedUnits?` | A rate per confirmed `qualified_lead` outcome claim, summed by `quantity`. See [Outcome units](#outcome-units). |
 | **Retainer** | `fixed`, `amountRaw` | A flat amount for the period, independent of usage. |
 
 All money values are **raw 6-decimal USDC integers** (`1000000` = $1.00), the same unit the ledger uses.
@@ -1616,6 +1619,24 @@ A `voice_call` rule bills each voice call. It works in `per_unit` (with an inclu
 - **What a call is.** One Floe Phone call, or one call Reconcile Mode recorded from Vapi, Retell or Bland. Floe counts the single row it writes for each call. It never counts from tags, so there's nothing to forget to send.
 - **Counted once.** Each call has exactly one row, so it's billed in the one period that row falls in. A call Floe Phone had to abort before it connected isn't billed.
 - **Calls or tasks, not both.** On Floe Phone every call is also a task, so a card that priced both would bill each call twice. A card can meter `voice_call` or `task`, not both.
+
+### Outcome units
+
+Some contracts bill for what a call **produced**, not for the call. Three units price [outcome claims](outcomes.md): `resolution`, `meeting_booked` and `qualified_lead`. The unit name must equal the `outcome_kind` the client reports. `outcome_kind` is free text elsewhere, but only these three kinds are billable. They work in `per_unit` (with an included allotment) and in `tiered` bands, exactly like `task`. $1.50 per resolved conversation after the first 100:
+
+```json
+{ "kind": "per_unit", "unit": "resolution", "ratePerUnitRaw": "1500000", "includedUnits": 100 }
+```
+
+- **What is counted.** The sum of `quantity`, not the number of claims. A claim counts when it is the current head of its chain, is `confirmed` by an operator or client source (an agent can report but [can't confirm](outcomes.md#reporting-is-not-confirming)), is not already billed, is of that kind, and has a server-stamped `confirmed_at` inside the billing segment. One claim reporting two meetings (quantity 2) bills as two.
+- **Which period.** The period holding the claim's `confirmed_at`, not the period the call happened in. A confirmation that arrives after a period closes bills in the next open period. Closed statements never change.
+- **Which customer.** A claim reaches its call's billable usage rows through exactly one path, chosen by its identifier: the task id (`X-Floe-Task-Id`), the orchestrator call row (Reconcile Mode: Vapi, Retell, Bland), or the Floe Phone call row (CallSid). Those rows' customer tag decides the customer. A confirmed claim whose call has only untagged usage belongs to no customer: it is flagged as an account-level finding, not billed.
+- **Close blockers.** The close returns `uncounted_usage` when a confirmed, unbilled claim of a priced kind has a call whose usage is tagged to more than one customer, or when an open [`outcome_claim_collision`](outcomes.md#when-two-claims-land-on-one-call) finding on a priced kind sits on that customer's calls in the period (Floe can't tell one meeting reported twice from two meetings). The account owner can override with a reason, as with tasks; the statement bills only what was counted. Calls with no claim are not blockers (zero is the honest count), and nor are claims still `reported` or `disputed` (they bill in the period they're confirmed in).
+- **Billed claims are final.** Close stamps each counted claim as billed in that period, and a billed claim can't be edited, only reversed. A reversal becomes a `true_up` credit line in the customer's next open period, priced under the original period's card version from the quantity that period billed. Pricing isn't linear (included allotments, tiers), so a reversal that stays inside an included allotment adds no $0.00 line.
+- **Preview.** Each priced outcome unit shows a coverage figure: calls in the period vs. calls with a confirmed claim of that kind. It's informational and never blocks.
+- **Combining.** An outcome unit can sit on the same card as `task` or `voice_call` (per call plus per resolution is the hybrid contact-centre contracts use) and next to `cost_plus`. Outcomes are a different population from tasks, so nothing bills twice.
+
+Statement lines read **Resolutions**, **Meetings booked** and **Qualified leads**; a rule's own `label` replaces them, as with every unit. In the dashboard's rate-card editor, pick **Per resolution**, **Per booked meeting** or **Per qualified lead**.
 
 Cost-plus over vendor actuals is the sharpest margin tool: a `cost_plus` rule can name a `vendorCostBasis` so the cost it marks up is the vendor's **reconciled** bill, not a call-time estimate — "rebill Deepgram + 15%" prices off what Deepgram actually charged.
 
@@ -1787,7 +1808,7 @@ An MCP-connected agent uses the `emit_outcome` tool instead — same fields in s
 
 **`outcomeKind` is opaque.** Lowercased, ≤64 characters, never interpreted by Floe — the vocabulary is yours. Pick stable machine-ish names (`meeting_booked`, `lead_qualified`, `ticket_resolved`) and keep them stable once you start emitting, because anything that later prices an outcome will key on the kind.
 
-> **Pricing per outcome kind is not available yet.** [Rate cards](rate-cards.md) today meter per request, per audio minute, per task and per voice call — there is no outcome unit. Emitting claims, confirming them and reading them back all work now; rating a kind against a price comes with the rating work. Record the outcomes in the meantime: the claims are what that will rate.
+> **Three kinds can be priced.** `resolution`, `meeting_booked` and `qualified_lead` are rate-card units: see [Outcome units](rate-cards.md#outcome-units). Any other kind stays free text: you can record it and read it back, but it isn't a billable unit.
 
 **`idempotencyKey` is required.** Emitters retry; a replay of the same key returns the stored claim rather than creating a second one. Derive it from the fact itself (`<taskId>:<kind>`) rather than generating a random one, or a retry becomes a duplicate claim. Reusing one key under a *different* task id is refused — the claim is already attached to the first call.
 
@@ -1827,6 +1848,22 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/outcomes/oev_001122334
 | `disputed` / `reversed` | Contested, or credited back after it was already billed. |
 
 Every claim is **append-only**. Confirming does not edit the reported row; it writes a new event that supersedes it, so the chain of who said what, when, survives. A claim already billed into a closed statement is frozen — the correction is a reversal in the next open period, never an edit.
+
+### Reversing a billed outcome
+
+Once a close bills a claim, it can't be edited or voided. To take it back, reverse it. This needs the **admin** role:
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/outcomes/oev_00112233445566aa/reverse \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"idempotencyKey": "reverse-oct:oev_0011", "note": "client cancelled the meeting"}'
+```
+
+- **Only billed claims.** The claim must already be billed on a closed statement. An unbilled claim returns `409 outcome_claim_not_billed`: void it instead.
+- **The closed statement never changes.** An hourly job prices the reversal from the quantity the original period billed, under that period's rate card, so an included allotment or tier is respected. It adds a `true_up` credit line to the customer's next open billing period. A reversal that stays inside the included allotment adds no $0.00 line. See [Outcome units](rate-cards.md#outcome-units).
+- **Replays are safe.** Sending the same `idempotencyKey` again doesn't reverse twice.
+- **A person does this, not an agent.** Reversal isn't exposed over MCP (the MCP outcomes tools only report and read). From the terminal it is [`floe outcomes reverse`](../developers/cli.md#floe-outcomes).
 
 ## Evidence is an allowlist
 
@@ -8221,6 +8258,7 @@ Not `floe actions`, which is the per-action *quality* signal (status + score) an
 | `get <oev_id>` | One claim plus the chain it corrected. A corrected id still resolves: you get the current head and are told so |
 | `confirm <oev_id>` | Make a reported claim billable. Only operator/client confirmations rate |
 | `void <oev_id> --reason <text>` | Retire a claim. `--reason` is required |
+| `reverse <oev_id> --reason <text>` | Credit back a claim already billed on a closed statement. `--reason` is required. Prints the origin period and the credit line it will create, then asks you to confirm (or pass `--yes`) because it moves money |
 | `confirm-distinct --interaction <int_id> --kind <k>` | Two claims of one kind on one call are **both** real — the other resolution is voiding one as a proven duplicate |
 
 Filters: `--since` `--until` `--task` `--interaction` `--customer` `--campaign` `--kind` `--status <csv>` `--source` `--limit` `--cursor`.
@@ -13723,6 +13761,18 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **35 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.28.0 — Outcome units on rate cards (September 2026)
+
+Rate cards can now price what a call **produced**: resolutions, booked meetings and qualified leads.
+
+* **Three new units.** `resolution`, `meeting_booked` and `qualified_lead` work in `per_unit` (with `includedUnits`) or `tiered` bands, like `task`. The unit name must equal the claim's `outcome_kind`.
+* **What bills.** The sum of `quantity` on current, operator- or client-confirmed claims of that kind, not yet billed, in the period holding their server-stamped `confirmed_at`. A late confirmation bills in the next open period; closed statements never change.
+* **Close gates.** The close returns `uncounted_usage` when a priced claim's call is tagged to more than one customer, or an open `outcome_claim_collision` sits on a priced kind. The account owner can override with a reason. Calls with no claim, and claims still `reported` or `disputed`, don't block.
+* **Billed claims are final.** A reversal becomes a `true_up` credit in the customer's next open period, priced under the original card version.
+* **Combine them.** An outcome unit can sit beside `task` or `voice_call` and `cost_plus` without billing twice. The preview shows outcome coverage per priced unit (informational), and the dashboard editor adds **Per resolution**, **Per booked meeting** and **Per qualified lead**.
+
+→ [Rate cards → Outcome units](build/rate-cards.md#outcome-units) · [Outcomes](build/outcomes.md)
 
 ### v1.27.0 — Email & Google sign-in; the wallet moves to Funding (September 2026)
 

@@ -76,7 +76,7 @@ An MCP-connected agent uses the `emit_outcome` tool instead — same fields in s
 
 **`outcomeKind` is opaque.** Lowercased, ≤64 characters, never interpreted by Floe — the vocabulary is yours. Pick stable machine-ish names (`meeting_booked`, `lead_qualified`, `ticket_resolved`) and keep them stable once you start emitting, because anything that later prices an outcome will key on the kind.
 
-> **Pricing per outcome kind is not available yet.** [Rate cards](rate-cards.md) today meter per request, per audio minute, per task and per voice call — there is no outcome unit. Emitting claims, confirming them and reading them back all work now; rating a kind against a price comes with the rating work. Record the outcomes in the meantime: the claims are what that will rate.
+> **Three kinds can be priced.** `resolution`, `meeting_booked` and `qualified_lead` are rate-card units: see [Outcome units](rate-cards.md#outcome-units). Any other kind stays free text: you can record it and read it back, but it isn't a billable unit.
 
 **`idempotencyKey` is required.** Emitters retry; a replay of the same key returns the stored claim rather than creating a second one. Derive it from the fact itself (`<taskId>:<kind>`) rather than generating a random one, or a retry becomes a duplicate claim. Reusing one key under a *different* task id is refused — the claim is already attached to the first call.
 
@@ -116,6 +116,22 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/outcomes/oev_001122334
 | `disputed` / `reversed` | Contested, or credited back after it was already billed. |
 
 Every claim is **append-only**. Confirming does not edit the reported row; it writes a new event that supersedes it, so the chain of who said what, when, survives. A claim already billed into a closed statement is frozen — the correction is a reversal in the next open period, never an edit.
+
+### Reversing a billed outcome
+
+Once a close bills a claim, it can't be edited or voided. To take it back, reverse it. This needs the **admin** role:
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/outcomes/oev_00112233445566aa/reverse \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"idempotencyKey": "reverse-oct:oev_0011", "note": "client cancelled the meeting"}'
+```
+
+- **Only billed claims.** The claim must already be billed on a closed statement. An unbilled claim returns `409 outcome_claim_not_billed`: void it instead.
+- **The closed statement never changes.** An hourly job prices the reversal from the quantity the original period billed, under that period's rate card, so an included allotment or tier is respected. It adds a `true_up` credit line to the customer's next open billing period. A reversal that stays inside the included allotment adds no $0.00 line. See [Outcome units](rate-cards.md#outcome-units).
+- **Replays are safe.** Sending the same `idempotencyKey` again doesn't reverse twice.
+- **A person does this, not an agent.** Reversal isn't exposed over MCP (the MCP outcomes tools only report and read). From the terminal it is [`floe outcomes reverse`](../developers/cli.md#floe-outcomes).
 
 ## Evidence is an allowlist
 

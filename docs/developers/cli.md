@@ -464,6 +464,7 @@ Not `floe actions`, which is the per-action *quality* signal (status + score) an
 | `get <oev_id>` | One claim plus the chain it corrected. A corrected id still resolves: you get the current head and are told so |
 | `confirm <oev_id>` | Make a reported claim billable. Only operator/client confirmations rate |
 | `void <oev_id> --reason <text>` | Retire a claim. `--reason` is required |
+| `reverse <oev_id> --reason <text>` | Credit back a claim already billed on a closed statement. `--reason` is required. Prints the origin period and the credit line it will create, then asks you to confirm (or pass `--yes`) because it moves money |
 | `confirm-distinct --interaction <int_id> --kind <k>` | Two claims of one kind on one call are **both** real — the other resolution is voiding one as a proven duplicate |
 
 Filters: `--since` `--until` `--task` `--interaction` `--customer` `--campaign` `--kind` `--status <csv>` `--source` `--limit` `--cursor`.
