@@ -10,6 +10,18 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.28.0 — Outcome units on rate cards (September 2026)
+
+Rate cards can now price what a call **produced**: resolutions, booked meetings and qualified leads.
+
+* **Three new units.** `resolution`, `meeting_booked` and `qualified_lead` work in `per_unit` (with `includedUnits`) or `tiered` bands, like `task`. The unit name must equal the claim's `outcome_kind`.
+* **What bills.** The sum of `quantity` on current, operator- or client-confirmed claims of that kind, not yet billed, in the period holding their server-stamped `confirmed_at`. A late confirmation bills in the next open period; closed statements never change.
+* **Close gates.** The close returns `uncounted_usage` when a priced claim's call is tagged to more than one customer, or an open `outcome_claim_collision` sits on a priced kind. The account owner can override with a reason. Calls with no claim, and claims still `reported` or `disputed`, don't block.
+* **Billed claims are final.** A reversal becomes a `true_up` credit in the customer's next open period, priced under the original card version.
+* **Combine them.** An outcome unit can sit beside `task` or `voice_call` and `cost_plus` without billing twice. The preview shows outcome coverage per priced unit (informational), and the dashboard editor adds **Per resolution**, **Per booked meeting** and **Per qualified lead**.
+
+→ [Rate cards → Outcome units](build/rate-cards.md#outcome-units) · [Outcomes](build/outcomes.md)
+
 ### v1.27.0 — Email & Google sign-in; the wallet moves to Funding (September 2026)
 
 Signing in to the dashboard no longer involves a wallet.
