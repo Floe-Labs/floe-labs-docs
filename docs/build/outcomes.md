@@ -117,6 +117,22 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/outcomes/oev_001122334
 
 Every claim is **append-only**. Confirming does not edit the reported row; it writes a new event that supersedes it, so the chain of who said what, when, survives. A claim already billed into a closed statement is frozen — the correction is a reversal in the next open period, never an edit.
 
+### Reversing a billed outcome
+
+Once a close bills a claim, it can't be edited or voided. To take it back, reverse it. This needs the **admin** role:
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/outcomes/oev_00112233445566aa/reverse \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"idempotencyKey": "reverse-oct:oev_0011", "note": "client cancelled the meeting"}'
+```
+
+- **Only billed claims.** The claim must already be billed on a closed statement. An unbilled claim returns `409 outcome_claim_not_billed`: void it instead.
+- **The closed statement never changes.** An hourly job prices the reversal from the quantity the original period billed, under that period's rate card, so an included allotment or tier is respected. It adds a `true_up` credit line to the customer's next open billing period. A reversal that stays inside the included allotment adds no $0.00 line. See [Outcome units](rate-cards.md#outcome-units).
+- **Replays are safe.** Sending the same `idempotencyKey` again doesn't reverse twice.
+- **A person does this, not an agent.** Reversal isn't exposed over MCP (the MCP outcomes tools only report and read). From the terminal it is [`floe outcomes reverse`](../developers/cli.md#floe-outcomes).
+
 ## Evidence is an allowlist
 
 Three optional fields, and nothing else is accepted:
