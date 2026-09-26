@@ -76,7 +76,7 @@ An MCP-connected agent uses the `emit_outcome` tool instead — same fields in s
 
 **`outcomeKind` is opaque.** Lowercased, ≤64 characters, never interpreted by Floe — the vocabulary is yours. Pick stable machine-ish names (`meeting_booked`, `lead_qualified`, `ticket_resolved`) and keep them stable once you start emitting, because anything that later prices an outcome will key on the kind.
 
-> **Pricing per outcome kind is not available yet.** [Rate cards](rate-cards.md) today meter per request, per audio minute, per task and per voice call — there is no outcome unit. Emitting claims, confirming them and reading them back all work now; rating a kind against a price comes with the rating work. Record the outcomes in the meantime: the claims are what that will rate.
+> **Three kinds can be priced.** `resolution`, `meeting_booked` and `qualified_lead` are rate-card units: see [Outcome units](rate-cards.md#outcome-units). Any other kind stays free text: you can record it and read it back, but it isn't a billable unit.
 
 **`idempotencyKey` is required.** Emitters retry; a replay of the same key returns the stored claim rather than creating a second one. Derive it from the fact itself (`<taskId>:<kind>`) rather than generating a random one, or a retry becomes a duplicate claim. Reusing one key under a *different* task id is refused — the claim is already attached to the first call.
 
