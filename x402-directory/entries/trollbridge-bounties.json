@@ -1,0 +1,22 @@
+{
+  "id": "trollbridge-bounties",
+  "name": "TrollBridge Bounty Feed",
+  "provider": "TrollBridge",
+  "homepage": "https://mini-tollbooth.onrender.com",
+  "description": "Every open bounty across all boards \u2014 aibtc, Taskmarket, Superteam Earn, swarm.tips. One call, the whole hunt.",
+  "resource": "https://mini-tollbooth.onrender.com/bounties",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "bounties",
+    "agent-economy",
+    "gig-intel"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.02",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

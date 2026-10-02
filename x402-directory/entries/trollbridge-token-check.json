@@ -1,0 +1,22 @@
+{
+  "id": "trollbridge-token-check",
+  "name": "TrollBridge Token Check",
+  "provider": "TrollBridge",
+  "homepage": "https://mini-tollbooth.onrender.com",
+  "description": "Token safety screen: liquidity, holder concentration, and honeypot-style red flags before you touch a token.",
+  "resource": "https://mini-tollbooth.onrender.com/token-check",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "token-safety",
+    "risk-screen",
+    "defi"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.05",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

@@ -1,0 +1,22 @@
+{
+  "id": "trollbridge-markets",
+  "name": "TrollBridge Markets",
+  "provider": "TrollBridge",
+  "homepage": "https://mini-tollbooth.onrender.com",
+  "description": "Polymarket prediction-market odds, spreads, and liquidity in a single pay-per-call response.",
+  "resource": "https://mini-tollbooth.onrender.com/markets",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "prediction-markets",
+    "odds",
+    "market-intel"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.05",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

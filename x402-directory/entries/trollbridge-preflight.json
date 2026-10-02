@@ -1,0 +1,22 @@
+{
+  "id": "trollbridge-preflight",
+  "name": "TrollBridge Preflight",
+  "provider": "TrollBridge",
+  "homepage": "https://mini-tollbooth.onrender.com",
+  "description": "Pre-flight wallet risk screen: checks approvals and exposure before an agent signs or sends.",
+  "resource": "https://mini-tollbooth.onrender.com/preflight",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "wallet-safety",
+    "approvals",
+    "risk-screen"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.05",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

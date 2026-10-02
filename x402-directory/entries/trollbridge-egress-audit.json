@@ -1,0 +1,22 @@
+{
+  "id": "trollbridge-egress-audit",
+  "name": "TrollBridge Egress Audit",
+  "provider": "TrollBridge",
+  "homepage": "https://mini-tollbooth.onrender.com",
+  "description": "NOT AN AUDIT \u2014 screens an agent's outbound call destinations and data flows for exfiltration risk.",
+  "resource": "https://mini-tollbooth.onrender.com/egress-audit",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "egress",
+    "exfiltration",
+    "agent-ops"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.10",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}

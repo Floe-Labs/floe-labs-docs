@@ -1,0 +1,22 @@
+{
+  "id": "trollbridge-contract-check",
+  "name": "TrollBridge Contract Check",
+  "provider": "TrollBridge",
+  "homepage": "https://mini-tollbooth.onrender.com",
+  "description": "NOT AN AUDIT \u2014 heuristic smart-contract safety screen returning a 0-100 risk score. Triage, not a trigger.",
+  "resource": "https://mini-tollbooth.onrender.com/contract-check",
+  "method": "GET",
+  "category": "agent-tooling",
+  "tags": [
+    "contract-safety",
+    "risk-screen",
+    "defi"
+  ],
+  "x402Version": 2,
+  "network": "eip155:8453",
+  "asset": "USDC",
+  "priceUsd": "0.10",
+  "pricingModel": "fixed-per-call",
+  "floeCompatible": true,
+  "status": "unverified"
+}
