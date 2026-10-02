@@ -25,7 +25,7 @@ Every response carries `X-Floe-Cost-USDC`. One key meters chat, embeddings, spee
 
 **npm:** `@floelabs/cli` (v0.2.0) · **bin:** `floe` · **GitHub:** [Floe-Labs/floe-cli](https://github.com/Floe-Labs/floe-cli)
 
-> **Two bins, one platform.** `@floelabs/cli` (bin `floe`) is the Floe platform CLI — the whole surface, from onboarding to policies to payments, documented on this page. The **`floe-agent`** bin, shipped by the `floe-agent` SDK package, is the **AgentKit-companion CLI** for the agent-runtime SDK. Use `floe` unless you are working inside the AgentKit SDK workflow.
+> **Recommended CLI.** `@floelabs/cli` (bin `floe`) is the Floe platform CLI — the whole surface, from onboarding to policies to payments, documented on this page. Use `floe` for new integrations. The separate **`floe-agent`** bin belongs to the `floe-agent` AgentKit SDK package, which is being deprecated.
 
 ---
 
