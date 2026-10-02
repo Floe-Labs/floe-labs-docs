@@ -10,6 +10,17 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.29.0 — The Initiative Ledger docs (October 2026)
+
+A new **Initiative Ledger** section documents the ledger underneath cost, attribution and close. Every record is an initiative; every entry carries a source, an A–D confidence grade and, when computed, the formula and inputs it came from; periods lock and corrections restate.
+
+* **Overview.** Entries, grades (a total takes its lowest grade, with the mix beside it), initiatives, and reading entries with their lineage: `GET /v1/developer/ledger/entries`, `GET /v1/developer/ledger/entries/{id}`, `GET`/`POST /v1/developer/initiatives`.
+* **Cost attribution & quarantine.** Dimension maps (API key → team, email → department, department → P&L line, key / agent / project → initiative), the quarantine of untagged spend, the three inference rules a person accepts or rejects, unmapped-key alerts, and allocation of what is left at close.
+* **Period close & restatements.** Period completeness, the estimated-to-invoice true-up and tie-outs, locking a period and its override gates, supersede (open period) vs restate (locked period).
+* **Counterparty sharing.** Cases shared with a buyer by link plus email sign-in, the assumptions register with owners and scenarios, proposals, and buyer approval.
+
+→ [The Initiative Ledger](ledger/overview.md) · [Cost attribution & quarantine](ledger/cost-attribution.md) · [Period close & restatements](ledger/period-close.md) · [Counterparty sharing](ledger/counterparty-sharing.md)
+
 ### v1.28.0 — Outcome units on rate cards (September 2026)
 
 Rate cards can now price what a call **produced**: resolutions, booked meetings and qualified leads.

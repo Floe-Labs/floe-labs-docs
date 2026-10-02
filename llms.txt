@@ -61,6 +61,15 @@ The first agent on an account is provisioned with a **$3 welcome credit that is 
 - [Govern Vapi / Retell / Bland](https://floe-labs.gitbook.io/docs/connect-your-stack/voice-orchestrators.md): Route the orchestrator's LLM leg through Floe (pre-call 402) + Reconcile Mode (end-of-call webhook → ledger → policy → next-session deny) — ask: "How do I govern Vapi spend with Floe?"
 - [Graduate to 100% coverage](https://floe-labs.gitbook.io/docs/connect-your-stack/migrate-to-full-coverage.md): Leg-by-leg migration from Vapi/Retell to Pipecat/LiveKit-on-Floe (pipecat-floe services) + the coverage/cost comparison — ask: "How do I get every leg of my voice agent pre-call governed?"
 
+## Initiative Ledger
+
+The record underneath cost, attribution and close: every record is an initiative holding period-stamped entries, each with a source, an A–D confidence grade and (when computed) its formula and inputs. Periods lock; corrections to a locked period are restatements in the next open period.
+
+- [Overview — one ledger, two doors](https://floe-labs.gitbook.io/docs/initiative-ledger/overview.md): Entries, confidence grades (a total takes its lowest grade, with the grade mix beside it), initiatives, reading entries with lineage — ask: "Where did this number come from and how sure is it?"
+- [Cost attribution & quarantine](https://floe-labs.gitbook.io/docs/initiative-ledger/cost-attribution.md): Dimension maps to team / department / P&L line / initiative, the quarantine of untagged spend, inference-rule proposals a person accepts, allocation at close — ask: "How do I get untagged AI spend onto a P&L line?"
+- [Period close & restatements](https://floe-labs.gitbook.io/docs/initiative-ledger/period-close.md): Period completeness, the invoice true-up and tie-outs, locking a month, supersede vs restate — ask: "How do I correct a figure in a month I already closed?"
+- [Counterparty sharing](https://floe-labs.gitbook.io/docs/initiative-ledger/counterparty-sharing.md): Share a case with a buyer's finance team; assumptions with owners, scenarios, proposals and approvals, all journaled — ask: "How do I let the buyer edit only the inputs they own?"
+
 ## Cost visibility, margin & invoicing
 
 Floe's repositioned core: know what every task costs, attribute it, price it, and bill your own clients from it. Reading the ledger and the attribution rollups are both free (`ledger_read`, `attribution_reports`); the margin engine, vendor reconciliation, and client invoicing are Agency. See [Plans & entitlements](https://floe-labs.gitbook.io/docs/reference/plans.md).
