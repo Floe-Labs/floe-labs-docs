@@ -31,6 +31,20 @@ Those two rules operate on different things, which is worth stating plainly. The
 
 Some vendors publish a leg's cost at call-end; others only on a next-day batch. So a leg from a call you placed a minute ago is *supposed* to be `pending` — that is the system working correctly, not an error or a capture failure.
 
+## Days to lock
+
+The close clock measures how long the month-end close takes once the vendors' figures are in: **business days from the last vendor's landing to the period lock**. The target is **2 business days or fewer**.
+
+* **What it waits for.** Every vendor with spend in the month. A vendor **lands** at its earliest evidence: its invoice arriving, or its final monthly cost data (a connector month or cost bucket reaching final). A vendor with nothing landed once its invoice window has passed (by default, 5 business days after the month ends) is flagged **missing**, and the clock counts it from the end of the window.
+* **How it counts.** The weekdays **after** the landing day, through the lock day. An invoice that lands on a Thursday and a lock on the Monday after is **2** business days.
+* **Business days** are Monday to Friday in your account time zone (UTC until the account time-zone setting ships). There is **no holiday calendar**: a public holiday counts as a business day.
+* **Where to see it.** The dashboard shows a **Days to lock** card on the ledger home and on **Close the month**: the status (waiting on vendors, running, or locked in N business days), each vendor with the day it landed and how (invoice, final monthly bucket, or invoice window passed and missing), and the alerts sent. Over the API, `GET /v1/developer/ledger/periods/:key` carries it as `period.closeClock` (`null` for a weekly period).
+* **Two alerts**, each sent at most once per month, by email and as a [webhook](../developers/webhooks.md#close_slow-and-vendor_late):
+  * `close_slow`: more than 2 business days since the last vendor landed and the month is not locked (or it locked that late). Goes to the account owner and admins.
+  * `vendor_late`: a vendor is past its invoice window with nothing landed. Goes to whoever saved that vendor's billing connection, plus the account owner and admins.
+
+The clock is a measure of the close, not of the money: it never changes a figure on the ledger.
+
 ## Coverage reads low on voice-heavy accounts
 
 A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.

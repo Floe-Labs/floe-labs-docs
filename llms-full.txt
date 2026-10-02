@@ -1132,6 +1132,20 @@ Those two rules operate on different things, which is worth stating plainly. The
 
 Some vendors publish a leg's cost at call-end; others only on a next-day batch. So a leg from a call you placed a minute ago is *supposed* to be `pending` — that is the system working correctly, not an error or a capture failure.
 
+## Days to lock
+
+The close clock measures how long the month-end close takes once the vendors' figures are in: **business days from the last vendor's landing to the period lock**. The target is **2 business days or fewer**.
+
+* **What it waits for.** Every vendor with spend in the month. A vendor **lands** at its earliest evidence: its invoice arriving, or its final monthly cost data (a connector month or cost bucket reaching final). A vendor with nothing landed once its invoice window has passed (by default, 5 business days after the month ends) is flagged **missing**, and the clock counts it from the end of the window.
+* **How it counts.** The weekdays **after** the landing day, through the lock day. An invoice that lands on a Thursday and a lock on the Monday after is **2** business days.
+* **Business days** are Monday to Friday in your account time zone (UTC until the account time-zone setting ships). There is **no holiday calendar**: a public holiday counts as a business day.
+* **Where to see it.** The dashboard shows a **Days to lock** card on the ledger home and on **Close the month**: the status (waiting on vendors, running, or locked in N business days), each vendor with the day it landed and how (invoice, final monthly bucket, or invoice window passed and missing), and the alerts sent. Over the API, `GET /v1/developer/ledger/periods/:key` carries it as `period.closeClock` (`null` for a weekly period).
+* **Two alerts**, each sent at most once per month, by email and as a [webhook](../developers/webhooks.md#close_slow-and-vendor_late):
+  * `close_slow`: more than 2 business days since the last vendor landed and the month is not locked (or it locked that late). Goes to the account owner and admins.
+  * `vendor_late`: a vendor is past its invoice window with nothing landed. Goes to whoever saved that vendor's billing connection, plus the account owner and admins.
+
+The clock is a measure of the close, not of the money: it never changes a figure on the ledger.
+
 ## Coverage reads low on voice-heavy accounts
 
 A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.
@@ -7682,7 +7696,7 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
 | `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: 48 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (18: `billing.*`, `client_margin.negative`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`, `unmapped_api_key_spend`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
+Events: 50 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (20: `billing.*`, `client_margin.negative`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`, `unmapped_api_key_spend`, `close_slow`, `vendor_late`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
 floe webhooks create https://api.acme.com/hooks/floe --events 'call.*,marketplace.payment.settled'
@@ -9271,7 +9285,7 @@ Developer key.
 |------|-------------|
 | `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
-| `list_webhook_events` | The live event catalog: 48 events with name, title, description, category, and scope |
+| `list_webhook_events` | The live event catalog: 50 events with name, title, description, category, and scope |
 | `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
 | `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
 | `delete_webhook` | Delete an endpoint permanently |
@@ -9835,7 +9849,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **48 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **50 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -9937,6 +9951,8 @@ Account-level events — no agent attribution. They reach a `global` webhook, or
 | `stripe.connected` | A Stripe account was connected for client invoicing |
 | `stripe.disconnected` | The connected Stripe account was disconnected — client invoicing pauses until it is reconnected |
 | `unmapped_api_key_spend` | An API key in your gateway logs has no team or initiative mapping, and its spend reached your alert floor — sent once per key (see [below](#unmapped_api_key_spend)) |
+| `close_slow` | Close is taking longer than 2 business days since the last invoice landed; sent once per month (see [below](#close_slow-and-vendor_late)) |
+| `vendor_late` | A vendor's invoice is past the invoice window; sent once per month, naming the vendors (see [below](#close_slow-and-vendor_late)) |
 
 #### `unmapped_api_key_spend`
 
@@ -9987,6 +10003,22 @@ An API key from an imported gateway log (for example a LiteLLM or OpenRouter key
 | `firstSeenDay` | The first day the key appears in your gateway logs |
 | `proposalId` | The open mapping proposal for the key, or `null` when there is none |
 | `link` | The dashboard page to map the key: the proposal when there is one, otherwise the Quarantine page for that month. It carries only the proposal ID |
+
+#### `close_slow` and `vendor_late`
+
+The two alerts of the month-end close clock ("days to lock": business days from the last vendor's invoice landing to the period lock; see [Vendor actuals](../build/vendor-actuals.md#days-to-lock)). A job checks every hour, over the three most recent ended months.
+
+* **`close_slow`** fires when more than **2 business days** have passed since every vendor with spend in the month landed (its invoice arrived, or its final monthly cost data did) and the month is not locked yet, or when it locked that late. The alert email goes to the account owner and admins.
+* **`vendor_late`** fires while a month is open and a vendor with spend in it is past its invoice window with nothing landed. It names the vendors. The alert email goes to whoever saved that vendor's billing connection (while they are still a member), plus the account owner and admins.
+* **Once per month each.** Neither fires twice for the same month. A month with no vendor spend never alerts, and a locked month alerts only within 7 days of its lock.
+* **Business days** are Monday to Friday in your account time zone (UTC until the account time-zone setting ships). Public holidays are not excluded.
+* **Category and scope.** `billing`, account-scoped. **Subscribe by name or `*`**: the names have no dotted prefix, so no `<prefix>.*` wildcard covers them.
+
+`close_slow` payload: `accountId`, `period` (`"2026-09"`), `metric` (`"days_to_lock"`), `status` (`running` or `locked`), `businessDays` (the count that crossed the target), `thresholdBusinessDays` (`2`), `lastLandingVendor`, `lastLandingAt`, `lastLandingDay`, `lockedDay`, `timeZone`, `calendar` (`"weekdays_no_holidays"`), and `link`.
+
+`vendor_late` payload: `accountId`, `period`, `vendors` (`[{ "vendor": "openai" }]`), `invoiceDueBy` (the last day of the invoice window), `timeZone`, and `link`.
+
+`link` opens the month on the dashboard's ledger home: `https://dev-dashboard.floelabs.xyz/?period=2026-09`.
 
 ### Wildcard subscriptions
 
