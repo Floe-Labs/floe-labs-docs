@@ -1423,6 +1423,7 @@ Expected response (abridged):
   "catalogVersion": null,
   "trueUpAuthority": true,
   "note": null,
+  "apiHoldsMonth": false,
   "grain": "token_class",
   "label": null,
   "buckets": [ { "recordKind": "cost_bucket", "day": "2026-09-01", "costUsd": "41.25", "tieOutOnly": false } ],
@@ -1430,6 +1431,7 @@ Expected response (abridged):
 }
 ```
 
+`apiHoldsMonth` is true when the API holds this vendor-month: the file is kept as a tie-out check only.
 Uploading the same file again returns `"duplicate": true` and changes nothing.
 `GET /v1/developer/vendor-exports` lists your sources and the templates;
 `GET /v1/developer/vendor-exports/{slug}/imports` lists a source's current imports.
