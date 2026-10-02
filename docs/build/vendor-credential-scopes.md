@@ -136,14 +136,16 @@ never `invoiced`: that status belongs to the invoice document.
 
 ### The API wins
 
-If a billing connection covers the same days, its API figures are booked and the
-export's rows for those days become a **tie-out check** (`tieOutOnly: true`), whichever
-arrives first. Connect the vendor mid-month after uploading an export, and the
+The API wins per **vendor-month**. If a billing connection has any cost data for the
+vendor in that month, the connector's figures stand for the whole month and the export
+counts only as a **tie-out check**, whichever arrives first. Rows on the days both cover
+are marked `tieOutOnly: true`. Connect the vendor after uploading an export, and the
 connector's figures supersede the export's through the ordinary true-up re-run: an open
 month is superseded; a locked month is restated in the next open period. The tie-out
-compares the export's total to the connector's over the same days: within +/-0.5% it is
-`tied`; beyond that it is `unexplained` and opens a `vendor_export_tie_out_unexplained`
-finding under **Needs review**. It never moves a dollar.
+compares the export's total to the connector's over the days both cover: within
++/-0.5% it is `tied`; beyond that it is `unexplained` and opens a
+`vendor_export_tie_out_unexplained` finding under **Needs review**. It never moves a
+dollar.
 
 ### Other refusals
 

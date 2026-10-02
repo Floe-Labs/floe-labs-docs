@@ -1376,14 +1376,16 @@ never `invoiced`: that status belongs to the invoice document.
 
 ### The API wins
 
-If a billing connection covers the same days, its API figures are booked and the
-export's rows for those days become a **tie-out check** (`tieOutOnly: true`), whichever
-arrives first. Connect the vendor mid-month after uploading an export, and the
+The API wins per **vendor-month**. If a billing connection has any cost data for the
+vendor in that month, the connector's figures stand for the whole month and the export
+counts only as a **tie-out check**, whichever arrives first. Rows on the days both cover
+are marked `tieOutOnly: true`. Connect the vendor after uploading an export, and the
 connector's figures supersede the export's through the ordinary true-up re-run: an open
 month is superseded; a locked month is restated in the next open period. The tie-out
-compares the export's total to the connector's over the same days: within +/-0.5% it is
-`tied`; beyond that it is `unexplained` and opens a `vendor_export_tie_out_unexplained`
-finding under **Needs review**. It never moves a dollar.
+compares the export's total to the connector's over the days both cover: within
++/-0.5% it is `tied`; beyond that it is `unexplained` and opens a
+`vendor_export_tie_out_unexplained` finding under **Needs review**. It never moves a
+dollar.
 
 ### Other refusals
 
@@ -13975,7 +13977,7 @@ Before anyone pastes a vendor key, Floe now says how much power that key carries
 * **Credential scope per connector.** The connector catalog (`GET /v1/developer/vendor-connections`, `connectors[].credentialScope`) declares each vendor's scope (`read_only`, `admin`, `unverified`, `none`), the narrowest key the vendor offers, the vendor doc pages it was read from, and the date checked. `unverified` means the vendor's docs didn't say; Floe doesn't guess. Payroll connections list theirs as `credentialScopes`. The dashboard shows it in the connect form and lists which key each vendor needs on **Vendor actuals**.
 * **The console cost export for OpenAI and Anthropic.** Their cost APIs need an admin key. Right beside the admin-key field, the connect form offers the console's monthly cost export instead (`/v1/developer/vendor-exports`). A signed-in owner or admin confirms the header profile once per version; a file whose headers differ is refused (`422 header_drift`, missing and unexpected headers listed) and nothing is written.
 * **Graded and labelled.** The file's own cost column is grade B. Tokens priced from Floe's catalog are grade D, stored but never a true-up authority, so the month stays invoice-pending. A file without a token class books at its own grain, labelled "blended per model"; one grain per vendor per month.
-* **The API wins.** Where a billing connection covers the same days, its figures are booked and the export becomes a tie-out check; a gap beyond ±0.5% opens a `vendor_export_tie_out_unexplained` finding.
+* **The API wins.** Where a billing connection has cost data for the same vendor-month, its figures stand for the whole month and the export becomes a tie-out check; a gap beyond ±0.5% over the days both cover opens a `vendor_export_tie_out_unexplained` finding.
 
 → [Vendor key scopes & the read-only export](build/vendor-credential-scopes.md) · [Vendor connections](build/vendor-connections.md)
 
