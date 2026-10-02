@@ -104,6 +104,7 @@
 * [REST API](docs/developers/credit-api.md)
 * [Model pricing — GET /v1/models?include=pricing](docs/developers/models-pricing.md)
 * [Ledger Sync API](docs/developers/ledger-sync-api.md)
+* [Gateway export contract](docs/developers/gateway-export-contract.md)
 * [OpenAPI Specification](https://credit-api.floelabs.xyz/.well-known/openapi.yaml)
 
 ## Reference

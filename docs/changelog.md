@@ -6,9 +6,22 @@ icon: swap
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **35 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **36 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### Unreleased — Gateway export contract (pending the floe-monorepo L1.9 release)
+
+Companies that run their own LLM gateway now have a published file format for importing its usage log, and a way to check a file before importing it.
+
+* **One contract, two forms.** `floe-canonical-ndjson@3` (the reference) and `floe-canonical-csv@1` use the same field names: `id`, `occurred_at`, `model`, `provider`, `cost`, plus optional `person`, `api_key`, `input_tokens`, `output_tokens`, `task`, `campaign`, `customer`, `billed_by` and `cache_hit`. Common synonyms are accepted (`user`, `estimated_cost`, `prompt_tokens`, `completion_tokens`, `timestamp`); two names that disagree refuse the row.
+* **Typed so nothing drifts.** `cost` is a decimal string, ISO 8601 times carry an offset, token counts are integers. `provider` can come from the model (`openai/gpt-4o`). A file without ids declares its time window, and an overlapping re-import needs `mode=replace`.
+* **Gateway cost is an estimate.** `cost` is what the gateway computed, not what the vendor billed: every gateway row is graded D, and the true-up against the vendor's invoice or cost report ties the month's total to the bill.
+* **JSON Schema.** `GET /v1/ext-gateway/contract/3`, public.
+* **Validator.** `POST /v1/developer/ext-gateway/validate` and `floe gateway validate <file> [--online]` (offline by default) are a dry run that stores nothing and never echoes a row's contents: row counts, mapped / unmapped / missing headers, refused rows by row number and reason, duplicate ids, and the best-matching built-in template.
+* **Counts.** `@floelabs/cli` ships **36 commands** (new: `floe gateway`).
+
+→ [Gateway export contract](developers/gateway-export-contract.md) · [Floe CLI → floe gateway](developers/cli.md#floe-gateway)
 
 ### v1.28.0 — Outcome units on rate cards (September 2026)
 
