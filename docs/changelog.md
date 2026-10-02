@@ -10,6 +10,17 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### Unreleased — Vendor key scopes and the read-only console export (pending the floe-monorepo L1.10 release)
+
+Before anyone pastes a vendor key, Floe now says how much power that key carries, and offers a read-only way in where the only key is an admin key.
+
+* **Credential scope per connector.** The connector catalog (`GET /v1/developer/vendor-connections`, `connectors[].credentialScope`) declares each vendor's scope (`read_only`, `admin`, `unverified`, `none`), the narrowest key the vendor offers, the vendor doc pages it was read from, and the date checked. `unverified` means the vendor's docs didn't say; Floe doesn't guess. Payroll connections list theirs as `credentialScopes`. The dashboard shows it in the connect form and lists which key each vendor needs on **Vendor actuals**.
+* **The console cost export for OpenAI and Anthropic.** Their cost APIs need an admin key. Right beside the admin-key field, the connect form offers the console's monthly cost export instead (`/v1/developer/vendor-exports`). A signed-in owner or admin confirms the header profile once per version; a file whose headers differ is refused (`422 header_drift`, missing and unexpected headers listed) and nothing is written.
+* **Graded and labelled.** The file's own cost column is grade B. Tokens priced from Floe's catalog are grade D, stored but never a true-up authority, so the month stays invoice-pending. A file without a token class books at its own grain, labelled "blended per model"; one grain per vendor per month.
+* **The API wins.** Where a billing connection covers the same days, its figures are booked and the export becomes a tie-out check; a gap beyond ±0.5% opens a `vendor_export_tie_out_unexplained` finding.
+
+→ [Vendor key scopes & the read-only export](build/vendor-credential-scopes.md) · [Vendor connections](build/vendor-connections.md)
+
 ### v1.28.0 — Outcome units on rate cards (September 2026)
 
 Rate cards can now price what a call **produced**: resolutions, booked meetings and qualified leads.
