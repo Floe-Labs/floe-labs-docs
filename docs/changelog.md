@@ -10,6 +10,15 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### Unreleased — Unmapped API key spend alert (pending the floe-monorepo L1.6 release)
+
+Spend from a gateway API key that nobody has mapped to a team or initiative lands in **Unassigned**. Floe now tells you about it.
+
+* **New webhook event: `unmapped_api_key_spend`** (category `billing`, account-scoped). Fires once per key, on the first settled day the key's cumulative spend reaches your account's alert floor (default **$5**). It stops when the key is mapped or dismissed. Subscribe by name or `*`: no `<prefix>.*` wildcard covers it. See [Webhooks](developers/webhooks.md#unmapped_api_key_spend).
+* **Payload.** `accountId`, `connection`, `keyLabel` (the key's first 8 characters, never the key), `spend` (`micro`, `display`, `grade`, `gradeMix`), `floor` (`micro`, `display`), `settledDay`, `firstSeenDay`, `proposalId` (or `null`) and `link`. Gateway-log spend is an estimate, grade D, unless the gateway itself bills you.
+* **Weekly digest is email only.** The digest of every unmapped key goes to account owners and admins by email; it has no webhook.
+* **Catalog:** 48 events (was 46 in these docs; the count now also includes `client_margin.negative`).
+
 ### v1.28.0 — Outcome units on rate cards (September 2026)
 
 Rate cards can now price what a call **produced**: resolutions, booked meetings and qualified leads.

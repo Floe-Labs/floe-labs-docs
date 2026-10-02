@@ -12108,10 +12108,20 @@ components:
         `vendor_actuals.invoice.footed` (an invoice reconciled, or was left
         `disputed` on an unexplained variance), and
         `vendor_actuals.close_gate_overridden` (a period was closed while some
-        vendor costs were still unconfirmed). There is deliberately NO per-leg
+        vendor costs were still unconfirmed). L1.6 adds
+        `unmapped_api_key_spend` (no dotted prefix, so no `<prefix>.*`
+        wildcard covers it: subscribe by name or `*`): a gateway API key with
+        no team or initiative mapping reached the account's alert floor on a
+        settled day; sent once per key. Payload: `accountId`, `connection`,
+        `keyLabel` (the key's first 8 characters, never the key), `spend`
+        ({micro, display, grade, gradeMix}: the floor grade of its entries
+        and the amount per grade, record 001; gateway log spend is D),
+        `floor` ({micro, display}), `settledDay`, `firstSeenDay`, `proposalId`
+        (null when no open proposal) and `link` (the dashboard page; it
+        carries only the proposal id). There is deliberately NO per-leg
         restatement event: a vendor restatement can touch tens of thousands of
         legs in one run and would flood every subscriber.
-      enum: [loan.health_warning, loan.expiry_warning, loan.overdue, loan.liquidated, loan.repaid, agent.created, agent.suspended, key.created, key.rotated, x402.first_settlement, provider_key.created, provider_key.updated, provider_key.deleted, credit.warning, credit.at_limit, credit.recovered, call.started, call.ended, call.report.ready, call.recording.ready, call.analyzed, call.rejected, phone.number.grace, phone.number.released, marketplace.job.completed, marketplace.payment.settled, marketplace.spend_cap.hit, marketplace.tripwire.triggered, marketplace.vendor.degraded, marketplace.vendor.recovered, billing.plan.changed, billing.payment_failed, billing.invoice.paid, billing.renewal_upcoming, billing.usage_threshold, client_margin.negative, client_invoice.sent, client_invoice.paid, client_invoice.voided, client_invoice.uncollectible, stripe.connected, stripe.disconnected, vendor_actuals.connection.created, vendor_actuals.connection.updated, vendor_actuals.connection.deleted, vendor_actuals.invoice.footed, vendor_actuals.close_gate_overridden]
+      enum: [loan.health_warning, loan.expiry_warning, loan.overdue, loan.liquidated, loan.repaid, agent.created, agent.suspended, key.created, key.rotated, x402.first_settlement, provider_key.created, provider_key.updated, provider_key.deleted, credit.warning, credit.at_limit, credit.recovered, call.started, call.ended, call.report.ready, call.recording.ready, call.analyzed, call.rejected, phone.number.grace, phone.number.released, marketplace.job.completed, marketplace.payment.settled, marketplace.spend_cap.hit, marketplace.tripwire.triggered, marketplace.vendor.degraded, marketplace.vendor.recovered, billing.plan.changed, billing.payment_failed, billing.invoice.paid, billing.renewal_upcoming, billing.usage_threshold, client_margin.negative, client_invoice.sent, client_invoice.paid, client_invoice.voided, client_invoice.uncollectible, stripe.connected, stripe.disconnected, vendor_actuals.connection.created, vendor_actuals.connection.updated, vendor_actuals.connection.deleted, vendor_actuals.invoice.footed, vendor_actuals.close_gate_overridden, unmapped_api_key_spend]
 
     WebhookCatalogEvent:
       type: object

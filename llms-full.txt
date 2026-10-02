@@ -8388,7 +8388,7 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
 | `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: 46 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (16: `billing.*`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
+Events: 48 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (18: `billing.*`, `client_margin.negative`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`, `unmapped_api_key_spend`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
 floe webhooks create https://api.acme.com/hooks/floe --events 'call.*,marketplace.payment.settled'
@@ -9978,7 +9978,7 @@ Developer key.
 |------|-------------|
 | `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
-| `list_webhook_events` | The live event catalog: 46 events with name, title, description, category, and scope |
+| `list_webhook_events` | The live event catalog: 48 events with name, title, description, category, and scope |
 | `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
 | `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
 | `delete_webhook` | Delete an endpoint permanently |
@@ -10542,7 +10542,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **46 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **48 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -10631,6 +10631,7 @@ Account-level events — no agent attribution. They reach a `global` webhook, or
 | `billing.invoice.paid` | A Floe plan invoice was paid — carries the amount and the hosted invoice link |
 | `billing.renewal_upcoming` | Your plan renews soon — carries the amount due and the end of the current period |
 | `billing.usage_threshold` | Month-to-date tracked spend crossed 80% or 100% of your plan's cap — informational, nothing is blocked |
+| `client_margin.negative` | A billing period closed with revenue below its reconciled cost for a client — carries revenue, cost and margin from the close snapshot, so they match the statement |
 | `client_invoice.sent` | A client invoice was sent through your connected Stripe account |
 | `client_invoice.paid` | A client paid an invoice issued from your connected Stripe account |
 | `client_invoice.voided` | A client invoice was voided in Stripe and will not be collected |
@@ -10642,6 +10643,54 @@ Account-level events — no agent attribution. They reach a `global` webhook, or
 | `vendor_actuals.close_gate_overridden` | An account owner closed a billing period while some vendor costs were still unconfirmed |
 | `stripe.connected` | A Stripe account was connected for client invoicing |
 | `stripe.disconnected` | The connected Stripe account was disconnected — client invoicing pauses until it is reconnected |
+| `unmapped_api_key_spend` | An API key in your gateway logs has no team or initiative mapping, and its spend reached your alert floor — sent once per key (see [below](#unmapped_api_key_spend)) |
+
+#### `unmapped_api_key_spend`
+
+An API key from an imported gateway log (for example a LiteLLM or OpenRouter key) has no team or initiative mapping, so its spend sits in **Unassigned**. Floe tells you once, so you can map it before the period closes.
+
+* **When it fires.** On the first settled day that the key's cumulative spend reaches your account's alert floor (default **$5**; set `unmappedKeyAlertFloorMicro` with `PUT /v1/developer/attribution/settings`, or in the dashboard).
+* **Once per key.** A key is never alerted twice. It never fires for a key that is already mapped or that you dismissed (`POST /v1/developer/attribution/unmapped-keys/dismiss`, with a reason). Mapping or dismissing the key also drops it from the weekly digest. The weekly digest of every unmapped key is **email only**: it has no webhook.
+* **Category and scope.** `billing`, account-scoped, like the other events in this table.
+* **Subscribe by name or `*`.** The name has no dotted prefix, so no `<prefix>.*` wildcard covers it.
+
+```json
+{
+  "event": "unmapped_api_key_spend",
+  "accountId": "acct_...",
+  "connection": "litellm-prod",
+  "keyLabel": "sk-1a2b3",
+  "spend": {
+    "micro": "6300000",
+    "display": "$6.30",
+    "grade": "D",
+    "gradeMix": {
+      "A": { "micro": "0", "display": "$0.00" },
+      "B": { "micro": "0", "display": "$0.00" },
+      "C": { "micro": "0", "display": "$0.00" },
+      "D": { "micro": "6300000", "display": "$6.30" }
+    }
+  },
+  "floor": { "micro": "5000000", "display": "$5.00" },
+  "settledDay": "2026-10-01",
+  "firstSeenDay": "2026-09-28",
+  "proposalId": null,
+  "link": "https://dev-dashboard.floelabs.xyz/quarantine?period=2026-10",
+  "firedAt": "2026-10-02T01:00:00.000Z"
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `accountId` | Your public `acct_…` account ID |
+| `connection` | The gateway connection the key's rows came from (its slug) |
+| `keyLabel` | The key's first 8 characters. The key itself never leaves Floe |
+| `spend` | The key's spend through `settledDay`, in integer micro-USD (`micro`) and as text (`display`). `grade` is the lowest confidence grade among its entries, and `gradeMix` splits the amount by grade. Gateway-log spend is an **estimate, grade D** (not invoiced), unless the gateway itself bills you |
+| `floor` | Your alert floor when the alert fired |
+| `settledDay` | The settled day the spend reached the floor |
+| `firstSeenDay` | The first day the key appears in your gateway logs |
+| `proposalId` | The open mapping proposal for the key, or `null` when there is none |
+| `link` | The dashboard page to map the key: the proposal when there is one, otherwise the Quarantine page for that month. It carries only the proposal ID |
 
 ### Wildcard subscriptions
 
@@ -13761,6 +13810,15 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **35 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### Unreleased — Unmapped API key spend alert (pending the floe-monorepo L1.6 release)
+
+Spend from a gateway API key that nobody has mapped to a team or initiative lands in **Unassigned**. Floe now tells you about it.
+
+* **New webhook event: `unmapped_api_key_spend`** (category `billing`, account-scoped). Fires once per key, on the first settled day the key's cumulative spend reaches your account's alert floor (default **$5**). It stops when the key is mapped or dismissed. Subscribe by name or `*`: no `<prefix>.*` wildcard covers it. See [Webhooks](developers/webhooks.md#unmapped_api_key_spend).
+* **Payload.** `accountId`, `connection`, `keyLabel` (the key's first 8 characters, never the key), `spend` (`micro`, `display`, `grade`, `gradeMix`), `floor` (`micro`, `display`), `settledDay`, `firstSeenDay`, `proposalId` (or `null`) and `link`. Gateway-log spend is an estimate, grade D, unless the gateway itself bills you.
+* **Weekly digest is email only.** The digest of every unmapped key goes to account owners and admins by email; it has no webhook.
+* **Catalog:** 48 events (was 46 in these docs; the count now also includes `client_margin.negative`).
 
 ### v1.28.0 — Outcome units on rate cards (September 2026)
 
