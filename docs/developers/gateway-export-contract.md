@@ -126,12 +126,14 @@ floe gateway validate <file> [--online] [--template <id>] [--connection <slug>]
 | `--template <id>` | Read with this template instead of the best match |
 | `--connection <slug>` | Read with an existing connection's profile (needs `--online`) |
 
-Offline mode prints two caveats, because two checks need your account:
+Offline mode runs the same file-only checks; account/connection checks are available online only. It prints four caveats:
 
 1. **Ids already imported** on your account aren't checked. A row whose id one of your connections already holds would be skipped by an import into that connection, and counted twice by an import into another one.
 2. **People** aren't resolved against your account: the online report says how many distinct people the file names and how many Floe already knows.
+3. **Rows Floe's own gateway already metered** for your account aren't counted. An import of them is refused (`409 metered_by_floe`).
+4. **The connection's id mode** isn't checked: with `--connection`, the online report says whether the file carries ids the way that connection's imports do (`409 id_mode_mismatch` otherwise; re-export in the connection's mode).
 
-Run `--online` once before the first import into a connection to see both. Exit code `1` when the file isn't valid, so the command can gate a script. `--json` prints the report as JSON.
+Run `--online` once before the first import into a connection to see all four. Exit code `1` when the file isn't valid, so the command can gate a script. `--json` prints the report as JSON.
 
 ### From the API
 
@@ -155,6 +157,8 @@ The response (`200`, even for a file-level problem such as malformed CSV, which 
 | `duplicateIds.inFile` | Rows repeating an earlier row's id |
 | `duplicateIds.alreadyImported` | Rows whose id your account already holds, with a count per connection (online only) |
 | `people` | `distinct` people in the file and how many are `known` (online only) |
+| `meteredByFloe` | Rows whose `floe-pr-<id>` id names a request your account's own Floe gateway metered (online only) |
+| `idModeMismatch` | With `connection`: `{connection, file}` when the file's ids (`present` / `derived`) differ from the connection's imports, else `null` (online only) |
 | `bestTemplate` / `templates` | Every built-in template of the file's format, best first, with the share of your headers it reads (`score`) and what it would be missing |
 | `notes` | For example `ids derived; window required`, or `Floe would import 1 of the export's 6 rows` |
 
@@ -190,6 +194,8 @@ floe gateway validate gateway-2026-09.ndjson
   Refused rows  0
 ! offline: ids already imported on your account are not checked (run with --online)
 ! offline: people are not resolved against your account (run with --online)
+! offline: rows your account's Floe gateway already metered are not counted (run with --online)
+! offline: the connection's id mode is not checked (run with --online --connection <slug>)
 ✓ valid: Floe would import every row of this export
 ```
 {% endtab %}
@@ -218,6 +224,8 @@ floe gateway validate gateway-2026-09.csv
   Refused rows  0
 ! offline: ids already imported on your account are not checked (run with --online)
 ! offline: people are not resolved against your account (run with --online)
+! offline: rows your account's Floe gateway already metered are not counted (run with --online)
+! offline: the connection's id mode is not checked (run with --online --connection <slug>)
 ✓ valid: Floe would import every row of this export
 ```
 {% endtab %}
@@ -258,6 +266,8 @@ Repeated ids in the file: 1 (rows 6)
 ! Floe would import 1 of the export's 6 rows
 ! offline: ids already imported on your account are not checked (run with --online)
 ! offline: people are not resolved against your account (run with --online)
+! offline: rows your account's Floe gateway already metered are not counted (run with --online)
+! offline: the connection's id mode is not checked (run with --online --connection <slug>)
 ✗ not valid
 ```
 
@@ -282,7 +292,7 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/ext-gateway/validate?
   --data-binary @gateway-2026-09.csv
 ```
 
-On an account that has imported nothing yet, the response is the offline report (without `mode` and `caveats`) plus the two account checks:
+On an account that has imported nothing yet, the response is the offline report (without `mode` and `caveats`) plus the account/connection checks:
 
 ```json
 {
@@ -298,6 +308,8 @@ On an account that has imported nothing yet, the response is the offline report 
     "alreadyImported": { "count": 0, "rows": [], "truncated": false, "byConnection": {} }
   },
   "people": { "distinct": 2, "known": 0 },
+  "meteredByFloe": { "count": 0, "rows": [], "truncated": false },
+  "idModeMismatch": null,
   "notes": [],
   "…": "headers, refusedRows, skippedRows, bestTemplate, templates, fileError"
 }

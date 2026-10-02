@@ -541,12 +541,12 @@ Check your own LLM gateway's export file against the [gateway export contract](g
 
 ```bash
 floe gateway validate gateway-2026-09.ndjson                     # offline: the file never leaves your machine
-floe gateway validate gateway-2026-09.csv --online               # + ids already imported, + known people
+floe gateway validate gateway-2026-09.csv --online               # + account/connection checks
 floe gateway validate export.csv --online --connection our-gateway   # read with a connection's profile
 floe gateway validate export.csv --template floe-canonical-csv@1
 ```
 
-Offline is the default and gives the API's answer, minus the two checks that need your account; it prints both as caveats (ids already imported, people). `--online` posts the file to `POST /v1/developer/ext-gateway/validate` (up to 10 MiB). `--connection` needs `--online` and excludes `--template`. Exit code `1` when the file isn't valid. Report fields and a worked example: [Gateway export contract → Validate before you import](gateway-export-contract.md#validate-before-you-import).
+Offline is the default and runs the same file-only checks; account/connection checks are available online only, and it prints them as caveats (ids already imported, people, rows Floe already metered, the connection's id mode). `--online` posts the file to `POST /v1/developer/ext-gateway/validate` (up to 10 MiB). `--connection` needs `--online` and excludes `--template`. Exit code `1` when the file isn't valid. Report fields and a worked example: [Gateway export contract → Validate before you import](gateway-export-contract.md#validate-before-you-import).
 
 ---
 
