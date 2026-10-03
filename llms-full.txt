@@ -1153,8 +1153,8 @@ The clock waits only for spend that a vendor still has to confirm. Each biller (
 
 | Mode | Means | The clock |
 |---|---|---|
-| `invoiced` | The vendor sends an invoice | waits for the invoice, or for every declared source to be final |
-| `bucket` | A monthly summary source (a compute or other-cost file) | waits for every declared source to be final |
+| `invoiced` | The vendor sends an invoice | waits until the vendor lands: its invoice received, or every declared source final, whichever comes first |
+| `bucket` | A monthly summary source (a compute or other-cost file) | waits until the vendor lands: its invoice received, or every declared source final, whichever comes first |
 | `final_at_settlement` | Final when Floe settles the day (Floe-billed spend, a model declared free or self-hosted) | never waits for it |
 
 * **Where it is declared.** On the row, as `settlement_mode` (canonical gateway-export contract v3), or on the connection profile, as `settlementModes` (per `billed_by`) on `POST /v1/developer/ext-gateway/connections/:slug/profile-versions`.
