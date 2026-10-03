@@ -20,6 +20,14 @@ Before anyone pastes a vendor key, Floe now says how much power that key carries
 * **The API wins.** Where a billing connection has cost data for the same vendor-month, its figures stand for the whole month and the export becomes a tie-out check; a gap beyond ±0.5% over the days both cover opens a `vendor_export_tie_out_unexplained` finding.
 
 → [Vendor key scopes & the read-only export](build/vendor-credential-scopes.md) · [Vendor connections](build/vendor-connections.md)
+### Unreleased — Unmapped API key spend alert (pending the floe-monorepo L1.6 release)
+
+Spend from a gateway API key that nobody has mapped to a team or initiative lands in **Unassigned**. Floe now tells you about it.
+
+* **New webhook event: `unmapped_api_key_spend`** (category `billing`, account-scoped). Fires once per key, as soon as the gateway import that takes the key's cumulative spend to your account's alert floor (default **$5**) lands. The amount is estimated (`basis: "estimated"`): it is sent before the spend is settled. It stops when the key is mapped or dismissed. Subscribe by name or `*`: no `<prefix>.*` wildcard covers it. See [Webhooks](developers/webhooks.md#unmapped_api_key_spend).
+* **Payload.** `accountId`, `basis`, `connection`, `keyLabel` (the key's first 8 characters, never the key), `spend` (`micro`, `display`, `grade`, `gradeMix`), `floor` (`micro`, `display`), `throughDay`, `firstSeenDay`, `proposalId` (or `null`) and `link`. Gateway-log spend is an estimate, grade D, unless the gateway itself bills you.
+* **Weekly digest is email only.** The digest of every unmapped key, on settled spend, goes to account owners and admins by email; it has no webhook. The first-alert email also goes to the owners of the team a key is proposed into.
+* **Catalog:** 48 events (was 46 in these docs; the count now also includes `client_margin.negative`).
 
 ### v1.28.0 — Outcome units on rate cards (September 2026)
 

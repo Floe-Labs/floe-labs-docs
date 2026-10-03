@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 72 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 68 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -21,7 +21,6 @@
 - The live cost ledger — https://floe-labs.gitbook.io/docs/know-your-costs/unified-ledger.md
 - Vendor actuals — reconcile to the vendor's records — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-actuals.md
 - Vendor connections — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-connections.md
-- Vendor key scopes & the read-only export — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-credential-scopes.md
 - Coverage Score — https://floe-labs.gitbook.io/docs/know-your-costs/coverage-score.md
 - The cost calculator — https://floe-labs.gitbook.io/docs/know-your-costs/cost-calculator.md
 - Cost per client, campaign & task — https://floe-labs.gitbook.io/docs/attribution-margin/attribution.md
@@ -58,9 +57,6 @@
 - OpenAI Agents SDK — https://floe-labs.gitbook.io/docs/frameworks/openai.md
 - Claude Desktop / Claude Code / Cursor (MCP) — https://floe-labs.gitbook.io/docs/frameworks/claude-mcp.md
 - Vercel AI SDK — https://floe-labs.gitbook.io/docs/frameworks/vercel-ai.md
-- Coinbase AgentKit — https://floe-labs.gitbook.io/docs/frameworks/agentkit.md
-- TypeScript SDK — https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-typescript.md
-- Python SDK — https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-python.md
 - Developer Dashboard — https://floe-labs.gitbook.io/docs/developers/developer-dashboard.md
 - Agent Balance — https://floe-labs.gitbook.io/docs/developers/wallet.md
 - Spend Controls — https://floe-labs.gitbook.io/docs/developers/spend-controls.md
@@ -186,7 +182,6 @@ When the Welcome Credit runs low, add money by card, Apple Pay, Google Pay, or b
 | **CrewAI** | [via MCP server](docs/frameworks/crewai.md) |
 | **OpenAI Agents SDK** | [adapter](docs/frameworks/openai.md) |
 | **Vercel AI SDK** | [`getVercelAITools` adapter](docs/frameworks/vercel-ai.md) |
-| **Coinbase AgentKit** | [`floeActionProvider`](docs/frameworks/agentkit.md) |
 | **Plain HTTP / REST** | [anything that speaks HTTP](docs/frameworks/http.md) |
 
 See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookbook) and [Eve](https://github.com/Floe-Labs/eve-floe), Floe's reference voice agent.
@@ -1209,11 +1204,8 @@ gated the same way: per-leg and by-call cost, plus findings, are **free**
 ## Setting one up
 
 You connect a vendor from the **connect flow in the [dashboard](https://dev-dashboard.floelabs.xyz)**.
-It lists the vendors Floe can reconcile, shows how much power each vendor's key
-carries and the narrowest key the vendor offers, and verifies the credential live
-before anything trusts it. Some vendors (OpenAI, Anthropic) only issue an **admin**
-key for cost data; for those, the form offers the vendor console's cost export as
-the read-only way in. See [Vendor key scopes & the read-only export](vendor-credential-scopes.md).
+It lists the vendors Floe can reconcile, walks you through the exact **read-only**
+scope each one needs, and verifies the credential live before anything trusts it.
 Once connected, that vendor's costs flow onto your ledger automatically. Where a
 vendor publishes no cost API, you upload its invoice instead and Floe reconciles
 against that.
@@ -1232,214 +1224,8 @@ Removal is non-destructive: the costs already reconciled onto your ledger stay
 ## Related
 
 - [Vendor actuals — reconcile to the vendor's records](vendor-actuals.md) — what these connections feed, leg by leg, with a status per claim.
-- [Vendor key scopes & the read-only export](vendor-credential-scopes.md) — which key each vendor needs, and the console cost export for admin-key vendors.
 - [Coverage Score](coverage-score.md) — how much of your spend Floe can act on, a different question from what it cost.
 - [Plans & entitlements](../reference/plans.md) — where `vendor_connections` sits.
-
-==============================================================================
-# Vendor key scopes & the read-only export
-Source: docs/build/vendor-credential-scopes.md
-URL: https://floe-labs.gitbook.io/docs/know-your-costs/vendor-credential-scopes.md
-==============================================================================
-
-# Vendor key scopes & the read-only export
-
-Floe only **reads** your vendor billing data. But the key a vendor issues for that
-read can carry more power than reading: for some vendors, the only key that reaches
-cost data can also manage the whole account. This page lists, for every vendor
-connector, how much power its key carries, the narrowest key the vendor offers, the
-vendor doc pages that was read from, and the day it was checked. Where the only key
-is an admin key, it describes the read-only way in: the vendor console's own cost
-export.
-
-The same data is served by the API on the connector catalog
-(`GET /v1/developer/vendor-connections` returns `connectors[].credentialScope`), and the
-dashboard shows it in the connect form and in the **Which key each vendor needs**
-list on **Vendor actuals**. When a vendor changes its key model, the catalog changes
-first; this page follows.
-
-## The four scopes
-
-| Scope | What it means |
-|---|---|
-| `read_only` | The vendor offers a key limited to the billing data Floe reads. |
-| `admin` | The only key that reaches the cost data can also administer your vendor account. |
-| `unverified` | The vendor's docs don't say which permission these reads need. Floe does not guess: treat the key as account-wide. |
-| `none` | Floe collects no key. Costs arrive through the invoice you upload. |
-
-An `admin` vendor that has a read-only way in names it in `readOnlyAlternative`.
-Today that is `console_export` for OpenAI and Anthropic.
-
-## Per vendor
-
-Checked against each vendor's docs on **2026-10-02**.
-
-| Vendor | Scope | Minimum key | Read-only alternative |
-|---|---|---|---|
-| Twilio | `read_only` | Restricted API key (`twilio_api_key`) with `/twilio/billing/usage/read`, `/twilio/voice/calls/list` and `/twilio/voice/calls/read`. | - |
-| AWS Bedrock (CUR) | `read_only` | IAM access key whose policy allows only `s3:GetObject` and `s3:ListBucket` on the CUR bucket prefix. | - |
-| Google Cloud | `read_only` | Service account with `roles/bigquery.dataViewer` on the billing export dataset and `roles/bigquery.jobUser` on the project that runs the query (OAuth scope `bigquery.readonly`). | - |
-| Azure | `read_only` | App registration (client secret) granted **Cost Management Reader** on the billing scope. | - |
-| OpenAI | `admin` | Organization Admin API key (`sk-admin-...`). Creating one takes a name and an optional expiry, no permission scope; the key's owner is always an organization owner. | Console cost export |
-| Anthropic | `admin` | Admin API key (`sk-ant-admin...`), an `org:admin` OAuth token, or a personal or service-account key not scoped to a workspace. Only members with the admin role can provision an Admin API key; workspace keys are refused. | Console cost export |
-| Deepgram | `unverified` | A project key created with explicit scopes; `usage:read` and `project:read` are the read scopes Deepgram lists. | - |
-| Telnyx | `unverified` | A Bearer API key from Mission Control; no key scopes are documented. | - |
-| ElevenLabs | `unverified` | An API key limited to read permissions such as `user_read` and `speech_history_read`. | - |
-| Cartesia | `unverified` | An API key; no key scopes are documented. | - |
-| AssemblyAI, Rime, Sarvam | `none` | No billing API: no key is collected. | - |
-
-What each vendor's docs did, or did not, say:
-
-- **Twilio.** An Account SID with its Auth Token carries full account access; use a restricted key instead. Sources: [Restricted API keys](https://www.twilio.com/docs/iam/api-keys/restricted-api-keys), [Usage Records permissions (PDF)](https://docs-resources.prod.twilio.com/documents/Twilio_Restricted_API_Keys_Permissions_-_Usage_Records_Permissions.pdf), [Voice permissions (PDF)](https://docs-resources.prod.twilio.com/documents/Twilio_Restricted_API_Keys_Permissions_-_Voice_Permissions.pdf).
-- **AWS Bedrock.** Sources: [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html), [CUR in S3](https://docs.aws.amazon.com/cur/latest/userguide/cur-s3.html).
-- **Google Cloud.** `bigquery.jobUser` also lets the account run jobs and create Dataform repositories in that project; it grants no write on the export dataset. Source: [BigQuery access control](https://docs.cloud.google.com/bigquery/docs/access-control).
-- **Azure.** Cost Management Reader holds read actions (`Microsoft.Consumption/*/read`, `Microsoft.CostManagement/*/read`) plus `Microsoft.Support/*`. Sources: [Management and governance roles](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/management-and-governance), [Assign access to Cost Management data](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/assign-access-acm-data).
-- **OpenAI.** The Costs and Usage endpoints are Admin API endpoints; there is no read-only admin key. Sources: [Create admin API key](https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/admin_api_keys/methods/create), [Costs](https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/usage/methods/costs).
-- **Anthropic.** The same Admin API key also manages members, workspaces and API keys. The Admin API is not available to individual accounts, and the usage and cost reports are not available on Claude Platform on AWS. Sources: [Usage and Cost API](https://platform.claude.com/docs/en/manage-claude/usage-cost-api), [Admin API](https://platform.claude.com/docs/en/manage-claude/admin-api).
-- **Deepgram.** Deepgram documents the read scopes but not which scope `GET /v1/projects`, `/requests` and `/usage` require, so whether a read-only key is enough is unconfirmed. A default member key also holds `usage:write` and `keys:write`. Sources: [Working with roles](https://developers.deepgram.com/guides/deep-dives/working-with-roles), [Create a key](https://developers.deepgram.com/reference/manage/keys/create), [List requests](https://developers.deepgram.com/reference/manage/requests/list).
-- **Telnyx.** The authentication docs describe no permission scopes for API keys. We could not confirm a read-only key exists, so treat the key as account-wide. Sources: [Authentication](https://developers.telnyx.com/docs/development/api-fundamentals/authentication), [auth.md](https://developers.telnyx.com/auth.md).
-- **ElevenLabs.** Keys take a permission list (`user_read`, `speech_history_read`, ... or all), but the `/v1/user/subscription` and `/v1/history` pages do not name the permission they require. Sources: [Create API key](https://elevenlabs.io/docs/api-reference/service-accounts/api-keys/create), [Get subscription](https://elevenlabs.io/docs/api-reference/user/subscription/get), [List history](https://elevenlabs.io/docs/api-reference/history/list).
-- **Cartesia.** The public docs describe API keys and short-lived access tokens with `tts`/`stt` grants only. The `/usage` endpoint the connector calls is not in the public reference, so its key requirement is unconfirmed. Sources: [llms.txt](https://docs.cartesia.ai/llms.txt), [Authenticate your client applications](https://docs.cartesia.ai/get-started/authenticate-your-client-applications).
-- **AssemblyAI, Rime, Sarvam.** No billing API. Their costs reach the ledger through the invoice you upload; the units shown come from Floe's own metering.
-
-### Payroll connectors
-
-Both are read-only (`GET /v1/developer/payroll/connections` returns them as `credentialScopes`):
-
-| Provider | Scope | Minimum grant |
-|---|---|---|
-| Gusto | `read_only` | OAuth grant to Floe's app with the read scopes `employees:read payrolls:read pay_schedules:read jobs:read companies:read`. Gusto assigns an app its scopes at review and enforces them in production; you approve the grant. Source: [Gusto scopes](https://docs.gusto.com/app-integrations/docs/scopes). |
-| Rippling | `read_only` | API token (Tools > Developer > API Tokens) scoped to read companies, workers and payroll runs. A token's access is the intersection of its owner's permission profile and its scopes; only `workers.read` was confirmed by name. Sources: [llms.txt](https://developer.rippling.com/llms.txt), [API tokens](https://developer.rippling.com/documentation/rest-api/essentials/api-tokens). |
-
-### LLM gateways
-
-LiteLLM, Portkey, Helicone and OpenRouter usage reaches Floe as an **export file you upload**. Floe pulls no gateway API today, so no gateway key is collected. If gateway API pulls ship, their scopes will be listed here.
-
-## The read-only path: the console cost export
-
-For OpenAI and Anthropic, the cost API needs an admin key. If your security team won't
-issue one, upload the vendor console's monthly cost export instead. It reaches the same
-period-rate outcome, with one condition, explained under [Grain](#grain).
-
-### In the dashboard
-
-1. **Vendor actuals > Billing connections > Connect a vendor bill**, choose OpenAI or
-   Anthropic. Right under the admin-key field: *"Your security team can't issue an
-   admin key? Upload the console's cost export instead."* Choose **Use the console
-   export**; the same form switches to the export. Files for later months go through
-   **Console cost exports**, on the same tab.
-2. **Create the source.** The form shows the template's default header for each Floe
-   field. **The defaults are unverified**: Floe built them from the vendor's cost API
-   field names, not from a real console file. Check each one against your own export,
-   blank out what your file doesn't have, and list any other headers Floe should not
-   read (a header that looks like money or identity needs a reason).
-3. **Confirm once.** Tick *I checked these headers against my own file*. That is the one
-   confirmation for this profile version, recorded with who confirmed and when. It must
-   be a signed-in owner or admin; a developer key can't confirm.
-4. **Upload a month.** One file is one vendor-month. It is accepted once the month has
-   ended (UTC) and the vendor's restatement window has passed: 6 hours for OpenAI and
-   Anthropic.
-
-### Header drift stops the import
-
-A file imports only when its header set equals the confirmed version's exactly (column
-order is free). Any difference is refused with `422 header_drift`, listing the
-`missing` and `unexpected` headers, and nothing is written. Confirm a new profile
-version for the new file; the dashboard opens that form with the unexpected headers
-prefilled.
-
-### Grade
-
-| Profile `costSource` | What it is | Grade |
-|---|---|---|
-| `vendor_reported` | The file's own cost column. | **B** |
-| `imputed` | Tokens only (Anthropic), priced from Floe's model catalog. | **D**, an estimate |
-
-An imputed (D) file is stored but is **never a true-up authority or a period-rate
-input**: the response says `trueUpAuthority: false` and `note: "imputed from catalog -
-not a true-up authority"`, and the month stays `invoice_pending` until a
-vendor-reported export, a billing connection or an invoice arrives. A console export is
-never `invoiced`: that status belongs to the invoice document.
-
-### Grain
-
-- **Token class on every row** (OpenAI's line item, Anthropic's token type): rows are
-  keyed exactly as the connector keys them, so the month's true-up per gateway row is
-  identical to an API month's.
-- **No token class** (daily per model): accepted at its own grain and labelled
-  **"blended per model"**: one period rate per model for the month. The
-  identical-to-the-API result does **not** hold for a blended file.
-- **One grain per vendor per month.** A month booked at another grain by another
-  export source is refused (`409 grain_conflict`); a month booked by another source is
-  refused (`409 month_booked_by_other_source`); a file mixing both grains is refused
-  (`422 mixed_grain`).
-
-### The API wins
-
-The API wins per **vendor-month**. If a billing connection has any cost data for the
-vendor in that month, the connector's figures stand for the whole month and the export
-counts only as a **tie-out check**, whichever arrives first. Rows on the days both cover
-are marked `tieOutOnly: true`. Connect the vendor after uploading an export, and the
-connector's figures supersede the export's through the ordinary true-up re-run: an open
-month is superseded; a locked month is restated in the next open period. The tie-out
-compares the export's total to the connector's over the days both cover: within
-+/-0.5% it is `tied`; beyond that it is `unexplained` and opens a
-`vendor_export_tie_out_unexplained` finding under **Needs review**. It never moves a
-dollar.
-
-### Other refusals
-
-| Code | Meaning |
-|---|---|
-| `422 rows_rejected` | Rows were refused; `reasons` counts them. Nothing imported. |
-| `422 month_not_closed` | The month hasn't ended plus the restatement window yet. |
-| `422 currency_unsupported` | Only USD is booked. The file is kept and the refusal recorded. |
-| `422 malformed_csv` / `empty_file` | The file isn't readable CSV, or has no header row. |
-| `409 window_overlap` | This source already has an import covering the month: send `mode=replace` to replace it. |
-| `409 replace_window_partial` | A replace must cover every import it overlaps. |
-| `413 too_large` | A file is at most 256 KiB. |
-
-### From the API
-
-Profiles are created and confirmed by a signed-in owner or admin in the dashboard.
-Uploading a month can also be done with a developer key (`floe_live_...`, admin role):
-
-```bash
-curl -X POST "https://credit-api.floelabs.xyz/v1/developer/vendor-exports/openai-console/imports?month=2026-09" \
-  -H "Authorization: Bearer $FLOE_DEVELOPER_KEY" \
-  -H "Content-Type: text/csv" \
-  --data-binary @openai-costs-2026-09.csv
-```
-
-Expected response (abridged):
-
-```json
-{
-  "duplicate": false,
-  "import": { "id": "...", "status": "imported", "profileVersion": 1, "rowCount": 412 },
-  "costSource": "vendor_reported",
-  "grade": "B",
-  "gradeReason": "vendor_reported",
-  "catalogVersion": null,
-  "trueUpAuthority": true,
-  "note": null,
-  "apiHoldsMonth": false,
-  "grain": "token_class",
-  "label": null,
-  "buckets": [ { "recordKind": "cost_bucket", "day": "2026-09-01", "costUsd": "41.25", "tieOutOnly": false } ],
-  "tieOuts": []
-}
-```
-
-`apiHoldsMonth` is true when the API holds this vendor-month: the file is kept as a tie-out check only.
-Uploading the same file again returns `"duplicate": true` and changes nothing.
-`GET /v1/developer/vendor-exports` lists your sources and the templates;
-`GET /v1/developer/vendor-exports/{slug}/imports` lists a source's current imports.
-
-## Related
-
-- [Vendor connections](vendor-connections.md): connecting a vendor's billing API.
-- [Vendor actuals](vendor-actuals.md): the statuses a reconciled leg can reach.
 
 ==============================================================================
 # Coverage Score
@@ -6698,708 +6484,6 @@ const { text } = await generateText({
 The dedicated Vercel-AI-SDK chatbot example has been retired. For a runnable AgentKit client that pays an x402 endpoint through the Floe proxy, see [`floe-cookbook/x402-client`](https://github.com/Floe-Labs/floe-cookbook/tree/main/x402-client), or browse the full [cookbook index](https://github.com/Floe-Labs/floe-cookbook) to pick the example closest to your stack.
 
 ==============================================================================
-# Coinbase AgentKit
-Source: docs/frameworks/agentkit.md
-URL: https://floe-labs.gitbook.io/docs/frameworks/agentkit.md
-==============================================================================
-
-# Coinbase AgentKit `GA`
-
-Native integration via `floeActionProvider()` (TypeScript) and `floe_action_provider()` (Python). Both expose the same 54 actions.
-
-## Install
-
-{% tabs %}
-{% tab title="TypeScript" %}
-```bash
-npm install floe-agent @coinbase/agentkit
-```
-{% endtab %}
-{% tab title="Python" %}
-```bash
-pip install floe-agentkit-actions coinbase-agentkit
-```
-{% endtab %}
-{% endtabs %}
-
-## Use
-
-{% tabs %}
-{% tab title="TypeScript" %}
-```typescript
-import { AgentKit } from "@coinbase/agentkit";
-import { floeActionProvider } from "floe-agent";
-
-const agentkit = await AgentKit.from({
-  walletProvider,
-  actionProviders: [floeActionProvider({ facilitatorApiKey: process.env.FLOE_API_KEY })],
-});
-```
-{% endtab %}
-{% tab title="Python" %}
-```python
-from coinbase_agentkit import AgentKit, AgentKitConfig
-from floe_agentkit_actions import floe_action_provider
-
-agentkit = AgentKit(AgentKitConfig(
-    wallet_provider=wallet_provider,
-    action_providers=[floe_action_provider(facilitator_api_key=FLOE_API_KEY)],
-))
-```
-{% endtab %}
-{% endtabs %}
-
-See [TypeScript SDK](../developers/agentkit-typescript.md) or [Python SDK](../developers/agentkit-python.md) for the full action reference.
-
-## Example
-
-The [`x402-client`](https://github.com/Floe-Labs/floe-cookbook/tree/main/x402-client) example wires AgentKit + Floe into an agent that pays an x402 endpoint through the proxy. Browse the [cookbook index](https://github.com/Floe-Labs/floe-cookbook) for more integrations across LangChain, CrewAI, MCP, and OpenAI Agents.
-
-==============================================================================
-# TypeScript SDK
-Source: docs/developers/agentkit-typescript.md
-URL: https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-typescript.md
-==============================================================================
-
-# TypeScript SDK
-
-The `floe-agent` package provides Coinbase AgentKit ActionProviders with **54 total actions** (30 in `FloeActionProvider` + 24 in `X402ActionProvider` — delegation, x402 payment, agent-awareness, merchant-allowlist, and Floe Inference) for Node.js / TypeScript environments.
-
-> **Naming convention:** All action names and parameters in the TypeScript SDK use **camelCase** (e.g., `borrowAmount`, `maxInterestRateBps`). The Python SDK uses **snake_case** for the same fields. Code examples are not interchangeable between SDKs without adjusting case.
-
-> **Live vs roadmap actions.** The live spend-layer actions are the x402 payment, agent-awareness, and spend-control actions. The credit-facility actions (`instantBorrow`, `repayAndReborrow`, `requestCredit`, `manualMatchCredit`, `checkCreditStatus`, `repayCredit`, `renewCreditLine`) belong to the **roadmap** on-chain credit product (self-custody) and are not the live way to fund an agent — see [Quickstart](../getting-started/quickstart.md).
-
-## Installation
-
-```bash
-npm install floe-agent @coinbase/agentkit viem zod
-```
-
-## Quick Start
-
-```typescript
-import { AgentKit } from "@coinbase/agentkit";
-import { floeActionProvider } from "floe-agent";
-
-const agentkit = await AgentKit.from({
-  walletProvider: myWalletProvider,
-  actionProviders: [
-    floeActionProvider(), // defaults to Base Mainnet
-  ],
-});
-```
-
-## Framework Integrations
-
-### Vercel AI SDK
-
-```typescript
-import { AgentKit } from "@coinbase/agentkit";
-import { getVercelAITools } from "@coinbase/agentkit-vercel-ai-sdk";
-import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
-import { floeActionProvider } from "floe-agent";
-
-const agentkit = await AgentKit.from({
-  walletProvider,
-  actionProviders: [floeActionProvider()],
-});
-
-const tools = await getVercelAITools(agentkit);
-
-const { text } = await generateText({
-  model: openai("gpt-4o"),
-  tools,
-  maxSteps: 10,
-  prompt: "Check the health of loan #42",
-});
-```
-
-### LangChain
-
-```typescript
-import { getLangChainTools } from "@coinbase/agentkit-langchain";
-
-const tools = await getLangChainTools(agentkit);
-// Pass tools to a LangChain agent
-```
-
-### MCP Server (Claude Desktop / Cursor)
-
-Wrap this provider's actions (30 with `floeActionProvider()` alone, 54 with `x402ActionProvider()` too) as MCP tools in Claude Desktop / Cursor. For the hosted server and its 88 tools — including agent lifecycle, key minting, and `x402_pay` — use [MCP Server](mcp-server.md) instead; it needs no wallet provider.
-
-```bash
-npm install @coinbase/agentkit-model-context-protocol @modelcontextprotocol/sdk
-```
-
-```typescript
-import { AgentKit } from "@coinbase/agentkit";
-import { getMcpTools } from "@coinbase/agentkit-model-context-protocol";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { floeActionProvider } from "floe-agent";
-
-const agentkit = await AgentKit.from({
-  walletProvider,
-  actionProviders: [floeActionProvider()],
-});
-
-const mcpTools = await getMcpTools(agentkit);
-const server = new McpServer({ name: "floe-lending", version: "1.0.0" });
-
-const transport = new StdioServerTransport();
-await server.connect(transport);
-```
-
-Configure in Claude Desktop (`claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "floe-lending": {
-      "command": "node",
-      "args": ["path/to/floe-mcp-server.js"],
-      "env": {
-        "PRIVATE_KEY": "${PRIVATE_KEY}",
-        "BASE_RPC_URL": "https://mainnet.base.org"
-      }
-    }
-  }
-}
-```
-
-> **Security:** Never hardcode private keys in config files. Use environment variable references (`${PRIVATE_KEY}`) and set the actual key in your shell environment. Never commit keys to version control.
-
-### OpenAI Agents SDK
-
-Use the `create-onchain-agent` scaffold:
-
-```bash
-npx create-onchain-agent@latest
-# Select "OpenAI Agents SDK" as framework
-```
-
-Then register `floeActionProvider()` alongside the built-in action providers.
-
-## CLI: `floe-agent`
-
-The package's CLI is the **`floe-agent`** bin: the SDK's command tree — agent lifecycle, keys, policies, limits, payments, observability — plus the interactive REPL whose `run` subcommand drives all 54 actions (30 Floe + 24 x402) through an LLM.
-
-> The `floe` bin name belongs to the standalone platform CLI, [`@floelabs/cli`](https://github.com/Floe-Labs/floe-cli) (`npx @floelabs/cli init`) — the full platform surface (setup, agents, keys, budgets, policies, billing, funds, phone, vendor actuals, metered calls; 35 commands), documented at [Floe CLI](cli.md). This package's CLI is invoked as `floe-agent` — the AgentKit-companion CLI for the agent-runtime SDK; since v0.6.1 it ships **only** that bin, and the commands below are otherwise unchanged. The interactive lending REPL (`floe-agent run`, the historical default) is lazy-loaded — management commands never pay its startup cost under `npx`.
-
-### Install
-
-```bash
-npm install -g floe-agent     # installs the `floe-agent` bin
-                              # or: npm run build && npm link
-```
-
-### Conventions
-
-Written for scripts and agents first, humans second.
-
-- **`--json` on every command.** Prints the raw API JSON to stdout — no spinner, no color, nothing else on stdout.
-- **Exit codes:** `0` ok · `1` error · `2` usage · `4` auth required · `5` payment required (402). Usage is validated *before* credentials, so a malformed command exits `2` whether or not a key is set.
-- **Never prompts when it is not a TTY.** Missing input exits `2` with usage instead of blocking; destructive prompts are skipped under `--json` or a non-interactive shell.
-- **`NO_COLOR` respected.**
-- **`User-Agent: floe-cli/<version>`** on every request to the Credit API.
-- **Keys are printed exactly once**, at mint or rotate time, and stored in the OS keychain. The CLI never echoes a key it did not just mint.
-- **`floe-agent pay` always sends an `Idempotency-Key`** (auto-generated UUID unless you pass one). The auto-generated UUID protects retries within a single invocation only — a rerun mints a fresh UUID. To rerun safely after a timeout or unknown outcome, pass the same `--idempotency-key` again.
-
-### Authentication
-
-| Variable | What it holds |
-|---|---|
-| `FLOE_API_KEY` | Management credential — a `floe_live_…` developer key or a `floe_…` agent key |
-| `FLOE_AGENT_KEY` | Optional `floe_…` agent-key override used by the payment commands |
-| `FLOE_API_URL` | Credit API base URL (default `https://credit-api.floelabs.xyz`) |
-| `PRIVATE_KEY` | Wallet key — EIP-191 signature-auth fallback, plus the legacy wallet flows and the REPL |
-
-Two credential planes resolve independently:
-
-**Management commands** (`status`, `agents`, `keys`, `policy`, `limit`, `allowlist`, `balance`, `fund`, `usage`, `activity`, `webhooks`) resolve in order:
-
-1. `FLOE_API_KEY`
-2. the key stored by `floe-agent auth set-key` (OS keychain)
-3. EIP-191 wallet-signature headers when `PRIVATE_KEY` is set
-
-**Payment commands** (`pay`, `estimate`, `forecast`) resolve in order:
-
-1. `FLOE_AGENT_KEY`
-2. the active agent's key from the OS keychain
-3. `FLOE_API_KEY` when it is a `floe_` agent key
-
-None of the above → exit `4` with a pointer to the dashboard.
-
-```bash
-floe-agent auth status --json          # which credential each plane would use
-floe-agent auth set-key floe_live_...  # store the developer key in the OS keychain
-```
-
-> **Keychain storage.** Agent keys are kept in the OS credential store (macOS Keychain, Windows Credential Manager, Linux Secret Service) under `<agentName>@<facilitatorUrl>`; the developer key is stored under `@developer`. On headless machines without a session keyring the CLI falls back to environment variables — `FLOE_AGENT_KEY_<NAME>__<HOST>` (or the legacy `FLOE_AGENT_KEY_<NAME>`) — and prints a one-time warning that the secret is not persisted.
-
-### Platform commands
-
-#### Setup & status
-
-| Command | What it does |
-|---|---|
-| `floe-agent status [--json]` | One-shot probe: verifies the credential, reads `GET /v1/capabilities`, and prints a balance snapshot. Falls back to the agent plane when only a runtime key is present. |
-| `floe-agent auth status \| set-key [key] [--json]` | Report or store the developer key. Non-TTY `set-key` requires the key as an argument. |
-| `floe-agent mcp install [--json]` | Runs `npx -y add-mcp https://mcp.floelabs.xyz/mcp`; on failure prints the manual MCP JSON config and the `claude mcp add` one-liner. Configs carry the URL only, never a key. |
-| `floe-agent skills install [--json]` | Installs the `floe-budget` skill to `./.claude/skills/floe-budget/SKILL.md` and `~/.agents/skills/floe-budget/SKILL.md`. Idempotent. |
-
-#### Agents & runtime keys (developer key)
-
-| Command | What it does |
-|---|---|
-| `floe-agent agents create --name <name> [--borrow-limit <usd>] [--max-rate-bps <n>] [--expiry-days <n>] [--json]` | `POST /v1/developer/agents` — provisions the managed wallet and the on-chain delegation; the account's first agent also receives the **$3 welcome credit**. Prints the agent id and deposit address. Omit `--borrow-limit` for the pay-as-you-go default. |
-| `floe-agent agents list [--json]` | Every agent on the account, from the API. |
-| `floe-agent agents get\|pause\|resume\|close <agentId> [--json]` | Agent detail, the per-agent kill-switch, and permanent close. |
-| `floe-agent agents [--json]` | Bare `agents` lists the **local** registry from `.floe-agent.json` (back-compat) — use `floe-agent agents list` for the server view. |
-| `floe-agent agents keys create <agentId\|name> [--budget <usd>] [--window-seconds <s>] [--label <l>] [--json]` | Mints a `floe_…` runtime key. Plaintext is shown once and stored in the keychain. `--budget` sets a fail-closed rolling per-key cap. |
-| `floe-agent agents keys rotate <agentId\|name> [--key-id <id>] [--label <l>] [--json]` | Atomic revoke + mint. The replacement key is shown once. |
-| `floe-agent agents keys revoke <agentId\|name> [--key-id <id>] [--json]` | Revokes a runtime key immediately. |
-| `floe-agent keys create\|list\|rotate\|revoke [keyId] [--label <l>] [--permissions read\|read_write] [--json]` | Developer (`floe_live_…`) keys on `/v1/developer/keys`. |
-| `floe-agent fund <agentId> [--json]` | The funding handoff: prints the dashboard link where the human adds money by card, Apple Pay, Google Pay, or bank transfer, plus the machine-readable settlement contract (deposit address, chain `8453`, `USDC`) for programmatic treasuries. The agent hands this to a human; it never moves money itself. |
-
-#### Guardrails
-
-| Command | What it does |
-|---|---|
-| `floe-agent limit get\|set\|clear [<usd>] [--agent <id>] [--json]` | Session spend cap. `--agent` takes a **numeric** agent id and is required when using developer credentials. |
-| `floe-agent policy list [--agent <id>\|--team] [--include-revoked] [--json]` | Spend policies for one agent or the team. `--include-revoked` also returns retired rows. |
-| `floe-agent policy set --kind <task\|api\|vendor\|session> --match <key> (--limit <usd> \| --limit-raw <raw>) [--match-kind <k>] [--window-kind once\|rolling] [--window-seconds <s>] [--label <l>] [--action block\|suspend_agent] [--agent <id>\|--team] [--json]` | Create a policy. `kind=session` is team-scope only — the per-agent equivalent is `floe-agent limit set`. |
-| `floe-agent policy delete <policyId> [--agent <id>\|--team] [--json]` | Remove a policy. |
-| `floe-agent policy reset <policyId> [--agent <id>] [--json]` | Reset a policy's accrued window. Not available on team policies — delete and re-create instead. |
-| `floe-agent allowlist mode [off\|host\|vendor\|both] [--agent <id>] [--json]` | Read or set merchant-allowlist enforcement. |
-| `floe-agent allowlist add <host\|payee> [--kind api\|vendor] (--limit <usd> \| --limit-raw <raw>) [--match-kind host_exact\|host_suffix\|recipient] [--agent <id>] [--json]` | Add an allowed-and-capped entry. Allowlist entries are always capped. |
-| `floe-agent allowlist remove <policyId> [--agent <id>] [--json]` · `floe-agent allowlist list [--agent <id>] [--json]` | Remove or list entries. |
-
-Semantics for every cap and window live in [Spend Controls](spend-controls.md).
-
-#### Spending (agent key)
-
-| Command | What it does |
-|---|---|
-| `floe-agent estimate <url> [--method <M>] [--json]` | `POST /v1/x402/estimate` — price one call and reflect it against available credit. Nothing is spent. |
-| `floe-agent forecast <url> [<url>…] [--count <n per url>] [--task-id <id>] [--json]` | `POST /v1/x402/forecast` — batch cost projection + policy preflight for a plan of up to 50 calls. |
-| `floe-agent pay <url> [--method <M>] [--body <raw>] [--header "K: V"]… [--task-id <id>] [--idempotency-key <k>] [--json]` | `POST /v1/proxy/fetch` — Floe pays the vendor and returns its response plus the `X-Floe-*` metering headers. Exit `5` on `402`. `--header` repeats. |
-| `floe-agent balance [--json]` | Developer rollup with a developer key; the agent's own balance with a runtime key. |
-
-#### Observability
-
-| Command | What it does |
-|---|---|
-| `floe-agent models [--json]` | The Floe Inference model catalog (`GET /v1/models`). |
-| `floe-agent usage [--json]` | Spend/usage analytics summary for the account. |
-| `floe-agent activity [--limit <n>] [--json]` | Unified activity feed — proxy calls, transfers, onramps, loan events. |
-| `floe-agent webhooks create --url <https-url> --events <e1,e2> [--scope global\|wallet\|loan --scope-value <v>] [--description <d>] [--json]` | Register a webhook. The signing secret is returned once. |
-| `floe-agent webhooks list [--json]` · `floe-agent webhooks test\|rotate-secret\|deliveries <webhookId> [--json]` | List, send a signed test delivery, rotate the secret, inspect deliveries. |
-
-Event catalog and signature verification: [Webhooks](webhooks.md).
-
-### A full bootstrap, headless
-
-```bash
-export FLOE_API_KEY=floe_live_...
-
-floe-agent status --json                                    # exit 4 if the key is bad
-AGENT_ID=$(floe-agent agents create --name research-bot --json | jq -r .agentId)
-AGENT_KEY=$(floe-agent agents keys create "$AGENT_ID" --budget 5 --json | jq -r .key)
-
-floe-agent limit set 5 --agent "$AGENT_ID"                  # session cap
-floe-agent policy set --kind api --match api.exa.ai --limit 2 \
-  --window-kind rolling --window-seconds 86400 --agent "$AGENT_ID"
-
-export FLOE_AGENT_KEY="$AGENT_KEY"
-floe-agent estimate https://api.exa.ai/contents --method POST --json
-floe-agent pay https://api.exa.ai/contents --method POST \
-  --body '{"urls":["https://example.com"],"text":true}' --json
-```
-
-Exit `5` from that last command means a `402` — inspect the JSON error before reacting. `insufficient_balance` means the balance is exhausted: run `floe-agent fund "$AGENT_ID"` and hand the output to a human. `spend_limit_exceeded` or `policy_exceeded` means the caps set above tripped — a guardrail doing its job, which calls for a human or policy decision, not funding.
-
-### Agent-workflow subcommands
-
-| Command | Purpose |
-|---|---|
-| `floe-agent run [--agent <name>]` | Interactive REPL. Default when no subcommand is given. Uses `--agent`, then `activeAgent`, then a single registered agent. |
-| `floe-agent register --name <name>` | Provision a new Floe agent (server-managed Privy wallet + on-chain delegation) and mint a `floe_*` key. The key is stored in your OS keychain and printed once. Optional: `--borrow-limit <usdc>`, `--max-rate-bps <n>`, `--expiry-days <n>`, `--facilitator-url <url>`. |
-| `floe-agent agents` | List registered agents and whether each has its API key in the keychain. |
-| `floe-agent use <name>` | Set the active agent (persisted in `.floe-agent.json`). |
-| `floe-agent rotate <name>` | Atomically rotate the agent's API key — old key revoked + new key minted in one transaction. New key replaces the keychain entry. |
-| `floe-agent revoke <name>` | Revoke the agent's API key server-side and remove the local keychain entry. |
-| `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Optional — only for agents on credit-line funding. Pay-as-you-go agents (the default) pay through `/proxy/fetch` from their funded balance without opening a credit line. |
-
-> **`register` is not the same command as `agents create`.** `floe-agent agents create` is a thin headless API call (developer key, no local wallet or wallet signature, no local state) that provisions the agent only — mint its key separately with `floe-agent agents keys create`. `floe-agent register` is the original wallet-signature flow: it registers the agent, mints the first key, and records it in `.floe-agent.json` so `use`/`rotate`/`revoke` can find it by name. Both remain supported; agents should prefer `agents create` + `agents keys create`.
->
-> **Alias routing on `rotate` / `revoke`.** Top-level `floe-agent rotate <name>` and `floe-agent revoke <name>` take the developer-key path when headless credentials resolve, and fall back to the interactive wallet flow otherwise. Interactive `revoke` still asks for confirmation; the explicit `floe-agent agents keys revoke` never prompts. For an agent tracked in the local registry, both honor that record's persisted facilitator URL — `FLOE_API_URL` overrides it.
-
-### Setup flow (for `run`)
-
-The REPL prompts for:
-
-1. **Wallet provider** — Private Key (direct) or CDP Wallet (MPC managed)
-2. **AI provider** — OpenAI (GPT-4o), Anthropic (Claude), or Ollama (local)
-3. **RPC URL** — Custom Base Mainnet RPC (recommended for reliability)
-
-Configuration is saved to `.floe-agent.json` (wallet type + AI provider + agent registry, **not secrets**). API keys live in the OS keychain (macOS Keychain / Windows Credential Manager / Linux Secret Service) or, when no keyring backend is available, in `FLOE_AGENT_KEY_<UPPER_NAME>` environment variables.
-
-### Multi-agent registry
-
-One developer can register multiple agents (up to 5 per developer). Each gets its own scoped key. Typical flow:
-
-```bash
-floe-agent register --name research --borrow-limit 5000
-floe-agent register --name trading --borrow-limit 25000
-floe-agent agents          # list both
-floe-agent use trading     # mark trading as active
-floe-agent run             # REPL connects as trading agent
-floe-agent run --agent research  # override per session
-```
-
-### In-REPL commands
-
-| Command | Description |
-|---------|-------------|
-| `help` | Show available commands |
-| `wallet` | Display current wallet address |
-| `agents` | Show registered agents and the active one |
-| `config` | Show current configuration |
-| `save` | Save current config to `.floe-agent.json` |
-| `clear` | Clear conversation history |
-| `exit` | Exit the CLI |
-
-### Example Session
-
-```
-You: Check flash arb readiness
-  -> Shows fee, WETH liquidity, circuit breaker, SwapRouter status
-
-You: Deploy a FlashArbReceiver for me
-  -> Pre-flight checks, deploys contract, stores address in session
-
-You: Verify my FlashArbReceiver
-  -> Validates owner/LENDING_PROTOCOL/SWAP_ROUTER (no address needed)
-
-You: Execute a flash arb: borrow 0.01 WETH, swap WETH -> USDC tick spacing 100,
-     then USDC -> WETH tick spacing 100, min profit 0
-  -> Submits the flash arb transaction
-```
-
-## Wallet Providers
-
-| Provider | Use Case | Key Management |
-|----------|----------|----------------|
-| `CdpV2WalletProvider` | **Production** (recommended) | MPC server wallet via CDP API |
-| `CdpSmartWalletProvider` | **Gasless on Base** | Smart contract wallet, gas sponsorship |
-| `ViemWalletProvider` | **Development** | Raw private key in memory |
-| `PrivyWalletProvider` | **Embedded wallets** | Privy delegated/embedded wallets |
-
-> **Note:** Coinbase's [Agentic Wallet](https://docs.cdp.coinbase.com/agentic-wallet/docs/welcome) (CLI/MPC-based, send/trade only) is a different product and is NOT compatible with AgentKit ActionProviders. Floe actions require a full WalletProvider that can sign arbitrary contract calls.
-
-## Configuration
-
-```typescript
-floeActionProvider({
-  // Base Mainnet (default)
-  lendingIntentMatcherAddress: "0x17946cD3e180f82e632805e5549EC913330Bb175",
-  lendingViewsAddress: "0x9101027166bE205105a9E0c68d6F14f21f6c5003",
-
-  // Pre-configured market IDs for get_markets without arguments
-  knownMarketIds: ["0x..."],
-});
-```
-
-## Session State
-
-When you deploy via `deploy_flash_arb_receiver`, the contract address is stored on the provider instance. Subsequent calls to `flash_arb`, `get_flash_arb_balance`, and `verify_flash_arb_receiver` auto-use it — no need to pass the address again. Override anytime by passing `receiverAddress` explicitly.
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `PRIVATE_KEY` | Wallet private key (0x...) |
-| `CDP_API_KEY_NAME` | Coinbase CDP API key name |
-| `CDP_API_KEY_PRIVATE_KEY` | Coinbase CDP API private key |
-| `OPENAI_API_KEY` | OpenAI API key (for CLI) |
-| `ANTHROPIC_API_KEY` | Anthropic API key (for CLI) |
-| `BASE_RPC_URL` | Custom Base Mainnet RPC URL |
-
-## Examples
-
-### Chatbot (Vercel AI SDK + CdpWalletProvider)
-
-Full conversational agent on Base Mainnet with production MPC-managed keys:
-
-```bash
-cd examples
-cp .env.example .env  # fill in CDP_API_KEY_NAME, CDP_API_KEY_PRIVATE_KEY, OPENAI_API_KEY
-npx tsx chatbot.ts
-```
-
-### Standalone (No AI Framework)
-
-Call actions programmatically — useful for development and scripting:
-
-```bash
-cd examples
-cp .env.example .env  # fill in PRIVATE_KEY
-npx tsx standalone.ts
-```
-
-```typescript
-import { FloeActionProvider } from "floe-agent";
-
-const floe = new FloeActionProvider();
-const result = await floe.getMyLoans(walletProvider, {});
-console.log(result);
-```
-
-## Local Development
-
-Three ways to test without publishing to npm:
-
-### 1. `npm link` (live symlink)
-
-```bash
-# In agentkit-actions/
-npm run build && npm link
-
-# In your consumer project
-npm link floe-agent
-```
-
-### 2. `file:` protocol
-
-In your consumer's `package.json`:
-
-```json
-{
-  "dependencies": {
-    "floe-agent": "file:../agentkit-actions"
-  }
-}
-```
-
-### 3. `npm pack` (simulates real publish)
-
-```bash
-npm run build && npm pack
-# In consumer — substitute the actual tarball name printed by `npm pack`
-# (it tracks the package.json `version` field; today that's 0.6.2):
-npm install ../agentkit-actions/floe-agent-0.6.2.tgz
-```
-
-## Agent Awareness Actions (v0.3.0+)
-
-The `X402ActionProvider` now includes 9 actions that let an agent reason about its own credit before committing capital. Configure `facilitatorApiKey` to enable them:
-
-```typescript
-import { x402ActionProvider } from "floe-agent";
-
-const x402 = x402ActionProvider({
-  facilitatorUrl: "https://credit-api.floelabs.xyz/v1",
-  facilitatorApiKey: process.env.FLOE_AGENT_API_KEY,  // floe_*
-});
-```
-
-Tool names (the values passed to `@CreateAction({ name: ... })`, exposed to the LLM/MCP client as `snake_case` per Coinbase AgentKit convention — distinct from the camelCase TypeScript class methods that implement them): `get_credit_remaining`, `get_loan_state`, `get_spend_limit`, `set_spend_limit`, `clear_spend_limit`, `list_credit_thresholds`, `register_credit_threshold`, `delete_credit_threshold`, `estimate_x402_cost`. The corresponding class methods are `getCreditRemaining`, `getLoanState`, etc. See [Agent Awareness](agent-awareness.md) for the decision-loop pattern.
-
-## Source Code
-
-GitHub: [Floe-Labs/agentkit-actions](https://github.com/Floe-Labs/agentkit-actions)
-
-==============================================================================
-# Python SDK
-Source: docs/developers/agentkit-python.md
-URL: https://floe-labs.gitbook.io/docs/frameworks/agentkit/agentkit-python.md
-==============================================================================
-
-# Python SDK
-
-The `floe-agentkit-actions` package provides Coinbase AgentKit ActionProviders with **54 total actions** (30 in `FloeActionProvider` + 24 in `X402ActionProvider` — delegation, x402 payment, agent-awareness, merchant-allowlist, and Floe Inference) for Python 3.10+ environments.
-
-> **Parity note.** The Python SDK has full parity with the TypeScript SDK: 30 Floe actions plus 24 X402 actions (54 total). The credit-facility actions (`instant_borrow`, `repay_and_reborrow`, `request_credit`, `manual_match_credit`, `check_credit_status`, `repay_credit`, `renew_credit_line`) belong to the **roadmap** on-chain credit product (self-custody) — not the live spend layer — and are present in both SDKs. The live spend-layer actions are the x402 payment + agent-awareness + spend-control actions.
-
-> **Naming convention:** All action names and parameters in the Python SDK use **snake_case** (e.g., `borrow_amount`, `max_interest_rate_bps`). The TypeScript SDK uses camelCase for the same fields. Code examples are not interchangeable between SDKs without adjusting case.
-
-## Installation
-
-```bash
-# Core package
-pip install floe-agentkit-actions
-
-# With CLI support
-pip install floe-agentkit-actions[cli]
-
-# With LangChain integration
-pip install floe-agentkit-actions[langchain]
-```
-
-## Quick Start
-
-### As an AgentKit Provider
-
-```python
-from coinbase_agentkit import AgentKit, AgentKitConfig
-from floe_agentkit_actions import floe_action_provider
-
-agentkit = AgentKit(AgentKitConfig(
-    wallet_provider=wallet_provider,
-    action_providers=[floe_action_provider()],
-))
-```
-
-### Standalone Usage
-
-Call actions directly without an AI framework:
-
-```python
-from floe_agentkit_actions import floe_action_provider
-
-floe = floe_action_provider()
-result = floe.get_price(wallet_provider, {
-    "collateral_token": "0x4200000000000000000000000000000000000006",  # WETH
-    "loan_token": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",      # USDC
-})
-print(result)
-```
-
-## Framework Integrations
-
-### LangChain
-
-```python
-from floe_agentkit_actions.integrations.langchain import get_floe_langchain_tools
-
-tools = get_floe_langchain_tools(wallet_provider)
-# Pass tools to a LangChain agent
-```
-
-### OpenAI Function Calling
-
-```python
-from floe_agentkit_actions.integrations.openai_agents import get_floe_openai_tools
-
-tools = get_floe_openai_tools(wallet_provider)
-# Pass tools to an OpenAI Agents SDK agent
-```
-
-## CLI: `floe-agent`
-
-Interactive AI-powered DeFi agent with support for OpenAI, Claude, and Ollama, plus per-agent registration tooling.
-
-```bash
-# Install with CLI extras
-pip install floe-agentkit-actions[cli]
-
-# Default: interactive REPL
-floe-agent
-
-# Subcommands
-floe-agent register --name <name>   # Provision an agent + mint a floe_* key
-floe-agent agents                   # List registered agents
-floe-agent use <name>               # Set the active agent
-floe-agent rotate <name>            # Rotate the agent's API key
-floe-agent revoke <name>            # Revoke the agent's API key
-floe-agent open-credit-line --name <name> --deposit <usdc>   # Open the credit line
-floe-agent run --agent <name>       # REPL scoped to a specific agent
-```
-
-### Subcommands
-
-| Command | Purpose |
-|---|---|
-| `floe-agent run [--agent <name>]` | Interactive REPL. Default when no subcommand is given. Picks the agent from `--agent`, then `active_agent`, then the single registered agent if there's only one. |
-| `floe-agent register --name <name>` | Provision a Floe agent (server-managed Privy wallet + on-chain delegation) and mint a `floe_*` key. Key is stored in OS keychain and printed once. Flags: `--borrow-limit <usdc>`, `--max-rate-bps <n>`, `--expiry-days <n>`, `--facilitator-url <url>`. |
-| `floe-agent agents` | List registered agents and keychain status for each. |
-| `floe-agent use <name>` | Set the active agent (persisted in `.floe-agent.json`). |
-| `floe-agent rotate <name>` | Atomically rotate the agent's API key — old key revoked + new key minted server-side, keychain entry replaced. |
-| `floe-agent revoke <name>` | Revoke the agent's API key server-side and remove the local keychain entry. |
-| `floe-agent open-credit-line --name <name> --deposit <usdc>` | Open the USDC/USDC credit line for a previously-registered agent. Floe server-signs the borrow intent from the agent's Privy wallet (which must already hold the USDC deposit). Flags: `--max-ltv-bps <bps>` (1–9500, default 9500), `--max-rate-bps <bps>`. Required AFTER `register` before paid `/proxy/fetch` calls can succeed. |
-
-### Setup flow (for `run`)
-
-The REPL prompts for wallet provider, AI provider, and RPC URL. Configuration (wallet type + AI provider + agent registry, **not secrets**) is saved to `.floe-agent.json` and reused on subsequent runs. API keys live in the OS keychain via the [`keyring`](https://pypi.org/project/keyring/) package, or — when no keyring backend is available — in `FLOE_AGENT_KEY_<UPPER_NAME>` environment variables.
-
-### Multi-agent registry
-
-One developer can register up to five agents. Typical flow:
-
-```bash
-floe-agent register --name research --borrow-limit 5000
-floe-agent register --name trading --borrow-limit 25000
-floe-agent agents          # list both
-floe-agent use trading     # mark trading as active
-floe-agent run             # REPL connects as trading agent
-floe-agent run --agent research  # override per session
-```
-
-### Example Session
-
-> The lending/market interactions below are part of the **roadmap** on-chain credit product (self-custody), not the live spend layer. Rates shown are illustrative.
-
-```
-You: What markets are available?
-  -> Lists all Floe lending markets with rates, LTV bounds
-
-You: Post a lend intent for 100 USDC at my chosen rate
-  -> Auto-approves USDC, posts the lending offer on-chain
-
-You: Check the health of loan #42
-  -> Shows current LTV, liquidation threshold, buffer percentage
-```
-
-## Wallet Providers
-
-| Provider | Use Case |
-|----------|----------|
-| `EvmWalletProvider` | **Development / scripting** — raw private key |
-| `CdpWalletProvider` | **Production agents** — MPC-managed via CDP API |
-
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `PRIVATE_KEY` | Wallet private key (0x...) |
-| `CDP_API_KEY_NAME` | Coinbase CDP API key name |
-| `CDP_API_KEY_PRIVATE_KEY` | Coinbase CDP API secret |
-| `OPENAI_API_KEY` | OpenAI API key (for CLI) |
-| `ANTHROPIC_API_KEY` | Anthropic API key (for CLI) |
-| `BASE_RPC_URL` | Custom Base RPC URL (recommended) |
-
-## Development
-
-```bash
-# Install in editable mode with dev dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest
-```
-
-## Agent Awareness Actions (v0.3.0+)
-
-The `X402ActionProvider` now includes 9 actions that let an agent reason about its own credit before committing capital. Configure `facilitator_api_key` to enable them:
-
-```python
-from floe_agentkit_actions import x402_action_provider, X402Config
-
-x402 = x402_action_provider(X402Config(
-    facilitator_url="https://credit-api.floelabs.xyz/v1",
-    facilitator_api_key=os.environ["FLOE_AGENT_API_KEY"],  # floe_*
-))
-```
-
-Action names: `get_credit_remaining`, `get_loan_state`, `get_spend_limit`, `set_spend_limit`, `clear_spend_limit`, `list_credit_thresholds`, `register_credit_threshold`, `delete_credit_threshold`, `estimate_x402_cost`. See [Agent Awareness](agent-awareness.md) for the decision-loop pattern.
-
-## Source Code
-
-GitHub: [Floe-Labs/agentkit-actions-py](https://github.com/Floe-Labs/agentkit-actions-py)
-
-==============================================================================
 # Developer Dashboard
 Source: docs/developers/developer-dashboard.md
 URL: https://floe-labs.gitbook.io/docs/developers/developer-dashboard.md
@@ -7437,7 +6521,7 @@ Create and manage agents — **how many depends on your plan** (see [plans](../r
 2. **Fund Agent** — Add funds by card, Apple Pay, Google Pay, bank transfer, or a USDC deposit from the agent's **Balance & funding** tab or from **Plan & billing → Funding**. No crypto bridges needed. See [Add funds](#add-funds).
 3. **Mint API Key** — Once the agent shows `active`, click **Reveal API Key** to mint the agent's `floe_*` runtime key. It is shown once — copy it immediately. To rotate, click **Rotate** (revokes the old key and mints a new one atomically).
 
-The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), with the full fleet surface on the same bin — `floe agents list|get|create|pause|resume|close|lock` — or `npx floe-agent register --name <name>` (TypeScript SDK) / `floe-agent register --name <name>` (Python SDK). See [agentkit-typescript](agentkit-typescript.md#cli-floe-agent) / [agentkit-python](agentkit-python.md#cli-floe-agent).
+The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), with the full fleet surface on the same bin — `floe agents list|get|create|pause|resume|close|lock` — or `npx floe-agent register --name <name>` (TypeScript SDK) / `floe-agent register --name <name>` (Python SDK).
 
 Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `closed`), USDC balance (live), credit limit, delegation expiry, and active loans.
 
@@ -8029,7 +7113,7 @@ Every response carries `X-Floe-Cost-USDC`. One key meters chat, embeddings, spee
 
 **npm:** `@floelabs/cli` (v0.2.0) · **bin:** `floe` · **GitHub:** [Floe-Labs/floe-cli](https://github.com/Floe-Labs/floe-cli)
 
-> **Two bins, one platform.** `@floelabs/cli` (bin `floe`) is the Floe platform CLI — the whole surface, from onboarding to policies to payments, documented on this page. The **`floe-agent`** bin, shipped by the `floe-agent` SDK package, is the **AgentKit-companion CLI** for the agent-runtime SDK: its command tree and the interactive REPL live at [TypeScript SDK → CLI](agentkit-typescript.md#cli-floe-agent). Use `floe` unless you are working inside the AgentKit SDK workflow.
+> **Recommended CLI.** `@floelabs/cli` (bin `floe`) is the Floe platform CLI — the whole surface, from onboarding to policies to payments, documented on this page. Use `floe` for new integrations. The separate **`floe-agent`** bin belongs to the `floe-agent` AgentKit SDK package, which is being deprecated.
 
 ---
 
@@ -8598,7 +7682,7 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
 | `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: 46 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (16: `billing.*`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
+Events: 48 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (18: `billing.*`, `client_margin.negative`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`, `unmapped_api_key_spend`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
 floe webhooks create https://api.acme.com/hooks/floe --events 'call.*,marketplace.payment.settled'
@@ -8742,7 +7826,6 @@ Headless / CI: set the env vars — they always win over the keychain.
 - [Add Floe to your existing pipeline](../getting-started/integrate-existing-pipeline.md) — where the base-URL swap goes
 - [Spend Controls](spend-controls.md) — what `budget`, `policy`, and `allowlist` enforce server-side
 - [MCP Server](mcp-server.md) — the same platform as MCP tools, for clients that prefer tool calls
-- [TypeScript SDK → CLI](agentkit-typescript.md#cli-floe-agent) — the `floe-agent` AgentKit-companion CLI
 
 ==============================================================================
 # API Keys
@@ -10188,7 +9271,7 @@ Developer key.
 |------|-------------|
 | `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
-| `list_webhook_events` | The live event catalog: 46 events with name, title, description, category, and scope |
+| `list_webhook_events` | The live event catalog: 48 events with name, title, description, category, and scope |
 | `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
 | `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
 | `delete_webhook` | Delete an endpoint permanently |
@@ -10752,7 +9835,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **46 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **48 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -10841,6 +9924,7 @@ Account-level events — no agent attribution. They reach a `global` webhook, or
 | `billing.invoice.paid` | A Floe plan invoice was paid — carries the amount and the hosted invoice link |
 | `billing.renewal_upcoming` | Your plan renews soon — carries the amount due and the end of the current period |
 | `billing.usage_threshold` | Month-to-date tracked spend crossed 80% or 100% of your plan's cap — informational, nothing is blocked |
+| `client_margin.negative` | A billing period closed with revenue below its reconciled cost for a client — carries revenue, cost and margin from the close snapshot, so they match the statement |
 | `client_invoice.sent` | A client invoice was sent through your connected Stripe account |
 | `client_invoice.paid` | A client paid an invoice issued from your connected Stripe account |
 | `client_invoice.voided` | A client invoice was voided in Stripe and will not be collected |
@@ -10852,6 +9936,57 @@ Account-level events — no agent attribution. They reach a `global` webhook, or
 | `vendor_actuals.close_gate_overridden` | An account owner closed a billing period while some vendor costs were still unconfirmed |
 | `stripe.connected` | A Stripe account was connected for client invoicing |
 | `stripe.disconnected` | The connected Stripe account was disconnected — client invoicing pauses until it is reconnected |
+| `unmapped_api_key_spend` | An API key in your gateway logs has no team or initiative mapping, and its spend reached your alert floor — sent once per key (see [below](#unmapped_api_key_spend)) |
+
+#### `unmapped_api_key_spend`
+
+An API key from an imported gateway log (for example a LiteLLM or OpenRouter key) has no team or initiative mapping, so its spend sits in **Unassigned**. Floe tells you once, so you can map it before the period closes.
+
+* **When it fires.** When you import gateway logs that take the key's cumulative spend to your account's alert floor (default **$5**; set `unmappedKeyAlertFloorMicro` with `PUT /v1/developer/attribution/settings`, or in the dashboard). It goes out as soon as that import lands, before the spend is settled, so the amount is **estimated** (`basis: "estimated"`). If a send fails, Floe retries it within the hour.
+* **Once per key.** A key is never alerted twice. It never fires for a key that is already mapped or that you dismissed (`POST /v1/developer/attribution/unmapped-keys/dismiss`, with a reason). Mapping or dismissing the key also drops it from the weekly digest. The weekly digest lists every unmapped key on settled spend. It is **email only**: it has no webhook.
+* **Email recipients.** The alert email goes to the account owner and admins. If the key has an open proposal to move it into a team, that team's owners get it too. The webhook goes to your subscribed endpoints as usual.
+* **Category and scope.** `billing`, account-scoped, like the other events in this table.
+* **Subscribe by name or `*`.** The name has no dotted prefix, so no `<prefix>.*` wildcard covers it.
+
+```json
+{
+  "event": "unmapped_api_key_spend",
+  "accountId": "acct_...",
+  "basis": "estimated",
+  "connection": "litellm-prod",
+  "keyLabel": "sk-1a2b3",
+  "spend": {
+    "micro": "6300000",
+    "display": "$6.30",
+    "grade": "D",
+    "gradeMix": {
+      "A": { "micro": "0", "display": "$0.00" },
+      "B": { "micro": "0", "display": "$0.00" },
+      "C": { "micro": "0", "display": "$0.00" },
+      "D": { "micro": "6300000", "display": "$6.30" }
+    }
+  },
+  "floor": { "micro": "5000000", "display": "$5.00" },
+  "throughDay": "2026-10-01",
+  "firstSeenDay": "2026-09-28",
+  "proposalId": null,
+  "link": "https://dev-dashboard.floelabs.xyz/quarantine?period=2026-10",
+  "firedAt": "2026-10-02T01:00:00.000Z"
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `accountId` | Your public `acct_…` account ID |
+| `basis` | Always `estimated`: the total of the key's raw gateway log rows, not yet settled |
+| `connection` | The gateway connection the key's rows came from (its slug) |
+| `keyLabel` | The key's first 8 characters. The key itself never leaves Floe |
+| `spend` | The key's spend through `throughDay`, in integer micro-USD (`micro`) and as text (`display`). `grade` is the lowest confidence grade among its entries, and `gradeMix` splits the amount by grade. Gateway-log spend is an **estimate, grade D** (not invoiced), unless the gateway itself bills you |
+| `floor` | Your alert floor when the alert fired |
+| `throughDay` | The latest day in the key's gateway log rows |
+| `firstSeenDay` | The first day the key appears in your gateway logs |
+| `proposalId` | The open mapping proposal for the key, or `null` when there is none |
+| `link` | The dashboard page to map the key: the proposal when there is one, otherwise the Quarantine page for that month. It carries only the proposal ID |
 
 ### Wildcard subscriptions
 
@@ -13972,16 +13107,14 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
-### Unreleased — Vendor key scopes and the read-only console export (pending the floe-monorepo L1.10 release)
+### Unreleased — Unmapped API key spend alert (pending the floe-monorepo L1.6 release)
 
-Before anyone pastes a vendor key, Floe now says how much power that key carries, and offers a read-only way in where the only key is an admin key.
+Spend from a gateway API key that nobody has mapped to a team or initiative lands in **Unassigned**. Floe now tells you about it.
 
-* **Credential scope per connector.** The connector catalog (`GET /v1/developer/vendor-connections`, `connectors[].credentialScope`) declares each vendor's scope (`read_only`, `admin`, `unverified`, `none`), the narrowest key the vendor offers, the vendor doc pages it was read from, and the date checked. `unverified` means the vendor's docs didn't say; Floe doesn't guess. Payroll connections list theirs as `credentialScopes`. The dashboard shows it in the connect form and lists which key each vendor needs on **Vendor actuals**.
-* **The console cost export for OpenAI and Anthropic.** Their cost APIs need an admin key. Right beside the admin-key field, the connect form offers the console's monthly cost export instead (`/v1/developer/vendor-exports`). A signed-in owner or admin confirms the header profile once per version; a file whose headers differ is refused (`422 header_drift`, missing and unexpected headers listed) and nothing is written.
-* **Graded and labelled.** The file's own cost column is grade B. Tokens priced from Floe's catalog are grade D, stored but never a true-up authority, so the month stays invoice-pending. A file without a token class books at its own grain, labelled "blended per model"; one grain per vendor per month.
-* **The API wins.** Where a billing connection has cost data for the same vendor-month, its figures stand for the whole month and the export becomes a tie-out check; a gap beyond ±0.5% over the days both cover opens a `vendor_export_tie_out_unexplained` finding.
-
-→ [Vendor key scopes & the read-only export](build/vendor-credential-scopes.md) · [Vendor connections](build/vendor-connections.md)
+* **New webhook event: `unmapped_api_key_spend`** (category `billing`, account-scoped). Fires once per key, as soon as the gateway import that takes the key's cumulative spend to your account's alert floor (default **$5**) lands. The amount is estimated (`basis: "estimated"`): it is sent before the spend is settled. It stops when the key is mapped or dismissed. Subscribe by name or `*`: no `<prefix>.*` wildcard covers it. See [Webhooks](developers/webhooks.md#unmapped_api_key_spend).
+* **Payload.** `accountId`, `basis`, `connection`, `keyLabel` (the key's first 8 characters, never the key), `spend` (`micro`, `display`, `grade`, `gradeMix`), `floor` (`micro`, `display`), `throughDay`, `firstSeenDay`, `proposalId` (or `null`) and `link`. Gateway-log spend is an estimate, grade D, unless the gateway itself bills you.
+* **Weekly digest is email only.** The digest of every unmapped key, on settled spend, goes to account owners and admins by email; it has no webhook. The first-alert email also goes to the owners of the team a key is proposed into.
+* **Catalog:** 48 events (was 46 in these docs; the count now also includes `client_margin.negative`).
 
 ### v1.28.0 — Outcome units on rate cards (September 2026)
 
