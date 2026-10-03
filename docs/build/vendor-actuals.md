@@ -48,17 +48,28 @@ The close clock measures how long the month-end close takes once the vendors' fi
 
 ### Settlement modes
 
-The clock waits only for spend that a vendor still has to confirm. Each biller (`billed_by`) is declared with one settlement mode:
+The clock waits only for spend that a vendor still has to confirm. Each payer is given one settlement mode **per (vendor, cost source)**: `billed_by`, plus whether the row is priced by the billing vendor's own figure (`vendor_reported`) or by the gateway's estimate (`gateway_computed`).
 
 | Mode | Means | The clock |
 |---|---|---|
 | `invoiced` | The vendor sends an invoice | waits until the vendor lands: its invoice received, or every declared source final, whichever comes first |
-| `bucket` | A monthly summary source (a compute or other-cost file) | waits until the vendor lands: its invoice received, or every declared source final, whichever comes first |
+| `bucket` | A monthly summary source (a compute or other-cost file), or a prepaid pool tie-out | waits until the vendor lands: its invoice received, or every declared source final, whichever comes first |
 | `final_at_settlement` | Final when Floe settles the day (Floe-billed spend, a model declared free or self-hosted) | never waits for it |
 
-* **Where it is declared.** On the row, as `settlement_mode` (canonical gateway-export contract v3), or on the connection profile, as `settlementModes` (per `billed_by`) on `POST /v1/developer/ext-gateway/connections/:slug/profile-versions`.
-* **Defaults.** Vendors Floe has a cost connector for, and OpenRouter, are `invoiced`. Models the profile declares free or self-hosted are `final_at_settlement`.
-* **Undeclared is refused.** A gateway row whose biller has no mode is refused at import with `settlement_mode_undeclared`. A row whose mode contradicts the profile is refused with `conflicting_settlement_mode`, and an unknown value with `invalid_settlement_mode`.
+* **Where it is declared.** On the row, as `settlement_mode` (canonical gateway-export contract v3), or on the connection profile, as `settlementModes: [{ billedBy, costSource?, mode }]` on `POST /v1/developer/ext-gateway/connections/:slug/profile-versions` (`costSource` left out = either source; `mode: null` removes the declaration). Modes are read when used, so a declaration applies to rows already imported.
+* **Seeded defaults.** Without a declaration, Floe applies a seeded default. Each one is marked **default, unverified** on the connection profile (`settlementModeDefaults`) until you declare the payer yourself:
+
+| Payer (`billed_by`) | Cost source | Default mode |
+|---|---|---|
+| `openai`, `anthropic`, `vertex_ai`, `bedrock`, `azure_openai`, `groq`, `mistral`, `together`, `fireworks`, `cohere` | either | `invoiced` |
+| Vendors Floe has a cost connector for | either | `invoiced` |
+| `openrouter` | priced by OpenRouter (`vendor_reported`) | `final_at_settlement` |
+| `openrouter` | priced by the gateway (`gateway_computed`) | `bucket` (waits for the month's OpenRouter pool tie-out) |
+| `ollama`, `vllm` | either | `final_at_settlement` |
+
+* **Models declared free or self-hosted** on the profile are `final_at_settlement`.
+* **An undeclared payer's rows are held, not refused.** A gateway row whose payer has no mode (no row value, no declaration, no default) is imported **quarantined**: it is stored but not on the ledger. The period's completeness gets the reason `undeclared_payer`, with the rows, their cost and the payers. The figure is a **lower bound** (cost is missing), and the reason **blocks the lock** unless the owner overrides it with a reason. Declaring the payer on the connection releases the rows into the ledger with **no re-upload**. Rows in a locked month come in as a restatement in the next open period. Each gateway import reports what it held under `quarantinedPayer`.
+* **Bad values are still refused per row.** A row whose own `settlement_mode` is not one of the three modes is refused with `invalid_settlement_mode`. A row whose value contradicts the profile's declaration is refused with `conflicting_settlement_mode`.
 
 The clock is a measure of the close, not of the money: it never changes a figure on the ledger.
 
