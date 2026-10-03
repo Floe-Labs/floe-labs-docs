@@ -30,8 +30,11 @@ gated the same way: per-leg and by-call cost, plus findings, are **free**
 ## Setting one up
 
 You connect a vendor from the **connect flow in the [dashboard](https://dev-dashboard.floelabs.xyz)**.
-It lists the vendors Floe can reconcile, walks you through the exact **read-only**
-scope each one needs, and verifies the credential live before anything trusts it.
+It lists the vendors Floe can reconcile, shows how much power each vendor's key
+carries and the narrowest key the vendor offers, and verifies the credential live
+before anything trusts it. Some vendors (OpenAI, Anthropic) only issue an **admin**
+key for cost data; for those, the form offers the vendor console's cost export as
+the read-only way in. See [Vendor key scopes & the read-only export](vendor-credential-scopes.md).
 Once connected, that vendor's costs flow onto your ledger automatically. Where a
 vendor publishes no cost API, you upload its invoice instead and Floe reconciles
 against that.
@@ -50,5 +53,6 @@ Removal is non-destructive: the costs already reconciled onto your ledger stay
 ## Related
 
 - [Vendor actuals — reconcile to the vendor's records](vendor-actuals.md) — what these connections feed, leg by leg, with a status per claim.
+- [Vendor key scopes & the read-only export](vendor-credential-scopes.md) — which key each vendor needs, and the console cost export for admin-key vendors.
 - [Coverage Score](coverage-score.md) — how much of your spend Floe can act on, a different question from what it cost.
 - [Plans & entitlements](../reference/plans.md) — where `vendor_connections` sits.
