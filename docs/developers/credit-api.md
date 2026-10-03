@@ -1266,6 +1266,95 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/42/open-credit
 
 ---
 
+## Initiative Ledger Endpoints
+
+The read and setup surface of the [Initiative Ledger](../ledger/overview.md). The concept pages explain what these return: [overview](../ledger/overview.md), [cost attribution & quarantine](../ledger/cost-attribution.md), [period close & restatements](../ledger/period-close.md) and [counterparty sharing](../ledger/counterparty-sharing.md). Those pages also cover the attribution, close and case-management routes, and the [OpenAPI spec](https://credit-api.floelabs.xyz/.well-known/openapi.yaml) has every request and response field.
+
+`/v1/developer/*` routes take a developer credential: a `floe_live_` key or the dashboard session. An agent key (`floe_…`) is refused with `403 developer_credential_required`. An initiative or entry belonging to another account answers `404`, the same as one that doesn't exist.
+
+### GET /v1/developer/initiatives
+
+The account's initiatives, newest first. `?limit` is 1–200 (default 100). Any account member can call it.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/initiatives" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "initiatives": [
+    {
+      "id": "init_0123456789abcdef01234567",
+      "name": "Support assistant",
+      "status": "active",
+      "membershipMode": "account",
+      "createdAt": "2026-09-30T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+`status` is `draft`, `active` or `closed`. `membershipMode` is `account` (any account member with the member role or above may write) or `members` (only the initiative's owners and contributors may write).
+
+### POST /v1/developer/initiatives
+
+Create an initiative. Needs the member role or above.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | 1–200 characters. |
+| `ownerMemberId` | number | No | API-key calls only. Names the account member who owns it; the initiative is then in `members` mode. Without it, an API key creates an `account`-mode initiative. A signed-in person always becomes the owner of what they create. |
+
+Returns `201 { "initiative": { … } }` with the fields above. Errors: `400 invalid_request`, `422 not_account_member` / `member_is_viewer`.
+
+### GET /v1/developer/initiatives/:id
+
+One initiative by its `init_…` id, as `{ "initiative": { … } }`. Returns `404 initiative_not_found` if it doesn't exist or belongs to another account.
+
+### GET /v1/developer/ledger/entries
+
+An initiative's current entries. A superseded entry is left out; you can still read it by id. Results are newest period first.
+
+| Query | Required | Description |
+|---|---|---|
+| `initiative` | Yes | `init_…` id |
+| `period` | No | `YYYY-MM` or `YYYY-Www`. With it, the response adds `periodCompleteness`. |
+| `type` | No | `cost`, `value`, `baseline`, `forecast` or `assumption` |
+| `limit` | No | 1–500, default 100 |
+
+Returns `{ "entries": [LedgerEntry], "hasMore": boolean, "periodCompleteness"? }`. Errors: `400 invalid_request` (`field` names the bad parameter), `404 initiative_not_found`. The entry fields are described in [The Initiative Ledger → Entries](../ledger/overview.md#entries).
+
+### GET /v1/developer/ledger/entries/:id
+
+One entry, current or superseded, and the entries its lineage names, resolved one level deep. Returns `{ "entry", "inputs", "unresolvedInputIds", "supersededBy", "restatedBy", "periodCompleteness" }`, or `404 entry_not_found`.
+
+Corrections go through `POST /v1/developer/ledger/entries/:id/supersede` (open period) and `…/restate` (locked period). See [Period close & restatements](../ledger/period-close.md#correcting-a-figure).
+
+### Case endpoints (buyer)
+
+These routes are for the buyer's side of a [shared case](../ledger/counterparty-sharing.md). They don't take a Floe key or the dashboard session.
+
+`POST /v1/case/session` exchanges a case link (`{ "token": "csh_…" }`) and an access token from the case page's email sign-in (`Authorization: Bearer …`) for the `floe_case_session` cookie (HttpOnly, Secure, `SameSite=Lax`, `Path=/v1/case`, 8 hours). Every other route needs that cookie plus `X-Floe-Case-Link` (the SHA-256 hex digest of the `csh_` token). Sign-in is browser-only. See [How the case session works](../ledger/counterparty-sharing.md#how-the-case-session-works).
+
+| Route | Role | What it does |
+|---|---|---|
+| `POST /v1/case/session` | invited buyer | Open the case session |
+| `GET /v1/case` | any buyer | The case, the member, and every assumption with its owner and value per scenario |
+| `GET /v1/case/journal` | any buyer | Value revisions, ownership changes, approvals and refused writes on this case |
+| `PUT /v1/case/assumptions/:key/value` | `buyer_finance`, owner of the key | Declare this case's value |
+| `POST /v1/case/assumptions/:key/proposals` | `buyer_finance` | Propose a value on a key you don't own |
+| `GET /v1/case/proposals` | any buyer | Proposals on this case that the buyer can see |
+| `POST /v1/case/proposals/:proposalId/accept` · `/reject` · `/withdraw` | `buyer_finance` | Decide a proposal on your key, or withdraw your own |
+| `POST /v1/case/assumptions/:key/approve` | `buyer_finance` | Approve the vendor value shown for a scenario (`{ scenario, entryId }`) |
+| `POST /v1/case/logout` | any buyer | Clear the session |
+
+Any check that fails (an unknown, revoked or expired link, or no active membership) returns the same `404 case_not_found`. A `buyer_viewer` attempting a write gets `403`.
+
+---
+
 ## Agent Endpoints
 
 These endpoints are called by an agent (using its `floe_*` key) to manage itself.

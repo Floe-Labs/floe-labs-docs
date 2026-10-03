@@ -10,6 +10,18 @@ Notable changes and updates to the Floe protocol.
 
 ## Version History
 
+### v1.29.0 — The Initiative Ledger docs (October 2026)
+
+A new **Initiative Ledger** section documents the ledger routes.
+
+* **Overview.** Entries, initiatives and the grading methodology: `GET`/`POST /v1/developer/initiatives`, `GET /v1/developer/initiatives/{id}`, `GET /v1/developer/ledger/entries`, `GET /v1/developer/ledger/entries/{id}`.
+* **Cost attribution & quarantine.** `/v1/developer/dimension-maps*`, `/v1/developer/attribution/*` (settings, quarantine, proposals, team owners, unmapped keys, allocation) and `/v1/developer/ledger/remap`.
+* **Period close & restatements.** `/v1/developer/ledger/periods*`, `/v1/developer/ledger/true-up`, `/v1/developer/ledger/tie-outs*`, `/v1/developer/ledger/close-settings`, and `/v1/developer/ledger/entries/{id}/supersede` and `/restate`.
+* **Counterparty sharing.** `/v1/developer/initiatives/{id}/cases*`, `/assumptions*` and `/proposals*`, and the buyer's `/v1/case/*` routes.
+* **API reference.** [REST API → Initiative Ledger endpoints](developers/credit-api.md#initiative-ledger-endpoints).
+
+→ [The Initiative Ledger](ledger/overview.md) · [Cost attribution & quarantine](ledger/cost-attribution.md) · [Period close & restatements](ledger/period-close.md) · [Counterparty sharing](ledger/counterparty-sharing.md)
+
 ### Unreleased — Unmapped API key spend alert (pending the floe-monorepo L1.6 release)
 
 Spend from a gateway API key that nobody has mapped to a team or initiative lands in **Unassigned**. Floe now tells you about it.
