@@ -21,7 +21,7 @@ A **dimension map** turns something your systems already know into a finance dim
 | `agent_initiative` | An agent | An initiative |
 | `project_initiative` | A project | An initiative |
 
-Cost that matches no initiative map goes to **Unassigned**.
+When more than one map matches, the key map wins, then the agent map, then the project map. Unmatched spend goes to **Unassigned**.
 
 Maps are versioned and effective-dated. Declaring a new value for a key adds a new version and closes the old one.
 

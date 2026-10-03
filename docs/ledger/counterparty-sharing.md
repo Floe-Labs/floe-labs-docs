@@ -50,7 +50,7 @@ The buyer opens the link on the Floe dashboard (`https://dev-dashboard.floelabs.
 
 Buyer sign-in is **browser-only**. Opening a session needs an access token from Floe's email sign-in on the case page, and there is no API key for a buyer. The exchange the case page makes is documented here so you know what crosses the wire:
 
-* **Sign-in:** `POST /v1/case/session`, with `Content-Type: application/json`, `Authorization: Bearer <access token from the email sign-in>` and the body `{ "token": "csh_…" }`. A Floe key in the `Authorization` header is refused (`401 invalid_privy_token`). The sign-in is checked first, and the link is looked up only after that. Sign-in attempts are rate-limited per IP address (`429`).
+* **Sign-in:** `POST /v1/case/session`, with `Content-Type: application/json`, `Authorization: Bearer <access token from the email sign-in>` and the body `{ "token": "csh_…" }`. A Floe key in the `Authorization` header is refused (`401 invalid_privy_token`). Sign-in attempts are rate-limited per IP address (`429`).
 * **Response:** `200` with `{ "case": { "publicId", "name", "counterpartyName", "status" }, "member": { "email", "role" } }`. It also sets the `floe_case_session` cookie: HttpOnly, Secure, `SameSite=Lax`, `Path=/v1/case`, expiring after 8 hours.
 * **Every other `/v1/case` call** carries that cookie plus an `X-Floe-Case-Link` header holding the SHA-256 hex digest of the `csh_` token. A missing header, or one for a different link, gets `409 case_session_mismatch`. The `csh_` token itself is never sent as a bearer credential, and the session is never valid on any other Floe route.
 
