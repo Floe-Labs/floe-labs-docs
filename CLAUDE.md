@@ -45,7 +45,7 @@ scripts/
 .github/workflows/         claude-docs-sync.yml (see "Automated sync PRs")
 ```
 
-**A page only appears on the site if it is listed in `SUMMARY.md`.** If you add, rename, or move a page, update `SUMMARY.md` in the same change. A handful of pages are intentionally *not* in nav (`docs/glossary.md`, `docs/getting-started/core-concepts.md`, `faq/general.md`, `docs/developers/agent-quickstart.md`, `docs/developers/agentkit.md`, `docs/frameworks/elizaos.md`, `docs/components/x402.md`, `docs/components/credit-bureau.md`) — they are reachable by URL and cross-linked; don't add them to nav or delete them without a reason.
+**A page only appears on the site if it is listed in `SUMMARY.md`.** If you add, rename, or move a page, update `SUMMARY.md` in the same change. A handful of pages are intentionally *not* in nav (`docs/glossary.md`, `docs/getting-started/core-concepts.md`, `faq/general.md`, `docs/developers/agent-quickstart.md`, `docs/developers/agentkit.md`, `docs/frameworks/agentkit.md`, `docs/developers/agentkit-typescript.md`, `docs/developers/agentkit-python.md` (AgentKit packages being deprecated; nav section removed, pages to be archived), `docs/frameworks/elizaos.md`, `docs/components/x402.md`, `docs/components/credit-bureau.md`) — they are reachable by URL and cross-linked; don't add them to nav or delete them without a reason.
 
 ## Page conventions (as actually used)
 

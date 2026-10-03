@@ -25,7 +25,7 @@ Every response carries `X-Floe-Cost-USDC`. One key meters chat, embeddings, spee
 
 **npm:** `@floelabs/cli` (v0.2.0) · **bin:** `floe` · **GitHub:** [Floe-Labs/floe-cli](https://github.com/Floe-Labs/floe-cli)
 
-> **Two bins, one platform.** `@floelabs/cli` (bin `floe`) is the Floe platform CLI — the whole surface, from onboarding to policies to payments, documented on this page. The **`floe-agent`** bin, shipped by the `floe-agent` SDK package, is the **AgentKit-companion CLI** for the agent-runtime SDK: its command tree and the interactive REPL live at [TypeScript SDK → CLI](agentkit-typescript.md#cli-floe-agent). Use `floe` unless you are working inside the AgentKit SDK workflow.
+> **Recommended CLI.** `@floelabs/cli` (bin `floe`) is the Floe platform CLI — the whole surface, from onboarding to policies to payments, documented on this page. Use `floe` for new integrations. The separate **`floe-agent`** bin belongs to the `floe-agent` AgentKit SDK package, which is being deprecated.
 
 ---
 
@@ -609,7 +609,7 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
 | `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: 46 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (16: `billing.*`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
+Events: 48 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (18: `billing.*`, `client_margin.negative`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`, `unmapped_api_key_spend`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
 floe webhooks create https://api.acme.com/hooks/floe --events 'call.*,marketplace.payment.settled'
@@ -753,4 +753,3 @@ Headless / CI: set the env vars — they always win over the keychain.
 - [Add Floe to your existing pipeline](../getting-started/integrate-existing-pipeline.md) — where the base-URL swap goes
 - [Spend Controls](spend-controls.md) — what `budget`, `policy`, and `allowlist` enforce server-side
 - [MCP Server](mcp-server.md) — the same platform as MCP tools, for clients that prefer tool calls
-- [TypeScript SDK → CLI](agentkit-typescript.md#cli-floe-agent) — the `floe-agent` AgentKit-companion CLI

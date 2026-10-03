@@ -96,7 +96,6 @@ When the Welcome Credit runs low, add money by card, Apple Pay, Google Pay, or b
 | **CrewAI** | [via MCP server](docs/frameworks/crewai.md) |
 | **OpenAI Agents SDK** | [adapter](docs/frameworks/openai.md) |
 | **Vercel AI SDK** | [`getVercelAITools` adapter](docs/frameworks/vercel-ai.md) |
-| **Coinbase AgentKit** | [`floeActionProvider`](docs/frameworks/agentkit.md) |
 | **Plain HTTP / REST** | [anything that speaks HTTP](docs/frameworks/http.md) |
 
 See real agents in the [Floe Cookbook](https://github.com/Floe-Labs/floe-cookbook) and [Eve](https://github.com/Floe-Labs/eve-floe), Floe's reference voice agent.

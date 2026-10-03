@@ -17,7 +17,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **46 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **48 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -106,6 +106,7 @@ Account-level events — no agent attribution. They reach a `global` webhook, or
 | `billing.invoice.paid` | A Floe plan invoice was paid — carries the amount and the hosted invoice link |
 | `billing.renewal_upcoming` | Your plan renews soon — carries the amount due and the end of the current period |
 | `billing.usage_threshold` | Month-to-date tracked spend crossed 80% or 100% of your plan's cap — informational, nothing is blocked |
+| `client_margin.negative` | A billing period closed with revenue below its reconciled cost for a client — carries revenue, cost and margin from the close snapshot, so they match the statement |
 | `client_invoice.sent` | A client invoice was sent through your connected Stripe account |
 | `client_invoice.paid` | A client paid an invoice issued from your connected Stripe account |
 | `client_invoice.voided` | A client invoice was voided in Stripe and will not be collected |
@@ -117,6 +118,57 @@ Account-level events — no agent attribution. They reach a `global` webhook, or
 | `vendor_actuals.close_gate_overridden` | An account owner closed a billing period while some vendor costs were still unconfirmed |
 | `stripe.connected` | A Stripe account was connected for client invoicing |
 | `stripe.disconnected` | The connected Stripe account was disconnected — client invoicing pauses until it is reconnected |
+| `unmapped_api_key_spend` | An API key in your gateway logs has no team or initiative mapping, and its spend reached your alert floor — sent once per key (see [below](#unmapped_api_key_spend)) |
+
+#### `unmapped_api_key_spend`
+
+An API key from an imported gateway log (for example a LiteLLM or OpenRouter key) has no team or initiative mapping, so its spend sits in **Unassigned**. Floe tells you once, so you can map it before the period closes.
+
+* **When it fires.** When you import gateway logs that take the key's cumulative spend to your account's alert floor (default **$5**; set `unmappedKeyAlertFloorMicro` with `PUT /v1/developer/attribution/settings`, or in the dashboard). It goes out as soon as that import lands, before the spend is settled, so the amount is **estimated** (`basis: "estimated"`). If a send fails, Floe retries it within the hour.
+* **Once per key.** A key is never alerted twice. It never fires for a key that is already mapped or that you dismissed (`POST /v1/developer/attribution/unmapped-keys/dismiss`, with a reason). Mapping or dismissing the key also drops it from the weekly digest. The weekly digest lists every unmapped key on settled spend. It is **email only**: it has no webhook.
+* **Email recipients.** The alert email goes to the account owner and admins. If the key has an open proposal to move it into a team, that team's owners get it too. The webhook goes to your subscribed endpoints as usual.
+* **Category and scope.** `billing`, account-scoped, like the other events in this table.
+* **Subscribe by name or `*`.** The name has no dotted prefix, so no `<prefix>.*` wildcard covers it.
+
+```json
+{
+  "event": "unmapped_api_key_spend",
+  "accountId": "acct_...",
+  "basis": "estimated",
+  "connection": "litellm-prod",
+  "keyLabel": "sk-1a2b3",
+  "spend": {
+    "micro": "6300000",
+    "display": "$6.30",
+    "grade": "D",
+    "gradeMix": {
+      "A": { "micro": "0", "display": "$0.00" },
+      "B": { "micro": "0", "display": "$0.00" },
+      "C": { "micro": "0", "display": "$0.00" },
+      "D": { "micro": "6300000", "display": "$6.30" }
+    }
+  },
+  "floor": { "micro": "5000000", "display": "$5.00" },
+  "throughDay": "2026-10-01",
+  "firstSeenDay": "2026-09-28",
+  "proposalId": null,
+  "link": "https://dev-dashboard.floelabs.xyz/quarantine?period=2026-10",
+  "firedAt": "2026-10-02T01:00:00.000Z"
+}
+```
+
+| Field | Meaning |
+|-------|---------|
+| `accountId` | Your public `acct_…` account ID |
+| `basis` | Always `estimated`: the total of the key's raw gateway log rows, not yet settled |
+| `connection` | The gateway connection the key's rows came from (its slug) |
+| `keyLabel` | The key's first 8 characters. The key itself never leaves Floe |
+| `spend` | The key's spend through `throughDay`, in integer micro-USD (`micro`) and as text (`display`). `grade` is the lowest confidence grade among its entries, and `gradeMix` splits the amount by grade. Gateway-log spend is an **estimate, grade D** (not invoiced), unless the gateway itself bills you |
+| `floor` | Your alert floor when the alert fired |
+| `throughDay` | The latest day in the key's gateway log rows |
+| `firstSeenDay` | The first day the key appears in your gateway logs |
+| `proposalId` | The open mapping proposal for the key, or `null` when there is none |
+| `link` | The dashboard page to map the key: the proposal when there is one, otherwise the Quarantine page for that month. It carries only the proposal ID |
 
 ### Wildcard subscriptions
 

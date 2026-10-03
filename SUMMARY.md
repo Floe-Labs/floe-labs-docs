@@ -80,9 +80,6 @@
 * [OpenAI Agents SDK](docs/frameworks/openai.md)
 * [Claude Desktop / Claude Code / Cursor (MCP)](docs/frameworks/claude-mcp.md)
 * [Vercel AI SDK](docs/frameworks/vercel-ai.md)
-* [Coinbase AgentKit](docs/frameworks/agentkit.md)
-  * [TypeScript SDK](docs/developers/agentkit-typescript.md)
-  * [Python SDK](docs/developers/agentkit-python.md)
 
 ## Developers
 

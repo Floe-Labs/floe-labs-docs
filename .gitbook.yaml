@@ -25,3 +25,7 @@ redirects:
   core-concepts/wallet: developers/wallet
   core-concepts/spend-controls: developers/spend-controls
   core-concepts/agent-awareness: developers/agent-awareness
+  # "Coinbase AgentKit" removed from Frameworks (packages being deprecated; use the Floe CLI)
+  frameworks/agentkit: developers/cli
+  frameworks/agentkit/agentkit-typescript: developers/cli
+  frameworks/agentkit/agentkit-python: developers/cli
