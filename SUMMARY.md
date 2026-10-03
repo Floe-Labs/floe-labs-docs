@@ -13,6 +13,13 @@
 * [Funding your agent](docs/getting-started/funding.md)
 * [Agent Quickstart](docs/agents/quickstart-agents.md)
 
+## Initiative Ledger
+
+* [Overview — one ledger, two doors](docs/ledger/overview.md)
+* [Cost attribution & quarantine](docs/ledger/cost-attribution.md)
+* [Period close & restatements](docs/ledger/period-close.md)
+* [Counterparty sharing](docs/ledger/counterparty-sharing.md)
+
 ## Know your costs
 
 * [The live cost ledger](docs/build/unified-ledger.md)

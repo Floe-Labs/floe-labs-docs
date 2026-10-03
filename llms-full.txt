@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 68 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 72 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -18,6 +18,10 @@
 - Add Floe to your existing pipeline — https://floe-labs.gitbook.io/docs/start-here/integrate-existing-pipeline.md
 - Funding your agent — https://floe-labs.gitbook.io/docs/start-here/funding.md
 - Agent Quickstart — https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
+- Overview — one ledger, two doors — https://floe-labs.gitbook.io/docs/initiative-ledger/overview.md
+- Cost attribution & quarantine — https://floe-labs.gitbook.io/docs/initiative-ledger/cost-attribution.md
+- Period close & restatements — https://floe-labs.gitbook.io/docs/initiative-ledger/period-close.md
+- Counterparty sharing — https://floe-labs.gitbook.io/docs/initiative-ledger/counterparty-sharing.md
 - The live cost ledger — https://floe-labs.gitbook.io/docs/know-your-costs/unified-ledger.md
 - Vendor actuals — reconcile to the vendor's records — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-actuals.md
 - Vendor connections — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-connections.md
@@ -1041,6 +1045,436 @@ URL: https://floe-labs.gitbook.io/docs/start-here/quickstart-agents.md
 This page has moved. The agent setup and first paid call — human does two things, the agent does the rest — are now part of the single **[Quickstart](../getting-started/quickstart.md)**.
 
 See also [Set up with your AI tools](../getting-started/setup-with-ai-tools.md) to connect Claude Code, Cursor, or Codex.
+
+==============================================================================
+# Overview — one ledger, two doors
+Source: docs/ledger/overview.md
+URL: https://floe-labs.gitbook.io/docs/initiative-ledger/overview.md
+==============================================================================
+
+# The Initiative Ledger
+
+The Initiative Ledger is one record of what your AI work costs and what it is worth. Every record is an **initiative**: an AI product, an internal tool, a vendor purchase or a deal. An initiative holds **entries**, one amount per period, each with its source, a confidence grade and, when computed, its formula and inputs.
+
+## One ledger, two doors
+
+| | Starting from cost | Starting from value |
+|---|---|---|
+| **Who** | A finance team accounting for its AI spend | An AI vendor sharing a business case with a buyer's finance team |
+| **Read next** | [Cost attribution & quarantine](cost-attribution.md), [Period close & restatements](period-close.md) | [Counterparty sharing](counterparty-sharing.md) |
+
+## Methodology
+
+Every entry carries a confidence grade:
+
+* **A**: reconciled to more than one source.
+* **B**: from one system of record.
+* **C**: entered by a person, with a named source.
+* **D**: an estimate.
+
+A total takes the lowest grade in it and shows its grade mix. Pending costs are not counted, and they mark the period incomplete. A locked period never changes. Corrections are journaled, and a correction never carries a higher grade than the entry it replaces.
+
+## Entries
+
+| Field | Values |
+|---|---|
+| `id` | Entry id |
+| `initiativeId` | `init_…` |
+| `type` | `cost`, `value`, `baseline`, `forecast`, `assumption` |
+| `origin` | `ingested`, `computed`, `declared` |
+| `period` | `YYYY-MM` or `YYYY-Www` |
+| `metric` | The metric name |
+| `amount` / `unit` | Integer text in the unit's smallest denomination (money: millionths of a dollar) |
+| `source` | `{system, extract_at, sample_n, ref}` |
+| `confidenceGrade` | `A`, `B`, `C`, `D` |
+| `isEstimate` | `true` for grade D |
+| `lineage` | `{formula_id, input_entry_ids}` for a computed entry |
+| `dimensions` | For example department, team, P&L line, API key |
+| `locked` | `true` once the period is locked |
+| `superseded` / `supersededAt` / `supersedesEntryId` | Open-period corrections |
+| `restates` / `priorPeriod` / `restatement` | Locked-period corrections |
+| `reason`, `createdBy`, `createdAt` | Who wrote it, when, and why |
+
+## Initiatives
+
+| Field | Values |
+|---|---|
+| `id` | `init_…` |
+| `name` | 1–200 characters |
+| `status` | `draft`, `active`, `closed` |
+| `membershipMode` | `account` (any account member with the member role or above may write), `members` (only the initiative's owners and contributors) |
+| `createdAt` | Timestamp |
+
+Spend that matches no initiative goes to **Unassigned**.
+
+```bash
+# Create an initiative (member role or above)
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/initiatives \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Support assistant"}'
+
+# List them (newest first; ?limit 1–200)
+curl https://credit-api.floelabs.xyz/v1/developer/initiatives \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY"
+```
+
+`POST` returns `201 { "initiative": { … } }`. The body also accepts `ownerMemberId`, for API-key calls only. Errors: `400 invalid_request`, `422 not_account_member` / `member_is_viewer`. `GET /v1/developer/initiatives/{id}` returns one initiative, or `404 initiative_not_found`.
+
+## Reading entries
+
+```bash
+INITIATIVE_ID="init_…"   # from GET /v1/developer/initiatives
+ENTRY_ID="…"             # an entry's `id` from the list below
+
+# An initiative's current entries for one month
+curl "https://credit-api.floelabs.xyz/v1/developer/ledger/entries?initiative=${INITIATIVE_ID}&period=2026-08" \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY"
+
+# One entry, with the entries its lineage names
+curl "https://credit-api.floelabs.xyz/v1/developer/ledger/entries/${ENTRY_ID}" \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY"
+```
+
+| Route | Parameters | Returns |
+|---|---|---|
+| `GET /v1/developer/ledger/entries` | `initiative` (required), `period`, `type`, `limit` (1–500, default 100) | `{ entries, hasMore, periodCompleteness? }` (`periodCompleteness` when `period` is sent) |
+| `GET /v1/developer/ledger/entries/{id}` | | `{ entry, inputs, unresolvedInputIds, supersededBy, restatedBy, periodCompleteness }` |
+
+Any account member may read. Errors: `400 invalid_request`, `404 initiative_not_found` / `entry_not_found`. Another account's initiative or entry is `404`.
+
+## Related
+
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
+* [Cost attribution & quarantine](cost-attribution.md)
+* [Period close & restatements](period-close.md)
+* [Counterparty sharing](counterparty-sharing.md)
+* [API keys](../developers/api-keys.md): developer keys vs agent keys
+
+==============================================================================
+# Cost attribution & quarantine
+Source: docs/ledger/cost-attribution.md
+URL: https://floe-labs.gitbook.io/docs/initiative-ledger/cost-attribution.md
+==============================================================================
+
+# Cost attribution & quarantine
+
+Routes for placing cost on an initiative, a department, a team and a P&L line, and for working with untagged spend. All routes take a developer credential (`floe_live_…` key or dashboard session).
+
+## Maps
+
+| `kind` | `key` | `value` |
+|---|---|---|
+| `api_key_team` | An API key | A team |
+| `email_domain_department` | A full email address or a bare domain | A department |
+| `department_pnl_line` | A department | `cogs`, `rnd`, `sm`, `ga` |
+| `api_key_initiative` | A Floe API key | `init_…` |
+| `agent_initiative` | An agent | `init_…` |
+| `project_initiative` | A project | `init_…` |
+
+When more than one map matches, the key map wins, then the agent map, then the project map. Unmatched spend goes to **Unassigned**.
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/dimension-maps \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"kind": "department_pnl_line", "key": "Support", "value": "cogs"}'
+```
+
+| Route | Role | Notes |
+|---|---|---|
+| `GET /v1/developer/dimension-maps` | Any member | Current mappings |
+| `POST /v1/developer/dimension-maps` | Owner or admin | Body `{ kind, key, value, effective_from? }`. The response includes `pastEntries`. `409 backdated_edit` for a backdated change to an existing key. |
+| `POST /v1/developer/dimension-maps/import` | Owner or admin | CSV of one kind, columns by header name |
+| `GET /v1/developer/dimension-maps/unmapped` | Any member | `?kind=api_key_team` or `department_pnl_line`, `&period=` |
+| `GET /v1/developer/ledger/remap/preview` | Any member | What a remap would move |
+| `POST /v1/developer/ledger/remap` | Owner or admin | Body `{ kind?, key?, from? }` |
+
+In the dashboard, maps are under **Ledger → Reconcile → Maps**.
+
+## Required dimensions
+
+```bash
+curl -X PUT https://credit-api.floelabs.xyz/v1/developer/attribution/settings \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"requiredDimensions": ["initiative", "department", "team"]}'
+```
+
+`GET` / `PUT /v1/developer/attribution/settings` takes the following fields. `PUT` needs the owner or admin role.
+
+* `requiredDimensions`: a non-empty subset of `initiative`, `department`, `team`.
+* `nearestTaskWindows`: source to minutes, 1–1440.
+* `unmappedKeyAlertFloorMicro`: integer micro-dollar text.
+
+Spend missing any required dimension is **untagged**.
+
+## Quarantine
+
+`GET /v1/developer/attribution/quarantine?period=2026-08` returns `{ quarantine: { period, scope, requiredDimensions, items, byTeam, totals, proposals, coverage, canRemapPast } }`:
+
+* Each item in `items` has `status`: `quarantined`, `partially_allocated` or `allocated`.
+* `coverage` is returned to owners and admins only. It includes `grade`, `gradeMix` and `attributionMix`.
+
+Money is integer micro-dollar text plus a display string. In the dashboard, this is **Ledger → Reconcile → Quarantine**.
+
+Owners and admins see the whole account. A **team owner** sees their team's rows and decides proposals into their team. Anyone else gets `403`.
+
+| Route | Role |
+|---|---|
+| `GET` / `POST` / `DELETE /v1/developer/attribution/team-owners` | Owner or admin. `POST` body `{ team, accountMemberId }`. |
+
+## Proposals
+
+| Route | Who | Body |
+|---|---|---|
+| `POST /v1/developer/attribution/inference` | Signed-in owner or admin | `{ "period": "YYYY-MM" }`. Returns proposals for an open month. |
+| `GET /v1/developer/attribution/rules/{ruleId}` | Owner, admin, or the team owner | |
+| `POST /v1/developer/attribution/rules/{ruleId}/accept` | Signed-in owner, admin, or the team owner | `{ "reason"? }` |
+| `POST /v1/developer/attribution/rules/{ruleId}/reject` | Signed-in owner, admin, or the team owner | `{ "reason"? }` |
+| `GET /v1/developer/attribution/rules/precision` | Any member | |
+
+An API key gets `403 person_required` on the routes marked "signed-in". A locked month gets `409 period_locked`. `409 proposal_stale` means the key was mapped in the meantime.
+
+## Unmapped-key alerts
+
+| Route | Who | Body |
+|---|---|---|
+| `GET /v1/developer/attribution/unmapped-keys` | Owner, admin, or the team owner | `?includeDismissed=true` |
+| `POST /v1/developer/attribution/unmapped-keys/dismiss` | Signed-in admin, or the team owner | `{ connection, apiKeyRef, reason }` |
+
+Webhook event: [`unmapped_api_key_spend`](../developers/webhooks.md#unmapped_api_key_spend).
+
+## Allocation at close
+
+| Route | Who | Body |
+|---|---|---|
+| `POST /v1/developer/attribution/allocation/preview` | Owner or admin | `{ "period": "YYYY-MM" }`. Writes nothing (`dryRun: true`). |
+| `POST /v1/developer/attribution/allocation/run` | Owner or admin | `{ "period": "YYYY-MM" }`. Writes the allocation entries for the period. |
+
+The response lists `unallocatable` spend. A locked month gets `409 period_locked`. Locking a month also runs the allocation (see [Period close & restatements](period-close.md)).
+
+## Attribution confidence
+
+`exact`, `inferred`, `allocated`, `apportioned`, `apportioned_imputed`, `unattributed`. Totals report it as `attributionMix` (which also has `not_stated`).
+
+## Related
+
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
+* [The Initiative Ledger](overview.md)
+* [Period close & restatements](period-close.md)
+* [Cost per client, campaign & task](../build/attribution.md): tagging calls at the source
+
+==============================================================================
+# Period close & restatements
+Source: docs/ledger/period-close.md
+URL: https://floe-labs.gitbook.io/docs/initiative-ledger/period-close.md
+==============================================================================
+
+# Period close & restatements
+
+Routes for reading, reconciling, locking and correcting ledger periods. A period key is `YYYY-MM` or `YYYY-Www`. All routes take a developer credential (`floe_live_…` key or dashboard session).
+
+## Periods
+
+```bash
+curl https://credit-api.floelabs.xyz/v1/developer/ledger/periods/2026-08 \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY"
+```
+
+| Route | Role | Returns |
+|---|---|---|
+| `GET /v1/developer/ledger/periods` | Any member | `{ periods, structuralGaps }`, `?limit` 1–120 |
+| `GET /v1/developer/ledger/periods/{key}` | Any member | `{ period, structuralGaps }` |
+| `GET /v1/developer/ledger/periods/{key}/coverage` | Any member | `{ snapshot }` for a locked month, or `404 coverage_snapshot_not_found` |
+
+A period has `key`, `cadence` (`month`, `week`), `status` (`open`, `locked`), `lockedAt`, `lockedBy`, `lockOverride`, `completeness`, `requiredOverrideGates` and `restatedSinceLock`.
+
+`completeness` has `complete`, `lowerBound`, `reasons`, `live` and `ruleVersion`. `reasons` values:
+
+`unpriced_legs`, `pending_legs`, `holds_excluded`, `pre_backfill`, `locked_before_completeness`, `payer_unknown`, `gateway_unpriced`, `hold_booked_at_reserve`, `orchestrator_connection_flag`, `vendor_residuals_missing`, `completeness_not_computed`, `manual_override_conflict`, `orchestrator_own_account_match`, `invoice_pending`, `tie_out_unexplained`, `unallocatable_spend`.
+
+## Invoice tie-out
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/ledger/true-up \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"vendor": "anthropic", "period": "2026-08"}'
+```
+
+| Route | Role | Body / query |
+|---|---|---|
+| `POST /v1/developer/ledger/true-up` | Owner or admin | `{ vendor, period }` |
+| `GET /v1/developer/ledger/tie-outs` | Any member | `?period=YYYY-MM&vendor=` |
+| `POST /v1/developer/ledger/tie-outs/{id}/override` | Owner | `{ reason }` (10–500 characters) |
+| `GET /v1/developer/ledger/close-settings` | Any member | |
+| `PUT /v1/developer/ledger/close-settings` | Owner or admin | `{ invoiceWindowBusinessDays?, salesTaxInAiCost? }` |
+
+## Locking a period
+
+```bash
+curl -X POST https://credit-api.floelabs.xyz/v1/developer/ledger/periods/2026-08/lock \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY"
+```
+
+`POST /v1/developer/ledger/periods/{key}/lock` needs the owner or admin role. Its body is optional: `{ overrideReason?, overrideGates? }`, and `overrideReason` can be sent only by the owner. It returns `{ period, alreadyLocked, entriesLocked, normalizer, allocation, coverage, holdsOverridden }`.
+
+| `409` error | Cleared by `overrideGates` |
+|---|---|
+| `period_not_ended` | None |
+| `holds_pending` | `holds_pending` |
+| `period_incomplete` | `incomplete`. If the period has `orchestrator_own_account_match`, `payer_confirmed` is also needed. |
+| `driver_allocation_over_threshold` | `driver_allocation` |
+| `normalizer_failed` | None (see `failedRefs`) |
+| `normalizer_busy` | None (retry) |
+| `override_not_required` | None (lock without an override) |
+
+The override fields:
+
+* `overrideReason`: 10–500 characters.
+* `overrideGates`: one or more of `holds_pending`, `incomplete`, `payer_confirmed`, `driver_allocation`.
+* `requiredOverrideGates`: listed on an open period.
+* `missingOverrideGates`: listed on a `409`.
+* `lockOverride`: set on the locked period.
+
+Threshold settings: `GET` / `PUT /v1/developer/close/allocation-threshold` and `GET /v1/developer/close/allocation-threshold/history`, for signed-in owners and admins.
+
+## Correcting a figure
+
+| | Open period | Locked period |
+|---|---|---|
+| Route | `POST /v1/developer/ledger/entries/{id}/supersede` | `POST /v1/developer/ledger/entries/{id}/restate` |
+| Body | `{ "amount", "reason", "estimate"? }` | `{ "newAmount", "reason", "estimate"? }` |
+| Role | Member or above | Owner or admin |
+| Writes | A replacement entry in the same period (`supersedesEntryId`) | An entry in the next open period (`restates`, `priorPeriod`) |
+| Wrong period | `409 period_locked` | `409 period_open` |
+
+Both return `201` with the correction, or `200` with `isNew: false` on a repeat. Other `409` codes: `no_change`, `already_superseded`, `already_restated`, `supersede_conflict`, `entry_superseded`, `assumption_register_only`, `held_entry`, `override_conflict`, `normalizer_failed`.
+
+## Related
+
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
+* [The Initiative Ledger](overview.md)
+* [Cost attribution & quarantine](cost-attribution.md)
+* [Vendor actuals](../build/vendor-actuals.md)
+
+==============================================================================
+# Counterparty sharing
+Source: docs/ledger/counterparty-sharing.md
+URL: https://floe-labs.gitbook.io/docs/initiative-ledger/counterparty-sharing.md
+==============================================================================
+
+# Counterparty sharing
+
+Routes for sharing an initiative's business case with a buyer's finance team as a **case**, and for the assumptions both sides work from. A case's `status` is `draft`, `shared`, `locked` or `closed`.
+
+## Vendor side
+
+Vendor-side routes take a developer credential (`floe_live_…` key or dashboard session).
+
+```bash
+INITIATIVE_ID="init_…"   # from GET /v1/developer/initiatives
+CASE_ID="case_…"         # `case.publicId` from the create response
+
+# Create a draft case
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/cases" \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Inside sales pilot", "counterpartyName": "Buyer Co"}'
+
+# Invite a buyer
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/cases/${CASE_ID}/members" \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "controller@buyer.example", "role": "buyer_finance"}'
+
+# Issue the case link
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/cases/${CASE_ID}/share" \
+  -H "Authorization: Bearer $FLOE_LIVE_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"expiresInDays": 90}'
+```
+
+Paths below are relative to `/v1/developer/initiatives/{id}`.
+
+| Route | Role | Body / returns |
+|---|---|---|
+| `GET /cases` | Any member | Every case on the initiative |
+| `POST /cases` | Member or above | `{ name, counterpartyName, ownerMemberId? }` → `201 { case }` |
+| `GET /cases/{caseId}` | Any member | `{ case }` |
+| `PATCH /cases/{caseId}` | Admin | `{ ownerMemberId }` |
+| `POST /cases/{caseId}/members` | Admin, or the case's vendor-side owner | `{ email, role }`, role `buyer_finance` or `buyer_viewer` |
+| `DELETE /cases/{caseId}/members/{memberId}` | Admin, or the case's vendor-side owner | |
+| `POST /cases/{caseId}/share` | Admin, or the case's vendor-side owner | `{ expiresInDays? }` (1–365, default 90) → `201 { token, path, expiresAt }`. `409 share_already_issued` while a link is live. |
+| `POST /cases/{caseId}/share/revoke` | Admin, or the case's vendor-side owner | |
+| `GET /assumptions` | Any member | `?case=` |
+| `POST /assumptions` | Member or above | `{ key, name, unit, description?, owner? }` |
+| `GET /assumptions/journal` | Any member | |
+| `PUT /assumptions/{key}/value` | The assumption's owner | `{ value, scenario, citation, asOf, period, reason?, caseRef? }` |
+| `PUT /assumptions/{key}/owner` | Member or above | `{ owner, reason? }`. `reason` is required when taking a key back from a buyer. |
+| `POST /assumptions/{key}/proposals` | A person who can read but not write the key | `{ value, scenario, citation, asOf, period, reason, caseRef? }` |
+| `GET /proposals` | Viewer or above | `?status`, `?key`, `?case`, `?limit`, `?cursor` |
+| `POST /proposals/{proposalId}/accept` | Whoever could write the value | `{ citation?, overrideReason? }` |
+| `POST /proposals/{proposalId}/reject` | Whoever could write the value | `{ decisionReason }` |
+| `POST /proposals/{proposalId}/withdraw` | The proposer | |
+
+Field values:
+
+* `scenario`: `conservative`, `expected`, `vendor_claim` or `all`.
+* `citation`: `{ ref?, benchmark?, kind? }`, where `kind` is `vendor_claim` or `vendor_platform_export`.
+* `owner`: `dev:<account>`, `member:<id>` or `case_member:<id>`.
+* Values: integer text in the assumption's `unit`.
+
+## Buyer side
+
+The buyer opens the link on the Floe dashboard (`https://dev-dashboard.floelabs.xyz/case/csh_…`) and signs in there with their invited email. No Floe account is created.
+
+### How the case session works
+
+Buyer sign-in is **browser-only**. Opening a session needs an access token from Floe's email sign-in on the case page; buyers have no API key.
+
+* **Sign-in:** `POST /v1/case/session`, with `Content-Type: application/json`, `Authorization: Bearer <access token from the email sign-in>` and the body `{ "token": "csh_…" }`. A Floe key in the `Authorization` header is refused (`401 invalid_privy_token`). Sign-in attempts are rate-limited per IP address (`429`).
+* **Response:** `200` with `{ "case": { "publicId", "name", "counterpartyName", "status" }, "member": { "email", "role" } }`. It also sets the `floe_case_session` cookie: HttpOnly, Secure, `SameSite=Lax`, `Path=/v1/case`, expiring after 8 hours.
+* **Every other `/v1/case` call** carries that cookie plus an `X-Floe-Case-Link` header holding the SHA-256 hex digest of the `csh_` token. A missing header, or one for a different link, gets `409 case_session_mismatch`. The `csh_` token itself is never sent as a bearer credential, and the session is not valid on any other Floe route.
+
+| Route | Role | Body |
+|---|---|---|
+| `GET /v1/case` | Any buyer | |
+| `GET /v1/case/journal` | Any buyer | |
+| `PUT /v1/case/assumptions/{key}/value` | `buyer_finance`, owner of the key | `{ value, scenario, citation, asOf, period, reason? }` |
+| `POST /v1/case/assumptions/{key}/proposals` | `buyer_finance` | `{ value, scenario, citation, asOf, period, reason }` |
+| `GET /v1/case/proposals` | Any buyer | `?limit`, `?cursor` |
+| `POST /v1/case/proposals/{proposalId}/accept` | `buyer_finance`, owner of the key | `{ citation?, confirmExport? }` |
+| `POST /v1/case/proposals/{proposalId}/reject` | `buyer_finance`, owner of the key | `{ decisionReason }` |
+| `POST /v1/case/proposals/{proposalId}/withdraw` | The proposer | |
+| `POST /v1/case/assumptions/{key}/approve` | `buyer_finance` | `{ scenario, entryId }` |
+| `POST /v1/case/logout` | Any buyer | |
+
+What buyer responses contain:
+
+* **Owners** of vendor-side assumptions are shown as the vendor organization (`kind: "vendor"`, `label`: the vendor account's display name, or `vendor`).
+* **`setBy` and journal entries** carry the author's email address, vendor employees included.
+
+## Errors
+
+| Code | When |
+|---|---|
+| `403 not_assumption_owner` | Writing a key you don't own. `owner` (`kind`, `label`) names the owner. On buyer routes it also includes `proposeUrl` when proposing is allowed. |
+| `403` | A `buyer_viewer` attempting a write |
+| `404 case_not_found` | Unknown, revoked or expired link, or no active membership |
+| `409 case_session_mismatch` | `X-Floe-Case-Link` missing or for another link |
+| `409 value_changed` | The value changed since it was loaded (accept, approve) |
+| `409 no_change` | The value, citation and `asOf` already stand |
+| `409 proposal_exists` | You already have an open proposal for this key and scenario |
+| `409 can_write_directly` | Proposing on a key you can write |
+| `409 case_baseline_locked` | Vendor write to a locked case's value |
+
+## Related
+
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
+* [The Initiative Ledger](overview.md): entries, grades and initiatives
+* [Period close & restatements](period-close.md)
 
 ==============================================================================
 # The live cost ledger
@@ -6521,7 +6955,7 @@ Create and manage agents — **how many depends on your plan** (see [plans](../r
 2. **Fund Agent** — Add funds by card, Apple Pay, Google Pay, bank transfer, or a USDC deposit from the agent's **Balance & funding** tab or from **Plan & billing → Funding**. No crypto bridges needed. See [Add funds](#add-funds).
 3. **Mint API Key** — Once the agent shows `active`, click **Reveal API Key** to mint the agent's `floe_*` runtime key. It is shown once — copy it immediately. To rotate, click **Rotate** (revokes the old key and mints a new one atomically).
 
-The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), with the full fleet surface on the same bin — `floe agents list|get|create|pause|resume|close|lock` — or `npx floe-agent register --name <name>` (TypeScript SDK) / `floe-agent register --name <name>` (Python SDK).
+The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), with the full fleet surface on the same bin: `floe agents list|get|create|pause|resume|close|lock`.
 
 Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `closed`), USDC balance (live), credit limit, delegation expiry, and active loans.
 
@@ -6596,7 +7030,7 @@ The dashboard monitors your agents and fires alerts when:
 | Alert | Trigger | What to do |
 |---|---|---|
 | **Credit utilization warning** | Borrowed principal exceeds 80% of credit limit | Top up collateral or repay before API calls fail with `insufficient_balance` |
-| **Delegation expiry** | Operator delegation expires within 7 days (warning) or 24 hours (urgent) | Close the agent via `POST /v1/developer/agents/:agentId/close` (or the dashboard's **Close** button) and register a fresh one — re-running `floe-agent register` with the same name returns `409 name_conflict` since the original agent still exists. |
+| **Delegation expiry** | Operator delegation expires within 7 days (warning) or 24 hours (urgent) | Close the agent via `POST /v1/developer/agents/:agentId/close` (or the dashboard's **Close** button) and create a fresh one with `floe agents create`. Reusing the original name returns `409 name_conflict` while that agent still exists. |
 
 Alerts are delivered via webhooks and shown in the dashboard.
 
@@ -11822,6 +12256,95 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/42/open-credit
 
 ---
 
+## Initiative Ledger Endpoints
+
+The read and setup surface of the [Initiative Ledger](../ledger/overview.md). The concept pages explain what these return: [overview](../ledger/overview.md), [cost attribution & quarantine](../ledger/cost-attribution.md), [period close & restatements](../ledger/period-close.md) and [counterparty sharing](../ledger/counterparty-sharing.md). Those pages also cover the attribution, close and case-management routes, and the [OpenAPI spec](https://credit-api.floelabs.xyz/.well-known/openapi.yaml) has every request and response field.
+
+`/v1/developer/*` routes take a developer credential: a `floe_live_` key or the dashboard session. An agent key (`floe_…`) is refused with `403 developer_credential_required`. An initiative or entry belonging to another account answers `404`, the same as one that doesn't exist.
+
+### GET /v1/developer/initiatives
+
+The account's initiatives, newest first. `?limit` is 1–200 (default 100). Any account member can call it.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/initiatives" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "initiatives": [
+    {
+      "id": "init_0123456789abcdef01234567",
+      "name": "Support assistant",
+      "status": "active",
+      "membershipMode": "account",
+      "createdAt": "2026-09-30T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+`status` is `draft`, `active` or `closed`. `membershipMode` is `account` (any account member with the member role or above may write) or `members` (only the initiative's owners and contributors may write).
+
+### POST /v1/developer/initiatives
+
+Create an initiative. Needs the member role or above.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | 1–200 characters. |
+| `ownerMemberId` | number | No | API-key calls only. Names the account member who owns it; the initiative is then in `members` mode. Without it, an API key creates an `account`-mode initiative. A signed-in person always becomes the owner of what they create. |
+
+Returns `201 { "initiative": { … } }` with the fields above. Errors: `400 invalid_request`, `422 not_account_member` / `member_is_viewer`.
+
+### GET /v1/developer/initiatives/:id
+
+One initiative by its `init_…` id, as `{ "initiative": { … } }`. Returns `404 initiative_not_found` if it doesn't exist or belongs to another account.
+
+### GET /v1/developer/ledger/entries
+
+An initiative's current entries. A superseded entry is left out; you can still read it by id. Results are newest period first.
+
+| Query | Required | Description |
+|---|---|---|
+| `initiative` | Yes | `init_…` id |
+| `period` | No | `YYYY-MM` or `YYYY-Www`. With it, the response adds `periodCompleteness`. |
+| `type` | No | `cost`, `value`, `baseline`, `forecast` or `assumption` |
+| `limit` | No | 1–500, default 100 |
+
+Returns `{ "entries": [LedgerEntry], "hasMore": boolean, "periodCompleteness"? }`. Errors: `400 invalid_request` (`field` names the bad parameter), `404 initiative_not_found`. The entry fields are described in [The Initiative Ledger → Entries](../ledger/overview.md#entries).
+
+### GET /v1/developer/ledger/entries/:id
+
+One entry, current or superseded, and the entries its lineage names, resolved one level deep. Returns `{ "entry", "inputs", "unresolvedInputIds", "supersededBy", "restatedBy", "periodCompleteness" }`, or `404 entry_not_found`.
+
+Corrections go through `POST /v1/developer/ledger/entries/:id/supersede` (open period) and `…/restate` (locked period). See [Period close & restatements](../ledger/period-close.md#correcting-a-figure).
+
+### Case endpoints (buyer)
+
+These routes are for the buyer's side of a [shared case](../ledger/counterparty-sharing.md). They don't take a Floe key or the dashboard session.
+
+`POST /v1/case/session` exchanges a case link (`{ "token": "csh_…" }`) and an access token from the case page's email sign-in (`Authorization: Bearer …`) for the `floe_case_session` cookie (HttpOnly, Secure, `SameSite=Lax`, `Path=/v1/case`, 8 hours). Every other route needs that cookie plus `X-Floe-Case-Link` (the SHA-256 hex digest of the `csh_` token). Sign-in is browser-only. See [How the case session works](../ledger/counterparty-sharing.md#how-the-case-session-works).
+
+| Route | Role | What it does |
+|---|---|---|
+| `POST /v1/case/session` | invited buyer | Open the case session |
+| `GET /v1/case` | any buyer | The case, the member, and every assumption with its owner and value per scenario |
+| `GET /v1/case/journal` | any buyer | Value revisions, ownership changes, approvals and refused writes on this case |
+| `PUT /v1/case/assumptions/:key/value` | `buyer_finance`, owner of the key | Declare this case's value |
+| `POST /v1/case/assumptions/:key/proposals` | `buyer_finance` | Propose a value on a key you don't own |
+| `GET /v1/case/proposals` | any buyer | Proposals on this case that the buyer can see |
+| `POST /v1/case/proposals/:proposalId/accept` · `/reject` · `/withdraw` | `buyer_finance` | Decide a proposal on your key, or withdraw your own |
+| `POST /v1/case/assumptions/:key/approve` | `buyer_finance` | Approve the vendor value shown for a scenario (`{ scenario, entryId }`) |
+| `POST /v1/case/logout` | any buyer | Clear the session |
+
+Any check that fails (an unknown, revoked or expired link, or no active membership) returns the same `404 case_not_found`. A `buyer_viewer` attempting a write gets `403`.
+
+---
+
 ## Agent Endpoints
 
 These endpoints are called by an agent (using its `floe_*` key) to manage itself.
@@ -13106,6 +13629,18 @@ Notable changes and updates to the Floe protocol.
 > **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **35 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
+
+### v1.29.0 — The Initiative Ledger docs (October 2026)
+
+A new **Initiative Ledger** section documents the ledger routes.
+
+* **Overview.** Entries, initiatives and the grading methodology: `GET`/`POST /v1/developer/initiatives`, `GET /v1/developer/initiatives/{id}`, `GET /v1/developer/ledger/entries`, `GET /v1/developer/ledger/entries/{id}`.
+* **Cost attribution & quarantine.** `/v1/developer/dimension-maps*`, `/v1/developer/attribution/*` (settings, quarantine, proposals, team owners, unmapped keys, allocation) and `/v1/developer/ledger/remap`.
+* **Period close & restatements.** `/v1/developer/ledger/periods*`, `/v1/developer/ledger/true-up`, `/v1/developer/ledger/tie-outs*`, `/v1/developer/ledger/close-settings`, and `/v1/developer/ledger/entries/{id}/supersede` and `/restate`.
+* **Counterparty sharing.** `/v1/developer/initiatives/{id}/cases*`, `/assumptions*` and `/proposals*`, and the buyer's `/v1/case/*` routes.
+* **API reference.** [REST API → Initiative Ledger endpoints](developers/credit-api.md#initiative-ledger-endpoints).
+
+→ [The Initiative Ledger](ledger/overview.md) · [Cost attribution & quarantine](ledger/cost-attribution.md) · [Period close & restatements](ledger/period-close.md) · [Counterparty sharing](ledger/counterparty-sharing.md)
 
 ### Unreleased — Unmapped API key spend alert (pending the floe-monorepo L1.6 release)
 
