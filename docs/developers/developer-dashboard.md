@@ -109,7 +109,7 @@ The dashboard monitors your agents and fires alerts when:
 | Alert | Trigger | What to do |
 |---|---|---|
 | **Credit utilization warning** | Borrowed principal exceeds 80% of credit limit | Top up collateral or repay before API calls fail with `insufficient_balance` |
-| **Delegation expiry** | Operator delegation expires within 7 days (warning) or 24 hours (urgent) | Close the agent via `POST /v1/developer/agents/:agentId/close` (or the dashboard's **Close** button) and register a fresh one — re-running `floe-agent register` with the same name returns `409 name_conflict` since the original agent still exists. |
+| **Delegation expiry** | Operator delegation expires within 7 days (warning) or 24 hours (urgent) | Close the agent via `POST /v1/developer/agents/:agentId/close` (or the dashboard's **Close** button) and create a fresh one with `floe agents create`. Reusing the original name returns `409 name_conflict` while that agent still exists. |
 
 Alerts are delivered via webhooks and shown in the dashboard.
 

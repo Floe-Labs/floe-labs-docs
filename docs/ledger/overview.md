@@ -44,7 +44,7 @@ An entry never changes once it is written. If an amount turns out to be wrong, a
 
 ## Confidence grades
 
-A grade says where the money came from and how it was measured. Who typed the number doesn't affect it.
+A grade says how well-evidenced an amount is.
 
 | Grade | Meaning | Examples |
 |---|---|---|
@@ -53,12 +53,12 @@ A grade says where the money came from and how it was measured. Who typed the nu
 | **C** | Provided by a person, with a named source | A hand-entered correction; an assumption value that cites its source |
 | **D** | An estimate: a benchmark, a list-price figure, or a value someone asserted without a source | A gateway's own list-price cost; an assumption with no citation |
 
-Grades on totals follow two rules:
+On totals:
 
-* **A total takes the lowest grade in it.** Grades are never averaged, so a small grade-D amount still makes the total grade D.
-* **The mix is shown beside the grade.** Graded money in the API comes with a breakdown by grade, for example "A $4,210 · B $812 · D $37". The server works out the grade, and the dashboard never assigns one.
+* **A total takes the lowest grade in it.**
+* **The mix is shown beside the grade**, for example "A $4,210 · B $812 · D $37".
 
-A cost that the vendor hasn't published yet is **pending**, not grade D. It adds nothing to the total until it arrives, and the period is marked as incomplete until then.
+Pending costs are not counted, and they mark the period incomplete.
 
 ## Initiatives
 

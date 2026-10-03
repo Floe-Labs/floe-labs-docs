@@ -1094,7 +1094,7 @@ An entry never changes once it is written. If an amount turns out to be wrong, a
 
 ## Confidence grades
 
-A grade says where the money came from and how it was measured. Who typed the number doesn't affect it.
+A grade says how well-evidenced an amount is.
 
 | Grade | Meaning | Examples |
 |---|---|---|
@@ -1103,12 +1103,12 @@ A grade says where the money came from and how it was measured. Who typed the nu
 | **C** | Provided by a person, with a named source | A hand-entered correction; an assumption value that cites its source |
 | **D** | An estimate: a benchmark, a list-price figure, or a value someone asserted without a source | A gateway's own list-price cost; an assumption with no citation |
 
-Grades on totals follow two rules:
+On totals:
 
-* **A total takes the lowest grade in it.** Grades are never averaged, so a small grade-D amount still makes the total grade D.
-* **The mix is shown beside the grade.** Graded money in the API comes with a breakdown by grade, for example "A $4,210 · B $812 · D $37". The server works out the grade, and the dashboard never assigns one.
+* **A total takes the lowest grade in it.**
+* **The mix is shown beside the grade**, for example "A $4,210 · B $812 · D $37".
 
-A cost that the vendor hasn't published yet is **pending**, not grade D. It adds nothing to the total until it arrives, and the period is marked as incomplete until then.
+Pending costs are not counted, and they mark the period incomplete.
 
 ## Initiatives
 
@@ -1175,7 +1175,7 @@ URL: https://floe-labs.gitbook.io/docs/initiative-ledger/cost-attribution.md
 
 Every dollar of AI cost on the [ledger](overview.md) should land on an initiative, a department and a P&L line. Most of it gets there from tags and maps you set up once. The rest goes into **quarantine**. Quarantine is a holding area for untagged spend where you can see what is missing and accept or reject a proposed owner. By the time the month locks, every untagged dollar has either been attributed or allocated, or is listed as one that couldn't be allocated.
 
-This page covers the maps, the quarantine, the inference rules that propose owners, and the close-time allocation of what is left.
+This page covers the maps, the quarantine, proposed owners, and the close-time allocation of what is left.
 
 ## Maps: from a key to a P&L line
 
@@ -1190,11 +1190,11 @@ A **dimension map** turns something your systems already know into a finance dim
 | `agent_initiative` | An agent | An initiative |
 | `project_initiative` | A project | An initiative |
 
-A cost entry gets its initiative from the first map that matches: the API key, then the agent, then the project. If none matches, it goes to **Unassigned**.
+Cost that matches no initiative map goes to **Unassigned**.
 
-Maps are versioned and effective-dated, and they are never edited in place. Declaring a new value for a key adds a new version and closes the old one. Two rules keep past months stable:
+Maps are versioned and effective-dated. Declaring a new value for a key adds a new version and closes the old one.
 
-* **Saving a map moves no cost that is already on the ledger.** Entries keep the mapping that was in effect when they were written. The response's `pastEntries` tells you how much an explicit remap would move. When you want to move it, run the remap (`POST /v1/developer/ledger/remap`): it corrects entries in open periods, and adds restatements to the next open period for locked ones.
+* **Saving a map moves no cost that is already on the ledger.** The response's `pastEntries` tells you how much an explicit remap would move. To move it, call `POST /v1/developer/ledger/remap`. Locked months change only by restatement.
 * **An edit applies from now.** A key's *first* mapping can be backdated so a first load covers months already ingested. A change to an existing mapping can't be backdated (`409 backdated_edit`).
 
 ```bash
@@ -1223,22 +1223,16 @@ curl -X PUT https://credit-api.floelabs.xyz/v1/developer/attribution/settings \
 
 `GET /v1/developer/attribution/quarantine?period=2026-08` shows the month's untagged spend, grouped by team. Each row shows what produced the spend (source, API key, person, model, the vendor that billed it), which dimensions are missing, and any open proposal that would fix it. In the dashboard, this is **Ledger → Reconcile → Quarantine**.
 
-For account owners and admins, the response also includes the **coverage report**: the share of the month's cost that is tagged, rule-attributed, driver-allocated, quarantined, or not stated, in basis points that add up to 100%. The invoice true-up is shown as its own signed line, not as a share. The report also gives the month's cost with its grade and grade mix, overall and per initiative. Money in the response is integer micro-dollar text plus a display string, formatted by the server.
+For account owners and admins, the response also includes `coverage`: the share of the month's cost that is tagged, rule-attributed, driver-allocated, quarantined or not stated (in basis points), the true-up line, and the month's cost with its `grade`, `gradeMix` and `attributionMix`. Money is integer micro-dollar text plus a display string.
 
 Owners and admins see the whole account. You can make an account member a **team owner** (`POST /v1/developer/attribution/team-owners`). A team owner sees their team's rows, plus untagged rows whose proposal would move dollars into their team, and can decide those proposals. Anyone else gets `403`.
 
-## Inference rules
+## Proposed owners
 
-Floe proposes an owner for untagged spend with three rules, tried in this order:
-
-1. **API key → team.** The people who spent on an unmapped key this month all have their *other* keys mapped to one team. Floe proposes mapping the key to that team.
-2. **Email → department.** The other people who spent on this person's keys all belong to one department. Floe proposes mapping the person's email to that department.
-3. **Model and time window → nearest tagged task.** For a row the first two rules didn't cover, Floe looks for fully tagged rows from the same source, API key, person and model within the window either side (15 minutes by default, set per source in the settings). If they all agree on the missing dimensions, Floe proposes them.
-
-A rule proposes something only when every piece of evidence agrees. It uses only tags the source supplied, never ones an earlier rule proposed. A person always decides:
+Floe proposes an owner for untagged spend and shows its evidence. A person accepts or rejects:
 
 ```text
-# Run the rules for an open month (a signed-in admin or owner)
+# Generate proposals for an open month (a signed-in admin or owner)
 POST /v1/developer/attribution/inference   {"period": "2026-08"}
 
 # Accept or reject a proposal (a signed-in person, with an optional reason)
@@ -1246,12 +1240,11 @@ POST /v1/developer/attribution/rules/{ruleId}/accept   {"reason": "…"}
 POST /v1/developer/attribution/rules/{ruleId}/reject   {"reason": "…"}
 ```
 
-* **Accepting a map proposal** adds a map version, effective from the start of the current open month. It applies to that month's quarantined and Unassigned spend for the key, and to everything after. Earlier months move only if you also run the remap.
-* **Accepting a nearest-task proposal** corrects those specific rows in the open month.
+* **Accepting** applies from the current open month. Earlier months move only if you also run the remap.
 * **Rejecting** leaves the dollars in quarantine, and the same proposal is not made again.
-* **Grades never change** when attribution changes. How sure Floe is of the *owner* is tracked separately from how sure it is of the *amount* (see below).
+* **Grades never change** when attribution changes (see [Two kinds of confidence](#two-kinds-of-confidence)).
 
-Running the rules and deciding proposals needs a signed-in person. An API key gets `403 person_required`. `GET /v1/developer/attribution/rules/precision` shows, for each rule, how many of its proposals were accepted.
+Generating and deciding proposals needs a signed-in person. An API key gets `403 person_required`. `GET /v1/developer/attribution/rules/precision` shows how many proposals of each kind were accepted.
 
 ### Unmapped-key alerts
 
@@ -1259,7 +1252,7 @@ When an API key from your own LLM gateway's logs has no team or initiative mappi
 
 ## Allocation at close
 
-Whatever is still untagged when the month closes is spread by a declared driver: **each slice's share of the attributed spend on the same bill**. Floe uses the narrowest slice it can. It keeps the initiative, department and team where it knows them, and widens only when that slice has no attributed spend (dropping team, then department, then initiative, then using the whole bill). It fills in only the missing dimensions. Headcount is never used as a driver.
+Whatever is still untagged when the month closes is allocated in proportion to the attributed spend on the same bill. Locking a month runs the allocation automatically (see [Period close & restatements](period-close.md)).
 
 ```text
 # What allocation would write (nothing is written)
@@ -1269,9 +1262,7 @@ POST /v1/developer/attribution/allocation/preview   {"period": "2026-08"}
 POST /v1/developer/attribution/allocation/run       {"period": "2026-08"}
 ```
 
-Each move is written as a pair of entries, −x from the source and +x to the target, so the month's total never changes. Both entries keep the source's grade and record the driver and weights. Running it again on an unchanged month writes nothing. Locking a month runs the allocation automatically (see [Period close & restatements](period-close.md)).
-
-Dollars with no attributed spend anywhere on their bill can't be allocated. They stay in quarantine, are listed under `unallocatable`, and don't block the lock. Allocated dollars also stay listed in the quarantine with their status (`quarantined`, `partially_allocated` or `allocated`), so you can still see that they were moved.
+Allocation never changes the month's total or a grade. Dollars that can't be allocated stay in quarantine, are listed under `unallocatable`, and don't block the lock. Allocated dollars also stay listed in the quarantine with their status (`quarantined`, `partially_allocated` or `allocated`), so you can still see that they were moved.
 
 ## Two kinds of confidence
 
@@ -1286,7 +1277,7 @@ A cost entry carries two separate measures, and neither affects the other:
 | `inferred` | A rule proposed the owner and a person accepted it |
 | `allocated` | Moved at close by the declared driver |
 | `apportioned` | Part of an invoice true-up, spread by the gateway's estimated costs |
-| `apportioned_imputed` | Part of an invoice true-up, spread by estimated weights that were themselves priced from Floe's catalog |
+| `apportioned_imputed` | Part of an invoice true-up, spread by catalog-priced estimates |
 | `unattributed` | A true-up remainder with nothing to spread it by, parked in Unassigned until close allocates it |
 
 Graded totals include an `attributionMix` beside the `gradeMix`, so a figure shows how much of it is exact and how much was inferred or allocated.
@@ -1307,31 +1298,46 @@ URL: https://floe-labs.gitbook.io/docs/initiative-ledger/period-close.md
 
 # Period close & restatements
 
-A ledger period is a month (`2026-08`) or an ISO week (`2026-W35`). It is **open** until you lock it, and after that it never changes. This page covers how a month reaches the point where it can lock (tied to the invoice and checked for completeness), what the lock does, and how a figure is corrected before and after the lock.
+A ledger period is a month (`2026-08`) or an ISO week (`2026-W35`). It is **open** until you lock it, and after that it never changes. This page covers how to check a period, tie it to the invoice, lock it, and correct a figure before and after the lock.
 
 ## Is the month complete?
-
-Every period read includes `completeness`. For an open period it is computed when you read it (`live: true`). For a locked period it is the record written at lock time, frozen.
 
 ```bash
 curl https://credit-api.floelabs.xyz/v1/developer/ledger/periods/2026-08 \
   -H "Authorization: Bearer $FLOE_LIVE_KEY"
 ```
 
-`completeness.complete` is `true` only when `reasons` is empty. The reasons fall into four groups:
+Every period read includes `completeness`:
 
-| Group | Examples | What it means for the figure |
-|---|---|---|
-| **Missing dollars** | `unpriced_legs`, `pending_legs`, `payer_unknown`, `gateway_unpriced`, `holds_excluded` | The true cost is at least the figure. `lowerBound` is `true`. |
-| **Overstated dollars** | `hold_booked_at_reserve`, `orchestrator_connection_flag` | The figure may count something twice. It is not a lower bound. |
-| **Not tied to the invoice** | `invoice_pending`, `tie_out_unexplained` | The gateway's estimates haven't been matched to the vendor's invoice yet (see below). |
-| **Noted, not blocking** | `vendor_residuals_missing`, `unallocatable_spend`, `manual_override_conflict` | Recorded with the period, but they don't stop a lock. |
+* `complete` is `true` when `reasons` is empty.
+* `reasons` lists why the period isn't complete.
+* `lowerBound` is `true` when the true cost is at least the figure shown.
+* `live` is `true` for an open period, where completeness is computed when you read it. A locked period returns the record frozen at lock time.
+
+| Reason | Meaning |
+|---|---|
+| `unpriced_legs` | Some vendor charges have no price |
+| `pending_legs` | Some vendor charges haven't been published by the vendor yet |
+| `payer_unknown` | A platform listed a charge without saying what it cost or who paid |
+| `gateway_unpriced` | Gateway-log rows carry usage but no price |
+| `holds_excluded` | Charges still held at their reserve are left out |
+| `hold_booked_at_reserve` | Held charges were booked at their reserve by an owner override |
+| `orchestrator_connection_flag` | A platform charge may be counted twice |
+| `orchestrator_own_account_match` | A charge was billed both by the platform and to your own account; confirm or dispute it |
+| `invoice_pending` | A vendor's month has no invoice tie-out yet |
+| `tie_out_unexplained` | A vendor's tie-out is over tolerance and hasn't been accepted |
+| `pre_backfill` | Rows from before the ledger backfill haven't been written yet |
+| `vendor_residuals_missing` | Vendor credits, tax and other adjustments aren't on the ledger yet |
+| `unallocatable_spend` | Untagged spend that couldn't be allocated |
+| `manual_override_conflict` | A manual correction no longer matches its source |
+| `locked_before_completeness` | The period was locked before completeness was recorded |
+| `completeness_not_computed` | Completeness couldn't be computed |
 
 `GET /v1/developer/ledger/periods` lists the periods a close has touched, newest first. A period that isn't listed is open. Any account member can read periods.
 
 ## Tying the month to the invoice
 
-Gateway traffic is priced at list rates as it happens. The vendor's invoice reflects what you actually pay. The **true-up** closes that gap for one vendor and one month:
+The **true-up** reconciles the gateway's estimates for one vendor and month to what the vendor billed. It itemizes the difference by cause and posts it to the ledger.
 
 ```bash
 curl -X POST https://credit-api.floelabs.xyz/v1/developer/ledger/true-up \
@@ -1340,15 +1346,9 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/ledger/true-up \
   -d '{"vendor": "anthropic", "period": "2026-08"}'
 ```
 
-* **What it compares.** The vendor's total comes from the invoice on file for the month: grade A when the invoice was read with high confidence, B otherwise. With no invoice, it comes from the vendor's cost report (B). Floe compares that total with the sum of the month's gateway estimates billed by that vendor.
-* **How the difference is explained.** The difference is broken down in a fixed order: timing, missing or extra rows, rate, then tax, credit, discount or fee. Anything left over is `unexplained`, so the causes always add up to the difference exactly.
-* **Where it is posted.** The whole difference is posted as true-up entries and spread across the gateway's usage by initiative, department, person and model, so per-person and per-initiative figures still add up to the invoice. If the usage month is already locked, the entries go into the next open period.
-* **Running it again** writes only what changed. With the same inputs it writes nothing.
-* **Tolerance.** If the unexplained part is more than 0.5% of the invoice, the month reads `tie_out_unexplained` until a re-run ties it out, or the account owner accepts it with a reason (`POST /v1/developer/ledger/tie-outs/{id}/override`).
-
-Footing an uploaded invoice runs the true-up automatically. An hourly job also runs the cost-report true-up for every finished month from a connected vendor that doesn't have one yet. `GET /v1/developer/ledger/tie-outs?period=2026-08` shows each vendor's tie-out two ways: by the month the usage happened and by the month the true-up was posted. It also includes a bridge from the ledger's net AI cost to the invoice total.
-
-`GET` / `PUT /v1/developer/ledger/close-settings` sets how many business days you wait for invoices (`invoiceWindowBusinessDays`, default 5) and whether non-recoverable sales tax counts as AI cost (`salesTaxInAiCost`, default `false`).
+* `GET /v1/developer/ledger/tie-outs?period=2026-08` returns each vendor's tie-out with its causes, status and grade.
+* A tie-out whose unexplained remainder is more than 0.5% of the invoice reads `tie_out_unexplained`. The account owner can accept it with a reason: `POST /v1/developer/ledger/tie-outs/{id}/override` `{ "reason" }`.
+* `GET` / `PUT /v1/developer/ledger/close-settings` sets `invoiceWindowBusinessDays` (how long you wait for invoices, default 5) and `salesTaxInAiCost` (default `false`).
 
 ## Locking a period
 
@@ -1357,30 +1357,35 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/ledger/periods/2026-08
   -H "Authorization: Bearer $FLOE_LIVE_KEY"
 ```
 
-A period can be locked only once it has fully ended (UTC). Locking a month does all of the following in one step:
+A period can be locked once it has fully ended (UTC). Locking needs the owner or admin role. Locking a month does four things:
 
-1. **Brings every priced cost onto the ledger.** Every source row of the month is written as a cost entry, so nothing priced is left off before the month freezes. If a row can't be processed, the lock is refused and the period stays open.
-2. **Allocates leftover untagged spend** using the close driver (see [Cost attribution & quarantine](cost-attribution.md#allocation-at-close)).
-3. **Records the period's completeness** and a **coverage snapshot**: the share of cost that was tagged, rule-attributed, driver-allocated and quarantined. Read it later with `GET /v1/developer/ledger/periods/2026-08/coverage`.
-4. **Marks every entry in the period `locked`.**
+1. It writes every priced cost of the month to the ledger.
+2. It allocates leftover untagged spend (see [Cost attribution & quarantine](cost-attribution.md#allocation-at-close)).
+3. It snapshots the period's completeness and coverage. Read the coverage snapshot with `GET /v1/developer/ledger/periods/2026-08/coverage`.
+4. It marks every entry in the period `locked`.
 
-Locking a period that is already locked changes nothing and returns `alreadyLocked: true`. Locking needs the owner or admin role.
+Locking a period that is already locked changes nothing and returns `alreadyLocked: true`.
 
 ### When a lock is refused
 
-| `409` error | Why | What to do |
-|---|---|---|
-| `period_not_ended` | The period hasn't fully ended | Wait |
-| `holds_pending` | Charges in the period are still held at their reserve | Lock after they settle |
-| `period_incomplete` | Dollars are missing or overstated, or the month isn't tied to the invoice. `completeness` says which. | Fix the cause, or override (below) |
-| `driver_allocation_over_threshold` | Close allocation moved more than your threshold (default 2% of the month's cost) | Review the moved dollars, listed in `driverAllocation`, or override |
-| `normalizer_failed` / `normalizer_busy` | Some source rows couldn't be priced, or another run is in progress | Fix the listed rows, or retry shortly |
+| `409` error | What to do |
+|---|---|
+| `period_not_ended` | Wait until the period has ended |
+| `holds_pending` | Lock after the held charges settle, or override |
+| `period_incomplete` | Resolve what `completeness` lists, or override |
+| `driver_allocation_over_threshold` | Review `driverAllocation`, or override |
+| `normalizer_failed` | Fix the rows listed in `failedRefs`, then retry |
+| `normalizer_busy` | Retry shortly |
+| `override_not_required` | Lock without an override |
 
-The **account owner** can lock anyway by sending an `overrideReason` (10–500 characters) and the `overrideGates` it covers: `holds_pending`, `incomplete`, `payer_confirmed` or `driver_allocation`. Each gate clears only its own condition. Open periods list the gates they need now in `requiredOverrideGates`. The reason, who gave it and the gates are stored on the period (`lockOverride`).
+**Override (account owner only):**
 
-A charge still held when you override is booked at its reserve as grade-D cost. When it settles, the difference goes into the next open period as a restatement.
+* `overrideReason`: 10–500 characters.
+* `overrideGates`: one or more of `holds_pending`, `incomplete`, `payer_confirmed` or `driver_allocation`. Each gate clears only its own condition.
+* `requiredOverrideGates`: listed on every open period, and gives the gates a lock needs now.
+* `lockOverride`: set on the locked period, and records the reason, who gave it and the gates.
 
-You can set the allocation threshold with `PUT /v1/developer/close/allocation-threshold` (`thresholdBps` and an optional absolute `capMicro`; the stricter one applies). Each change is a new version, and the old ones are kept.
+The allocation threshold is a setting: `GET` / `PUT /v1/developer/close/allocation-threshold`.
 
 ## Correcting a figure
 
@@ -1390,18 +1395,18 @@ How you correct an entry depends on whether its period is open or locked.
 |---|---|---|
 | Route | `POST /v1/developer/ledger/entries/{id}/supersede` | `POST /v1/developer/ledger/entries/{id}/restate` |
 | Body | `{ "amount", "reason", "estimate"? }` | `{ "newAmount", "reason", "estimate"? }` (reason required) |
-| What is written | A replacement entry in the same period. The old entry is marked superseded. | A new entry in the **next open period** with `restates` = the locked entry and `priorPeriod` = its period. The locked entry stays exactly as it was. |
+| What is written | A replacement entry in the same period. The old entry is marked superseded. | A new entry in the **next open period**, with `restates` set to the locked entry and `priorPeriod` set to its period. The locked entry stays exactly as it was. |
 | Role | Member or above | Owner or admin |
 | Wrong period | `409 period_locked`: use restate | `409 period_open`: use supersede |
 
-Both routes work the same way in these respects:
+Both routes work the same way:
 
 * **A hand-typed correction is grade C at most**, or D if you send `estimate: true`. It is never graded higher than the entry it replaces. A correction reaches grade A only through a footed vendor invoice ([Vendor actuals](../build/vendor-actuals.md)).
-* **Cost and value restate as a difference.** The restatement carries new minus old, so period totals add up. A baseline restates as the new value.
-* **Each request is safe to repeat.** Sending the same request again returns the recorded correction with `isNew: false`. A different amount for an entry that is already corrected gets `409`.
-* **Assumptions can't be corrected here** (`409 assumption_register_only`). They change only through the assumptions register (see [Counterparty sharing](counterparty-sharing.md)), so their citation, grade and journal always apply.
+* **Cost and value restate as a difference** (new minus old). A baseline restates as the new value.
+* **Each request is safe to repeat.** Sending the same request again returns the recorded correction with `isNew: false`. Sending a different amount for an entry that is already corrected gets `409`.
+* **Assumptions can't be corrected here** (`409 assumption_register_only`). Use the assumptions register instead (see [Counterparty sharing](counterparty-sharing.md)).
 
-Late data for a locked month never changes that month either. It lands in the next open period with `priorPeriod` set. Reading a locked period returns `restatedSinceLock`: how many later entries stand in for it, and the net amount.
+Late data for a locked month lands in the next open period with `priorPeriod` set. Reading a locked period returns `restatedSinceLock`: the number of later entries that stand in for it, and their net amount.
 
 ## Related
 
@@ -1418,7 +1423,7 @@ URL: https://floe-labs.gitbook.io/docs/initiative-ledger/counterparty-sharing.md
 
 # Counterparty sharing
 
-When an AI vendor makes a business case to a buyer, both sides need to trust the same inputs. Counterparty sharing puts those inputs in one place that both parties can see. Each input has a named owner, only the owner can change it, and every change is journaled with who made it and why.
+Counterparty sharing lets an AI vendor and a buyer's finance team work from the same business-case inputs. Each input has a named owner, only the owner can change it, and every change is journaled.
 
 This page is for the vendor that shares a case and for the buyer's finance team that reviews it.
 
@@ -1452,13 +1457,13 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIAT
 ```
 
 * **Buyer roles.** A `buyer_finance` member can edit the inputs they own, propose changes, and approve values. A `buyer_viewer` can only read.
-* **The link** (`csh_…`, returned with its `path`, `/case/csh_…`) is **shown once**. Floe stores only a hash of it. It lasts 90 days unless you set `expiresInDays` (up to 365). A case has only one live link at a time. Revoking it (`…/share/revoke`) makes it stop working for everyone, and issuing a new one ends every session opened from the old one.
+* **The link** (`csh_…`, returned with its `path`, `/case/csh_…`) is **shown once** and can't be retrieved again. It lasts 90 days unless you set `expiresInDays` (up to 365). A case has only one live link at a time. Revoking it (`…/share/revoke`) makes it stop working for everyone, and issuing a new one ends every session opened from the old one.
 * **The link alone grants nothing.** The buyer must also sign in with an email address that was invited to the case.
 * Inviting buyers and issuing or revoking the link needs the admin role, or the person who owns the case on the vendor side. Removing one buyer leaves the link and the other buyers working.
 
 ## What the buyer sees
 
-The buyer opens the link on the Floe dashboard (`https://dev-dashboard.floelabs.xyz/case/csh_…`) and signs in there with their invited email. This opens an 8-hour **case session**. It doesn't create a Floe account or give access to the vendor's console. On every request, Floe checks that the link is still live and the email still has an active membership. If either check fails, the answer is the same `404 case_not_found` as an unknown link.
+The buyer opens the link on the Floe dashboard (`https://dev-dashboard.floelabs.xyz/case/csh_…`) and signs in there with their invited email. This opens an 8-hour **case session**. It doesn't create a Floe account or give access to the vendor's console. If the link is revoked or expired, or the buyer's membership is removed, every call returns `404 case_not_found`, the same as an unknown link.
 
 ### How the case session works
 
@@ -1485,7 +1490,7 @@ In the case, the buyer sees every assumption, who owns it, whether they may edit
 
 ## The assumptions register
 
-An **assumption** is a named input to the model, such as a monthly volume, a rate or a price. It has a `key`, a `name`, a `unit` and an owner. Values are integer text in that unit. Its values are ledger entries, one per scenario. Each value records who set it, when, why, and on what evidence.
+An **assumption** is a named input to the business case, such as a monthly volume, a rate or a price. It has a `key`, a `name`, a `unit` and an owner. Its values are ledger entries, one per scenario, written as integer text in that unit.
 
 ```bash
 # Declare a value (vendor side; the buyer uses PUT /v1/case/assumptions/{key}/value)
@@ -1504,8 +1509,8 @@ curl -X PUT "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATI
 
 * **Scenarios.** A value is set for `conservative`, `expected` or `vendor_claim`. `all` sets one value for both conservative and expected. It never covers `vendor_claim`.
 * **The citation sets the grade.** A value with a named source (`citation.ref`) is grade C at best. A value with no source, a benchmark (`citation.benchmark: true`), a vendor's assertion (`citation.kind: "vendor_claim"`), or any value in the `vendor_claim` scenario is grade D. A vendor's own platform export is a named source and is graded like one.
-* **Never an edit.** A new value is a new entry. Changing a value needs a reason. In a locked period, the change is written as a restatement into the next open period.
-* **Which value a case uses.** For each scenario, a case uses its own value for that scenario first, then its own `all` value, then the initiative's default value for the scenario, then the default's `all` value.
+* **Never an edit.** A new value is a new entry. Changing a value needs a `reason`. In a locked period, the change is written as a restatement into the next open period.
+* **Case values and defaults.** A case uses its own values where they are set, and the initiative's defaults otherwise.
 
 `GET /v1/developer/initiatives/{id}/assumptions` lists every assumption with its owner and values. Add `?case=<caseId>` to see what one case uses. `…/assumptions/journal` lists every revision and ownership change.
 
@@ -1519,15 +1524,32 @@ Every assumption has one owner:
 | `member:<id>` | A named person on the vendor's team |
 | `case_member:<id>` | A `buyer_finance` member of a case on this initiative |
 
-Only the owner writes the value. Anyone else gets `403 not_assumption_owner`, and the error body's `owner` says who owns it (`kind` and `label`). The vendor can't write a value the buyer owns either. A buyer who is refused sees a vendor-side owner only as the vendor organization, never a person or an id. The response also includes a `proposeUrl` when the buyer can propose a value instead. A vendor who is refused sees the owning person's email address (or wallet if no email is on file) and, for a named team member, their member id. The vendor assigns ownership (`PUT …/assumptions/{key}/owner`), and the buyer can't claim an assumption. Taking an assumption back from a buyer needs a reason, which both sides see in their journals. Refused writes are logged and appear in the case journal.
+| Action | Who may do it |
+|---|---|
+| Create a case | Vendor: member role or above |
+| Invite or remove buyers, issue or revoke the link | Vendor: admin, or the case's vendor-side owner |
+| Reassign a case's vendor-side owner | Vendor: admin |
+| Write an assumption value | The assumption's owner only. Anyone else gets `403 not_assumption_owner`. |
+| Hand an assumption to a new owner (`PUT …/assumptions/{key}/owner`) | Vendor: member role or above. A buyer can't claim one. Taking one back from a buyer needs a `reason`. |
+| Propose a value | Anyone who can see an assumption but can't write it (on the buyer side, `buyer_finance`) |
+| Accept or reject a proposal | Whoever could write the value |
+| Approve a vendor-written value | `buyer_finance` |
+| Read the case and its journal | `buyer_finance` and `buyer_viewer` |
+
+**What a refused write shows.** The `403 not_assumption_owner` body's `owner` field (`kind`, `label`) says who owns the assumption:
+
+* **A buyer** sees a vendor-side owner only as the vendor organization, never a person or an id. The response also includes `proposeUrl` when the buyer can propose a value instead.
+* **A vendor** sees the owning person's email address (or wallet if no email is on file) and, for a named team member, their member id.
+
+Refused writes appear in the case journal.
 
 ### Proposals
 
 If you can see an assumption but can't edit it, you can **propose** a value instead. The proposal includes the value, scenario, citation and a reason. The assumption doesn't change until its owner accepts. Each person can have one open proposal per assumption and scenario.
 
 * **Accepting** writes the value as a new revision, graded by the citation.
-* **When a buyer accepts a vendor's proposal** without adding a citation of their own, the value is recorded as the vendor's claim: grade D. There is one exception. If the vendor cited its own platform export and the buyer confirms it (`confirmExport: true`), the value is graded by that source (C). A vendor saying a figure comes from its export is only an assertion until the buyer confirms it.
-* **Rejecting** needs a reason, which the proposer sees.
+* **When a buyer accepts a vendor's proposal** without adding a citation of their own, the value is recorded as the vendor's claim: grade D. The exception is when the vendor cited its own platform export and the buyer confirms it (`confirmExport: true`). The value is then graded by that source (C).
+* **Rejecting** needs a `decisionReason`, which the proposer sees.
 * If the value changed after the proposal was opened, accepting it returns `409 value_changed` and the proposal stays open.
 
 ### Buyer approval
@@ -7100,7 +7122,7 @@ The dashboard monitors your agents and fires alerts when:
 | Alert | Trigger | What to do |
 |---|---|---|
 | **Credit utilization warning** | Borrowed principal exceeds 80% of credit limit | Top up collateral or repay before API calls fail with `insufficient_balance` |
-| **Delegation expiry** | Operator delegation expires within 7 days (warning) or 24 hours (urgent) | Close the agent via `POST /v1/developer/agents/:agentId/close` (or the dashboard's **Close** button) and register a fresh one — re-running `floe-agent register` with the same name returns `409 name_conflict` since the original agent still exists. |
+| **Delegation expiry** | Operator delegation expires within 7 days (warning) or 24 hours (urgent) | Close the agent via `POST /v1/developer/agents/:agentId/close` (or the dashboard's **Close** button) and create a fresh one with `floe agents create`. Reusing the original name returns `409 name_conflict` while that agent still exists. |
 
 Alerts are delivered via webhooks and shown in the dashboard.
 
@@ -13705,7 +13727,7 @@ Notable changes and updates to the Floe protocol.
 A new **Initiative Ledger** section documents the ledger underneath cost, attribution and close. Every record is an initiative; every entry carries a source, an A–D confidence grade and, when computed, the formula and inputs it came from; periods lock and corrections restate.
 
 * **Overview.** Entries, grades (a total takes its lowest grade, with the mix beside it), initiatives, and reading entries with their lineage: `GET /v1/developer/ledger/entries`, `GET /v1/developer/ledger/entries/{id}`, `GET`/`POST /v1/developer/initiatives`.
-* **Cost attribution & quarantine.** Dimension maps (API key → team, email → department, department → P&L line, key / agent / project → initiative), the quarantine of untagged spend, the three inference rules a person accepts or rejects, unmapped-key alerts, and allocation of what is left at close.
+* **Cost attribution & quarantine.** Dimension maps (API key → team, email → department, department → P&L line, key / agent / project → initiative), the quarantine of untagged spend, proposed owners a person accepts or rejects, unmapped-key alerts, and allocation of what is left at close.
 * **Period close & restatements.** Period completeness, the estimated-to-invoice true-up and tie-outs, locking a period and its override gates, supersede (open period) vs restate (locked period).
 * **Counterparty sharing.** Cases shared with a buyer by link plus email sign-in, the assumptions register with owners and scenarios, proposals, and buyer approval.
 * **API reference.** [REST API → Initiative Ledger endpoints](developers/credit-api.md#initiative-ledger-endpoints) documents initiatives, ledger entries and the buyer's `/v1/case` routes, including the browser-only case session (`floe_case_session` cookie + `X-Floe-Case-Link`).
