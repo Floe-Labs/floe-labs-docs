@@ -51,7 +51,7 @@ npm i -g @floelabs/cli    # or keep the `floe` bin around
 | [Get started](#get-started) | `init` · `status` · `use` · `test` |
 | [Metered calls](#metered-calls) | `chat` · `embed` · `speak` · `transcribe` · `pay` |
 | [Agents & limits](#agents-limits) | `agents` · `keys` · `devkeys` · `budget` · `policy` · `allowlist` · `credit` |
-| [Observability & billing](#observability-billing) | `activity` · `usage` · `interactions` · `outcomes` · `actuals` · `ledger` · `billing` · `account` · `team` |
+| [Observability & billing](#observability-billing) | `activity` · `usage` · `interactions` · `outcomes` · `actuals` · `gateway` · `ledger` · `billing` · `account` · `team` |
 | [Money](#money) | `funds` · `cashout` |
 | [Platform](#platform) | `webhooks` · `models` · `estimate` · `providers` · `phone` · `actions` · `orchestrators` · `vendors` |
 
@@ -532,6 +532,21 @@ floe actuals invoices foot 11 --dry-run   # rehearse first — footing is irreve
 **Timing:** some legs can be costed the moment a call ends, others only on the vendor's next-day batch — so `pending` on a call from a minute ago is the steady state, not a defect.
 
 **Footing an invoice is irreversible** — `--dry-run` runs the identical computation and rolls it back. Without `--dry-run` the command asks you to type the id back; pass `--yes` in scripts.
+
+---
+
+### `floe gateway`
+
+Check your own LLM gateway's export file against the [gateway export contract](gateway-export-contract.md) (or a built-in LiteLLM / Portkey / Helicone / OpenRouter template) **before** importing it. A dry run: it stores nothing, and never prints a row's contents, only header names, counts, reason codes and row numbers.
+
+```bash
+floe gateway validate gateway-2026-09.ndjson                     # offline: the file never leaves your machine
+floe gateway validate gateway-2026-09.csv --online               # + account/connection checks
+floe gateway validate export.csv --online --connection our-gateway   # read with a connection's profile
+floe gateway validate export.csv --template floe-canonical-csv@1
+```
+
+Offline is the default and runs the same file-only checks; account/connection checks are available online only, and it prints them as caveats (ids already imported, people, rows Floe already metered, the connection's id mode). `--online` posts the file to `POST /v1/developer/ext-gateway/validate` (up to 10 MiB). `--connection` needs `--online` and excludes `--template`. Exit code `1` when the file isn't valid. Report fields and a worked example: [Gateway export contract → Validate before you import](gateway-export-contract.md#validate-before-you-import).
 
 ---
 
