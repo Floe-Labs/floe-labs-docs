@@ -18,6 +18,7 @@ A new **Initiative Ledger** section documents the ledger underneath cost, attrib
 * **Cost attribution & quarantine.** Dimension maps (API key → team, email → department, department → P&L line, key / agent / project → initiative), the quarantine of untagged spend, the three inference rules a person accepts or rejects, unmapped-key alerts, and allocation of what is left at close.
 * **Period close & restatements.** Period completeness, the estimated-to-invoice true-up and tie-outs, locking a period and its override gates, supersede (open period) vs restate (locked period).
 * **Counterparty sharing.** Cases shared with a buyer by link plus email sign-in, the assumptions register with owners and scenarios, proposals, and buyer approval.
+* **API reference.** [REST API → Initiative Ledger endpoints](developers/credit-api.md#initiative-ledger-endpoints) documents initiatives, ledger entries and the buyer's `/v1/case` routes, including the browser-only case session (`floe_case_session` cookie + `X-Floe-Case-Link`).
 
 → [The Initiative Ledger](ledger/overview.md) · [Cost attribution & quarantine](ledger/cost-attribution.md) · [Period close & restatements](ledger/period-close.md) · [Counterparty sharing](ledger/counterparty-sharing.md)
 

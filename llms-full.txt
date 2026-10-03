@@ -1138,12 +1138,15 @@ A create returns `201` with `{ "initiative": { "id", "name", "status", "membersh
 ## Reading entries
 
 ```bash
+INITIATIVE_ID="init_…"   # from GET /v1/developer/initiatives
+ENTRY_ID="…"             # an entry's `id` from the list below
+
 # An initiative's current entries for one month
-curl "https://credit-api.floelabs.xyz/v1/developer/ledger/entries?initiative=init_…&period=2026-08" \
+curl "https://credit-api.floelabs.xyz/v1/developer/ledger/entries?initiative=${INITIATIVE_ID}&period=2026-08" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY"
 
 # One entry, with the entries its lineage names
-curl https://credit-api.floelabs.xyz/v1/developer/ledger/entries/<entry-id> \
+curl "https://credit-api.floelabs.xyz/v1/developer/ledger/entries/${ENTRY_ID}" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY"
 ```
 
@@ -1155,6 +1158,7 @@ Any member of the account can read entries. An initiative or entry that belongs 
 
 ## Related
 
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
 * [Cost attribution & quarantine](cost-attribution.md)
 * [Period close & restatements](period-close.md)
 * [Counterparty sharing](counterparty-sharing.md)
@@ -1233,7 +1237,7 @@ Floe proposes an owner for untagged spend with three rules, tried in this order:
 
 A rule proposes something only when every piece of evidence agrees. It uses only tags the source supplied, never ones an earlier rule proposed. A person always decides:
 
-```bash
+```text
 # Run the rules for an open month (a signed-in admin or owner)
 POST /v1/developer/attribution/inference   {"period": "2026-08"}
 
@@ -1251,13 +1255,13 @@ Running the rules and deciding proposals needs a signed-in person. An API key ge
 
 ### Unmapped-key alerts
 
-When an API key from your own LLM gateway's logs has no team or initiative mapping, Floe alerts once its spend reaches a floor. The default floor is $5, and you set it with `unmappedKeyAlertFloorMicro` in the settings. `GET /v1/developer/attribution/unmapped-keys` lists these keys with their spend, the dates they were first and last seen, and any open proposal. A personal or sandbox key can be dismissed with a reason (`POST /v1/developer/attribution/unmapped-keys/dismiss`). Dismissing it stops the alerts, but its spend stays Unassigned and is allocated at close.
+When an API key from your own LLM gateway's logs has no team or initiative mapping, Floe alerts once its spend reaches a floor. The default floor is $5, and you set it with `unmappedKeyAlertFloorMicro` in the settings. `GET /v1/developer/attribution/unmapped-keys` lists these keys with their spend, the dates they were first and last seen, and any open proposal. A personal or sandbox key can be dismissed with a reason (`POST /v1/developer/attribution/unmapped-keys/dismiss`). Dismissing it stops the alerts, but its spend stays Unassigned and is allocated at close. To get the alert in your own systems, subscribe to the [`unmapped_api_key_spend`](../developers/webhooks.md#unmapped_api_key_spend) webhook event.
 
 ## Allocation at close
 
 Whatever is still untagged when the month closes is spread by a declared driver: **each slice's share of the attributed spend on the same bill**. Floe uses the narrowest slice it can. It keeps the initiative, department and team where it knows them, and widens only when that slice has no attributed spend (dropping team, then department, then initiative, then using the whole bill). It fills in only the missing dimensions. Headcount is never used as a driver.
 
-```bash
+```text
 # What allocation would write (nothing is written)
 POST /v1/developer/attribution/allocation/preview   {"period": "2026-08"}
 
@@ -1289,6 +1293,7 @@ Graded totals include an `attributionMix` beside the `gradeMix`, so a figure sho
 
 ## Related
 
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
 * [The Initiative Ledger](overview.md)
 * [Period close & restatements](period-close.md)
 * [Cost per client, campaign & task](../build/attribution.md): tagging calls at the source
@@ -1400,6 +1405,7 @@ Late data for a locked month never changes that month either. It lands in the ne
 
 ## Related
 
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
 * [The Initiative Ledger](overview.md)
 * [Cost attribution & quarantine](cost-attribution.md)
 * [Vendor actuals](../build/vendor-actuals.md): invoices, footing and per-leg reconciliation
@@ -1423,20 +1429,23 @@ A **case** is one version of an initiative's model, shared with one counterparty
 Vendor-side calls use a developer credential (`floe_live_…` key or dashboard session):
 
 ```bash
+INITIATIVE_ID="init_…"   # from GET /v1/developer/initiatives
+CASE_ID="case_…"         # `case.publicId` from the create response
+
 # Create a draft case on an initiative (member role or above)
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/initiatives/init_…/cases \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/cases" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name": "Inside sales pilot", "counterpartyName": "Buyer Co"}'
 
 # Invite the buyer's people by email
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/initiatives/init_…/cases/<caseId>/members \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/cases/${CASE_ID}/members" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
   -d '{"email": "controller@buyer.example", "role": "buyer_finance"}'
 
 # Issue the case link
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/initiatives/init_…/cases/<caseId>/share \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/cases/${CASE_ID}/share" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
   -d '{"expiresInDays": 90}'
@@ -1449,7 +1458,15 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/initiatives/init_…/c
 
 ## What the buyer sees
 
-The buyer opens the link and signs in with their invited email. This opens an 8-hour **case session**. It doesn't create a Floe account or give access to the vendor's console. On every request, Floe checks that the link is still live and the email still has an active membership. If either check fails, the answer is the same `404` as an unknown link.
+The buyer opens the link on the Floe dashboard (`https://dev-dashboard.floelabs.xyz/case/csh_…`) and signs in there with their invited email. This opens an 8-hour **case session**. It doesn't create a Floe account or give access to the vendor's console. On every request, Floe checks that the link is still live and the email still has an active membership. If either check fails, the answer is the same `404 case_not_found` as an unknown link.
+
+### How the case session works
+
+Buyer sign-in is **browser-only**. Opening a session needs an access token from Floe's email sign-in on the case page, and there is no API key for a buyer. The exchange the case page makes is documented here so you know what crosses the wire:
+
+* **Sign-in:** `POST /v1/case/session`, with `Content-Type: application/json`, `Authorization: Bearer <access token from the email sign-in>` and the body `{ "token": "csh_…" }`. A Floe key in the `Authorization` header is refused (`401 invalid_privy_token`). The sign-in is checked first, and the link is looked up only after that. Sign-in attempts are rate-limited per IP address (`429`).
+* **Response:** `200` with `{ "case": { "publicId", "name", "counterpartyName", "status" }, "member": { "email", "role" } }`. It also sets the `floe_case_session` cookie: HttpOnly, Secure, `SameSite=Lax`, `Path=/v1/case`, expiring after 8 hours.
+* **Every other `/v1/case` call** carries that cookie plus an `X-Floe-Case-Link` header holding the SHA-256 hex digest of the `csh_` token. A missing header, or one for a different link, gets `409 case_session_mismatch`. The `csh_` token itself is never sent as a bearer credential, and the session is never valid on any other Floe route.
 
 In the case, the buyer sees every assumption, who owns it, whether they may edit it, and the value for each scenario. The buyer-side routes all sit under `/v1/case` and need the case session:
 
@@ -1459,11 +1476,12 @@ In the case, the buyer sees every assumption, who owns it, whether they may edit
 | `GET /v1/case/journal` | Every value change, ownership change, approval and refused write on this case |
 | `PUT /v1/case/assumptions/{key}/value` | Set the value of an assumption you own (`buyer_finance`) |
 | `POST /v1/case/assumptions/{key}/proposals` | Propose a value for an assumption you don't own |
+| `GET /v1/case/proposals` | The proposals on this case that the buyer can see |
 | `POST /v1/case/proposals/{id}/accept` · `/reject` · `/withdraw` | Decide proposals on your assumptions, or withdraw your own |
 | `POST /v1/case/assumptions/{key}/approve` | Approve the vendor's value for a scenario |
 | `POST /v1/case/logout` | End the session |
 
-The buyer never sees which vendor employee owns an input. Every vendor-side owner shows as the vendor organization.
+**Ownership is shown to the buyer as an organization.** Every vendor-side owner, whether that's the vendor account or a named vendor employee, shows as the vendor organization: the vendor account's display name, or `vendor` if it has none. A buyer from a different case on the same initiative shows as "another counterparty member". **Changes are shown by person.** The journal and each value's "set by" name the person who made the change by their email address, vendor employees included. A vendor employee with no email on file shows as `vendor`.
 
 ## The assumptions register
 
@@ -1471,7 +1489,7 @@ An **assumption** is a named input to the model, such as a monthly volume, a rat
 
 ```bash
 # Declare a value (vendor side; the buyer uses PUT /v1/case/assumptions/{key}/value)
-curl -X PUT https://credit-api.floelabs.xyz/v1/developer/initiatives/init_…/assumptions/tasks_per_month/value \
+curl -X PUT "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/assumptions/tasks_per_month/value" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1501,7 +1519,7 @@ Every assumption has one owner:
 | `member:<id>` | A named person on the vendor's team |
 | `case_member:<id>` | A `buyer_finance` member of a case on this initiative |
 
-Only the owner writes the value. Anyone else gets `403`, and the error names the owner. That applies to the vendor too: the vendor can't write a value the buyer owns. The vendor assigns ownership (`PUT …/assumptions/{key}/owner`), and the buyer can't claim an assumption. Taking an assumption back from a buyer needs a reason, which both sides see in their journals. Refused writes are logged and appear in the case journal.
+Only the owner writes the value. Anyone else gets `403 not_assumption_owner`, and the error body's `owner` says who owns it (`kind` and `label`). The vendor can't write a value the buyer owns either. A buyer who is refused sees a vendor-side owner only as the vendor organization, never a person or an id. The response also includes a `proposeUrl` when the buyer can propose a value instead. A vendor who is refused sees the owning person's email address (or wallet if no email is on file) and, for a named team member, their member id. The vendor assigns ownership (`PUT …/assumptions/{key}/owner`), and the buyer can't claim an assumption. Taking an assumption back from a buyer needs a reason, which both sides see in their journals. Refused writes are logged and appear in the case journal.
 
 ### Proposals
 
@@ -1516,7 +1534,7 @@ If you can see an assumption but can't edit it, you can **propose** a value inst
 
 A value the vendor wrote shows `buyerUnapproved: true` until a `buyer_finance` member approves that exact entry:
 
-```bash
+```text
 POST /v1/case/assumptions/{key}/approve   {"scenario": "conservative", "entryId": "<the entryId GET /v1/case returned>"}
 ```
 
@@ -1524,6 +1542,7 @@ An approval applies to one specific entry. If the vendor writes a new value, the
 
 ## Related
 
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
 * [The Initiative Ledger](overview.md): entries, grades and initiatives
 * [Period close & restatements](period-close.md): how a change to a locked period is restated
 
@@ -7006,7 +7025,7 @@ Create and manage agents — **how many depends on your plan** (see [plans](../r
 2. **Fund Agent** — Add funds by card, Apple Pay, Google Pay, bank transfer, or a USDC deposit from the agent's **Balance & funding** tab or from **Plan & billing → Funding**. No crypto bridges needed. See [Add funds](#add-funds).
 3. **Mint API Key** — Once the agent shows `active`, click **Reveal API Key** to mint the agent's `floe_*` runtime key. It is shown once — copy it immediately. To rotate, click **Rotate** (revokes the old key and mints a new one atomically).
 
-The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), with the full fleet surface on the same bin — `floe agents list|get|create|pause|resume|close|lock` — or `npx floe-agent register --name <name>` (TypeScript SDK) / `floe-agent register --name <name>` (Python SDK).
+The same flow is available programmatically via `POST /v1/developer/agents` + `POST /v1/developer/agents/:id/keys`, or from the CLI: `npx @floelabs/cli init` (platform CLI — creates the agent and mints its key into your OS keychain, see [Floe CLI](cli.md)), with the full fleet surface on the same bin: `floe agents list|get|create|pause|resume|close|lock`.
 
 Each agent shows: status (`active` / `credit_frozen` / `pending_delegation` / `closed`), USDC balance (live), credit limit, delegation expiry, and active loans.
 
@@ -12307,6 +12326,95 @@ curl -X POST "https://credit-api.floelabs.xyz/v1/developer/agents/42/open-credit
 
 ---
 
+## Initiative Ledger Endpoints
+
+The read and setup surface of the [Initiative Ledger](../ledger/overview.md). The concept pages explain what these return: [overview](../ledger/overview.md), [cost attribution & quarantine](../ledger/cost-attribution.md), [period close & restatements](../ledger/period-close.md) and [counterparty sharing](../ledger/counterparty-sharing.md). Those pages also cover the attribution, close and case-management routes, and the [OpenAPI spec](https://credit-api.floelabs.xyz/.well-known/openapi.yaml) has every request and response field.
+
+`/v1/developer/*` routes take a developer credential: a `floe_live_` key or the dashboard session. An agent key (`floe_…`) is refused with `403 developer_credential_required`. An initiative or entry belonging to another account answers `404`, the same as one that doesn't exist.
+
+### GET /v1/developer/initiatives
+
+The account's initiatives, newest first. `?limit` is 1–200 (default 100). Any account member can call it.
+
+```bash
+curl "https://credit-api.floelabs.xyz/v1/developer/initiatives" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "initiatives": [
+    {
+      "id": "init_0123456789abcdef01234567",
+      "name": "Support assistant",
+      "status": "active",
+      "membershipMode": "account",
+      "createdAt": "2026-09-30T12:00:00.000Z"
+    }
+  ]
+}
+```
+
+`status` is `draft`, `active` or `closed`. `membershipMode` is `account` (any account member with the member role or above may write) or `members` (only the initiative's owners and contributors may write).
+
+### POST /v1/developer/initiatives
+
+Create an initiative. Needs the member role or above.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | Yes | 1–200 characters. |
+| `ownerMemberId` | number | No | API-key calls only. Names the account member who owns it; the initiative is then in `members` mode. Without it, an API key creates an `account`-mode initiative. A signed-in person always becomes the owner of what they create. |
+
+Returns `201 { "initiative": { … } }` with the fields above. Errors: `400 invalid_request`, `422 not_account_member` / `member_is_viewer`.
+
+### GET /v1/developer/initiatives/:id
+
+One initiative by its `init_…` id, as `{ "initiative": { … } }`. Returns `404 initiative_not_found` if it doesn't exist or belongs to another account.
+
+### GET /v1/developer/ledger/entries
+
+An initiative's current entries. A superseded entry is left out; you can still read it by id. Results are newest period first.
+
+| Query | Required | Description |
+|---|---|---|
+| `initiative` | Yes | `init_…` id |
+| `period` | No | `YYYY-MM` or `YYYY-Www`. With it, the response adds `periodCompleteness`. |
+| `type` | No | `cost`, `value`, `baseline`, `forecast` or `assumption` |
+| `limit` | No | 1–500, default 100 |
+
+Returns `{ "entries": [LedgerEntry], "hasMore": boolean, "periodCompleteness"? }`. Errors: `400 invalid_request` (`field` names the bad parameter), `404 initiative_not_found`. The entry fields are described in [The Initiative Ledger → Entries](../ledger/overview.md#entries).
+
+### GET /v1/developer/ledger/entries/:id
+
+One entry, current or superseded, and the entries its lineage names, resolved one level deep. Returns `{ "entry", "inputs", "unresolvedInputIds", "supersededBy", "restatedBy", "periodCompleteness" }`, or `404 entry_not_found`.
+
+Corrections go through `POST /v1/developer/ledger/entries/:id/supersede` (open period) and `…/restate` (locked period). See [Period close & restatements](../ledger/period-close.md#correcting-a-figure).
+
+### Case endpoints (buyer)
+
+These routes are for the buyer's side of a [shared case](../ledger/counterparty-sharing.md). They don't take a Floe key or the dashboard session.
+
+`POST /v1/case/session` exchanges a case link (`{ "token": "csh_…" }`) and an access token from the case page's email sign-in (`Authorization: Bearer …`) for the `floe_case_session` cookie (HttpOnly, Secure, `SameSite=Lax`, `Path=/v1/case`, 8 hours). Every other route needs that cookie plus `X-Floe-Case-Link` (the SHA-256 hex digest of the `csh_` token). Sign-in is browser-only. See [How the case session works](../ledger/counterparty-sharing.md#how-the-case-session-works).
+
+| Route | Role | What it does |
+|---|---|---|
+| `POST /v1/case/session` | invited buyer | Open the case session |
+| `GET /v1/case` | any buyer | The case, the member, and every assumption with its owner and value per scenario |
+| `GET /v1/case/journal` | any buyer | Value revisions, ownership changes, approvals and refused writes on this case |
+| `PUT /v1/case/assumptions/:key/value` | `buyer_finance`, owner of the key | Declare this case's value |
+| `POST /v1/case/assumptions/:key/proposals` | `buyer_finance` | Propose a value on a key you don't own |
+| `GET /v1/case/proposals` | any buyer | Proposals on this case that the buyer can see |
+| `POST /v1/case/proposals/:proposalId/accept` · `/reject` · `/withdraw` | `buyer_finance` | Decide a proposal on your key, or withdraw your own |
+| `POST /v1/case/assumptions/:key/approve` | `buyer_finance` | Approve the vendor value shown for a scenario (`{ scenario, entryId }`) |
+| `POST /v1/case/logout` | any buyer | Clear the session |
+
+Any check that fails (an unknown, revoked or expired link, or no active membership) returns the same `404 case_not_found`. A `buyer_viewer` attempting a write gets `403`.
+
+---
+
 ## Agent Endpoints
 
 These endpoints are called by an agent (using its `floe_*` key) to manage itself.
@@ -13600,6 +13708,7 @@ A new **Initiative Ledger** section documents the ledger underneath cost, attrib
 * **Cost attribution & quarantine.** Dimension maps (API key → team, email → department, department → P&L line, key / agent / project → initiative), the quarantine of untagged spend, the three inference rules a person accepts or rejects, unmapped-key alerts, and allocation of what is left at close.
 * **Period close & restatements.** Period completeness, the estimated-to-invoice true-up and tie-outs, locking a period and its override gates, supersede (open period) vs restate (locked period).
 * **Counterparty sharing.** Cases shared with a buyer by link plus email sign-in, the assumptions register with owners and scenarios, proposals, and buyer approval.
+* **API reference.** [REST API → Initiative Ledger endpoints](developers/credit-api.md#initiative-ledger-endpoints) documents initiatives, ledger entries and the buyer's `/v1/case` routes, including the browser-only case session (`floe_case_session` cookie + `X-Floe-Case-Link`).
 
 → [The Initiative Ledger](ledger/overview.md) · [Cost attribution & quarantine](ledger/cost-attribution.md) · [Period close & restatements](ledger/period-close.md) · [Counterparty sharing](ledger/counterparty-sharing.md)
 

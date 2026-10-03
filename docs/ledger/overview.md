@@ -88,12 +88,15 @@ A create returns `201` with `{ "initiative": { "id", "name", "status", "membersh
 ## Reading entries
 
 ```bash
+INITIATIVE_ID="init_…"   # from GET /v1/developer/initiatives
+ENTRY_ID="…"             # an entry's `id` from the list below
+
 # An initiative's current entries for one month
-curl "https://credit-api.floelabs.xyz/v1/developer/ledger/entries?initiative=init_…&period=2026-08" \
+curl "https://credit-api.floelabs.xyz/v1/developer/ledger/entries?initiative=${INITIATIVE_ID}&period=2026-08" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY"
 
 # One entry, with the entries its lineage names
-curl https://credit-api.floelabs.xyz/v1/developer/ledger/entries/<entry-id> \
+curl "https://credit-api.floelabs.xyz/v1/developer/ledger/entries/${ENTRY_ID}" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY"
 ```
 
@@ -105,6 +108,7 @@ Any member of the account can read entries. An initiative or entry that belongs 
 
 ## Related
 
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
 * [Cost attribution & quarantine](cost-attribution.md)
 * [Period close & restatements](period-close.md)
 * [Counterparty sharing](counterparty-sharing.md)

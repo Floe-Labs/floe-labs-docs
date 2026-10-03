@@ -68,7 +68,7 @@ Floe proposes an owner for untagged spend with three rules, tried in this order:
 
 A rule proposes something only when every piece of evidence agrees. It uses only tags the source supplied, never ones an earlier rule proposed. A person always decides:
 
-```bash
+```text
 # Run the rules for an open month (a signed-in admin or owner)
 POST /v1/developer/attribution/inference   {"period": "2026-08"}
 
@@ -86,13 +86,13 @@ Running the rules and deciding proposals needs a signed-in person. An API key ge
 
 ### Unmapped-key alerts
 
-When an API key from your own LLM gateway's logs has no team or initiative mapping, Floe alerts once its spend reaches a floor. The default floor is $5, and you set it with `unmappedKeyAlertFloorMicro` in the settings. `GET /v1/developer/attribution/unmapped-keys` lists these keys with their spend, the dates they were first and last seen, and any open proposal. A personal or sandbox key can be dismissed with a reason (`POST /v1/developer/attribution/unmapped-keys/dismiss`). Dismissing it stops the alerts, but its spend stays Unassigned and is allocated at close.
+When an API key from your own LLM gateway's logs has no team or initiative mapping, Floe alerts once its spend reaches a floor. The default floor is $5, and you set it with `unmappedKeyAlertFloorMicro` in the settings. `GET /v1/developer/attribution/unmapped-keys` lists these keys with their spend, the dates they were first and last seen, and any open proposal. A personal or sandbox key can be dismissed with a reason (`POST /v1/developer/attribution/unmapped-keys/dismiss`). Dismissing it stops the alerts, but its spend stays Unassigned and is allocated at close. To get the alert in your own systems, subscribe to the [`unmapped_api_key_spend`](../developers/webhooks.md#unmapped_api_key_spend) webhook event.
 
 ## Allocation at close
 
 Whatever is still untagged when the month closes is spread by a declared driver: **each slice's share of the attributed spend on the same bill**. Floe uses the narrowest slice it can. It keeps the initiative, department and team where it knows them, and widens only when that slice has no attributed spend (dropping team, then department, then initiative, then using the whole bill). It fills in only the missing dimensions. Headcount is never used as a driver.
 
-```bash
+```text
 # What allocation would write (nothing is written)
 POST /v1/developer/attribution/allocation/preview   {"period": "2026-08"}
 
@@ -124,6 +124,7 @@ Graded totals include an `attributionMix` beside the `gradeMix`, so a figure sho
 
 ## Related
 
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
 * [The Initiative Ledger](overview.md)
 * [Period close & restatements](period-close.md)
 * [Cost per client, campaign & task](../build/attribution.md): tagging calls at the source

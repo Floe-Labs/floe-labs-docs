@@ -15,20 +15,23 @@ A **case** is one version of an initiative's model, shared with one counterparty
 Vendor-side calls use a developer credential (`floe_live_…` key or dashboard session):
 
 ```bash
+INITIATIVE_ID="init_…"   # from GET /v1/developer/initiatives
+CASE_ID="case_…"         # `case.publicId` from the create response
+
 # Create a draft case on an initiative (member role or above)
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/initiatives/init_…/cases \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/cases" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name": "Inside sales pilot", "counterpartyName": "Buyer Co"}'
 
 # Invite the buyer's people by email
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/initiatives/init_…/cases/<caseId>/members \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/cases/${CASE_ID}/members" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
   -d '{"email": "controller@buyer.example", "role": "buyer_finance"}'
 
 # Issue the case link
-curl -X POST https://credit-api.floelabs.xyz/v1/developer/initiatives/init_…/cases/<caseId>/share \
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/cases/${CASE_ID}/share" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
   -d '{"expiresInDays": 90}'
@@ -41,7 +44,15 @@ curl -X POST https://credit-api.floelabs.xyz/v1/developer/initiatives/init_…/c
 
 ## What the buyer sees
 
-The buyer opens the link and signs in with their invited email. This opens an 8-hour **case session**. It doesn't create a Floe account or give access to the vendor's console. On every request, Floe checks that the link is still live and the email still has an active membership. If either check fails, the answer is the same `404` as an unknown link.
+The buyer opens the link on the Floe dashboard (`https://dev-dashboard.floelabs.xyz/case/csh_…`) and signs in there with their invited email. This opens an 8-hour **case session**. It doesn't create a Floe account or give access to the vendor's console. On every request, Floe checks that the link is still live and the email still has an active membership. If either check fails, the answer is the same `404 case_not_found` as an unknown link.
+
+### How the case session works
+
+Buyer sign-in is **browser-only**. Opening a session needs an access token from Floe's email sign-in on the case page, and there is no API key for a buyer. The exchange the case page makes is documented here so you know what crosses the wire:
+
+* **Sign-in:** `POST /v1/case/session`, with `Content-Type: application/json`, `Authorization: Bearer <access token from the email sign-in>` and the body `{ "token": "csh_…" }`. A Floe key in the `Authorization` header is refused (`401 invalid_privy_token`). The sign-in is checked first, and the link is looked up only after that. Sign-in attempts are rate-limited per IP address (`429`).
+* **Response:** `200` with `{ "case": { "publicId", "name", "counterpartyName", "status" }, "member": { "email", "role" } }`. It also sets the `floe_case_session` cookie: HttpOnly, Secure, `SameSite=Lax`, `Path=/v1/case`, expiring after 8 hours.
+* **Every other `/v1/case` call** carries that cookie plus an `X-Floe-Case-Link` header holding the SHA-256 hex digest of the `csh_` token. A missing header, or one for a different link, gets `409 case_session_mismatch`. The `csh_` token itself is never sent as a bearer credential, and the session is never valid on any other Floe route.
 
 In the case, the buyer sees every assumption, who owns it, whether they may edit it, and the value for each scenario. The buyer-side routes all sit under `/v1/case` and need the case session:
 
@@ -51,11 +62,12 @@ In the case, the buyer sees every assumption, who owns it, whether they may edit
 | `GET /v1/case/journal` | Every value change, ownership change, approval and refused write on this case |
 | `PUT /v1/case/assumptions/{key}/value` | Set the value of an assumption you own (`buyer_finance`) |
 | `POST /v1/case/assumptions/{key}/proposals` | Propose a value for an assumption you don't own |
+| `GET /v1/case/proposals` | The proposals on this case that the buyer can see |
 | `POST /v1/case/proposals/{id}/accept` · `/reject` · `/withdraw` | Decide proposals on your assumptions, or withdraw your own |
 | `POST /v1/case/assumptions/{key}/approve` | Approve the vendor's value for a scenario |
 | `POST /v1/case/logout` | End the session |
 
-The buyer never sees which vendor employee owns an input. Every vendor-side owner shows as the vendor organization.
+**Ownership is shown to the buyer as an organization.** Every vendor-side owner, whether that's the vendor account or a named vendor employee, shows as the vendor organization: the vendor account's display name, or `vendor` if it has none. A buyer from a different case on the same initiative shows as "another counterparty member". **Changes are shown by person.** The journal and each value's "set by" name the person who made the change by their email address, vendor employees included. A vendor employee with no email on file shows as `vendor`.
 
 ## The assumptions register
 
@@ -63,7 +75,7 @@ An **assumption** is a named input to the model, such as a monthly volume, a rat
 
 ```bash
 # Declare a value (vendor side; the buyer uses PUT /v1/case/assumptions/{key}/value)
-curl -X PUT https://credit-api.floelabs.xyz/v1/developer/initiatives/init_…/assumptions/tasks_per_month/value \
+curl -X PUT "https://credit-api.floelabs.xyz/v1/developer/initiatives/${INITIATIVE_ID}/assumptions/tasks_per_month/value" \
   -H "Authorization: Bearer $FLOE_LIVE_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -93,7 +105,7 @@ Every assumption has one owner:
 | `member:<id>` | A named person on the vendor's team |
 | `case_member:<id>` | A `buyer_finance` member of a case on this initiative |
 
-Only the owner writes the value. Anyone else gets `403`, and the error names the owner. That applies to the vendor too: the vendor can't write a value the buyer owns. The vendor assigns ownership (`PUT …/assumptions/{key}/owner`), and the buyer can't claim an assumption. Taking an assumption back from a buyer needs a reason, which both sides see in their journals. Refused writes are logged and appear in the case journal.
+Only the owner writes the value. Anyone else gets `403 not_assumption_owner`, and the error body's `owner` says who owns it (`kind` and `label`). The vendor can't write a value the buyer owns either. A buyer who is refused sees a vendor-side owner only as the vendor organization, never a person or an id. The response also includes a `proposeUrl` when the buyer can propose a value instead. A vendor who is refused sees the owning person's email address (or wallet if no email is on file) and, for a named team member, their member id. The vendor assigns ownership (`PUT …/assumptions/{key}/owner`), and the buyer can't claim an assumption. Taking an assumption back from a buyer needs a reason, which both sides see in their journals. Refused writes are logged and appear in the case journal.
 
 ### Proposals
 
@@ -108,7 +120,7 @@ If you can see an assumption but can't edit it, you can **propose** a value inst
 
 A value the vendor wrote shows `buyerUnapproved: true` until a `buyer_finance` member approves that exact entry:
 
-```bash
+```text
 POST /v1/case/assumptions/{key}/approve   {"scenario": "conservative", "entryId": "<the entryId GET /v1/case returned>"}
 ```
 
@@ -116,5 +128,6 @@ An approval applies to one specific entry. If the vendor writes a new value, the
 
 ## Related
 
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
 * [The Initiative Ledger](overview.md): entries, grades and initiatives
 * [Period close & restatements](period-close.md): how a change to a locked period is restated

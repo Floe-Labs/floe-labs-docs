@@ -102,6 +102,7 @@ Late data for a locked month never changes that month either. It lands in the ne
 
 ## Related
 
+* [REST API → Initiative Ledger endpoints](../developers/credit-api.md#initiative-ledger-endpoints): the API contract for these routes
 * [The Initiative Ledger](overview.md)
 * [Cost attribution & quarantine](cost-attribution.md)
 * [Vendor actuals](../build/vendor-actuals.md): invoices, footing and per-leg reconciliation
