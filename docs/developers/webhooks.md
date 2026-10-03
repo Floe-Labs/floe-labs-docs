@@ -176,8 +176,8 @@ An API key from an imported gateway log (for example a LiteLLM or OpenRouter key
 
 The two alerts of the month-end close clock ("days to lock": business days from the last vendor's invoice landing to the period lock; see [Vendor actuals](../build/vendor-actuals.md#days-to-lock)). A job checks every hour, over the three most recent ended months.
 
-* **`close_slow`** fires when more than **2 business days** have passed since every vendor with spend in the month landed (its invoice arrived, or its final monthly cost data did) and the month is not locked yet, or when it locked that late. The alert email goes to the account owner and admins.
-* **`vendor_late`** fires while a month is open and a vendor with spend in it is past its invoice window with nothing landed. It names the vendors. The alert email goes to whoever saved that vendor's billing connection (while they are still a member), plus the account owner and admins.
+* **`close_slow`** fires when more than **2 business days** have passed since every awaited vendor landed (Floe received its invoice, or every declared source for it went final) and the month is not locked yet, or when it locked that late. A locked month gets at most one, within 7 days of its lock. The alert email goes to the account owner and admins.
+* **`vendor_late`** fires only while a month is open, when a vendor with spend in it is past its invoice window with nothing landed. It names the vendors. The alert email goes to whoever saved that vendor's billing connection (while they are still a member), plus the account owner and admins.
 * **Once per month each.** Neither fires twice for the same month. A month with no vendor spend never alerts, and a locked month alerts only within 7 days of its lock.
 * **Business days** are Monday to Friday in your account time zone (UTC until the account time-zone setting ships). Public holidays are not excluded.
 * **Category and scope.** `billing`, account-scoped. **Subscribe by name or `*`**: the names have no dotted prefix, so no `<prefix>.*` wildcard covers them.

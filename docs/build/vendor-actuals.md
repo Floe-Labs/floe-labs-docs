@@ -35,13 +35,30 @@ Some vendors publish a leg's cost at call-end; others only on a next-day batch. 
 
 The close clock measures how long the month-end close takes once the vendors' figures are in: **business days from the last vendor's landing to the period lock**. The target is **2 business days or fewer**.
 
-* **What it waits for.** Every vendor with spend in the month. A vendor **lands** at its earliest evidence: its invoice arriving, or its final monthly cost data (a connector month or cost bucket reaching final). A vendor with nothing landed once its invoice window has passed (by default, 5 business days after the month ends) is flagged **missing**, and the clock counts it from the end of the window.
+* **What it waits for.** Every vendor with spend in the month whose spend is not final when Floe settles it (see settlement modes below). A vendor **lands** at the first of:
+  * its **invoice received**: the clock counts from when Floe received the invoice (your upload, or the connector's pull), not the date printed on it; or
+  * **every declared source final**: each enabled vendor connection for that vendor, and each compute or other-cost source for it. A source that goes silent is awaited until it is final, or until the invoice window names the vendor missing.
+* **Missing.** A vendor with nothing landed once its invoice window has passed (by default, 5 business days after the month ends) is flagged **missing**, and the clock counts it from the end of the window.
 * **How it counts.** The weekdays **after** the landing day, through the lock day. An invoice that lands on a Thursday and a lock on the Monday after is **2** business days.
 * **Business days** are Monday to Friday in your account time zone (UTC until the account time-zone setting ships). There is **no holiday calendar**: a public holiday counts as a business day.
-* **Where to see it.** The dashboard shows a **Days to lock** card on the ledger home and on **Close the month**: the status (waiting on vendors, running, or locked in N business days), each vendor with the day it landed and how (invoice, final monthly bucket, or invoice window passed and missing), and the alerts sent. Over the API, `GET /v1/developer/ledger/periods/:key` carries it as `period.closeClock` (`null` for a weekly period).
+* **Where to see it.** The dashboard shows a **Days to lock** card on the ledger home and on **Close the month**: the status (waiting on vendors, running, or locked in N business days), each vendor with the day it landed and how (invoice, all sources final, or invoice window passed and missing), the sources still not final, and the alerts sent. Over the API, `GET /v1/developer/ledger/periods/:key` carries it as `period.closeClock` (`null` for a weekly period).
 * **Two alerts**, each sent at most once per month, by email and as a [webhook](../developers/webhooks.md#close_slow-and-vendor_late):
-  * `close_slow`: more than 2 business days since the last vendor landed and the month is not locked (or it locked that late). Goes to the account owner and admins.
-  * `vendor_late`: a vendor is past its invoice window with nothing landed. Goes to whoever saved that vendor's billing connection, plus the account owner and admins.
+  * `close_slow`: more than 2 business days since the last vendor landed and the month is not locked (or it locked that late). A locked month gets at most one `close_slow`, and only within 7 days of its lock. Goes to the account owner and admins.
+  * `vendor_late`: a vendor is past its invoice window with nothing landed. Open months only. Goes to whoever saved that vendor's billing connection, plus the account owner and admins.
+
+### Settlement modes
+
+The clock waits only for spend that a vendor still has to confirm. Each biller (`billed_by`) is declared with one settlement mode:
+
+| Mode | Means | The clock |
+|---|---|---|
+| `invoiced` | The vendor sends an invoice | waits for the invoice, or for every declared source to be final |
+| `bucket` | A monthly summary source (a compute or other-cost file) | waits for every declared source to be final |
+| `final_at_settlement` | Final when Floe settles the day (Floe-billed spend, a model declared free or self-hosted) | never waits for it |
+
+* **Where it is declared.** On the row, as `settlement_mode` (canonical gateway-export contract v3), or on the connection profile, as `settlementModes` (per `billed_by`) on `POST /v1/developer/ext-gateway/connections/:slug/profile-versions`.
+* **Defaults.** Vendors Floe has a cost connector for, and OpenRouter, are `invoiced`. Models the profile declares free or self-hosted are `final_at_settlement`.
+* **Undeclared is refused.** A gateway row whose biller has no mode is refused at import with `settlement_mode_undeclared`. A row whose mode contradicts the profile is refused with `conflicting_settlement_mode`, and an unknown value with `invalid_settlement_mode`.
 
 The clock is a measure of the close, not of the money: it never changes a figure on the ledger.
 
