@@ -1,7 +1,7 @@
 # Floe Documentation — Full Corpus
 
 > Every page in the Floe documentation navigation, concatenated for LLM agents.
-> 68 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
+> 70 pages. Generated from SUMMARY.md by scripts/build-llms-full.ts — do not edit by hand.
 > Annotated index (per-page descriptions, the x402 vendor directory with prices, key facts): llms.txt in this repo.
 > Machine-readable API spec: https://credit-api.floelabs.xyz/.well-known/openapi.yaml
 > x402 vendor manifest: https://raw.githubusercontent.com/Floe-Labs/floe-labs-docs/main/x402-directory/directory.json
@@ -21,6 +21,7 @@
 - The live cost ledger — https://floe-labs.gitbook.io/docs/know-your-costs/unified-ledger.md
 - Vendor actuals — reconcile to the vendor's records — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-actuals.md
 - Vendor connections — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-connections.md
+- Vendor key scopes & the read-only export — https://floe-labs.gitbook.io/docs/know-your-costs/vendor-credential-scopes.md
 - Coverage Score — https://floe-labs.gitbook.io/docs/know-your-costs/coverage-score.md
 - The cost calculator — https://floe-labs.gitbook.io/docs/know-your-costs/cost-calculator.md
 - Cost per client, campaign & task — https://floe-labs.gitbook.io/docs/attribution-margin/attribution.md
@@ -72,6 +73,7 @@
 - REST API — https://floe-labs.gitbook.io/docs/api-reference/credit-api.md
 - Model pricing — GET /v1/models?include=pricing — https://floe-labs.gitbook.io/docs/api-reference/models-pricing.md
 - Ledger Sync API — https://floe-labs.gitbook.io/docs/api-reference/ledger-sync-api.md
+- Gateway export contract — https://floe-labs.gitbook.io/docs/api-reference/gateway-export-contract.md
 - Plans & entitlements — https://floe-labs.gitbook.io/docs/reference/plans.md
 - Pricing & cost — https://floe-labs.gitbook.io/docs/reference/pricing.md
 - Error Codes — https://floe-labs.gitbook.io/docs/reference/error-codes.md
@@ -307,7 +309,7 @@ floe budget set 5 --per day   # cap this key at $5 per rolling 24 h
 floe test                     # one real metered call — cost printed from X-Floe-Cost-USDC
 ```
 
-`--json` on every command; `--yes` skips confirmations on destructive/money verbs; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. The rest of the platform lives on the same bin — `agents`, `keys`, `policy`, `pay`, `chat`, `funds`, `phone`, `actuals`, and more (35 commands, dashboard parity). Full reference: [Floe CLI](../developers/cli.md).
+`--json` on every command; `--yes` skips confirmations on destructive/money verbs; exit codes `0` ok, `1` error, `2` usage, `4` auth required, `5` payment required. The rest of the platform lives on the same bin — `agents`, `keys`, `policy`, `pay`, `chat`, `funds`, `phone`, `actuals`, and more (36 commands, dashboard parity). Full reference: [Floe CLI](../developers/cli.md).
 {% endtab %}
 {% tab title="SDK" %}
 Both SDKs take the **agent** key (`floe_…`), not the `floe_live_…` developer key: a developer key passes the client's prefix check but the proxy rejects it with `wrong_credential_type`. The agent key comes from `npx @floelabs/cli init` (minted into your OS keychain) or the dashboard — read it from `FLOE_AGENT_KEY`.
@@ -1132,6 +1134,52 @@ Those two rules operate on different things, which is worth stating plainly. The
 
 Some vendors publish a leg's cost at call-end; others only on a next-day batch. So a leg from a call you placed a minute ago is *supposed* to be `pending` — that is the system working correctly, not an error or a capture failure.
 
+## Days to lock
+
+The close clock measures how long the month-end close takes once the vendors' figures are in: **business days from the last vendor's landing to the period lock**. The target is **2 business days or fewer**.
+
+* **What it waits for.** Every vendor with spend in the month whose spend is not final when Floe settles it (see settlement modes below). A vendor **lands** at the first of:
+  * its **invoice received**: the clock counts from when Floe received the invoice (your upload, or the connector's pull), not the date printed on it; or
+  * **every declared source final**: each enabled vendor connection for that vendor, and each compute or other-cost source for it. A source that goes silent is awaited until it is final, or until the invoice window names the vendor missing.
+* **Missing.** A vendor with nothing landed once its invoice window has passed (by default, 5 business days after the month ends) is flagged **missing**, and the clock counts it from the end of the window.
+* **How it counts.** The weekdays **after** the landing day, through the lock day. An invoice that lands on a Thursday and a lock on the Monday after is **2** business days.
+* **Business days** are Monday to Friday in your account time zone (UTC until the account time-zone setting ships). There is **no holiday calendar**: a public holiday counts as a business day.
+* **Where to see it.** The dashboard shows a **Days to lock** card on the ledger home and on **Close the month**: the status (waiting on vendors, running, or locked in N business days), each vendor with the day it landed and how (invoice, all sources final, or invoice window passed and missing), the sources still not final, and the alerts sent. Over the API, `GET /v1/developer/ledger/periods/:key` carries it as `period.closeClock` (`null` for a weekly period).
+* **Two alerts**, each sent at most once per month, by email and as a [webhook](../developers/webhooks.md#close_slow-and-vendor_late):
+  * `close_slow`: more than 2 business days since the last vendor landed and the month is not locked (or it locked that late). A locked month gets at most one `close_slow`, and only within 7 days of its lock. Goes to the account owner and admins.
+  * `vendor_late`: a vendor is past its invoice window with nothing landed. Open months only. Goes to whoever saved that vendor's billing connection, plus the account owner and admins.
+
+### Settlement modes
+
+The clock waits only for spend that a vendor still has to confirm. Each payer is given one settlement mode **per (vendor, cost source)**: `billed_by`, plus whether the row is priced by the billing vendor's own figure (`vendor_reported`) or by the gateway's estimate (`gateway_computed`).
+
+| Mode | Means | The clock |
+|---|---|---|
+| `invoiced` | The vendor sends an invoice | waits until the vendor lands: its invoice received, or every declared source final, whichever comes first |
+| `bucket` | A monthly summary source (a compute or other-cost file), or a prepaid pool tie-out | waits until the vendor lands: its invoice received, or every declared source final, whichever comes first |
+| `final_at_settlement` | Final when Floe settles the day (Floe-billed spend, a model declared free or self-hosted) | never waits for it |
+
+* **Where it is declared.** On the row, as `settlement_mode` (canonical gateway-export contract v3), or on the connection profile, as `settlementModes: [{ billedBy, costSource?, mode }]` on `POST /v1/developer/ext-gateway/connections/:slug/profile-versions` (`costSource` left out = either source; `mode: null` removes the declaration). Modes are read when used, so a declaration applies to rows already imported.
+* **Seeded defaults.** Without a declaration, Floe applies a seeded default. Each one is marked **default, unverified** on the connection profile (`settlementModeDefaults`) until you declare the payer yourself:
+
+| Payer (`billed_by`) | Cost source | Default mode |
+|---|---|---|
+| `openai`, `anthropic`, `vertex_ai`, `bedrock`, `azure_openai`, `groq`, `mistral`, `together`, `fireworks`, `cohere` | either | `invoiced` |
+| Vendors Floe has a cost connector for | either | `invoiced` |
+| `openrouter` | priced by OpenRouter (`vendor_reported`) | `final_at_settlement` |
+| `openrouter` | priced by the gateway (`gateway_computed`) | `bucket` (waits for the month's OpenRouter pool tie-out) |
+| `ollama`, `vllm` | either | `final_at_settlement` |
+
+* **Models declared free or self-hosted** on the profile are `final_at_settlement`.
+* **An undeclared payer's rows are held, not refused.** A gateway row whose payer has no mode (no row value, no declaration, no default) is imported **quarantined**: it is stored but not on the ledger. The period's completeness gets the reason `undeclared_payer`, with the rows, their cost and the payers. The figure is a **lower bound** (cost is missing), and the reason **blocks the lock** unless the owner overrides it with a reason. Each gateway import reports what it held under `quarantinedPayer`.
+* **Declaring a payer only records its mode.** Held rows stay held until someone releases them, with **no re-upload**. The save response says what is now releasable (`releasable`: rows, cost, periods).
+* **Releasing held rows is a person's action.** An owner or admin signed in to the dashboard releases them from **Settings -> Gateway connections**. They see a preview, then confirm "Release N rows, $X, into ...". An API key cannot release: it gets `403 person_required`. Each release is journaled with its rows, amount and periods, and whether any period was locked. Rows from a locked month do not change it: they come in as a restatement in the next open period. Removing a mode later never holds released rows again.
+* **Declared but unreleased rows still block the lock.** They stay under `undeclared_payer`, shown as awaiting release (`undeclaredPayer.awaitingRelease`), until they are released.
+* **API.** `GET /v1/developer/ext-gateway/connections/:slug/held` (any member) returns the preview, grouped by payer, cost source and mode, with the releasable total. `POST /v1/developer/ext-gateway/connections/:slug/release-held` with `{ billedBy?: string[], expect: { rows, costMicro } }` releases them. `expect` must equal the preview's releasable total for the same `billedBy` filter. If the rows moved since the preview, the API returns `409 preview_changed` with the `current` figures; if nothing is releasable, `409 nothing_to_release`. A release returns `{ released: { rows, cost, periods, billedBy, anyLocked }, journalId }`.
+* **Bad values are still refused per row.** A row whose own `settlement_mode` is not one of the three modes is refused with `invalid_settlement_mode`. A row whose value contradicts the profile's declaration is refused with `conflicting_settlement_mode`.
+
+The clock is a measure of the close, not of the money: it never changes a figure on the ledger.
+
 ## Coverage reads low on voice-heavy accounts
 
 A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.
@@ -1204,8 +1252,11 @@ gated the same way: per-leg and by-call cost, plus findings, are **free**
 ## Setting one up
 
 You connect a vendor from the **connect flow in the [dashboard](https://dev-dashboard.floelabs.xyz)**.
-It lists the vendors Floe can reconcile, walks you through the exact **read-only**
-scope each one needs, and verifies the credential live before anything trusts it.
+It lists the vendors Floe can reconcile, shows how much power each vendor's key
+carries and the narrowest key the vendor offers, and verifies the credential live
+before anything trusts it. Some vendors (OpenAI, Anthropic) only issue an **admin**
+key for cost data; for those, the form offers the vendor console's cost export as
+the read-only way in. See [Vendor key scopes & the read-only export](vendor-credential-scopes.md).
 Once connected, that vendor's costs flow onto your ledger automatically. Where a
 vendor publishes no cost API, you upload its invoice instead and Floe reconciles
 against that.
@@ -1224,8 +1275,214 @@ Removal is non-destructive: the costs already reconciled onto your ledger stay
 ## Related
 
 - [Vendor actuals — reconcile to the vendor's records](vendor-actuals.md) — what these connections feed, leg by leg, with a status per claim.
+- [Vendor key scopes & the read-only export](vendor-credential-scopes.md) — which key each vendor needs, and the console cost export for admin-key vendors.
 - [Coverage Score](coverage-score.md) — how much of your spend Floe can act on, a different question from what it cost.
 - [Plans & entitlements](../reference/plans.md) — where `vendor_connections` sits.
+
+==============================================================================
+# Vendor key scopes & the read-only export
+Source: docs/build/vendor-credential-scopes.md
+URL: https://floe-labs.gitbook.io/docs/know-your-costs/vendor-credential-scopes.md
+==============================================================================
+
+# Vendor key scopes & the read-only export
+
+Floe only **reads** your vendor billing data. But the key a vendor issues for that
+read can carry more power than reading: for some vendors, the only key that reaches
+cost data can also manage the whole account. This page lists, for every vendor
+connector, how much power its key carries, the narrowest key the vendor offers, the
+vendor doc pages that was read from, and the day it was checked. Where the only key
+is an admin key, it describes the read-only way in: the vendor console's own cost
+export.
+
+The same data is served by the API on the connector catalog
+(`GET /v1/developer/vendor-connections` returns `connectors[].credentialScope`), and the
+dashboard shows it in the connect form and in the **Which key each vendor needs**
+list on **Vendor actuals**. When a vendor changes its key model, the catalog changes
+first; this page follows.
+
+## The four scopes
+
+| Scope | What it means |
+|---|---|
+| `read_only` | The vendor offers a key limited to the billing data Floe reads. |
+| `admin` | The only key that reaches the cost data can also administer your vendor account. |
+| `unverified` | The vendor's docs don't say which permission these reads need. Floe does not guess: treat the key as account-wide. |
+| `none` | Floe collects no key. Costs arrive through the invoice you upload. |
+
+An `admin` vendor that has a read-only way in names it in `readOnlyAlternative`.
+Today that is `console_export` for OpenAI and Anthropic.
+
+## Per vendor
+
+Checked against each vendor's docs on **2026-10-02**.
+
+| Vendor | Scope | Minimum key | Read-only alternative |
+|---|---|---|---|
+| Twilio | `read_only` | Restricted API key (`twilio_api_key`) with `/twilio/billing/usage/read`, `/twilio/voice/calls/list` and `/twilio/voice/calls/read`. | - |
+| AWS Bedrock (CUR) | `read_only` | IAM access key whose policy allows only `s3:GetObject` and `s3:ListBucket` on the CUR bucket prefix. | - |
+| Google Cloud | `read_only` | Service account with `roles/bigquery.dataViewer` on the billing export dataset and `roles/bigquery.jobUser` on the project that runs the query (OAuth scope `bigquery.readonly`). | - |
+| Azure | `read_only` | App registration (client secret) granted **Cost Management Reader** on the billing scope. | - |
+| OpenAI | `admin` | Organization Admin API key (`sk-admin-...`). Creating one takes a name and an optional expiry, no permission scope; the key's owner is always an organization owner. | Console cost export |
+| Anthropic | `admin` | Admin API key (`sk-ant-admin...`), an `org:admin` OAuth token, or a personal or service-account key not scoped to a workspace. Only members with the admin role can provision an Admin API key; workspace keys are refused. | Console cost export |
+| Deepgram | `unverified` | A project key created with explicit scopes; `usage:read` and `project:read` are the read scopes Deepgram lists. | - |
+| Telnyx | `unverified` | A Bearer API key from Mission Control; no key scopes are documented. | - |
+| ElevenLabs | `unverified` | An API key limited to read permissions such as `user_read` and `speech_history_read`. | - |
+| Cartesia | `unverified` | An API key; no key scopes are documented. | - |
+| AssemblyAI, Rime, Sarvam | `none` | No billing API: no key is collected. | - |
+
+What each vendor's docs did, or did not, say:
+
+- **Twilio.** An Account SID with its Auth Token carries full account access; use a restricted key instead. Sources: [Restricted API keys](https://www.twilio.com/docs/iam/api-keys/restricted-api-keys), [Usage Records permissions (PDF)](https://docs-resources.prod.twilio.com/documents/Twilio_Restricted_API_Keys_Permissions_-_Usage_Records_Permissions.pdf), [Voice permissions (PDF)](https://docs-resources.prod.twilio.com/documents/Twilio_Restricted_API_Keys_Permissions_-_Voice_Permissions.pdf).
+- **AWS Bedrock.** Sources: [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html), [CUR in S3](https://docs.aws.amazon.com/cur/latest/userguide/cur-s3.html).
+- **Google Cloud.** `bigquery.jobUser` also lets the account run jobs and create Dataform repositories in that project; it grants no write on the export dataset. Source: [BigQuery access control](https://docs.cloud.google.com/bigquery/docs/access-control).
+- **Azure.** Cost Management Reader holds read actions (`Microsoft.Consumption/*/read`, `Microsoft.CostManagement/*/read`) plus `Microsoft.Support/*`. Sources: [Management and governance roles](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/management-and-governance), [Assign access to Cost Management data](https://learn.microsoft.com/en-us/azure/cost-management-billing/costs/assign-access-acm-data).
+- **OpenAI.** The Costs and Usage endpoints are Admin API endpoints; there is no read-only admin key. Sources: [Create admin API key](https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/admin_api_keys/methods/create), [Costs](https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/usage/methods/costs).
+- **Anthropic.** The same Admin API key also manages members, workspaces and API keys. The Admin API is not available to individual accounts, and the usage and cost reports are not available on Claude Platform on AWS. Sources: [Usage and Cost API](https://platform.claude.com/docs/en/manage-claude/usage-cost-api), [Admin API](https://platform.claude.com/docs/en/manage-claude/admin-api).
+- **Deepgram.** Deepgram documents the read scopes but not which scope `GET /v1/projects`, `/requests` and `/usage` require, so whether a read-only key is enough is unconfirmed. A default member key also holds `usage:write` and `keys:write`. Sources: [Working with roles](https://developers.deepgram.com/guides/deep-dives/working-with-roles), [Create a key](https://developers.deepgram.com/reference/manage/keys/create), [List requests](https://developers.deepgram.com/reference/manage/requests/list).
+- **Telnyx.** The authentication docs describe no permission scopes for API keys. We could not confirm a read-only key exists, so treat the key as account-wide. Sources: [Authentication](https://developers.telnyx.com/docs/development/api-fundamentals/authentication), [auth.md](https://developers.telnyx.com/auth.md).
+- **ElevenLabs.** Keys take a permission list (`user_read`, `speech_history_read`, ... or all), but the `/v1/user/subscription` and `/v1/history` pages do not name the permission they require. Sources: [Create API key](https://elevenlabs.io/docs/api-reference/service-accounts/api-keys/create), [Get subscription](https://elevenlabs.io/docs/api-reference/user/subscription/get), [List history](https://elevenlabs.io/docs/api-reference/history/list).
+- **Cartesia.** The public docs describe API keys and short-lived access tokens with `tts`/`stt` grants only. The `/usage` endpoint the connector calls is not in the public reference, so its key requirement is unconfirmed. Sources: [llms.txt](https://docs.cartesia.ai/llms.txt), [Authenticate your client applications](https://docs.cartesia.ai/get-started/authenticate-your-client-applications).
+- **AssemblyAI, Rime, Sarvam.** No billing API. Their costs reach the ledger through the invoice you upload; the units shown come from Floe's own metering.
+
+### Payroll connectors
+
+Both are read-only (`GET /v1/developer/payroll/connections` returns them as `credentialScopes`):
+
+| Provider | Scope | Minimum grant |
+|---|---|---|
+| Gusto | `read_only` | OAuth grant to Floe's app with the read scopes `employees:read payrolls:read pay_schedules:read jobs:read companies:read`. Gusto assigns an app its scopes at review and enforces them in production; you approve the grant. Source: [Gusto scopes](https://docs.gusto.com/app-integrations/docs/scopes). |
+| Rippling | `read_only` | API token (Tools > Developer > API Tokens) scoped to read companies, workers and payroll runs. A token's access is the intersection of its owner's permission profile and its scopes; only `workers.read` was confirmed by name. Sources: [llms.txt](https://developer.rippling.com/llms.txt), [API tokens](https://developer.rippling.com/documentation/rest-api/essentials/api-tokens). |
+
+### LLM gateways
+
+LiteLLM, Portkey, Helicone and OpenRouter usage reaches Floe as an **export file you upload**. Floe pulls no gateway API today, so no gateway key is collected. If gateway API pulls ship, their scopes will be listed here.
+
+## The read-only path: the console cost export
+
+For OpenAI and Anthropic, the cost API needs an admin key. If your security team won't
+issue one, upload the vendor console's monthly cost export instead. It reaches the same
+period-rate outcome, with one condition, explained under [Grain](#grain).
+
+### In the dashboard
+
+1. **Vendor actuals > Billing connections > Connect a vendor bill**, choose OpenAI or
+   Anthropic. Right under the admin-key field: *"Your security team can't issue an
+   admin key? Upload the console's cost export instead."* Choose **Use the console
+   export**; the same form switches to the export. Files for later months go through
+   **Console cost exports**, on the same tab.
+2. **Create the source.** The form shows the template's default header for each Floe
+   field. **The defaults are unverified**: Floe built them from the vendor's cost API
+   field names, not from a real console file. Check each one against your own export,
+   blank out what your file doesn't have, and list any other headers Floe should not
+   read (a header that looks like money or identity needs a reason).
+3. **Confirm once.** Tick *I checked these headers against my own file*. That is the one
+   confirmation for this profile version, recorded with who confirmed and when. It must
+   be a signed-in owner or admin; a developer key can't confirm.
+4. **Upload a month.** One file is one vendor-month. It is accepted once the month has
+   ended (UTC) and the vendor's restatement window has passed: 6 hours for OpenAI and
+   Anthropic.
+
+### Header drift stops the import
+
+A file imports only when its header set equals the confirmed version's exactly (column
+order is free). Any difference is refused with `422 header_drift`, listing the
+`missing` and `unexpected` headers, and nothing is written. Confirm a new profile
+version for the new file; the dashboard opens that form with the unexpected headers
+prefilled.
+
+### Grade
+
+| Profile `costSource` | What it is | Grade |
+|---|---|---|
+| `vendor_reported` | The file's own cost column. | **B** |
+| `imputed` | Tokens only (Anthropic), priced from Floe's model catalog. | **D**, an estimate |
+
+An imputed (D) file is stored but is **never a true-up authority or a period-rate
+input**: the response says `trueUpAuthority: false` and `note: "imputed from catalog -
+not a true-up authority"`, and the month stays `invoice_pending` until a
+vendor-reported export, a billing connection or an invoice arrives. A console export is
+never `invoiced`: that status belongs to the invoice document.
+
+### Grain
+
+- **Token class on every row** (OpenAI's line item, Anthropic's token type): rows are
+  keyed exactly as the connector keys them, so the month's true-up per gateway row is
+  identical to an API month's.
+- **No token class** (daily per model): accepted at its own grain and labelled
+  **"blended per model"**: one period rate per model for the month. The
+  identical-to-the-API result does **not** hold for a blended file.
+- **One grain per vendor per month.** A month booked at another grain by another
+  export source is refused (`409 grain_conflict`); a month booked by another source is
+  refused (`409 month_booked_by_other_source`); a file mixing both grains is refused
+  (`422 mixed_grain`).
+
+### The API wins
+
+The API wins per **vendor-month**. If a billing connection has any cost data for the
+vendor in that month, the connector's figures stand for the whole month and the export
+counts only as a **tie-out check**, whichever arrives first. Rows on the days both cover
+are marked `tieOutOnly: true`. Connect the vendor after uploading an export, and the
+connector's figures supersede the export's through the ordinary true-up re-run: an open
+month is superseded; a locked month is restated in the next open period. The tie-out
+compares the export's total to the connector's over the days both cover: within
++/-0.5% it is `tied`; beyond that it is `unexplained` and opens a
+`vendor_export_tie_out_unexplained` finding under **Needs review**. It never moves a
+dollar.
+
+### Other refusals
+
+| Code | Meaning |
+|---|---|
+| `422 rows_rejected` | Rows were refused; `reasons` counts them. Nothing imported. |
+| `422 month_not_closed` | The month hasn't ended plus the restatement window yet. |
+| `422 currency_unsupported` | Only USD is booked. The file is kept and the refusal recorded. |
+| `422 malformed_csv` / `empty_file` | The file isn't readable CSV, or has no header row. |
+| `409 window_overlap` | This source already has an import covering the month: send `mode=replace` to replace it. |
+| `409 replace_window_partial` | A replace must cover every import it overlaps. |
+| `413 too_large` | A file is at most 256 KiB. |
+
+### From the API
+
+Profiles are created and confirmed by a signed-in owner or admin in the dashboard.
+Uploading a month can also be done with a developer key (`floe_live_...`, admin role):
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/vendor-exports/openai-console/imports?month=2026-09" \
+  -H "Authorization: Bearer $FLOE_DEVELOPER_KEY" \
+  -H "Content-Type: text/csv" \
+  --data-binary @openai-costs-2026-09.csv
+```
+
+Expected response (abridged):
+
+```json
+{
+  "duplicate": false,
+  "import": { "id": "...", "status": "imported", "profileVersion": 1, "rowCount": 412 },
+  "costSource": "vendor_reported",
+  "grade": "B",
+  "gradeReason": "vendor_reported",
+  "catalogVersion": null,
+  "trueUpAuthority": true,
+  "note": null,
+  "apiHoldsMonth": false,
+  "grain": "token_class",
+  "label": null,
+  "buckets": [ { "recordKind": "cost_bucket", "day": "2026-09-01", "costUsd": "41.25", "tieOutOnly": false } ],
+  "tieOuts": []
+}
+```
+
+`apiHoldsMonth` is true when the API holds this vendor-month: the file is kept as a tie-out check only.
+Uploading the same file again returns `"duplicate": true` and changes nothing.
+`GET /v1/developer/vendor-exports` lists your sources and the templates;
+`GET /v1/developer/vendor-exports/{slug}/imports` lists a source's current imports.
+
+## Related
+
+- [Vendor connections](vendor-connections.md): connecting a vendor's billing API.
+- [Vendor actuals](vendor-actuals.md): the statuses a reconciled leg can reach.
 
 ==============================================================================
 # Coverage Score
@@ -7139,7 +7396,7 @@ npm i -g @floelabs/cli    # or keep the `floe` bin around
 | [Get started](#get-started) | `init` · `status` · `use` · `test` |
 | [Metered calls](#metered-calls) | `chat` · `embed` · `speak` · `transcribe` · `pay` |
 | [Agents & limits](#agents-limits) | `agents` · `keys` · `devkeys` · `budget` · `policy` · `allowlist` · `credit` |
-| [Observability & billing](#observability-billing) | `activity` · `usage` · `interactions` · `outcomes` · `actuals` · `ledger` · `billing` · `account` · `team` |
+| [Observability & billing](#observability-billing) | `activity` · `usage` · `interactions` · `outcomes` · `actuals` · `gateway` · `ledger` · `billing` · `account` · `team` |
 | [Money](#money) | `funds` · `cashout` |
 | [Platform](#platform) | `webhooks` · `models` · `estimate` · `providers` · `phone` · `actions` · `orchestrators` · `vendors` |
 
@@ -7623,6 +7880,21 @@ floe actuals invoices foot 11 --dry-run   # rehearse first — footing is irreve
 
 ---
 
+### `floe gateway`
+
+Check your own LLM gateway's export file against the [gateway export contract](gateway-export-contract.md) (or a built-in LiteLLM / Portkey / Helicone / OpenRouter template) **before** importing it. A dry run: it stores nothing, and never prints a row's contents, only header names, counts, reason codes and row numbers.
+
+```bash
+floe gateway validate gateway-2026-09.ndjson                     # offline: the file never leaves your machine
+floe gateway validate gateway-2026-09.csv --online               # + account/connection checks
+floe gateway validate export.csv --online --connection our-gateway   # read with a connection's profile
+floe gateway validate export.csv --template floe-canonical-csv@1
+```
+
+Offline is the default and runs the same file-only checks; account/connection checks are available online only, and it prints them as caveats (ids already imported, people, rows Floe already metered, the connection's id mode). `--online` posts the file to `POST /v1/developer/ext-gateway/validate` (up to 10 MiB). `--connection` needs `--online` and excludes `--template`. Exit code `1` when the file isn't valid. Report fields and a worked example: [Gateway export contract → Validate before you import](gateway-export-contract.md#validate-before-you-import).
+
+---
+
 ## Money
 
 ### `floe funds`
@@ -7682,7 +7954,7 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
 | `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: 48 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (18: `billing.*`, `client_margin.negative`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`, `unmapped_api_key_spend`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
+Events: 50 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (20: `billing.*`, `client_margin.negative`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`, `unmapped_api_key_spend`, `close_slow`, `vendor_late`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
 floe webhooks create https://api.acme.com/hooks/floe --events 'call.*,marketplace.payment.settled'
@@ -9271,7 +9543,7 @@ Developer key.
 |------|-------------|
 | `create_webhook` | Register an endpoint. Returns the signing secret **once**. Max 10 webhooks. Events accept exact names, `*`, or prefix wildcards like `call.*`; scopes: `global`, `wallet`, `agent` (agent wallet address), `loan` |
 | `list_webhooks` | Registered webhooks with events, scope, and active flag (secrets are never returned) |
-| `list_webhook_events` | The live event catalog: 48 events with name, title, description, category, and scope |
+| `list_webhook_events` | The live event catalog: 50 events with name, title, description, category, and scope |
 | `get_webhook` | One webhook plus delivery stats (pending / success / failed / retrying / total) |
 | `update_webhook` | Change URL, events, or description, or pause/resume via `active`. Scope is immutable |
 | `delete_webhook` | Delete an endpoint permanently |
@@ -9835,7 +10107,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **48 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **50 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -9937,6 +10209,8 @@ Account-level events — no agent attribution. They reach a `global` webhook, or
 | `stripe.connected` | A Stripe account was connected for client invoicing |
 | `stripe.disconnected` | The connected Stripe account was disconnected — client invoicing pauses until it is reconnected |
 | `unmapped_api_key_spend` | An API key in your gateway logs has no team or initiative mapping, and its spend reached your alert floor — sent once per key (see [below](#unmapped_api_key_spend)) |
+| `close_slow` | Close is taking longer than 2 business days since the last invoice landed; sent once per month (see [below](#close_slow-and-vendor_late)) |
+| `vendor_late` | A vendor's invoice is past the invoice window; sent once per month, naming the vendors (see [below](#close_slow-and-vendor_late)) |
 
 #### `unmapped_api_key_spend`
 
@@ -9987,6 +10261,22 @@ An API key from an imported gateway log (for example a LiteLLM or OpenRouter key
 | `firstSeenDay` | The first day the key appears in your gateway logs |
 | `proposalId` | The open mapping proposal for the key, or `null` when there is none |
 | `link` | The dashboard page to map the key: the proposal when there is one, otherwise the Quarantine page for that month. It carries only the proposal ID |
+
+#### `close_slow` and `vendor_late`
+
+The two alerts of the month-end close clock ("days to lock": business days from the last vendor's invoice landing to the period lock; see [Vendor actuals](../build/vendor-actuals.md#days-to-lock)). A job checks every hour, over the three most recent ended months.
+
+* **`close_slow`** fires when more than **2 business days** have passed since every awaited vendor landed (Floe received its invoice, or every declared source for it went final) and the month is not locked yet, or when it locked that late. A locked month gets at most one, within 7 days of its lock. The alert email goes to the account owner and admins.
+* **`vendor_late`** fires only while a month is open, when a vendor with spend in it is past its invoice window with nothing landed. It names the vendors. The alert email goes to whoever saved that vendor's billing connection (while they are still a member), plus the account owner and admins.
+* **Once per month each.** Neither fires twice for the same month. A month with no vendor spend never alerts, and a locked month alerts only within 7 days of its lock.
+* **Business days** are Monday to Friday in your account time zone (UTC until the account time-zone setting ships). Public holidays are not excluded.
+* **Category and scope.** `billing`, account-scoped. **Subscribe by name or `*`**: the names have no dotted prefix, so no `<prefix>.*` wildcard covers them.
+
+`close_slow` payload: `accountId`, `period` (`"2026-09"`), `metric` (`"days_to_lock"`), `status` (`running` or `locked`), `businessDays` (the count that crossed the target), `thresholdBusinessDays` (`2`), `lastLandingVendor`, `lastLandingAt`, `lastLandingDay`, `lockedDay`, `timeZone`, `calendar` (`"weekdays_no_holidays"`), and `link`.
+
+`vendor_late` payload: `accountId`, `period`, `vendors` (`[{ "vendor": "openai" }]`), `invoiceDueBy` (the last day of the invoice window), `timeZone`, and `link`.
+
+`link` opens the month on the dashboard's ledger home: `https://dev-dashboard.floelabs.xyz/?period=2026-09`.
 
 ### Wildcard subscriptions
 
@@ -12409,6 +12699,360 @@ Malformed **lines** inside an otherwise-valid body are not an error — they're 
 - [Credit REST API](credit-api.md) — the rest of the agent & developer surface.
 
 ==============================================================================
+# Gateway export contract
+Source: docs/developers/gateway-export-contract.md
+URL: https://floe-labs.gitbook.io/docs/api-reference/gateway-export-contract.md
+==============================================================================
+
+# Gateway export contract
+
+If your company runs its **own LLM gateway** (a proxy you built, or one Floe has no template for), this page is the file format Floe imports its usage log in. Write your export to this contract, check it with the validator, and import it: every request becomes a cost row on your ledger, attributed to the person, key, client and campaign the row names.
+
+The contract has two forms with the **same field names**:
+
+| Form | Template id | Shape |
+|---|---|---|
+| NDJSON (the reference) | `floe-canonical-ndjson@3` | One JSON object per line |
+| CSV | `floe-canonical-csv@1` | A header row, then one request per row. Every value is text; an empty cell is absent |
+
+Both forms are checked against the same rules and the same [JSON Schema](#json-schema). Using LiteLLM, Portkey, Helicone or OpenRouter? Floe has built-in templates for their exports, and the [validator](#validate-before-you-import) tells you which one matches your file.
+
+> **What the cost column means.** `cost` is the dollar figure **as your gateway computed it, not as the vendor billed it**. Floe grades every gateway row **D** (an estimate), whatever you call the column. The vendor's bill is the money: once the vendor's invoice (or its cost report) for the month is in, Floe trues the gateway's figures up against it and books the difference, so the month's total ties to what the vendor charged. A total built from gateway rows shows its lowest grade (D) next to its grade mix.
+
+## Fields
+
+Required fields must be present on every row. Each field can also be written under a **synonym**, so most gateway logs need no renaming.
+
+| Field | Required | Type | Synonyms | Meaning |
+|---|---|---|---|---|
+| `id` | Yes, when the file carries ids ([below](#ids)) | text, ≤ 512 | — | The gateway's request id. Floe dedupes on it |
+| `occurred_at` | Yes | instant | `timestamp` | When the request happened |
+| `model` | Yes | text, ≤ 256 | — | The model as the gateway names it. `provider/model` also names the provider |
+| `provider` | When `model` doesn't carry it | text, ≤ 128 | — | Who served the request (stored lowercased) |
+| `cost` | Yes | decimal | `estimated_cost` | USD as the gateway computed it, not as billed. Graded D |
+| `person` | No | text, ≤ 512 | `user` | Who made the request: an email or an id. Stored only as a pseudonymous person id |
+| `api_key` | No | text, ≤ 512 | — | The key's alias or hash. Never the key itself |
+| `input_tokens` | No | integer | `prompt_tokens` | Input tokens |
+| `output_tokens` | No | integer | `completion_tokens` | Output tokens |
+| `task` | No | text, ≤ 256 | — | Attribution |
+| `campaign` | No | text, ≤ 256 | — | Attribution |
+| `customer` | No | text, ≤ 256 | — | Attribution |
+| `billed_by` | No | text, ≤ 128 | — | Who bills this traffic, when it isn't the provider (for example `openrouter`). Defaults to the provider |
+| `cache_hit` | No | boolean | — | The gateway answered from its cache: a true $0. Absent means false |
+
+`task`, `campaign` and `customer` are part of a row's attribution only when the connection's grain names them (set when you [create the connection](#import-it)). Prompt and response content is never part of the contract and never stored.
+
+### Types
+
+| Type | Rule | Accepted | Refused |
+|---|---|---|---|
+| decimal | A **string** of digits with an optional fraction. No sign, no exponent, never a JSON number | `"0.004215"`, `"0"` | `0.004215`, `"-0.01"`, `"4e-3"`, `"$0.01"` |
+| instant | ISO 8601 with `T`, seconds, and `Z` or a `±HH:MM` offset, on a real calendar day. Fractional seconds are optional | `"2026-09-30T14:02:11Z"`, `"2026-09-30T07:02:15-07:00"`, `"2026-09-30T14:03:40.250Z"` | `"2026-09-30 14:02:11"`, `"2026-09-30T14:02Z"`, `"2026-02-30T00:00:00Z"`, no offset |
+| integer | Digits, as a JSON integer or a string, at most 9223372036854775807 | `1840`, `"1840"` | `-5`, `1.5`, `"1,840"` |
+| boolean | JSON `true` / `false`, or the text `true` / `false` in any case | `true`, `"TRUE"` | `1`, `"yes"` |
+| text | A string, trimmed | `"acme"` | an object or array |
+
+In both forms a value is **absent** when its key is missing, JSON `null`, or blank text. Text is trimmed before any check. In CSV every cell is text, so `1840` and `true` are read by the rules above.
+
+Why cost is a string: a JSON number goes through floating point in most tools that write and read it, and `0.1 + 0.2` stops being `0.3`. A decimal string reaches the ledger exactly as your gateway wrote it.
+
+### Synonyms
+
+A row may carry a field under its name or a synonym (`user` for `person`, `estimated_cost` for `cost`, `prompt_tokens` for `input_tokens`, `completion_tokens` for `output_tokens`, `timestamp` for `occurred_at`). If a row carries **both** and they disagree, the row is refused with `conflicting_<field>`: Floe never picks one for you. Both with the same value is fine.
+
+### Provider from the model
+
+`provider` may be left out when `model` reads `provider/model`. Floe splits at the **first** `/`: `openai/gpt-4o` becomes provider `openai`, model `gpt-4o`. A row that names its provider keeps its model exactly as written (so `provider: openrouter, model: anthropic/claude-sonnet-4-6` keeps the slash). A row with neither a `provider` nor a `provider/model` is refused with `missing_provider`.
+
+### Ids
+
+A file either **carries ids** or **doesn't**, as a whole:
+
+- **Carries ids:** the CSV has an `id` column, or the NDJSON file's **first** row has an `id` key. Then every row needs one (`missing_id` otherwise). Floe dedupes on it: importing the same file twice inserts nothing the second time.
+- **No ids:** Floe derives an id for each row. Without the gateway's own id Floe can't tell a resent file from new traffic, so the import must **declare the time window** the file covers, and importing a window that overlaps one already imported needs `mode=replace`, which supersedes the earlier import. The validator says `ids derived; window required`. A row that does carry an `id` in such a file is refused (`unexpected_id`).
+
+One connection holds one kind: a connection that has imported files with ids refuses a file without, and the reverse (`409 id_mode_mismatch`).
+
+### Unknown fields
+
+Any key or header that isn't a field or a synonym stops the import (`422 unmapped_fields`, with the names listed). Drop the column from your export, or ignore it in the connection's profile.
+
+## JSON Schema
+
+The contract is served as a versioned JSON Schema (draft 2020-12), public and with no key, generated from the same definition the importer reads with:
+
+```bash
+curl -s https://credit-api.floelabs.xyz/v1/ext-gateway/contract/3
+```
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://credit-api.floelabs.xyz/v1/ext-gateway/contract/3",
+  "title": "Floe canonical gateway export, contract v3",
+  "type": "object",
+  "properties": {
+    "cost": {
+      "description": "USD as the gateway computed it, not as billed: a decimal string. Graded D.",
+      "type": ["string"],
+      "pattern": "^[0-9]+(\\.[0-9]+)?$",
+      "maxLength": 64
+    },
+    "…": "one entry per field and per synonym"
+  },
+  "additionalProperties": false,
+  "x-floe-contract-version": 3,
+  "x-floe-templates": { "ndjson": "floe-canonical-ndjson@3", "csv": "floe-canonical-csv@1" },
+  "x-floe-rules": ["…"]
+}
+```
+
+One schema covers both forms: an NDJSON line is the object; a CSV row is the object of its header → cell text, with empty cells left out. What a schema can't express (trimming, synonyms that disagree, ids per file, a real calendar day) is written out in `x-floe-rules` and enforced by the importer. An unknown version answers `404 unknown_contract_version` with the list of `versions`.
+
+## Validate before you import
+
+The validator is a **dry run**: it reads your file exactly as an import would and **stores nothing**. Its report holds header names, counts, reason codes and row numbers, and **never a row's contents**, so a report is safe to paste into a ticket even when the file holds email addresses.
+
+A file is **valid** when every header is mapped, no row is refused, skipped or repeated, and Floe's row count equals the export's. That last check matters for the close: your totals can only tie to the vendor's bill if every row made it in.
+
+### From the CLI
+
+```bash
+floe gateway validate <file> [--online] [--template <id>] [--connection <slug>]
+```
+
+| Flag | Does |
+|---|---|
+| *(default)* | **Offline.** The file never leaves your machine. The CLI bundles the API's own validator and schema, so it gives the same answer as the API |
+| `--online` | Validates against your account (`POST /v1/developer/ext-gateway/validate`, files up to 10 MiB). Needs your developer key |
+| `--template <id>` | Read with this template instead of the best match |
+| `--connection <slug>` | Read with an existing connection's profile (needs `--online`) |
+
+Offline mode runs the same file-only checks; account/connection checks are available online only. It prints four caveats:
+
+1. **Ids already imported** on your account aren't checked. A row whose id one of your connections already holds would be skipped by an import into that connection, and counted twice by an import into another one.
+2. **People** aren't resolved against your account: the online report says how many distinct people the file names and how many Floe already knows.
+3. **Rows Floe's own gateway already metered** for your account aren't counted. An import of them is refused (`409 metered_by_floe`).
+4. **The connection's id mode** isn't checked: with `--connection`, the online report says whether the file carries ids the way that connection's imports do (`409 id_mode_mismatch` otherwise; re-export in the connection's mode).
+
+Run `--online` once before the first import into a connection to see all four. Exit code `1` when the file isn't valid, so the command can gate a script. `--json` prints the report as JSON.
+
+### From the API
+
+```
+POST /v1/developer/ext-gateway/validate?template=<id> | ?connection=<slug>
+```
+
+The body is the file (`text/csv` or `application/x-ndjson`, up to 10 MiB; larger files: validate offline with the CLI). Send `template` or `connection`, not both; with neither, Floe reads with the best-matching built-in template. It needs the member role or above, with a developer key (`floe_live_…`) or a dashboard session.
+
+The response (`200`, even for a file-level problem such as malformed CSV, which comes back in `fileError`):
+
+| Field | Means |
+|---|---|
+| `valid` | The file would import in full |
+| `profile` | The template or connection profile it was read with, and why (`connection`, `template`, `best_match`) |
+| `exportRowCount` / `floeRowCount` / `rowCountMatches` | Rows in the export, rows Floe would import (a repeated id counts once), and whether they're equal |
+| `ids` | `present` or `derived` |
+| `headers` | `mapped`, `ignored`, `unmapped`, `missingRequired` (when a required field is missing, rows aren't checked and `refusedRows` is `null`) |
+| `refusedRows` | Count, count per reason, and the first 100 rows as `{row, reason, field}` (`truncated` when there are more) |
+| `skippedRows` | Rows another template drops on purpose (traffic that already went through Floe's own gateway, so it isn't counted twice). Never happens with the canonical contract |
+| `duplicateIds.inFile` | Rows repeating an earlier row's id |
+| `duplicateIds.alreadyImported` | Rows whose id your account already holds, with a count per connection (online only) |
+| `people` | `distinct` people in the file and how many are `known` (online only) |
+| `meteredByFloe` | Rows whose `floe-pr-<id>` id names a request your account's own Floe gateway metered (online only) |
+| `idModeMismatch` | With `connection`: `{connection, file}` when the file's ids (`present` / `derived`) differ from the connection's imports, else `null` (online only) |
+| `bestTemplate` / `templates` | Every built-in template of the file's format, best first, with the share of your headers it reads (`score`) and what it would be missing |
+| `notes` | For example `ids derived; window required`, or `Floe would import 1 of the export's 6 rows` |
+
+Row numbers count data rows from 1: in CSV the header line doesn't count.
+
+Refusal reasons you'll see: `missing_<field>`, `invalid_<field>` (wrong type), `conflicting_<field>` (synonyms disagree), `too_long`, `missing_provider`, `unexpected_id`.
+
+## Worked example
+
+Three requests from September, in both forms. Row 1 names its provider; row 2 takes it from the model and uses three synonyms (`user`, `prompt_tokens`, `completion_tokens`) with token counts as strings and a `-07:00` offset; row 3 is a cache hit at $0.
+
+{% tabs %}
+{% tab title="NDJSON" %}
+`gateway-2026-09.ndjson`:
+
+```json
+{"id":"req_8f2a01","occurred_at":"2026-09-30T14:02:11Z","provider":"anthropic","model":"claude-sonnet-4-6","cost":"0.004215","person":"maya@example.com","api_key":"support-prod","input_tokens":1840,"output_tokens":212,"customer":"acme"}
+{"id":"req_8f2a02","occurred_at":"2026-09-30T07:02:15-07:00","model":"openai/gpt-4o","cost":"0.0031","user":"devon@example.com","prompt_tokens":"950","completion_tokens":"118","campaign":"q4-renewals"}
+{"id":"req_8f2a03","occurred_at":"2026-09-30T14:03:40.250Z","model":"openai/gpt-4o-mini","cost":"0","cache_hit":true,"person":"maya@example.com"}
+```
+
+```bash
+floe gateway validate gateway-2026-09.ndjson
+```
+
+```
+  Mode          offline
+  Format        ndjson
+  Read with     floe-canonical-ndjson@3 (best match, score 1)
+  Rows          export 3 · Floe 3  counts match
+  Ids           present
+  Headers       15 mapped · 0 ignored · 0 unmapped
+  Refused rows  0
+! offline: ids already imported on your account are not checked (run with --online)
+! offline: people are not resolved against your account (run with --online)
+! offline: rows your account's Floe gateway already metered are not counted (run with --online)
+! offline: the connection's id mode is not checked (run with --online --connection <slug>)
+✓ valid: Floe would import every row of this export
+```
+{% endtab %}
+
+{% tab title="CSV" %}
+`gateway-2026-09.csv`, the same three requests:
+
+```csv
+id,occurred_at,provider,model,cost,person,api_key,input_tokens,output_tokens,customer,campaign,cache_hit
+req_8f2a01,2026-09-30T14:02:11Z,anthropic,claude-sonnet-4-6,0.004215,maya@example.com,support-prod,1840,212,acme,,
+req_8f2a02,2026-09-30T07:02:15-07:00,,openai/gpt-4o,0.0031,devon@example.com,,950,118,,q4-renewals,
+req_8f2a03,2026-09-30T14:03:40.250Z,,openai/gpt-4o-mini,0,maya@example.com,,,,,,true
+```
+
+```bash
+floe gateway validate gateway-2026-09.csv
+```
+
+```
+  Mode          offline
+  Format        csv
+  Read with     floe-canonical-csv@1 (best match, score 1)
+  Rows          export 3 · Floe 3  counts match
+  Ids           present
+  Headers       12 mapped · 0 ignored · 0 unmapped
+  Refused rows  0
+! offline: ids already imported on your account are not checked (run with --online)
+! offline: people are not resolved against your account (run with --online)
+! offline: rows your account's Floe gateway already metered are not counted (run with --online)
+! offline: the connection's id mode is not checked (run with --online --connection <slug>)
+✓ valid: Floe would import every row of this export
+```
+{% endtab %}
+{% endtabs %}
+
+### A file that isn't ready
+
+`broken.ndjson` has a space instead of `T` in row 1, no provider in row 2, cost as a JSON number in row 3, `user` and `person` disagreeing in row 4, an extra `region` key in row 5, and row 6 repeating row 5's id:
+
+```json
+{"id":"req_9a01","occurred_at":"2026-09-30 14:02:11","provider":"anthropic","model":"claude-sonnet-4-6","cost":"0.004215"}
+{"id":"req_9a02","occurred_at":"2026-09-30T14:02:15Z","model":"gpt-4o","cost":"0.0031"}
+{"id":"req_9a03","occurred_at":"2026-09-30T14:03:40Z","provider":"openai","model":"gpt-4o","cost":0.0012}
+{"id":"req_9a04","occurred_at":"2026-09-30T14:03:41Z","provider":"openai","model":"gpt-4o","cost":"0.0012","user":"a@example.com","person":"b@example.com"}
+{"id":"req_9a05","occurred_at":"2026-09-30T14:03:42Z","provider":"openai","model":"gpt-4o","cost":"0.0009","region":"us-east-1"}
+{"id":"req_9a05","occurred_at":"2026-09-30T14:03:42Z","provider":"openai","model":"gpt-4o","cost":"0.0009"}
+```
+
+```
+  Mode          offline
+  Format        ndjson
+  Read with     floe-canonical-ndjson@3 (best match, score 0.875)
+  Rows          export 6 · Floe 1  counts differ
+  Ids           present
+  Headers       7 mapped · 0 ignored · 1 unmapped
+  Refused rows  4
+Unmapped headers: region
+Refused rows by reason:
+  invalid_occurred_at  1
+  missing_provider  1
+  invalid_cost  1
+  conflicting_person  1
+  row 1: invalid_occurred_at (occurred_at)
+  row 2: missing_provider (provider)
+  row 3: invalid_cost (cost)
+  row 4: conflicting_person (user)
+Repeated ids in the file: 1 (rows 6)
+! Floe would import 1 of the export's 6 rows
+! offline: ids already imported on your account are not checked (run with --online)
+! offline: people are not resolved against your account (run with --online)
+! offline: rows your account's Floe gateway already metered are not counted (run with --online)
+! offline: the connection's id mode is not checked (run with --online --connection <slug>)
+✗ not valid
+```
+
+Note what the report leaves out: no email address, no model name, no cost from any row.
+
+### A file without ids
+
+```csv
+occurred_at,model,cost,user
+2026-09-30T14:02:11Z,openai/gpt-4o,0.0031,devon@example.com
+2026-09-30T14:05:00+02:00,anthropic/claude-haiku-4-5,0.0004,maya@example.com
+```
+
+This validates (`Ids  derived`) with the note `ids derived; window required`: import it with `window_start` and `window_end`.
+
+### Online, with the API
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/ext-gateway/validate?template=floe-canonical-csv@1" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY" \
+  -H "Content-Type: text/csv" \
+  --data-binary @gateway-2026-09.csv
+```
+
+On an account that has imported nothing yet, the response is the offline report (without `mode` and `caveats`) plus the account/connection checks:
+
+```json
+{
+  "valid": true,
+  "format": "csv",
+  "profile": { "template": "floe-canonical-csv@1", "source": "template" },
+  "exportRowCount": 3,
+  "floeRowCount": 3,
+  "rowCountMatches": true,
+  "ids": "present",
+  "duplicateIds": {
+    "inFile": { "count": 0, "rows": [], "truncated": false },
+    "alreadyImported": { "count": 0, "rows": [], "truncated": false, "byConnection": {} }
+  },
+  "people": { "distinct": 2, "known": 0 },
+  "meteredByFloe": { "count": 0, "rows": [], "truncated": false },
+  "idModeMismatch": null,
+  "notes": [],
+  "…": "headers, refusedRows, skippedRows, bestTemplate, templates, fileError"
+}
+```
+
+## Import it
+
+Imports go into a **connection**: one gateway feed on your account. Create one for your gateway with the contract's template (owner or admin):
+
+```bash
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/ext-gateway/connections" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"slug":"our-gateway","gateway":"own","template":"floe-canonical-ndjson@3","grain":["customer","campaign"]}'
+```
+
+Use `floe-canonical-csv@1` for the CSV form. Name the template: a `gateway: "own"` connection created without one uses the older `floe-canonical-ndjson@2` contract. `grain` (any of `task`, `campaign`, `customer`) is set once and never changes.
+
+Then post each export file (up to 10 MiB; larger files go through a signed upload):
+
+```bash
+# A file with ids
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/ext-gateway/connections/our-gateway/imports" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY" \
+  -H "Content-Type: application/x-ndjson" \
+  --data-binary @gateway-2026-09.ndjson
+
+# A file without ids: declare the window it covers (half-open)
+curl -X POST "https://credit-api.floelabs.xyz/v1/developer/ext-gateway/connections/our-gateway/imports?window_start=2026-09-01T00:00:00Z&window_end=2026-10-01T00:00:00Z" \
+  -H "Authorization: Bearer floe_live_YOUR_KEY" \
+  -H "Content-Type: application/x-ndjson" \
+  --data-binary @gateway-2026-09-noids.ndjson
+```
+
+For a file without ids, the same file with the same window again is a recorded no-op. A different file over an overlapping window is refused (`409 window_overlap`) unless you add `mode=replace`, and a replace must cover every window it overlaps (`409 replace_window_partial` otherwise). `mode=replace` is only for files without ids (`400 replace_needs_idless_profile`); a file with ids dedupes on them instead.
+
+An import is all-or-nothing: an unmapped field, a missing required field or any refused row writes nothing (`422`, with the reasons). That is why the validator exists: run it first, fix the export, then import.
+
+> **See also:** [Floe CLI](cli.md#floe-gateway) · [Vendor actuals](../build/vendor-actuals.md) · [OpenAPI specification](https://credit-api.floelabs.xyz/.well-known/openapi.yaml)
+
+==============================================================================
 # Plans & entitlements
 Source: docs/reference/plans.md
 URL: https://floe-labs.gitbook.io/docs/reference/plans.md
@@ -13103,10 +13747,32 @@ URL: https://floe-labs.gitbook.io/docs/reference/changelog.md
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **35 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **36 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
 
+### Unreleased — Vendor key scopes and the read-only console export (pending the floe-monorepo L1.10 release)
+
+Before anyone pastes a vendor key, Floe now says how much power that key carries, and offers a read-only way in where the only key is an admin key.
+
+* **Credential scope per connector.** The connector catalog (`GET /v1/developer/vendor-connections`, `connectors[].credentialScope`) declares each vendor's scope (`read_only`, `admin`, `unverified`, `none`), the narrowest key the vendor offers, the vendor doc pages it was read from, and the date checked. `unverified` means the vendor's docs didn't say; Floe doesn't guess. Payroll connections list theirs as `credentialScopes`. The dashboard shows it in the connect form and lists which key each vendor needs on **Vendor actuals**.
+* **The console cost export for OpenAI and Anthropic.** Their cost APIs need an admin key. Right beside the admin-key field, the connect form offers the console's monthly cost export instead (`/v1/developer/vendor-exports`). A signed-in owner or admin confirms the header profile once per version; a file whose headers differ is refused (`422 header_drift`, missing and unexpected headers listed) and nothing is written.
+* **Graded and labelled.** The file's own cost column is grade B. Tokens priced from Floe's catalog are grade D, stored but never a true-up authority, so the month stays invoice-pending. A file without a token class books at its own grain, labelled "blended per model"; one grain per vendor per month.
+* **The API wins.** Where a billing connection has cost data for the same vendor-month, its figures stand for the whole month and the export becomes a tie-out check; a gap beyond ±0.5% over the days both cover opens a `vendor_export_tie_out_unexplained` finding.
+
+→ [Vendor key scopes & the read-only export](build/vendor-credential-scopes.md) · [Vendor connections](build/vendor-connections.md)
+### Unreleased — Gateway export contract (pending the floe-monorepo L1.9 release)
+
+Companies that run their own LLM gateway now have a published file format for importing its usage log, and a way to check a file before importing it.
+
+* **One contract, two forms.** `floe-canonical-ndjson@3` (the reference) and `floe-canonical-csv@1` use the same field names: `id`, `occurred_at`, `model`, `provider`, `cost`, plus optional `person`, `api_key`, `input_tokens`, `output_tokens`, `task`, `campaign`, `customer`, `billed_by` and `cache_hit`. Common synonyms are accepted (`user`, `estimated_cost`, `prompt_tokens`, `completion_tokens`, `timestamp`); two names that disagree refuse the row.
+* **Typed so nothing drifts.** `cost` is a decimal string, ISO 8601 times carry an offset, token counts are integers. `provider` can come from the model (`openai/gpt-4o`). A file without ids declares its time window, and an overlapping re-import needs `mode=replace`.
+* **Gateway cost is an estimate.** `cost` is what the gateway computed, not what the vendor billed: every gateway row is graded D, and the true-up against the vendor's invoice or cost report ties the month's total to the bill.
+* **JSON Schema.** `GET /v1/ext-gateway/contract/3`, public.
+* **Validator.** `POST /v1/developer/ext-gateway/validate` and `floe gateway validate <file> [--online]` (offline by default) are a dry run that stores nothing and never echoes a row's contents: row counts, mapped / unmapped / missing headers, refused rows by row number and reason, duplicate ids, and the best-matching built-in template.
+* **Counts.** `@floelabs/cli` ships **36 commands** (new: `floe gateway`).
+
+→ [Gateway export contract](developers/gateway-export-contract.md) · [Floe CLI → floe gateway](developers/cli.md#floe-gateway)
 ### Unreleased — Unmapped API key spend alert (pending the floe-monorepo L1.6 release)
 
 Spend from a gateway API key that nobody has mapped to a team or initiative lands in **Unassigned**. Floe now tells you about it.

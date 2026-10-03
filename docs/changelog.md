@@ -6,10 +6,32 @@ icon: swap
 
 Notable changes and updates to the Floe protocol.
 
-> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **35 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
+> **Current counts (today):** SDKs `floe-agent` / `floe-agentkit-actions` expose **54 actions** (30 Floe + 24 x402, incl. merchant-allowlist + Floe Inference); `@floelabs/mcp-server` exposes **88 tools**; `@floelabs/cli` ships **36 commands**. Per-version numbers in the dated entries below were accurate at the time of that release.
 
 ## Version History
 
+### Unreleased — Vendor key scopes and the read-only console export (pending the floe-monorepo L1.10 release)
+
+Before anyone pastes a vendor key, Floe now says how much power that key carries, and offers a read-only way in where the only key is an admin key.
+
+* **Credential scope per connector.** The connector catalog (`GET /v1/developer/vendor-connections`, `connectors[].credentialScope`) declares each vendor's scope (`read_only`, `admin`, `unverified`, `none`), the narrowest key the vendor offers, the vendor doc pages it was read from, and the date checked. `unverified` means the vendor's docs didn't say; Floe doesn't guess. Payroll connections list theirs as `credentialScopes`. The dashboard shows it in the connect form and lists which key each vendor needs on **Vendor actuals**.
+* **The console cost export for OpenAI and Anthropic.** Their cost APIs need an admin key. Right beside the admin-key field, the connect form offers the console's monthly cost export instead (`/v1/developer/vendor-exports`). A signed-in owner or admin confirms the header profile once per version; a file whose headers differ is refused (`422 header_drift`, missing and unexpected headers listed) and nothing is written.
+* **Graded and labelled.** The file's own cost column is grade B. Tokens priced from Floe's catalog are grade D, stored but never a true-up authority, so the month stays invoice-pending. A file without a token class books at its own grain, labelled "blended per model"; one grain per vendor per month.
+* **The API wins.** Where a billing connection has cost data for the same vendor-month, its figures stand for the whole month and the export becomes a tie-out check; a gap beyond ±0.5% over the days both cover opens a `vendor_export_tie_out_unexplained` finding.
+
+→ [Vendor key scopes & the read-only export](build/vendor-credential-scopes.md) · [Vendor connections](build/vendor-connections.md)
+### Unreleased — Gateway export contract (pending the floe-monorepo L1.9 release)
+
+Companies that run their own LLM gateway now have a published file format for importing its usage log, and a way to check a file before importing it.
+
+* **One contract, two forms.** `floe-canonical-ndjson@3` (the reference) and `floe-canonical-csv@1` use the same field names: `id`, `occurred_at`, `model`, `provider`, `cost`, plus optional `person`, `api_key`, `input_tokens`, `output_tokens`, `task`, `campaign`, `customer`, `billed_by` and `cache_hit`. Common synonyms are accepted (`user`, `estimated_cost`, `prompt_tokens`, `completion_tokens`, `timestamp`); two names that disagree refuse the row.
+* **Typed so nothing drifts.** `cost` is a decimal string, ISO 8601 times carry an offset, token counts are integers. `provider` can come from the model (`openai/gpt-4o`). A file without ids declares its time window, and an overlapping re-import needs `mode=replace`.
+* **Gateway cost is an estimate.** `cost` is what the gateway computed, not what the vendor billed: every gateway row is graded D, and the true-up against the vendor's invoice or cost report ties the month's total to the bill.
+* **JSON Schema.** `GET /v1/ext-gateway/contract/3`, public.
+* **Validator.** `POST /v1/developer/ext-gateway/validate` and `floe gateway validate <file> [--online]` (offline by default) are a dry run that stores nothing and never echoes a row's contents: row counts, mapped / unmapped / missing headers, refused rows by row number and reason, duplicate ids, and the best-matching built-in template.
+* **Counts.** `@floelabs/cli` ships **36 commands** (new: `floe gateway`).
+
+→ [Gateway export contract](developers/gateway-export-contract.md) · [Floe CLI → floe gateway](developers/cli.md#floe-gateway)
 ### Unreleased — Unmapped API key spend alert (pending the floe-monorepo L1.6 release)
 
 Spend from a gateway API key that nobody has mapped to a team or initiative lands in **Unassigned**. Floe now tells you about it.

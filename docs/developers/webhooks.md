@@ -17,7 +17,7 @@ Floe uses webhooks in **two directions**:
 
 ### Event catalog
 
-Floe emits **48 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
+Floe emits **50 events across seven categories**. The tables below are a snapshot — the live catalog is `GET /v1/developer/webhooks/events` (or `floe webhooks events` from the [CLI](cli.md)), which returns every event's name, title, description, category, and scope dimension. Treat that endpoint as the source of truth; new events appear there first.
 
 Every delivery is a JSON POST with the shape `{ "event": "<name>", ...fields, "firedAt": "<ISO 8601>" }`.
 
@@ -119,6 +119,8 @@ Account-level events — no agent attribution. They reach a `global` webhook, or
 | `stripe.connected` | A Stripe account was connected for client invoicing |
 | `stripe.disconnected` | The connected Stripe account was disconnected — client invoicing pauses until it is reconnected |
 | `unmapped_api_key_spend` | An API key in your gateway logs has no team or initiative mapping, and its spend reached your alert floor — sent once per key (see [below](#unmapped_api_key_spend)) |
+| `close_slow` | Close is taking longer than 2 business days since the last invoice landed; sent once per month (see [below](#close_slow-and-vendor_late)) |
+| `vendor_late` | A vendor's invoice is past the invoice window; sent once per month, naming the vendors (see [below](#close_slow-and-vendor_late)) |
 
 #### `unmapped_api_key_spend`
 
@@ -169,6 +171,22 @@ An API key from an imported gateway log (for example a LiteLLM or OpenRouter key
 | `firstSeenDay` | The first day the key appears in your gateway logs |
 | `proposalId` | The open mapping proposal for the key, or `null` when there is none |
 | `link` | The dashboard page to map the key: the proposal when there is one, otherwise the Quarantine page for that month. It carries only the proposal ID |
+
+#### `close_slow` and `vendor_late`
+
+The two alerts of the month-end close clock ("days to lock": business days from the last vendor's invoice landing to the period lock; see [Vendor actuals](../build/vendor-actuals.md#days-to-lock)). A job checks every hour, over the three most recent ended months.
+
+* **`close_slow`** fires when more than **2 business days** have passed since every awaited vendor landed (Floe received its invoice, or every declared source for it went final) and the month is not locked yet, or when it locked that late. A locked month gets at most one, within 7 days of its lock. The alert email goes to the account owner and admins.
+* **`vendor_late`** fires only while a month is open, when a vendor with spend in it is past its invoice window with nothing landed. It names the vendors. The alert email goes to whoever saved that vendor's billing connection (while they are still a member), plus the account owner and admins.
+* **Once per month each.** Neither fires twice for the same month. A month with no vendor spend never alerts, and a locked month alerts only within 7 days of its lock.
+* **Business days** are Monday to Friday in your account time zone (UTC until the account time-zone setting ships). Public holidays are not excluded.
+* **Category and scope.** `billing`, account-scoped. **Subscribe by name or `*`**: the names have no dotted prefix, so no `<prefix>.*` wildcard covers them.
+
+`close_slow` payload: `accountId`, `period` (`"2026-09"`), `metric` (`"days_to_lock"`), `status` (`running` or `locked`), `businessDays` (the count that crossed the target), `thresholdBusinessDays` (`2`), `lastLandingVendor`, `lastLandingAt`, `lastLandingDay`, `lockedDay`, `timeZone`, `calendar` (`"weekdays_no_holidays"`), and `link`.
+
+`vendor_late` payload: `accountId`, `period`, `vendors` (`[{ "vendor": "openai" }]`), `invoiceDueBy` (the last day of the invoice window), `timeZone`, and `link`.
+
+`link` opens the month on the dashboard's ledger home: `https://dev-dashboard.floelabs.xyz/?period=2026-09`.
 
 ### Wildcard subscriptions
 

@@ -31,6 +31,52 @@ Those two rules operate on different things, which is worth stating plainly. The
 
 Some vendors publish a leg's cost at call-end; others only on a next-day batch. So a leg from a call you placed a minute ago is *supposed* to be `pending` — that is the system working correctly, not an error or a capture failure.
 
+## Days to lock
+
+The close clock measures how long the month-end close takes once the vendors' figures are in: **business days from the last vendor's landing to the period lock**. The target is **2 business days or fewer**.
+
+* **What it waits for.** Every vendor with spend in the month whose spend is not final when Floe settles it (see settlement modes below). A vendor **lands** at the first of:
+  * its **invoice received**: the clock counts from when Floe received the invoice (your upload, or the connector's pull), not the date printed on it; or
+  * **every declared source final**: each enabled vendor connection for that vendor, and each compute or other-cost source for it. A source that goes silent is awaited until it is final, or until the invoice window names the vendor missing.
+* **Missing.** A vendor with nothing landed once its invoice window has passed (by default, 5 business days after the month ends) is flagged **missing**, and the clock counts it from the end of the window.
+* **How it counts.** The weekdays **after** the landing day, through the lock day. An invoice that lands on a Thursday and a lock on the Monday after is **2** business days.
+* **Business days** are Monday to Friday in your account time zone (UTC until the account time-zone setting ships). There is **no holiday calendar**: a public holiday counts as a business day.
+* **Where to see it.** The dashboard shows a **Days to lock** card on the ledger home and on **Close the month**: the status (waiting on vendors, running, or locked in N business days), each vendor with the day it landed and how (invoice, all sources final, or invoice window passed and missing), the sources still not final, and the alerts sent. Over the API, `GET /v1/developer/ledger/periods/:key` carries it as `period.closeClock` (`null` for a weekly period).
+* **Two alerts**, each sent at most once per month, by email and as a [webhook](../developers/webhooks.md#close_slow-and-vendor_late):
+  * `close_slow`: more than 2 business days since the last vendor landed and the month is not locked (or it locked that late). A locked month gets at most one `close_slow`, and only within 7 days of its lock. Goes to the account owner and admins.
+  * `vendor_late`: a vendor is past its invoice window with nothing landed. Open months only. Goes to whoever saved that vendor's billing connection, plus the account owner and admins.
+
+### Settlement modes
+
+The clock waits only for spend that a vendor still has to confirm. Each payer is given one settlement mode **per (vendor, cost source)**: `billed_by`, plus whether the row is priced by the billing vendor's own figure (`vendor_reported`) or by the gateway's estimate (`gateway_computed`).
+
+| Mode | Means | The clock |
+|---|---|---|
+| `invoiced` | The vendor sends an invoice | waits until the vendor lands: its invoice received, or every declared source final, whichever comes first |
+| `bucket` | A monthly summary source (a compute or other-cost file), or a prepaid pool tie-out | waits until the vendor lands: its invoice received, or every declared source final, whichever comes first |
+| `final_at_settlement` | Final when Floe settles the day (Floe-billed spend, a model declared free or self-hosted) | never waits for it |
+
+* **Where it is declared.** On the row, as `settlement_mode` (canonical gateway-export contract v3), or on the connection profile, as `settlementModes: [{ billedBy, costSource?, mode }]` on `POST /v1/developer/ext-gateway/connections/:slug/profile-versions` (`costSource` left out = either source; `mode: null` removes the declaration). Modes are read when used, so a declaration applies to rows already imported.
+* **Seeded defaults.** Without a declaration, Floe applies a seeded default. Each one is marked **default, unverified** on the connection profile (`settlementModeDefaults`) until you declare the payer yourself:
+
+| Payer (`billed_by`) | Cost source | Default mode |
+|---|---|---|
+| `openai`, `anthropic`, `vertex_ai`, `bedrock`, `azure_openai`, `groq`, `mistral`, `together`, `fireworks`, `cohere` | either | `invoiced` |
+| Vendors Floe has a cost connector for | either | `invoiced` |
+| `openrouter` | priced by OpenRouter (`vendor_reported`) | `final_at_settlement` |
+| `openrouter` | priced by the gateway (`gateway_computed`) | `bucket` (waits for the month's OpenRouter pool tie-out) |
+| `ollama`, `vllm` | either | `final_at_settlement` |
+
+* **Models declared free or self-hosted** on the profile are `final_at_settlement`.
+* **An undeclared payer's rows are held, not refused.** A gateway row whose payer has no mode (no row value, no declaration, no default) is imported **quarantined**: it is stored but not on the ledger. The period's completeness gets the reason `undeclared_payer`, with the rows, their cost and the payers. The figure is a **lower bound** (cost is missing), and the reason **blocks the lock** unless the owner overrides it with a reason. Each gateway import reports what it held under `quarantinedPayer`.
+* **Declaring a payer only records its mode.** Held rows stay held until someone releases them, with **no re-upload**. The save response says what is now releasable (`releasable`: rows, cost, periods).
+* **Releasing held rows is a person's action.** An owner or admin signed in to the dashboard releases them from **Settings -> Gateway connections**. They see a preview, then confirm "Release N rows, $X, into ...". An API key cannot release: it gets `403 person_required`. Each release is journaled with its rows, amount and periods, and whether any period was locked. Rows from a locked month do not change it: they come in as a restatement in the next open period. Removing a mode later never holds released rows again.
+* **Declared but unreleased rows still block the lock.** They stay under `undeclared_payer`, shown as awaiting release (`undeclaredPayer.awaitingRelease`), until they are released.
+* **API.** `GET /v1/developer/ext-gateway/connections/:slug/held` (any member) returns the preview, grouped by payer, cost source and mode, with the releasable total. `POST /v1/developer/ext-gateway/connections/:slug/release-held` with `{ billedBy?: string[], expect: { rows, costMicro } }` releases them. `expect` must equal the preview's releasable total for the same `billedBy` filter. If the rows moved since the preview, the API returns `409 preview_changed` with the `current` figures; if nothing is releasable, `409 nothing_to_release`. A release returns `{ released: { rows, cost, periods, billedBy, anyLocked }, journalId }`.
+* **Bad values are still refused per row.** A row whose own `settlement_mode` is not one of the three modes is refused with `invalid_settlement_mode`. A row whose value contradicts the profile's declaration is refused with `conflicting_settlement_mode`.
+
+The clock is a measure of the close, not of the money: it never changes a figure on the ledger.
+
 ## Coverage reads low on voice-heavy accounts
 
 A voice-heavy account shows a lower share of priced legs than an LLM-heavy one. That is a property of what the vendors publish, not a gap in your setup. Where it matters, close it through the invoice lane — upload the vendor's invoice and foot it.

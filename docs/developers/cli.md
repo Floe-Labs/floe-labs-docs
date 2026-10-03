@@ -51,7 +51,7 @@ npm i -g @floelabs/cli    # or keep the `floe` bin around
 | [Get started](#get-started) | `init` · `status` · `use` · `test` |
 | [Metered calls](#metered-calls) | `chat` · `embed` · `speak` · `transcribe` · `pay` |
 | [Agents & limits](#agents-limits) | `agents` · `keys` · `devkeys` · `budget` · `policy` · `allowlist` · `credit` |
-| [Observability & billing](#observability-billing) | `activity` · `usage` · `interactions` · `outcomes` · `actuals` · `ledger` · `billing` · `account` · `team` |
+| [Observability & billing](#observability-billing) | `activity` · `usage` · `interactions` · `outcomes` · `actuals` · `gateway` · `ledger` · `billing` · `account` · `team` |
 | [Money](#money) | `funds` · `cashout` |
 | [Platform](#platform) | `webhooks` · `models` · `estimate` · `providers` · `phone` · `actions` · `orchestrators` · `vendors` |
 
@@ -535,6 +535,21 @@ floe actuals invoices foot 11 --dry-run   # rehearse first — footing is irreve
 
 ---
 
+### `floe gateway`
+
+Check your own LLM gateway's export file against the [gateway export contract](gateway-export-contract.md) (or a built-in LiteLLM / Portkey / Helicone / OpenRouter template) **before** importing it. A dry run: it stores nothing, and never prints a row's contents, only header names, counts, reason codes and row numbers.
+
+```bash
+floe gateway validate gateway-2026-09.ndjson                     # offline: the file never leaves your machine
+floe gateway validate gateway-2026-09.csv --online               # + account/connection checks
+floe gateway validate export.csv --online --connection our-gateway   # read with a connection's profile
+floe gateway validate export.csv --template floe-canonical-csv@1
+```
+
+Offline is the default and runs the same file-only checks; account/connection checks are available online only, and it prints them as caveats (ids already imported, people, rows Floe already metered, the connection's id mode). `--online` posts the file to `POST /v1/developer/ext-gateway/validate` (up to 10 MiB). `--connection` needs `--online` and excludes `--template`. Exit code `1` when the file isn't valid. Report fields and a worked example: [Gateway export contract → Validate before you import](gateway-export-contract.md#validate-before-you-import).
+
+---
+
 ## Money
 
 ### `floe funds`
@@ -594,7 +609,7 @@ Signed event deliveries to your endpoint (HMAC-SHA256 over `<timestamp>.<body>`,
 | `deliveries <id> [--limit <1-100>]` | Recent delivery attempts for one endpoint; `--retry <deliveryId>` re-sends one with a fresh signature (exits `1` on failure) |
 | `logs` | Account-wide delivery log across all endpoints, newest first. Filters: `--endpoint <id>`, `--event <name>`, `--agent <0x…>`, `--status pending\|retrying\|success\|failed`, `--from`/`--to <iso>`, `--id <search>` (delivery or correlation id), `--limit <1-100>`, `--cursor` (from the previous page's hint) |
 
-Events: 48 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (18: `billing.*`, `client_margin.negative`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`, `unmapped_api_key_spend`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
+Events: 50 across seven categories — `loan.*` (5), agent/key lifecycle (8: `agent.*`, `key.*`, `provider_key.*`, `x402.first_settlement`), `credit.*` (3), `call.*` (6), `phone.number.*` (2), `marketplace.*` (6), and billing & invoicing (20: `billing.*`, `client_margin.negative`, `client_invoice.*`, `vendor_actuals.*`, `stripe.*`, `unmapped_api_key_spend`, `close_slow`, `vendor_late`). `--events` accepts exact names, `*`, or prefix wildcards like `call.*`; run `floe webhooks events` for the authoritative list. Scopes: `global` (default) · `wallet --scope-value 0x…` · `agent --scope-value 0x…` (the agent's wallet address) · `loan --scope-value <loanId>`.
 
 ```bash
 floe webhooks create https://api.acme.com/hooks/floe --events 'call.*,marketplace.payment.settled'

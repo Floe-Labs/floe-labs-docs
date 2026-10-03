@@ -18,6 +18,7 @@
 * [The live cost ledger](docs/build/unified-ledger.md)
 * [Vendor actuals — reconcile to the vendor's records](docs/build/vendor-actuals.md)
 * [Vendor connections](docs/build/vendor-connections.md)
+* [Vendor key scopes & the read-only export](docs/build/vendor-credential-scopes.md)
 * [Coverage Score](docs/build/coverage-score.md)
 * [The cost calculator](docs/build/cost-calculator.md)
 
@@ -101,6 +102,7 @@
 * [REST API](docs/developers/credit-api.md)
 * [Model pricing — GET /v1/models?include=pricing](docs/developers/models-pricing.md)
 * [Ledger Sync API](docs/developers/ledger-sync-api.md)
+* [Gateway export contract](docs/developers/gateway-export-contract.md)
 * [OpenAPI Specification](https://credit-api.floelabs.xyz/.well-known/openapi.yaml)
 
 ## Reference
